@@ -1,0 +1,233 @@
+Directed Acyclic Graphs & Scheduling
+  DAWG time - JM
+  MIT CS prerequisites
+    Edge from s to t means s is a prereq of t
+    Positive walk relation
+      If D is the direct prereq on subjects
+      Subject u must be completed before v iff u D+ v
+    Would take forever to grad if positive length closed walk
+      Forbid closed walks, so forbid cycles (same via Lemma)
+      Graph needs to be acyclic
+    A directed acyclic graph (DAG) is a directed graph with no cycles
+    DAGs have particular importance in CS
+    Key concepts in task scheduling and concurrency control
+      Huge issue if program distributed across processors needs an output from another than hasn't completed
+  Scheduling
+    Set of tasks, along with constraints
+      Certain tasks depend on others being completed beforehand
+      Most basic task: finding an order that works given dependency constraints
+        "Topological sorting"
+        A topological sort of a finite DAG is a list of all vertices
+        Such that each vertex v appears earlier in the list than every other vertex reachable from v
+        There can be many such solutions
+    Provable that every finite DAG has a topo sorts
+      "Mathematical proof that you can indeed get dressed in the morning"
+    Topo sorts easy to construct starting from minimal elements
+      A vertex v of a DAG, D is minimum iff every other vertex is reachable from v
+      A vertex v is *minimal* if v is not reachable from any other vertex
+    Kind of peculiar terminology for vertices that start paths, eh?
+      Come from perspective that a vertex is "smaller" than any it connects to
+      A DAG may have no minimum element but lots of minimal elements.
+    To build an order, pick one minimal element
+      Now there is a new set of mimial element
+        Pick another, until all elements have been picked
+      Sequence of elements in order picked is a topological sort
+    Thm:
+      Every finite DAG has a topological sort
+    There are other ways to create sorts
+      Can start at maximal elements at the end of paths
+      Can even pick vertices arbitrarily and inserting into list wherever they fit
+        The DAG doesn't even need to be finite, but we're not going into that in this course
+    Parallel task scheduling
+      Say the DAG indicates data dependence of programs
+      Parallel machine with lots of processors instead of sequential machine with one
+      Schedule to minimize total time to complete all tasks
+      Let's say all the tasks take the same amount of time and all the processors are identical
+        How long does it take?
+          Use walk relations to analyze
+        First unit of time - do all minimal items
+          Second unit of time - next round of items
+          Third unit - next set, fourth unit - last set
+        Total time is 4 units - cannot do better than 4 because there is a sequence of 4
+          "chain"
+      Two vertices in a DAG are "comparable" when can reach one from the other
+        A "chain" in a DAG is a set of vertices such that any 2 are comparable
+        A vertext in a chain reachable from all others is "maximum element"
+        A finite chain is said to "end at" its maximum element
+      Time it takes to schedule tasks is at least as large as the # of vertices in any chain
+        Only way to get shorter is to do two items in chian at same time
+      Largest chain = "critical path"
+        Can always schedule all tasks with t steps, where t is size of largest chain
+        For any DAG there is a legal parallel schedule that runs in t total steps
+    Definition of partition
+      A partition of set A - set of non empty subsets of A called the blocks of the partition
+        Such that every element of A is in exactly in one block
+      Can partition {a, b, c, d, e} into {a, c} {b, e} and {d}
+    A parallel schedule for a DAG D is a partition of V(D)
+      Into blocks A0, A1,... such that when j < k, no vertex in Aj is reachable from any vertex in Ak
+        Block Ak is set of elements scheduled at step k
+        The time of the schedule is the number of blocks
+        Max number of elements at any step is the "number of processors" req'd by schedule
+      A largest chain ending at element a is the "critical path" to a
+        Number of elements less than a in the chain is the depth of a
+        So in any possible parallel schedule, must be at least depth (a) steps before task a can be started
+        Minimal elements are elements with depth 0
+    Very simple schedule that completes all tasks in minimum number of steps
+      Just use a "greedy" strategy of performing tasks as soon as possible
+        Schedule all elements of depth k at step k
+      Thm
+        Min schedule for finite DAG D consists of sets A0, A1... where
+          Ak ::= {a in V(D) | depth(a) = k}
+      Corollary
+        So with unlimited processors parallel time = size of critical path
+    Dilworth's Lemma
+      An antichain in a DAG is a set of vertices such that NO two elements in the set are comparable
+        No walk between any two vertices in set
+      Corollary
+        In a DAG D, if size of largest chain is T, than V(D) can be partitioned into t antichains
+        Each set Ak is an antichain
+      Dilworth Lemma
+        For all t > 0, every DAG with n vertices must have either a chain of size greater than t
+        OR an antichain of size at least n/t
+        Proof: assume no chain of size greater than t
+        Let l be the size of the largest antichain
+          If we make a parallel schedule, we create a number of antichains equal to the size of the largest t
+          Each element belongs to exactly one antichain, none of which are larger than l
+          So the total number of elements at most l * t - that is lt >= n, so l >= n/t
+      Corollary
+        Every DAG with n vertices has a chain of size greater than sqrt(n) or an antichain size of at least sqrt(n)
+          Proof - set t = sqrt(n) in last equation
+
+Lecture
+  DAG - directed acyclic graph - mouthful so DAG
+  MIT course prereqs
+    Planning to take 6.006?
+      Need to take 6.042 (yes, so I discovered - JM)
+      And of course before that, need Calculus 1 (well I can dimly remember it enough to be ok it seems - JM)
+    Indirect prereqs is what you really care about planning coursework
+      u is indirect prereq of v when there is a sequence from u to vs
+      just means a positive length walk from u to v in the digraph D
+        u D+ v
+  What happens if you have a closed walk?
+    Starts and end at same vertex
+    What if there's a closed walk starting and ending at 6.042?
+      You're never going to graduate
+        (There is a faculty committee that checks for this kind of thing, ARM used to chair)
+    Cycle
+      A walk whose only repeat vertex is its start and end
+      A vertex alone is a length-0 cycle
+      Can show all vertices v0 -> v1 -> v2 -> v(n - 1) -> (v0)
+    Closed Walks
+      Lemma: shortest positive length closed walk from v is the positive length cycle from v
+      Proof: like shortest walk is path
+        If repeat in walk to v, - can clip out repeat
+  DAG
+    has no positive length cycle (or closed walk)
+    examples:
+      prerequisite graph
+      really any constraint on tasks, do some before others
+      successor function n -> n + 1
+      what's the positive length walk relation?
+        successor reflects less than relation - can't loop back
+      subset relation
+        {a, b} -> {a, b, d} - again no cycle - set is subset of itself, doesn't happen
+      see from examples: why DAG all-pervasive in math and other areas
+  DAG walk relation
+    Main thing we usually care about
+      Many different DAGs have the same walk relation?
+    What's the smallest DAG with the same walk relation
+      Are there duplicate ways to get to a point? Get rid of unneeded extras
+      Left with a set of edges called "covering edges"
+      Only way to get from one vertex to another is to use the covering edge
+        If you break it, no way to get from A to B anymore
+  DAGs and scheduling
+    Chart of course 6 prerequisites
+    Indirect prerequisites
+      u is an indirect prereq of v when there is a positive length path from u to v in the prereq digraph R
+        u R+ v
+    A minimal subject
+      Has no prerequisites - a Freshman subject
+        nothing -> d
+        18.01, 8.02, 6.001
+      Funny terminology
+        Things like order relations (incl. partial orders, we'll be looking at shortly)
+        Think of later subjects like being bigger
+    A minimum subject
+      Earliest of all: an indirect prereq of everything
+        Nothing in this example
+        But once had an orientation week seminar on summer book assignment - experiment
+          Turned out to be unsustainable, not enough faculty doing seminars
+    Constructing a schedule
+      Greedy strategy
+      Do as many as we can at a time
+      Remove from diagram
+      Find next prerequisites
+    Antichain
+      Set of subjects with no indirect prereqs among them
+        Can be taken in any order
+        "Incomparable"
+          Because not in path and therefore <= to each other
+          Def. if no pos length path from u to v and no pos length path from v to u
+      Have chosen antichains as schedule for each term with greedy strategy
+      But can also find antichains not all in the same level as the schedule
+    A leisurely schedule
+      Graduate taking only 1 subject per term?
+      Schedule all the minimal elements first, then second level, and so on
+    A chain
+      sequence of subjects that MUST be taken in order (subjects are comparable)
+    Maximum length chain
+      Important theoretically
+        How many terms to graduate?
+        5 terms are necessary to graduate - max chain length is 5
+        Can't do it any faster - take 5 in orders
+        5 are sufficient too - assuming you can take as many as you want
+      Chain of any size - number of terms to graduate is at least that much
+    Consequence of greedy strategy
+      Freshman year 2nd term - 5 subjects - possible
+      So adjust term load - move some down, find a schedule with only 3 subjects per term
+      Will examine minimum number in next segment
+  Parallel scheduling
+    Term scheduling is a special case
+    Constraints - some tasks have to be done before others
+      Obvious applications in CS - compute in parallel, some things need to be done first
+      Example - min # terms to graduate - min parallel time
+      min parallel time = max chain size
+      max term load: # processors for min time
+        How many CPUs do you need?
+        <= max antichain size (5 in the main example)
+          Coarse upper bound
+            Found a way to do it with just 3 processors
+      Minimum # of terms?
+        13 subjects, max chain size 5
+        Load of some term must be >= ceil(13/5) = 3
+    If you have DAG with n vertices
+      Max chain size c
+      Max antichain size a
+      n <= c * a
+      Tells you that c and a not both small
+    Dilworth's Lemma (guy is famous for more general Thm we're not going to get into)
+      Every n vertex DAG has
+        - a chain > t
+        - or an antichain of size n >= t
+        For all t <= t < n
+        Because product has to be at least n
+        To balance chain and antichain size, t = sqrt(n)
+        Every n-vertex DAG has
+          A chain of size > sqrt(n)
+          OR an antichain of size >= sqrt(n)
+    Height/Birthday DAG
+      Edge from one student to another iff one is shorter and younger than the other
+        (s1, a1) -> (s2, a2)
+        iff (s1 <= s2) and (a1 <= a2)
+        Let's try to avoid ties by measuring in microseconds, micrometers
+      DAG built out of pairs
+        Get a new DAG - how do coords behave together
+        "Product graph"
+          (Revisit - relations, partial orders)
+      Class size: 141
+        Has a chain or antichain of ceil(sqrt(141)) = 12
+      What does it mean to be a chain?
+        Younger as shorter
+      What does it mean for there to be an antichain?
+        Line up, has to be getting older as they get shorter
+        (Found one from actual data)

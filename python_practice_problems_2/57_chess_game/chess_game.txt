@@ -1,0 +1,231 @@
+Chess Game
+  64 squares, 8x8 grid
+  16 pieces - listed (parent class & inherited - JM)
+  Try to checkmate king
+  Each piece has unique movements
+  Game can also end in draw
+
+Questions
+  How many pieces in the game?
+  What are the different pieces and moves?
+  Which piece is the strongest, or weakest
+  Who goes first?
+  What are rules?
+  What is a checkmate?
+  How does a stalemate happen?
+  Can a player forfeit/resign
+
+Design approach
+  Small: box and piece
+
+Design
+  Singleton
+  Command
+
+Requirements
+  Multiplayer chess online
+  Play following rules
+  Random color assignments
+  Give each player correct pieces
+  Player with white moves first
+  Player cannot take back move
+  System tracks moves
+  Game may end: checkmate, forfeiture, stalemate, resignation
+
+Use cases
+  System
+    Chess Game
+
+  Actors
+    Primary
+      Player
+    Secondary
+      Admin
+
+  Use Cases
+    Player
+      Create account
+      Update account
+      Login
+      Logout
+      View open games
+      Join game
+      Create new game
+      Make move
+      Resign/forfeit
+      (Offer draw? - JM)
+
+    Admin
+      Block/unblock member
+      Cancel/update membership
+      Add/modify member
+      Login/logout
+      View open games
+      Validate moves
+      Declare results
+
+Relationships
+  Include
+    Make move include with validate move - must validate every move
+    Resign include with declare result
+
+  Extend
+    Block/unblock extend cancel/update membership - membership may be blocked
+    Validate move extend declare result - game may end
+
+  Generalization
+    Make move
+      Play pawn
+      Play knight, bishop, rook, king, queen
+
+Classes
+  Box
+    piece: Piece
+    x
+    y
+
+  Chessboard
+    boxes: Box {matrix}
+    creationDate
+    getPieces()
+    resetBoard()
+    updateBoard()
+
+  Piece - Abstract
+    removed: bool
+    white: bool
+    isWhite()
+    isRemoved()
+    canMove()
+    Rook extends
+      canMove()
+    Pawn
+    King
+      castlingDone: bool
+    Queen
+    Knight
+    Bishop
+
+  Move
+    startBox
+    endBox
+    pieceRemoved: Piece
+    pieceMoved: Piece
+    player
+    castlingMove: bool
+    isCastlingMove()
+
+  Account
+    id
+    password
+    status: AccountStatus
+    Player extends
+      person: Person
+      totalGamesPlayed
+      whiteSide: bool
+      isWhiteSide()
+      isChecked()
+    Admin extends
+      blockUser()
+
+  ChessMoveController
+    validateMove()
+
+  ChessGameView
+    playMove()
+
+  ChessGame
+    players: Player {list}
+    board: Chessboard
+    currentTurn: Player
+    status: GameStatus
+    movesPlayed: Move {list}
+    isOver()
+    playerMove()
+    makeMove()
+
+  Enums
+    GameStatus
+      Active
+      Black Win
+      White Win
+      Forfeit
+      Stalemate
+      Resignation
+    Account Status
+      Active
+      Closed
+      Canceled
+      Blacklisted
+      None
+
+  Person
+    name
+    streetAddress
+    city
+    state
+    zipcode
+    country
+
+Relationships
+  Association
+    Move class one way with Player
+    Player class one-way with ChessMoveController
+    ChessMoveController one-way with ChessGame
+    ChessGame one-way with ChessGameView
+    ChessGameView one-way with Player
+
+  Aggregation
+    ChessGame contains Player
+
+  Composition
+    Box composed of Piece
+    ChessBoard composed of Box
+    ChessGame composed of Move
+    ChessGame composed of ChessBoard
+
+  Inheritance
+    Admin and Player extend Account
+    King etc. extend Piece
+
+Design patterns
+  Singleton: single instance of chessboard (within game context... - JM)
+  Command: encapsulate move logic
+    Each piece has own implementation of move command
+
+More design patterns
+  Iterator
+    Game moves sequentially
+    User does not need to know specs or logic behind moves
+  State
+    Encapsulates state logic of each piece
+  Observer
+    Allows chess pieces to act as observers
+    Chessboard is subject
+    Pieces are notified when state changes
+
+Activity diagram
+  States
+    Initial State: Player makes first move
+      (Not board is set, clock starts? - JM)
+    Final state: Any game over position is met
+
+  Actions
+    Initiate new game
+    Display chess board
+    Player makes move
+    Is valid?
+      No: reject move -> player makes move
+    Update chess board
+    Player wants to resign?
+      Yes: admin declares results
+      (Player resigns after move? - JM)
+    Is there a forfeit?
+      Yes: results
+    Do players want to draw?
+      Yes: results
+    Checkmate?
+      No -> player makes move
+    Admin declares result
+
+  

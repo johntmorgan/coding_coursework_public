@@ -1,0 +1,372 @@
+Random Variables
+Reading
+  How many contestants must play Monty Hall until one wins?
+  How long will a condition last?
+  How much will I lose gambling with "strange dice" all night?
+  Examples
+    Random variable R on a probability space is a total function whose domain is the sample space
+    Codomain can be anything, usually a subset of the real numbers
+    Toss 3 independent unbiased coins
+    C is the number of heads
+    M = 1 if all 3 heads or all 3 tails, 0 otherwise
+    Every outcome of flips uniquely determines C and M
+    HTH -> C = 2, M = 0
+    TTT -> C = 0, M = 1
+    Effectively C counts heads, M indicates whether all match
+    Function mapping outcomes to numbers
+    C(HHH) = 3
+    So C and M are both random variables
+  Indicator Random Variables
+    A random variable that maps every outcome to 0 or 1
+      Also called "Bernoulli variables"
+      Random variable M above is an example
+    Event E partitions sample space into those outcomes in E and those not in E
+      So E naturally associated with indicator random variable IE
+      IE(lomega) = 1 for outcomes lomega in E and IE(lomega) = 0 for outcomes w not in E
+      M = IE where E is event all 3 coins match
+  Random variables and events
+    (Above) C partitions sample space into 4 buckets
+    Pr[C = 2] = Pr[THH] + Pr[HTH] + Pr[HHT] = 3 * 1/8 = 3/8
+    Pr[M = 1] = 1/4
+    Pr[C <= 1] = 1/2 (Assertion C <= 1 is an event)
+    Or C * M is odd - obscure way of saying {HHH}
+  Independence carries over as well
+    R1 and R2 are independnt iff for all x1, x2
+    The two events [R1 = x1] and [R2 = x2] are independent
+    Are C and M independent?
+      Intuitively should be no
+      Number of heads completely determines whether all 3 coins match
+      But to verify, must find some x1, x2 in R such taht
+      Pr[C = x1 AND M = x2] != Pr[C = x1] * Pr[M = x2]
+      Try x1 = 2, x2 = 1
+      Pr[C = x1 AND M = x2] = 0
+      Pr[M = 1] * Pr[C = 2] = 1/4 * 3/8
+    But let H1 be indicator for event first flip is a head
+      H1 is independent of M
+      Pr[M = 1] = 1/4 = Pr[M = 1 | H1 = 1] = Pr[M = 1 | H1 = 0]
+      Pr[M = 0] = 3/4 = Pr[M = 0 | H1 = 1] = Pr[M = 0 | H1 = 0]
+    Lemma
+      Two events are independent iff their indicator variables are independent
+    Intuitively indepedence of two random variables means knowing some info
+      about one variable doesn't provide any information about the other
+    Formally "some information" -> the value of some quantity that depends on R
+    Lemma
+      Let R and S be independent random variables, and f and g be functions such that
+      doman(f) = codomain(R) and domain(g) = codomain(S). Then f(R) and g(S)
+      are independent random variables
+    Generalizing to more than 2 variables
+      Random variables R1, R2, ..., Rn are mutually independent iff for all
+      x1, x2, ..., xn, the n events [R1 = x1], [R2 = x2], ..., [Rn = xn]
+      are mutually independent
+      They are k-way independent iff every subset of k of them are mutually independent
+  Distribution functions
+    Random variable maps outcomes to values
+    Probability density function PDFR(x) of a random variable R
+    Measures the probability that R takes the value x
+    Cumulative distribution function measures probability R <= x
+    Random variables for different spaces of outcomes often wind up behaving in much the same way
+      because havse same probability of taking different values, same pdf/cdf
+    Def
+      Let R be a random variable with codomain V
+      The probability density function of R is a function PDFR : V -> [0, 1] where
+      PDFRX ::= Pr[R = x] if x in range(R)
+            ::= 0         if x not in range(R)
+    If the codomain is a subset of the real numbers, then the cumulative dist function
+    is the function CDFR : R -> [0, 1] defined by:
+    CDFR(x) ::= Pr[R <= x]
+    Consequence:
+      Sum x in range(R) PDFR(x) = 1
+      Because R has a value for each outcome
+      So summing the probabilities over all outcomes same as summing probs each value in R
+    Example
+      Roll 2 unbiased 6-sided dice
+      Let T be the variable that equals the sum
+      Takes on values in set V = {2, 3, ..., 12}
+        See PDF and CDF
+    Both PDFR and CDFR capture the same information about R, so take your choice
+      Key point: neither involves the sample space of an experiment
+    Many random variables turn out to have the *same* pdf and cdf
+      Some pdfs are so common given special names
+        Bernoulli, uniform, binomial
+    Bernoulli distribution
+      fp : {0, 1} -> [0, 1]
+      fp(0) = p
+      fp(1) = 1 - p
+      for some p in [0, 1]
+      Cumulative distribution function:
+      Fp : R -> [0, 1]
+        Fp(x) ::= 0 if x < 0
+                  p if 0 <= x < 1
+                  1 if 1 <= x
+    Uniform distribution
+      Random variable that takes on each possible val in codomain with same probabilitys
+      If codomain V has n elements then uniform distribution has a pdf of form
+      f : V -> [0, 1]
+      where f(v) = 1/n for all v in V
+      If the elements of V in increasing order are a1, a2, ..., an
+        then the cumulative distribution function would be F : R -> [0, 1] where
+        F(x) ::= 0 if x < a1
+                 k/n if ak <= x < a(k + 1) for 1 <= k < n
+                 1 if an <= x
+      Uniform distributions come up all the time
+        Number rolled on a fair die is uniform on the set {1, 2, ..., 6}
+        Indicator variable is uniform when pdf is f(1/2)
+  The numbers game
+    Enough defs, let's play a game!
+    Two envelopes
+    Each contains a distinct integer in range [0, 100]
+    To win, must guess which envelope contains the larger number
+    Peek at the number in one envelope selected at random
+    Strategy better than 50% chance of winning
+      Random guessing = 50%
+    Possible that numbers are NOT random
+      So don't just guess on whether >= 50 or not
+    In fact picking numbers to defeat guessing strategy
+      Will only randomize if it makes you lose!
+    But in fact there still is a strategy, surprisingly
+      Suppose you knew a number x between the numbers
+      Peek in one envelope, see a number
+      Smaller than x, it's the lower number
+      But you do not know such an x - but try to guess!
+      Some probability you guess right - win 100% of the time
+      Guess wrong - still 50/50
+      This sounds like it doesn't work, intuitively - but it does
+        Let's go over this more rigorously
+    Choose numbers from integer interval [0..n]
+      Call the lower number L and the higher number H
+      Guess a number x between L and H
+      Select from half-integers 1/2, 3/2, 5/2... (2n - 1) / 2
+      What proability distribution to use?
+      Uniform distribution is best bet
+      Otherwise opponent would always play off it
+    After selecting x
+      Peek and see some number T
+      if T > x, then larger number
+      If T < x, guess other is larger
+    Four step method
+      x too low - L/n - still win if T = H, 1/2
+      x too high - (n - H) / n - still win if T = L 1/2
+      x just right - (H - L) / n - always win
+      Pr[win] = L/2n + (H - L)/2n + (H - L)/2n + (n - H) / 2n
+              = 1/2 + (H - L)/2n
+              >= 1/2 + 1/2n
+      Inequality relies on H being at least 1 more than L since they must be distinct
+      Win at least 50.5%
+      If range [0, 10], then win 55%
+        Great by Las Vegas standards
+    Randomized algorithms
+      Example of a randomized algorithm - use random numbers to make decisions
+        Very important in CS
+          e.g. when to broadcast on shared bus/Ethernet
+            randomized - "exponential backoff"
+          Quicksort
+            Uses random numbers
+          Many more examples in algo course
+    Binomial distributions
+      Also very common CS
+      Standard example of random variable is number of heads on n independent coin flips
+      If coin fair, unbiased binomial distribution
+      pdf fn : [0..n] -> [0, 1]:
+        fn(k) ::= (n choose k) * 2^-n
+        Because n ch k sequences of n coin tosses with exactly k heads
+        Each sequence probability 2^(-n)
+      Show plot of f20(k)
+        Most likely is k = 10
+        Falls off rapidly for larger and smaller values of k
+        Falloff to left and right = tails of distribution
+      In many fields, probability analyses come down to small bounds on tails
+        In CS: small probability something bad happens
+          Server overload, randomized algo running too long, producing wrong result
+      The tails get small very fast
+        < 25 heads in 100 tosses is 1 in 3m
+        P 25 heads in a row = p 24 + p 23 + p 0
+    General binomial distribution
+      If coins are biased so heads with probability p
+      Number of heads general binomial density function from pdf
+      f(n, p) : [0..n] -> [0, 1]
+      f(n, p)k = (n choose k) * p^k * (1 - p)^(n - k)
+      For some n in N+ and p in [0, 1]
+      There are n ch k sequences with k heads and n - k tails
+      p^k * (1 - p)^(n - k) is the probability of each such sequence
+
+Lecture
+  Intro to random variables
+  Let's start with a game for fun
+  Bigger number game
+  Team 1: write two integers 0 to 7 on 2 pieces of paper
+    Show to team 2 face down
+  Team 2: look at one number
+    Either stick or switch to other number
+    Team 2 wins if gets larger number
+  Do you think one team has an advantage?
+    (If you read the notes, you know, but if not, not so obvious...)
+    Used to do this in class
+  Strategy for team 2
+    Pick a paper to expose, giving either equal probability
+      50/50 chance of picking large or small
+        No L/R setting from Team 1
+    If exposed number is "small" then switch, otherwise stick
+    Switch if <= threshold Z
+      How to choose Z?
+      Naive: choose 3, middle of interval
+      But if team 1 knows this, will make sure both numbers on same side of Z
+      Would switch/stick in both cases, only 50/50
+    What you should do
+      Pick Z at random [0, 7)
+      What is large/small varies each time you play the game
+  Analysis of Team 2 strategy
+    Let low < high be the integers chosen by Team 1 (have to pick separate numbers)
+    Three cases:
+      Case M: low <= Z <= high
+        Z is always guiding you what to do correctly
+        Team 2 always wins in this case
+        Pr[Team 2 wins | M] = 1
+      How often does M happen?
+        Pr[M] >= 1/7
+        Could be more if low and high are farther apart
+      Case H: high <= Z
+        Team 2 will switch - both numbers look low
+        Wins iff low card gets exposed
+        Pr[Team 2 wins | H] = 1/2
+      Case L: Z < low
+        Team 2 will stick, so wins iff high card gets exposed
+        Pr[Team 2 wins | L] = 1/2
+    Apply total probability
+      >= 1/7 of the time, sure win
+      Rest of time, win 1/2
+      Pr[Team 2 wins] = Pr[win | M] * Pr[M] + Pr[win | NOT(M)] * Pr[NOT(M)]
+                    >= 1 * 1/7 + 1/2 * (1 - 1/7) = 4/7
+      Kinda cool - team 2 has advantage
+      No matter what Team 1 does
+  Team 1 strategy - guarantee Pr[Team 2 wins] <= 4/7 (random numbers 1 apart? - JM)
+    So can say optimally 4/7
+  Random variable basics
+    Number produced by a random process
+    Threshold variable Z - value from 0 to 6 each with probability 1/7
+    Number of exposed card - Will be random assuming team 1 plays optimally
+    Number of larger card - ditto
+    Number of smaller card - ditto
+  Random variables & independence
+    Now lets get more formal
+    But first, informally:
+    RV is a number produced by a random process
+      # hours to next system crash
+      # faulty pixels in monitor
+      # alpha particles detected by Geiger counter in a second
+        Has a distribution but varies second to second
+      # heads in n coin flips
+    Example: flip three fair coins - first, second, third - distinguishable
+      C ::= # heads (Count)
+      M ::= 1 if all Match
+            0 if do not all Match
+      Specify events using values of variables
+        [C = 1] is event "exactly one head"
+        Pr[C = 1] = 3/8
+        Pr[C >= 1] = 7/8
+        Pr[C * M > 0] = Pr[M > 0 AND C > 0]
+          = Pr[All heads] = 1/8
+  Formally
+    Ra : S -> Real number
+    Maps outcomes in sample space to real numbers
+      Occasionally complex numbers in quantum mechanics, but not for our purposes
+    Intuitively
+      Packages together the events [Ra = a] for a in Real
+      Event properties carry over to RVs directly
+    Mutually independent variables
+    Def: R1, R2, ... , Rn
+    are mutually indep RV's iff
+    [R1 = a1], [R2 = a2], ... , [Rn = an]
+      are mutually independent events for all a1, a2, ..., an
+    Alternatively
+      Pr[R1 = a1 AND R2 = a2 AND Rn = an] =
+      Pr[R1 = a1] * Pr[R2 = a2] * Pr[Rn = an]
+    Practice
+      Are C and M independent? No
+      Pr[M = 1] * Pr[C = 1] > 0
+      Pr[M = 1 AND C = 1] = 0
+  Indicator variables
+    The indicator variable for event A:
+    Just like Match variable packaged into 0 or 1
+    IA ::= 1 if A occurs, 0 if A does not occur
+    Can think of events as special cases of random variables
+    Sanity check
+      We've defined independence one way
+      Defintion for random variable is different than that for events
+      Should be the case that events are independent iff indicator variables are independent
+  Independent variables
+    O ::= odd # Heads
+    Are M and Io independent? YES - not immediately obvious
+    Both depend on all 3 coins
+    Check probabilities event odd all match independent
+  Lemma:
+    Remember for events, A must be independent of not just B but also NOT(B)
+    If R is independent of S
+    Then R is really independent of *any information* about S
+    If R is independent of S, and f : Real -> Real, then
+    R is indepedent of f(S)
+  k-way independent variables
+    Carries right over from events as well
+    If any k of the variables are mutually independent
+    2-way is called pairwise independent
+    Hi ::= indicator for Head on flip i in [1, k]
+    O ::= mod 2 sum of Hi from 1 to k
+      Any k of them are independent
+      But NOT k + 1-way independent since any k determine the k + 1
+  Pairwise independent variables
+    Sufficient for major applications (in later lecture)
+    Mutual independence hard to check, doesn't hold in many pairwise cases
+  Random Variables
+    Uniform, Binomial
+    Uniform
+      All values are equally likely
+      "Threshold variable" Z in first example was uniform
+      D ::= outcome of fair die roll
+      Pr[D = 1] = Pr[D = 2] = ... = Pr[D = 6] = 1/6
+      S ::= 4-digit lottery number
+        Pr[S = 0000] = Pr[S = 0001] = Pr[S = 9999] = 1/10000
+    Lemma
+      If R1, R2, R3 have the same range, are mutually independent, and R1 is uniform
+      Then [R1 = R2], [R2 = R3], [R1 = R3]
+      are pairwise independent
+      Obviously NOT 3-way independent - if know first two, probability of last changes dramatically
+    Handwaving argument (more rigorous in text)
+      R1 is independent of [R2 = R3] and has probability p of equaling each value
+      So it equals a common value of R2 & R3 with probability p
+      Pr[R1 = R2 | R2 = R3] = Pr[R1 = R3] = p
+    Binomial random variable
+      Probably most important
+      Bn,p ::= #heads in mutually independent flips
+      Coin *may* be biased
+      n = # of flips, while p ::= Pr[head]
+      for n = 5, p = 2/3
+      Pr[HHTTH] = Pr[H] * Pr[H] * Pr[T] * Pr[T] * Pr[H]
+                = 2/3 * 2/3 * 1/3 * 1/3 * 2/3
+                = (2/3)^3 * (1/3)^2
+      Abstracting
+        Pr[each seq with i H's, n - i T's] = p^i * (1-p)^(n - i)
+        Pr[i H's, n - i T's] - number of sequences * probability of each
+          (n choose i) * p^i * (1-p)^(n - i)
+        Pr[Bn,p = i] = (n choose i) * p^i * (1-p)^(n - i)
+          Memorize or bring on crib sheet to exam!
+    Density function
+      Tells you what is the probability a variable takes a value for any given value
+      PDR of random variable R
+      PDFR(a) ::= Pr[R = a]
+      PDFBN,P(i) = (n choose i) * p^i * (1-p)^(n - i)
+      Uniform
+      PDFu(v) = constant = 1 / |range(U)|
+        for v in range of unform
+    Cumulative distribution function
+      CDFR(a) ::= Pr[R <= a]
+    Key observation
+      Once abstracted out to PDF and CDF, don't need to think about sample space anymore
+      All they're telling you that probabilty random variable takes a given value
+      Need something more general when you start having dependent random variables
+        Need to know how probability R takes a value changes given S has some property or takes some other value
+      But if just looking at random variable alone
+        Everything you need to know is just given by density/distribution functions
+      Advantage
+        Both the uniform and binomial distributions (audio out)
+      All these random variables going to share a lot of properties
+    But remember, definition of random variable is not a distribution
+      Rather it's a function from sample space to values

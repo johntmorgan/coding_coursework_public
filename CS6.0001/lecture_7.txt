@@ -1,0 +1,214 @@
+Testing, debugging, exceptions, assertions
+  You have a soup with bugs in it
+    Test and see if bugs
+    Keep lid closed - defensive programming
+  Defensive programming attitude
+    Decomposition, abstraction
+    Modularize your code, documenting each
+    Testing: come up with inputs
+      Do outputs match what you expect?
+  Debugging
+    Study event, figure out why program crashed
+  When do you start testing?
+    Make sure your program runs first
+    Then come up with test cases
+  Three general classes of tests
+    Unit testing
+      Make sure function runs according to specs
+    Regression testing
+      If find a bug, rerun all tests
+    Integration testing
+      Does program as a whole work?
+  Test approaches
+    If numbers - intuition about bounaries
+      x > y, y > x
+    May be no natural partitions
+      Do random testing
+    Black box testing
+      Explore paths through specification
+    Glass box testing
+      Explore paths through code
+  Black box testing
+    Designed without looking at code
+    Just look at docstring
+    Can be done by someone other than the implementer
+      Boundary
+      Large, small x and epsilon
+  Glass box testing
+    Using code to guide test cases
+    Go through every path
+      Problem: loops - how many times? Could be a very big test set
+    Branches
+      Exercise all parts of conditional
+      For loop
+        Test case where not entered
+        Entered once
+        Entered more than once
+      While loop
+        Catch all ways to exit loop
+    def abs(x):
+      if x < -1:
+        return < -x
+      else:
+        return x
+    A path-complete test suite could miss a bug here
+      Path complete: 2 and -2
+      But abs(-1) incorrectly returns (-1)
+      Should still test boundary cases
+    What happens when you find a bug?
+    History of debugging - 1947 computer
+      Addition in 0.1 seconds
+      Multiplication in 0.7 seconds
+      Log in 5 seconds
+    Engineers (Grace Hopper) - program find trigonmetric function
+      Not working correctly
+      Moth sitting in computer
+    Debugging tools in IDE
+    Print tool can be really helpful
+    But most important to be systematic
+    Print statement
+      Inside functions, loops
+      What functions return what values
+      Make sure correct values being passed
+      You can use bisection when debugging
+        Find halfway point in code - print out values at that point in code
+        Then 1/4, 3/4 etc.
+    Don't ask what is wrong
+      Ask how did I get unexpected result
+    Scientific method
+      Study available data
+      Form hypothesis
+      Come up with experiment
+      Simple test case to test
+    As debugging
+      Will encounter error messages
+      Easy to figure out and fix:
+      IndexError - access beyond list limits
+      TypeError - trying to convert into inappropriate type
+      NameError - referencing non-existent variable
+      TypeError - mixing data types inappropriately
+      SyntaxError - forgetting to close parens, quotation, etc.
+    Logic errors are the hard part
+      Go eat, nap etc.
+      May need to throw out code, start again
+      Rubber ducky explanation - explain to another person who does not know problem
+    DON'T
+      Write entire program then test/debut
+    DO
+      Write a function, test, debut
+      Next function
+      Regression testing
+      Will cut down on time immensely
+    If you have a version that works - save copy somewhere before modifying
+    That's debugging
+    Now: error messages
+    Error is called an exception - exception to what was expected
+    All the prior errors are called exceptions
+    How do we deal with these exceptions?
+      In Python, you can actually have handlers for exceptions
+      Good place: user input
+      try:
+      except:
+    Except block catches any error that comes up
+      try:
+      except ValueError:
+      except ZeroDivisionError:
+      except: # general except at end
+    More rare handling
+      else:
+        executed when try completes with no error
+      finally:
+        always executed
+        usually used to clean up code
+        print, close file, etc.
+    What do you put in except blocks?
+      Can fail silently
+        Bad idea!
+        User doesn't know input is bad
+      Can return an error value
+        Bad idea!
+        Which value to choose
+        Complicates code having to look for value
+      Stop execution, signal error condition
+        Raising your own exception
+        raise Exception("descriptive string")
+        (often: raise ValueError("something is wrong"))
+    Function get_ratios
+      # Takes 2 lists, gets ratio of L1/L2 matching
+      ratios = []
+      for index in range(len(L1)):
+        try:
+          ratios.append(L1[index]/L2[index])
+        except ZeroDivisionError:
+          ratios.append(float('nan')) # not a number
+        except:
+          raise ValueError("get_ratios called with bad arg")
+  Another example
+    append average to end of list
+    def get_stats(class_list)
+      new_stats = []
+      for elt in class_list:
+        new_stats.append([elt[0], elt[1], avg(elt[1])])
+
+    def avg(grades):
+      return sum(grades)/len(grades)
+
+    But what if student where elt[1] = 0 - no grades
+    Get a ZeroDivisionError
+
+    def avg(grades):
+      try:
+        return sum(grades)/len(grades)
+      except:
+        print('warning: no grades data')
+
+    returns None, because no return in exception, so None is appended
+    OR
+    can change policy, replace with value
+    Add it in docstring - if list empty, returns 0
+
+    def avg(grades):
+      try:
+        return sum(grades)/len(grades)
+      except:
+        print('warning: no grades data')
+        return 0
+
+  Assertions
+    A good example of defensive programming
+    Make sure assumptions are
+
+    def avg(grades):
+      assert not len(grades) == 0, 'no grades data'
+      return sum_grades/len(grades)
+
+    raises an AssertionError
+    Assertions are great to make sure pre and post conditions are as you expect
+    Prevent program from propogating bad values
+
+  Book Reading
+    Black-box testing happens often in large companies with quality assurance teams
+    Stub replaces a program called by other programs
+      Can be tricky esp if the replaced program modifies lost of things
+    "Bug" dates back to at least late 1800s
+    Overt bug: crash, slow program, infinite loop
+    Covert bug: bad answer at end
+    Many bugs in between extremes
+    Persistent bug: every time
+    Intermittent bug: only sometimes
+      Common in programs with randomness, ch. 14
+    Overt + persistent is the best kind of bug
+      Defensive programming should try to ensure bugs are these
+    Most experienced programmers don't even bother with debugging tools
+      Just use print statement
+    Polymorphic function - works for many different types of inputs
+
+    def readVal(valType, requestMsg, errorMsg):
+      while True:
+        val = input(requestMsg + ' ')
+        try:
+          return(valType(val))
+        except ValueError:
+          print(val, errorMsg)
+
+    readVal(int, "Enter an integer:", "is not an integer")

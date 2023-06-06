@@ -1,0 +1,20 @@
+console.log("hello world!");
+
+Note
+  Trailing semicolon not necessary in JS
+  Removing does not throw error
+  But allows multi-line code in same line, acting as separator
+
+Call console object
+Call console object method log
+
+Console object is part of DOM objects family available to JS language
+  Will print anything passed to it as argument
+  Automatic new line characters
+  If that's a problem, use process object instead
+    process.stdout.write
+    Gives more control - writes exactly what told
+  There are many more global objects available besides console and process
+  We will use console though
+  Console uses process object to log anything into terminal
+

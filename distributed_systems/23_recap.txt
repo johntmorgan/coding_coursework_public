@@ -1,0 +1,68 @@
+Recap
+Key point
+  How distributed systems useful
+  Challenges in building distributed systems
+  How to overcome challenges
+Building a dist system
+  Serious undertaking
+  Only when necessary
+Dist systems good
+  Performance
+  Scalability
+  Availability
+Basic mechs
+  Partitioning
+  Replication
+  Create tension with consistency
+Theorems
+  CAP theorem
+  FLP result
+Tension
+  Synch vs. asynch rep
+    Performance & avail vs. durability
+Liveness vs. Safety
+Basic consistency models
+  Many more models
+    Read-your-writes
+    Monotonic reads
+    Monotonic writes
+Failure detection
+  Heartbeats
+  Timeouts
+Failure detectors often more complex
+  Avoid timeouts to be applicable to quiescent algos
+  Gossip protocol
+    Scalability, fault tolerance
+  Suspicion on continuous scale, not binary
+Partitioning techniques
+Consensus
+  Paxos
+  Raft
+  Old topic but still very useful research
+    e.g. Paxos found majority quorum not always needed for safety
+    Just quorum from first phase overlap with quorum from second
+  Byzantine failures much more difficult
+Time and order
+  Total vs. partial order
+  Some systems operate well enough under partial order
+  Vector clocks
+    Preserve causality relationships
+Networking & Security
+  Core to now nodes communicate
+  Understand networking protocols when designing
+  Always stick with exsting standards, cryptanalysis libraries
+    battle-tested solutions!
+Practical systems
+Practices and patterns
+To discover
+  CockroachDB
+    Pipelined consensus
+    Parallelized two-phase commit in single round-trip
+  Practical info
+    Amazon builders library
+  More failures
+    Gray failures - not clear, more subtle, look different to diff parts of system
+    Partial failures - only parts of system fail
+      Consequences equivalent to full failure
+  Formal verification of ysstems
+    TLA+

@@ -1,0 +1,41 @@
+Intro to Stimulus
+  Tool with relatively small goals
+  "A modest JS framework for the HTML you already have"
+  React = replace entire view layer
+  Stimulus = handle common JS patterns quickly and without much complication
+    Event happens, respond to it
+    Simplify process of creating relationship between event and code invoked in response
+
+Without Stimulus
+  Use jQuery
+  Use no framework, just native DOM methods
+
+Stimulus
+  Built by Basecamp
+  Lots of convention over configuration, similar to Rails
+  Good for small interactions
+    Expand existing capabilities
+    Don't need much internal state
+    e.g. Augmented forms
+    Simple navigation
+  Opinion
+    Web app primarily based on server
+    Client provides some interactivity, on top of markup rendered on server
+  Key elements
+    Controllers - Where code goes, contain methods that are responses to events that happen
+    Actions - Declare interested in having Stimulus do something in response to action on page
+    Targets - DOM elements of interest to a controller
+    Datamaps and Values - State stored in DOM of interest to controller
+      Can declare types of values in controller, conflicts a bit with TS
+    Classes - Stimulus provides special mechanism for updating
+  Uses HTML markup specify HTML/JS interaction
+    (Very unlike React - uses its own JSX markup)
+    (Also unlike jQuery - keeps JS data outside HTML markup)
+
+This chapter
+  Use Stimulus for show-hide button and typeahead search
+  Revolves around a few concepts relating HTML markup to JS code
+    All items inserted into app by adding data attributes to DOM elements in markup sent to browser
+    When page loaded, Stimulus looks for special attributes
+      Sets up event listeners behind scenes
+      Listeners dispatch events to controller method specified in actions

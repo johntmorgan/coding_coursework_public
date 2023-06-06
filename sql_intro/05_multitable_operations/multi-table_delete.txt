@@ -1,0 +1,55 @@
+Multi-Table Delete
+  Want to delete data from one table AND related data from other tables
+  Let's delete DigitalAssets along with an Actor
+
+  // Old Syntax
+  DELETE T1, T2
+  FROM T1, T2, T3
+  WHERE <condition>;
+
+  // New Syntax, reads better
+  DELETE FROM T1, T2
+  USING T1, T2, T3
+  WHERE <condition>
+
+  // Delete actors who have a Twitter account
+  // Remove Twitter account info from DigitalAssets
+  DELETE Actors, DigitalAssets
+  FROM Actors
+  INNER JOIN DigitalAssetes
+  ON Actors.Id = DigitalAssets.ActorId
+  WHERE AssetType = "Twitter";
+
+  // New syntax alternative
+  DELETE FROM Actors, DigitalAssets
+  USING Actors
+  INNER JOIN DigitalAssets
+  ON Actors.Id = DigitalAssets.ActorId
+  WHERE AssetType = "Twitter";
+
+  // Failure
+  // MySQL disallows row deletion if same table also appears in SELECT clause
+  DELETE Actors
+  FROM Actors
+  WHERE EXISTS ( SELECT *
+                FROM Actors
+                INNER JOIN DigitalAssets
+                ON Id = ActorId
+                WHERE AssetType = "Twitter");
+
+  // Working, rewrite as correlated query
+  DELETE Actors
+  FROM Actors
+  WHERE EXISTS (SELECT *
+                FROM DigitalAssets
+                WHERE ActorId = Id AND AssetType = "Twitter")
+
+  // Remove Johnny Depp from Actors table
+  // Remove his accounts from DigitalAssets except Pinterest
+  DELETE Actors, DigitalAssets
+  FROM Actors, DigitalAssets
+  WHERE ActorId = Id
+  AND FirstName = "Johnny"
+  AND AssetType != "Pinterest";
+
+  // Cannot use ORDER BY and LIMIT on multi-table deletes

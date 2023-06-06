@@ -1,0 +1,19 @@
+// description trigger named t1
+t1,DESCRIPTION,Presidential Debate
+// title trigger named t2
+t2,TITLE,Joe Biden
+// title trigger named t3
+t3,TITLE,Donald Trump
+// before trigger named t4
+t4,AFTER,12 Oct 2024 4:59:59
+// before trigger named t5
+t5,BEFORE,12 Oct 2024 11:59:59
+// composite trigger named t6
+t6,AND,t1,t2
+// composite trigger name t7
+t7,AND,t1,t3
+// composite trigger name t8
+t8,AND,t4,t5
+//
+// the trigger list contains t1 and t4
+ADD,t6,t7,t8

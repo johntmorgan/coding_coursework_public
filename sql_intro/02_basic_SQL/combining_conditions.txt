@@ -1,0 +1,27 @@
+Combining Conditions
+
+  SELECT col1, col2, … coln
+
+  FROM table
+
+  WHERE col3 LIKE "%some-string%"
+
+  AND
+
+  col4 = 55;
+
+  SELECT * FROM Actors WHERE FirstName > "B" AND NetWorthInMillions > 200
+  SELECT * FROM Actors WHERE FirstName > "B" OR NetWorthInMillions > 200;
+  SELECT * FROM Actors WHERE (FirstName > 'B' AND FirstName < 'J') OR (SecondName >'I' AND SecondName < 'K');
+    // Combining AND and OR operators
+  SELECT * FROM Actors WHERE NOT(FirstName > "B" OR NetWorthInMillions > 200);
+    // "NOT is a unary operator that negates a boolean statement"
+  SELECT * FROM Actors WHERE NOT NetWorthInMillions = 200;
+    // Returns everyone without exactly 200 net worth
+  SELECT * FROM Actors WHERE (NOT NetWorthInMillions) = 200;
+    // Returns nobody - tricky!
+    // Applying NOT on a non-zero column makes it zero
+    // Would still not return anyone with a net worth of zero
+      NOT of zero is non-zero, which is not equal to 200
+  // XOR operator supported
+  SELECT * FROM Actors WHERE FirstName > "B" XOR NetWorthInMillions > 200;

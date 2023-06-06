@@ -1,0 +1,394 @@
+Restaurant Management System
+  Food & Bev sales
+  Employee schedules
+  Customer reservations
+  Settings
+    Quick service
+    Fine dining
+    Cafeteria
+
+Questions
+  Delivery service?
+  Online ordering?
+  Accept online payments?
+  Payment options?
+  Can branches vary in service?
+  Inventory management?
+
+Small start
+  Table
+  Table seat
+  Meal
+  Mael item
+  Seating chart
+
+Bigger
+  Menu
+  Branch
+  Restaurant
+
+Design patterns
+  Singleton
+  Factory
+
+Requirements
+  Multiple branches
+  Each branch has different menu
+  Waiter creates order, adds items per person
+  Each order consists of multiple items
+  Provide info about available tables
+  System allows for reservation
+  Receptionist search tables by date & time & make reservation
+  System allows customers to make & cancel reservations
+  System sends reservation notifications
+  Customers pay with:
+    Checks, Cards, Cash
+  Each branch may have different configs
+
+Use Cases
+  System
+    Restaurant
+  Actors
+    Guest
+    Receptionist
+    Waiter
+    Manager
+
+  Guest
+    Make reservation
+    Cancel reservation
+    View menu
+    Place order
+    Add item
+    Update order
+    Cancel order
+    Pay cash
+    Pay credit
+    Pay check
+    Reserve table
+
+  Manager
+    Add menu section
+      Modify
+    Add menu item
+      Modify
+    Set menu item price
+    Generate report
+      Orders, inventory, etc.
+    Add table
+    Update table
+    Reserve table
+    Update/cancel reservation
+    View menu
+    Place order
+    Add/update order item
+    Cancel order
+    View order
+    Process payment
+
+  Receptionist
+    Add/update tables
+    Reserve table
+    Update/cancel reservation
+
+  Waiter
+    View menu
+    Place order
+    Add/update order item
+    View order
+    Cancel order
+    Process payment
+
+  Relationships
+    Generalization
+      Manager has generalization with Receptionist and Waiter
+
+    Include
+      Add/modify item with add/modify menu section
+      Process payment with pay via cash, pay via credi, pay via check
+
+Class diagram
+  Account
+    id
+    password
+    address: Address
+    status: AccountStatus
+    resetPassword()
+
+  Person abstract
+    name
+    email
+    phone
+    Customer extends
+      lastVisitedDate
+    Employee abstract extends
+      employeeId
+      joiningDate
+      Chef extends
+        prepareOrder()
+      Waiter extends
+        takeOrder()
+      Manager extends
+        addEmployee()
+      Receptionist
+        createReservation()
+
+  Table
+    tableId
+    status: TableStatus
+    maxCapacity
+    locationIdentifier
+    seats: TableSeat {list}
+    addReservation()
+
+  TableSeat
+    tableSeatNumber
+    type: SeatType
+    updateSeatType()
+
+  Meal
+    mealId
+    mealItems: MealItem {list}
+    addMealItem()
+
+  MealItem
+    mealItemId
+    quantity
+    updateQuantity()
+
+  Menu
+    menuId
+    title
+    description
+    price (of what? do this in MenuItem, no? - JM)
+    menuSections: MenuSection {list}
+    addMenuSection()
+
+  MenuSection
+    menuSectionId
+    title
+    description
+    menuItems: MenuItem {list}
+    addMenuItem()
+
+  MenuItem
+    menuItemId
+    title
+    description
+    price
+    updatePrice()
+
+  Order
+    orderId
+    status: OrderStatus
+    meals: Meal {list}
+    creationDate
+    table: Table
+    waiter: Waiter
+    chef: Chef
+    addMeal()
+    removeMeal()
+
+  Kitchen
+    name
+    chefs: Chef {list}
+    assignChef()
+
+  Reservation
+    reservationId
+    timeOfReservation
+    peopleCount
+    status: ReservationStatus
+    notes
+    checkInTime
+    customer: Customer
+    updatePeopleCount
+
+  Payment - abstract
+    paymentId
+    createdOn
+    amount
+    status: PaymentStatus
+    initiateTransaction()
+    Cash extends
+      cashTendered
+    Check extends
+      bankName
+      routingNumber
+      checkNumber
+    Credit Card extends
+      nameOnCard
+      cardNumber
+      securityCode
+      zipcode
+
+  Bill
+    billId
+    amount
+    tip
+    tax
+    isPaid
+    generateBill()
+
+  Notification - abstract
+    notificationId
+    createdOn
+    content
+    send(person)
+    SMSNotification extends
+      phone
+      send(person)
+    EmailNotification extends
+      email
+      send(person)
+
+  Branch
+    name
+    location: Address
+    kitchen: Kitchen
+    menu: Menu
+    addSeatingChart()
+
+  SeatingChart
+    seatingChartId
+    seatingChartImage
+    print()
+
+  Restaurant
+    name:
+    branches: Branch {list}
+    addBranch()
+
+  Enums
+    PaymentStatus
+      Unpaid
+      Pending
+      Completed
+      Failed
+      Declined
+      Canceled
+      Abandoned
+      Settling
+      Settled
+      Refunded
+
+    TableStatus
+      Free
+      Reserved
+      Occupied
+      Other
+
+    SeatType
+      Regular
+      Child
+      Accessible
+      Other
+
+    AccountStatus
+      Active
+      Closed
+      Canceled
+      Blacklisted
+
+    OrderStatus
+      Received
+      Preparing
+      Complete
+      Canceled
+      None
+
+    ReservationStatus
+      Requested
+      Pending
+      Confirmed
+      CheckedIn
+      Canceled
+      Abandoned
+
+  Address
+    streetAddress
+    city
+    state
+    zipcode
+    country
+
+Relationship
+  Association
+    Employee one-way with Branch
+    Meal one-way with TableSeat
+    MealItem one-way with MenuItem
+    Waiter one-way with Order
+    Order one-way with Table
+    Chef one-way with Order, Kitchen
+    Receptionist one-way with Reservation
+    Reservation one-way with Table
+
+    Branch two-way with Menu
+    Customer two-way with Reservation
+    Reservation two-way with Notification
+    Payment two-way with Bill
+    Bill two-way with Order
+
+  Composition
+    Branch composed of SeatingChart and Kitchen
+    Restaurant composed of Branch
+    Employee composed of Account
+    Table composed of TableSeat
+    Meal composed of MealItem
+    Order composed of Meal
+    MenuSection composed of MenuItem
+    Menu composed of MenuSection
+
+  Inheritance
+    Employee, Customer extend Person
+    Chef, Manager, Waiter, Receptionist extend Employee
+    SMSNotif and EmailNotif extend Notif
+    Payment extended by CreditCardTransaction, CashTransaction, CheckTransaction
+
+Design
+  Singleton
+    Ensure only one connection to database
+
+  Command
+    Encapsulate requests to database
+
+  Observer
+    Notifications
+
+  Factory
+    Create objects without specifying class
+      Create different MenuItem types
+
+Discount
+  Decorator on payment
+  couponCode
+  discountAmount
+  expiresOn
+
+Sequence: Modify order
+  Waiter adds meal item to order
+  Order updated
+  Order sent to kitchen
+  Kitchen begins preparing order
+  Waiter updates bill
+  Bill is updated
+  Kitchen sends message indicating order prepared
+  Order status updated to prepared
+  Waiter serves order
+
+Activity Diagram: place order
+  Initial state: guest arrives and asks for table
+  Final state: order successfully placed
+
+  Guest arrives at restaurant
+  Receptionist checks for availability
+    No: Guest waits
+  Guest sits at table
+  Waiter brings menu
+  Guest views menu
+  Guest places order (waiter returns to table, guest selects item?)
+  Waiter adds items to order
+  Waiter sends order to kitchen
+
+
+

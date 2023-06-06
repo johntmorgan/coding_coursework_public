@@ -1,0 +1,29 @@
+In-place linked list reversal
+  No additional memory
+  Required by many problems
+
+Pattern
+  Iterate while tracking current, next, prev
+  O(n) time vs O(n^2) if you went over the list over and over
+  O(1) space vs. a lot more used for naive
+
+Pattern match
+  Yes
+    Must reverse a linked list (fully or partially)
+    Must do it in place
+  No
+    Input is not linked list
+    Need to use additional memory
+    Can't modify input list
+
+Real-world
+  Stocks
+    Assign N transactions to K brokers
+    Carry out in order
+  E-commerce
+    List of products
+      First half ascending by price
+      Second half ascending by popularity
+      Display: price, popularity pairs
+        First product cheapest
+        Second most popular

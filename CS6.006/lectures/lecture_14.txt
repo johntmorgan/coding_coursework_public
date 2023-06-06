@@ -1,0 +1,231 @@
+APSP and Johnson's Algorithm
+  Last lecture on graph algorithms
+  Last lecture on weighted shortest paths
+  Slightly different problem today
+    Not single-source shortest paths
+    But all-pairs shortest paths
+  Review single-source shortest path algorithms
+    BFS
+    DAG relaxation
+    Dijkstra
+      Saw last time, gets pretty close to linear
+      |V|log|V| + |E|
+    Bellman-Ford
+      General, but more like quadratic
+      |V| * |E|
+    For sparse graphs, kinda like difference between insertion/selection sort and merge sort
+      So, big bonus on large inputs for using Dijkstra when you can
+  Today, all pair shortest paths
+    Not really complicated
+    Input weighted graph G = (V, E)
+                         w = E -> Z (any integers)
+    Instead of having a single source
+    Output: delta(u, v) for *all* u, v in V
+      or abort if G contains a negative weight cycle
+        But output all distances otherwise
+    These outputs could have size theta(|V|^2)
+      Need to give number for each pair of vertices, can't hope for linear time
+      Can't do better than this
+    Simple way to approach:
+      Just solve single-source shortest path for every vertex in graph
+      Almost brute force on vertices
+      Solve problem in polynomial time
+      O(|V|^2 * |E|) using Bellman-Ford V * O(|V||E|)
+      Can do better in special cases
+        Positive, limited weights use BFS |V| times
+        No cycles, just DAG relaxation |V| times
+        No negative edge weights, |V| * (|V|log|V| + |E|) via Dijkstra
+          Or |V|^2 * log|V| + |V||E| (as written in class) -> |V| * Dijkstra
+      Let's just get a feel here
+        Bellman-Ford looks like |V|^3
+        Dijkstra looks like |V|^2 * log|V|
+          So this is actually really close to linear in the size of the graph
+            Just off by a log factor, just like sorting would entail
+            BF off by a linear factor
+      Goal for lecture
+        Get BF faster by doing something smarter than running individually from vertex
+  Idea
+    If we have a (let's say) directed graph
+      Do not care about undirected graphs
+        If you have an undirected graph, can detect negative weight cycles in linear time
+          Just check each edge and see if it has negative weight
+            Any neg edges, abort
+            No neg edges, just use Dijkstra from each node, barely any time hit
+    So worried about BF on directed graph with negative cycles
+      Example graph
+        Has negative edges (and no neg cycles, but we don't know that)
+      Can we get from O(|V|^2 * |E|) to O(|V|^2 * log|V| + |V||E|)?
+      Let's say we changed edge weights
+        Changing a couple edges, but shortest paths stay the same
+    Idea
+      Make edge weights >= 0
+      While preserving shortest paths
+      Just reweight the edges so that shortest paths in G -> G' same combinatorial structure, but positive
+      If we can do that transformation, then we're done
+        Just run Dijkstra |V| times on the new graph
+        Traverse constructed tree in original graph and compute tree
+  Claim:
+    Can compute distance in G from distances in G' in O(|V| * (|V| + |E|))
+      Less than Dijkstra time
+    How? Have new graph G'
+      For each vertex S, have shortest path tree all things connected to
+      Look at same tree in G
+      BFS or DFS along tree every time traverse edge, compute shortest path distance in |V|
+        Takes |V| + |E|, do for |V| vertices
+        So O(|V| * (|V| + |E|)) is achieved
+  But how do we reweight edges and maintain that shortest path trees are the same?
+    In particular if negative weight cycle, it's impossible to do
+  Claim: Not possible if G contains a negative weight cycle
+    Because if there is a cycle, the shortest path in G for vertices that reach it is infinite
+    So shortest path from s to t (vertices on cycle) is NOT simple
+    But as we proved last time, shortest paths in a graph with >= 0 weights are simple
+      So that's a contradiction, this is not possible
+  Ok, but what do we do for a graph with no negative weights but no negative cycle?
+    How can we transform path weights?
+    Silly idea: only one negative edge weight
+      Add the value of the that weight (or the largest negative) to every edge in graph
+      That's a bad idea (oh - JM)
+      Current shortest path in example: (1, 1, 1) = 3 -> (3, 3, 3) = 9
+      Alternate shortest path: 4 -> 6
+        Now shortest path, that's bad!
+        Does not preserve shortest paths
+        Biases towards taking paths with fewer edges
+    Another idea (key step in Johnson's and many graph transformation algorithms):
+      Look at vertex v
+        Every path going into v goes into V, every path coming out of v comes out of v
+          Well that obvious
+        What if you add number to all incoming edges, and subtract from all outgoing edges
+      Given vertex v, add weight h to all outgoing edges
+        And subtract weight to all incoming edges
+      Claim: shortest paths are preserved under this transformation
+      Proof: If I have a path pi in my original graph G weight w(pi)
+        It goes through v some number of times
+        If it never crosses v, then the path weight is the same, didn't affect edges in path
+        If it goes through v in the middle
+          It hasn't, added number to outgoing edges, subtracted from incoming, cancel out
+        What if v is start or end vertex
+          For any path leaving v, increase weight of path by h
+            All increased by same amount, shortest path preserved
+          For any path ending at v, decrease weight of path by h
+            Again shortest path preserved
+        So that's a pretty cool transformation
+          Can assign for any vertex
+      Define a potential function h that maps vertices to integers h : V -> Z
+        potential h(v)
+        Make a graph G' based on above transformation for each vertex in V
+      Claim: Shortest paths are still preserved
+        Not so hard to see
+        Let's consider a directed path from v0 to vk
+          Any shortest path from v0 to vk remains a shortest path after reweighting
+          Path pi with weight w(pi) = sum i = 1 to k of w(v(i - 1), vi)
+          w'(pi) = sum i = 1 to k of w(v(i - 1), vi) + h(v(i - 1)) - h(vi) = w(pi) + h(v0) - h(vk)
+            Most edge changes cancel out, left with out of first, into last
+            Every path starts at v0 and ends at vk
+            So the total weight could change, but all weights change the same, shortest paths still shortest
+    So now we have this really flexible tool
+      Can add or subtract weight from various edges in localized, constrained way
+      But seems like a powerful transformation technique
+      Can you actually make your graph non-negative this way?
+      Does there exist h such that w'(u, v) = w(u, v) + h(u) - h(v) >= 0
+      Rearrange: h(v) <= h(u) + w(u, v) // looks like triangle inequality
+        But there might not be a vertex from where we can reach anywhere in graph
+          Graph might not be connected
+          Gain no information if distances infinite
+    Idea
+      Add new vertex s with directed 0-weight edge into every vertex v in V
+      Have new graph Gs
+      Run SSSP (Bellman-Ford, could be neg cycles) from S to compute shortest path distance to each vertex
+        If delta(s, v) = -infinity, then negative weight cycle in original graph
+          Abort!
+      Else:
+        Shortest path distances satisfy triangle inequality
+        Reweight with h(v) = delta(s, v)
+        Leads to graph with strictly no negative weights
+        And that's basically it, that's the idea behind Johnson's algorithm
+          Really a reduction algorithm
+          Reducing down from graph where weights could be pos or neg
+          To a graph with same shortest path properties and all have non-negative edge weights
+    Johnson's algorithm
+      Construct Gs from G
+      Compute delta(s, v) for all v in V (e.g. by Bellman-Ford - or i.e. since that's our only option)
+      If there exists a delta(s,v) = -infinity, then abort
+      Else make G' by reweighting each (u, v) in E to w'(u,v) = w(u, v) + delta(s, u) - delta(s, v)
+      Solve APSP on G' with Dijkstra
+      Compute G shortest path distances from G' shortest path distances - linear time for each vertex in graph
+    Correctness is trivial, right?
+      The interesting part was proving that if we had a symmetric outgoing/incoming it preserves shortest paths
+      And realizing that the triangle inequality enforces non-negative edge weights
+      So we find shortest path distances from some other arbitrary vertex
+        And set our potential functions to be those weights
+      Because that weighting preserves shortest paths
+      Have positive edge weights, so Dijkstra applies
+    Running time of algorithm?
+      Construct Gs from G: O(|V| + |E|) - making a new graph of the same size, except added V edges and 1 vertex
+      Compute Bellman-Ford once from s: O(|V||E|)
+      If there exists a delta(s,v) = -infinity, then abort: O(|V|) // just looping over all vertices
+      Reweighting: O|E| time
+      Solving APSP on G' with Dijkstra: |V| * Dijkstra = O(|V| * (|V|log|V| + |E|))
+      Compute paths in G: O(|V| * |V| + |E|)
+      The APSP solve dominates
+        So Johnson's solves signed APSP paths
+        In O(|V|^2 * log|V| + |V||E|) - nearly linear, for sparse graphs, just without the log factor
+        So nice improvement!
+        Avoid a big cost in the contest of negative weights
+        Just run B-F once to see if negative cycle, if so, save a lot of work by stopping early
+      Really heavy work happening
+        Reducing to using Dijkstra or Bellman-Ford
+        Johnson's is really just glue to reduce in a clever way
+    Review how to solve problems with this material in problem session
+    Next: how to design your own algorithm in the context of dynamic programming
+
+Recitation 14
+  Single Shortest Paths Review
+  Four algorithms learned to solve SSSP
+    BFS: Unweighted graph, |V| + |E|
+    DAG relaxation: DAG, |V| + |E|
+    Dijkstra: non-negative graph, |V|log|V| + |E|
+    Any graph: Bellman-Ford, |V| * |E|
+  To solve SSSP
+    Define or construct a graph related to problem
+    Then run a SSSP algorithm in a way that solves the problem
+      Use the fastest one you can
+      Bellman-Ford applies to any weighted graph but is slowest of the four
+  Can also:
+    Count connected components with Full-DFS or Full-BFS
+    Topologically sort vertices in a DAG using DFS
+    Detect negative-weight cycles using Bellman-Ford
+  APSP
+    Given a weighted graph G = (V, E, w)
+      APSP asks for minimum weight delta(s, v) of any path from u to v for every pair of vertices
+      If there is a negative weight cycle, do not return output
+    Can reduce to solving a SSSP |V| times, one for each vertex in V
+      Actually quite good for special types of graphs!
+      Say unweighted, sparse graph (E = O(|V|)
+      Running BFS from each vertex takes O(|V|^2) time
+        Need to return a value for each pair of vertices
+          Which takes omega(V^2) time
+      However for general graphs this approach is slow
+        Bellman-Ford |V| times -> O(|V|^2 * |E|)
+          A factor of |E| larger than the output
+      Non-negative weights
+        Dijkstra |V| times -> O(|V|^2 * log|V| + |V| * |E|)
+        On a sparse graph, only log|V| larger than output
+          While B-F is linear |V| larger
+    How to solve APSP on general weighted graphs faster than O(|V|^2 * |E|)?
+      Reduce APSP to APSP with non-negative edge weights
+      Reweight edges to non-negative values without changing shortest paths
+      Then run Dijkstra |V| times
+      How to change node values?
+        Assign vertex v a real number h(v), change weight of edge (a, b) from w(a, b) to
+          w'(a, b) = w(a, b) + h(a) - h(b)
+        Need to find vertex assignment function(h)
+          Add a new node x to G with a directed edge from x to v for all v in V
+            h(v) = delta(x, v)
+            if delta(x, v) = -inf for any vertex v
+              There must be a negative cycle in the graph, terminate, no output
+      Once reweighted G' construtcted
+        Run Dijkstra |V| times on G'
+      Takes O(|V||E|) to run Bellman-Ford initially
+      And O(|V|^2 * log|V| + |V||E|) to run Dijkstra |V| times
+        So better than O(|V|^2 * |E|)
+      

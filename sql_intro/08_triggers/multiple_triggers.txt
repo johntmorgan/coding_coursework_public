@@ -1,0 +1,144 @@
+Multiple triggers
+  Create triggers on a table whose action time and event are the same
+  Fired in seq specified at creation time
+    FOLLOWS, PRECEDES keywords
+
+  // Lets update gender summary then marital status, then log actions
+
+  CREATE TABLE GenderSummary (
+  TotalMales INT NOT NULL,
+  TotalFemales INT NOT NULL
+  );
+
+  CREATE TABLE MaritalStatusSummary (
+  TotalSingle INT NOT NULL,
+  TotalMarried INT NOT NULL,
+  TotalDivorced INT NOT NULL
+  );
+
+  CREATE TABLE ActorsTableLog (
+  RowId INT AUTO_INCREMENT PRIMARY KEY,
+  ActorId INT NOT NULL,
+  Detail VARCHAR(100) NOT NULL,
+  UpdatedOn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+  );
+
+  INSERT INTO GenderSummary (TotalMales, TotalFemales)
+  Values ((SELECT COUNT(Gender) FROM Actors WHERE Gender = 'Male'),
+     (SELECT COUNT(Gender) FROM Actors WHERE Gender = 'Female'));
+
+  SELECT * FROM GenderSummary;
+
+  INSERT INTO MaritalStatusSummary (TotalSingle, TotalMarried, TotalDivorced)
+  Values ((SELECT COUNT(MaritalStatus) FROM Actors WHERE MaritalStatus = 'Single'),
+       (SELECT COUNT(MaritalStatus) FROM Actors WHERE MaritalStatus = 'Married'),
+       (SELECT COUNT(MaritalStatus) FROM Actors WHERE MaritalStatus = 'Divorced'));
+
+  SELECT * FROM MaritalStatusSummary;
+
+  // Create trigger updating GenderSummary
+
+  DELIMITER **
+
+  CREATE TRIGGER UpdateGenderSummary
+  AFTER INSERT
+  ON Actors
+  FOR EACH ROW
+  BEGIN
+
+  DECLARE count INT;
+
+  IF NEW.Gender = 'Male' THEN
+   UPDATE GenderSummary
+  SET TotalMales = TotalMales+1;
+
+  INSERT INTO ActorsTableLog (ActorId, Detail)
+  VALUES (NEW.Id, 'TotalMales value of GenderSummary table changed.');
+
+  ELSE
+  UPDATE GenderSummary
+  SET TotalFemales = TotalFemales+1;
+
+  INSERT INTO ActorsTableLog (ActorId, Detail)
+  VALUES (NEW.Id, 'TotalFemales value of GenderSummary table changed.');
+
+  END IF;
+  END  **
+
+  DELIMITER ;
+
+  // Now a trigger to update MaritalStatusSummary
+  // Note FOLLOWS keyword placing this after UpdateGenderSummary
+
+  DELIMITER **
+
+  CREATE TRIGGER UpdateMaritalStatusSummary
+  AFTER INSERT
+  ON Actors
+  FOR EACH ROW
+  FOLLOWS UpdateGenderSummary
+
+  BEGIN
+
+  DECLARE count INT;
+
+  IF NEW.MaritalStatus = 'Single' THEN
+   UPDATE MaritalStatusSummary
+  SET TotalSingle = TotalSingle+1;
+
+  INSERT INTO ActorsTableLog (ActorId, Detail)
+  VALUES (NEW.Id, 'TotalSingle value of MaritalStatusSummary table changed.');
+
+  ELSEIF  NEW.MaritalStatus = 'Married' THEN
+   UPDATE MaritalStatusSummary
+  SET TotalMarried = TotalMarried+1;
+
+  INSERT INTO ActorsTableLog (ActorId, Detail)
+  VALUES (NEW.Id, 'TotalMarried value of MaritalStatusSummary table changed.');
+
+  ELSE
+  UPDATE MaritalStatusSummary
+  SET TotalDivorced = TotalDivorced+1;
+
+  INSERT INTO ActorsTableLog (ActorId, Detail)
+  VALUES (NEW.Id, 'TotalDivorced value of MaritalStatusSummary table changed.');
+
+  END IF;
+  END  **
+
+  DELIMITER ;
+
+  // Now let's do an insertion and check order of triggers
+
+  INSERT INTO Actors (FirstName, SecondName, DoB, Gender, MaritalStatus,  NetWorthInMillions)
+  VALUES ('Tom', 'Hanks', '1956-07-09', 'Male', 'Married', 350);
+
+  SELECT * FROM ActorsTableLog;
+    > +-------+---------+-----------------------------------------------------------+---------------------+
+      | RowId | ActorId | Detail                                                    | UpdatedOn           |
+      +-------+---------+-----------------------------------------------------------+---------------------+
+      |     1 |      14 | TotalMales value of GenderSummary table changed.          | 2023-05-24 20:57:59 |
+      |     2 |      14 | TotalMarried value of MaritalStatusSummary table changed. | 2023-05-24 20:57:59 |
+      +-------+---------+-----------------------------------------------------------+---------------------+
+
+  SHOW TRIGGERS;
+
+  // To see info on order of execution triggers, check information_schema database
+
+  SELECT
+   trigger_name,
+   action_order
+  FROM
+   information_schema.triggers
+  WHERE
+   trigger_schema = 'MovieIndustry';
+
+    +----------------------------+--------------+
+    | trigger_name               | action_order |
+    +----------------------------+--------------+
+    | BeforeActorInsert          |            1 |
+    | AfterActorInsert           |            1 |
+    | UpdateGenderSummary        |            2 |
+    | UpdateMaritalStatusSummary |            3 |
+    | AfterActorUpdate           |            1 |
+    +----------------------------+--------------+

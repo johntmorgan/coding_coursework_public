@@ -1,0 +1,23 @@
+1. mysqldump can:
+  Back up single database in MySQL server
+  Back up all databases in server in one go
+  Back up selected tables from database
+  Back up database structure only
+  Back up data only
+
+2. TIMESTAMP
+  Format YYYY-MM-DD HH:MM:SS
+  Can store from 1970 to 2038
+  Automatically converts TIMESTAMP to UTC for storing
+
+3. IFNULL(arg1, arg2)
+  Eval first argument, return second argument if null
+
+4. SELECT IFNULL('',1);
+  Returns ''
+
+5. Display current date and time of server
+  NOW()
+  SYSDATE()
+
+

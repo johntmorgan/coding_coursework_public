@@ -1,0 +1,171 @@
+Computers
+  Almost all have the same working principle invented by Von Neumann in 1945
+  Machine that follows instructions to manipulate data
+  Memory - RAM (random access memory) - where data is stored
+  Processor - CPU - performs calculations on said data
+  Memory
+    Divided into many cells
+    Each stores a tiny amount of data, has a numerical address
+      Read or write one cell at a time
+      Transmit cell addresses through wires as binary numbers
+        High voltage = 1, low voltage = 0
+      Memory can either set or get value
+        Special wire into memory - 1 = write, 0 = read
+    Each cell stores 1 byte (8 bits)
+      Read mode, output in 8 data-transmitting wires
+      Write mode, input through 8 wires
+    Group of wires for same data transmission "bus"
+    Wires used to transmit addresses "address bus"
+    Other transmission wires "data bus"
+    Address bus is unidirection (receive address)
+    Data bus is bid direction (receive, transmit)
+    CPU and RAM constantly exchange data
+      CPU fetches instructions and data from memory
+      CPU stores outputs and partial calculations
+  CPU
+    Has internal memory cells "registers"
+    Performs simple math on data stored in registers
+      Copy data from position 220 into register 3
+      Add number in register 3 to number in register 1
+    Collection of all operations it can do "instruction set"
+    Each operation is assigned a number, stored in RAM
+    Intel 4004 - world's first CPU, 1971
+    Works in a never-ending cycle
+    PC register - "program counter"
+      Stores address of next instruction to execute
+      CPU fetches instruction at address
+      Increments counter by one
+      Executes instruction
+      PC resets to default when computer starts
+        Address of first instruction to be executed
+        Immutable, built-in program
+    CPU can also write new instructions into program counter
+      Can cause branching, jumping elsewhere in memory
+    Space Invaders ~= 3000 machine instructions
+    CPU clock
+      Space Invaders 2MHz
+        ~2m operations per second
+        Instruction = 5-10 operations
+        So old arcade machines, hundreds of thousands of operations/s
+      Desktops, smartphones ~= 2GHz
+        Now multicore - quadcore -> almost 1B operations/second
+    Different CPU architectures explain why PS games don't run on Mac
+      X86 is pretty standard now
+      But smartphones have different, power-efficient
+      Instructions for iMac don't translate to Android phone
+    32-bit vs. 64-bit
+      Intel 4004 was 4-bit
+        Move & operate on 4-bit binary numbers in one instruction
+        Data and address buses with 4 wires each
+      8-bit = DOS computers, Game Boy
+      32-bit
+        Address 2^32, so 4 GB of memory
+      64-bit
+        Dominant today, 17B GB
+    Store numbers left to right "little endian"
+    Store numbers right to left "big endian"
+    Little endian common, but big endian out there
+      Be careful of endianness mismatch
+      Internet traffic standardized on big endian, because common in early routers
+      Data will be garbled if misread
+  Emulators
+    Pretend to have CPU, RAM, and other hardware
+    Very complex, but possible since computers now are far more powerful
+  Compilers
+    Translate programming languages into machine instructions
+      Complex -> simple
+      like 5! -> 5 x 4 x 3 X 2 X 1 -> 5 + 5 + 5 + 5 + ...
+    Universal computing power
+      Must be able to read and write data
+      Must be able to perform conditional branching - jump elsewhere in program
+      That's it!
+      "turing-complete" - given enough time and memory you can compute anything
+      A single CPU instruction move "MOV" is actually turing complete
+        There's a compiler that will translate C into MOV-only binary
+    Operating systems
+      Programs need to talk to OS to run
+      Even with same CPU, programs can't port between Mac/Windows/Linux
+      Different system calls for e.g. printing on screen
+      Compiled code targets specific OS as well as CPU architecture
+    Optimization
+      Modern compilers do lots of it under the hood
+      Recursive vs. iterative factorial solution?
+        Compiler actually rewrites
+        (Unless you pick one specifically not to?)
+        Don't waste time on micromanagement
+    Scripting languages
+      Javascript, python, ruby
+      Never compiled into machine code
+      Interpreter translates code in real time
+      MUCH slower
+      But can run immediately
+        Huge projects can take hours to compile
+        Go was built by Google to compile really fast
+    Impossible to recover source code from compiled
+      Maybe possible someday with AI
+      Can take binary and covert to human readable instructions "disassembly"
+      Can then reverse engineer
+        Suites will even highlight things etc
+        Plenty of companies probably do this to understand competitors
+      Hackers often find where OS or game license is required, modify code to JUMP past it
+      And of course that's how viruses that attack browsers, OSes, etc. come from
+        Stuxnet
+      But without source code, hard to e.g. add a full new feature
+        "Open source good"
+        Makes huge security holes less likely
+  Memory hierarchy
+    CPU only operates on data stored in its registers
+      Limited to <1000 bytes
+    Registers constantly transferring to and from RAM
+      Increasing RAM speed can be a huge boost
+      CPU registers accessed within one cycle
+      RAM is far slower - a ~thousand cycles!
+      CPU sped up a lot (as of 2017), RAM much less so
+      "Processor-memory gap"
+      Instructions are cheap
+      Getting data from RAM is expensive
+      So now computer scientists reducing reliance on RAM
+        Temporal locality - access address, likely access again soon
+        Spatial locality - access address, likely access nearby soon
+        Have not found a good way to store all this stuff in CPU registers
+        BUT
+    L1 cache
+      Extremely fast auxiliary memory integrated with CPU
+        Only slightly slower than registers ~10 cycles
+      10 KB of L1 cache & smart locality usage -> ~half RAM calls avoided
+      Would be great to make even bigger right?
+        At ~50 KB it slows down a LOT
+      So build a second cache - L2
+        ~200 KB
+        ~100 cycles to access
+        90% of RAM calls avoided
+      Now moving to L3 cache as well (20 MB in chip shown in book)
+        Actually takes up most space in modern chips
+      Comparing CPUs, slower clock but larger cache often much better!
+    So, memory hierarchy?
+      Smaller -> faster
+      As we get bigger, get slower
+      RAM = 1000 ns
+      Disk = 1ms
+      External storage = 100ms
+      Tertiary storage = 100s (magnetic tape cartridges, CDs)
+    As of 2017, RAM 1-10GB (now 64 on this machine lol)
+      Not enough to store everything open
+      Idle stuff gets moved to hard disk
+      RAM = "primary memory"
+      hard disk = "secondary memory"
+    Everything has to be copied from secondary to primary to run
+      Including the OS, every time you boot
+    Try to make sure everything you're doing stays in primary
+      Otherwise performance will degrade terribly
+      "Trashing mode"
+      Can make servers crash
+        Very common cause of failure
+    Memory tech
+      Has been hard to improve small/fast memory
+        (Makes sense, baked into chip... or is that an oversimplification? - JM)
+      Slow/large memory has been improving a lot
+        SSDs - faster, more reliable, less power hungry
+          But expensive (though standard now in 2022 - JM)
+          May see hybrid disks (not anymore, really - JM)
+          

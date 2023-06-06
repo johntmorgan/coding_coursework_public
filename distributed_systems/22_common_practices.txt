@@ -1,0 +1,606 @@
+Common practices and patterns
+Not exact prescriptions
+  Basic approaches & tradeoffs
+  Looking at key fundamentals
+
+Creating & parsing data
+  Nodes need to exchange data across network boundary
+  Serialization, deserialization
+    Transform data in memory into format to transmit
+    Translate data back to in-memory rep
+    Nodes need to agree on common way to do it
+    Native support: Java, Python via pickle
+      Convenient
+      Little extra code
+      But lose
+        Maintainability
+          Hard to keep format stable
+        Security
+          Remote sender can send anything they want
+            Remote code execution
+        Interoperatibility
+          Only in specific languages
+          Systems in diff languages can't communicate
+    Libraries
+      Jackson
+        Supports
+          JSON
+          XML
+          etc.
+      Interoperate between different languages
+      Relatively simple rules for serialization
+        Backwards compatibility easy
+      More secure
+        Reduce number of types instantiated during deserialization
+          Only allow whitelist
+      More effor
+        Exact serialization mapping must be defined on each app
+    Interface definition languages
+      Define schema of data type in language-indep way
+        Dynamically generate code in different languages
+        Perform serialization and deserialization when included
+      Allows apps in different languages to interoperate
+        As long as IDL supports languages
+      Reduce duplicate dev effort
+        Must adjust build processes to integrate
+      Ex
+        Protocol Buffers
+        Avro
+        Thrift
+
+Transfer of data
+  Not talking about Ethernet, IP, TCP, UDP etc here
+  Syncrhonous vs asynchronous
+  If synchronous
+    Node A waits for node B response before proceeding
+  If asynchronous
+    Node A goes ahead with other tasks while waiting
+  Synchronous
+    Need to retrieve data for task
+    Need to be sure side-effect performed on node B
+  Async
+    Preferred when node B operation can happen independently
+  Implementing Sync
+    On top of existing protocols
+    HTTP transmit JSON or other serialization formats
+  Async
+    Store incoming reqeusts until processed persistently
+      Message queues
+      Event logs
+
+Async Datastores
+  Message queues
+    Ex
+      ActiveMQ
+      RabbitMQ
+      Amazon SQS
+    FIFO semantics, usually
+    Message deletion options
+      After delivered to consumer
+        At-most-once
+      After consumer acknowledges processing
+        At-least-once
+    Failed consumers
+      Timeout logic to ensure liveness
+        Amazon SQS: per-message visibility
+        Active/RabbitMQ: Connection timeout -> redeliver unack messages
+    Application responsible for ensuring exactly-once
+      e.g. associate with unique identifier
+      Side effects and storage of unique ID must be done atomically
+        ex. store both in same datastore using transaction
+  Event log
+    Still inserted at tail
+    But consumers select any point to consume from
+      Typically a specific index
+    Log is immutable (usually)
+      Messages not removed after processing
+      Garbage collection removes head periodically
+    Consumers responsible for tracking offset with part of log already consumed
+    Ex.
+      Apache Kafka
+      Amazon Kinesis
+      Azure Event Hubs
+
+Communication models
+  Enabled by message queues and event logs
+  Two kinds
+    Point-to-point
+    Publish-subscribe
+  Point-to-point
+    Connect two applications
+  Publish-subscribe
+    More than one app interested in messages from a single app
+    Ex. customer places order
+      Recommend similar products
+      Send invoices
+      Calculate loyalty points
+  Message queue
+    Point to point pretty straightforward
+      Both apps connected to single queue
+    Publish-subscribe
+      Producer manages one queue
+      Consumer also creates own queue
+      Background process forwards from producer to consumer
+        May be provided out of box
+        Ex
+          ActiveMQ -> bridge
+          AmazonSQS -> Amazon SNS
+  Event log
+    Both point to point and publish-subscribe pretty straightforward
+
+Coordination patterns
+  Many systems combine to perform business function
+  Ex. product page
+    Ad system
+    Rec system
+    Pricing
+  Two main approaches
+    Orchestration
+    Choreography
+  Orchestration
+    Single central system coordinates - orchestrator
+    Other systems may be unaware of each other
+  Choreography
+    Systems coordinate without external coordinator
+    Each placed in chain
+    Each aware of previous and next system in topology
+    Comms can be synch or asynch
+  Behavior
+    No side effects
+      ex. displaying a product page
+      Partially fail? Retry fails until succeed
+      Still failing? Abandon, fail request
+    Side effects
+      ex. processing customer order
+      Needs to be performed atomically
+        Do not charge customer and fail to send order!
+    Ensuring atomicity important
+      Two-phase commit
+        Better for orchestrator
+          Coordinate two-phase commit
+      Saga transactions
+        Works well in both patterns
+
+Data Synch
+  Store data in multiple places, maybe different forms
+    "Materialized views"
+  Persistent datastore
+    Cache in-memory for low-latency reads
+    Writes need to update in-memory and datastore
+  Distributed key-value store
+    Provide full-text search
+      ElasticSearch
+      Solr
+  Relational database
+    Graph database too for graph queries (if that's a thing your app needs... JM)
+  Need to keep data in multiple places in sync
+  Dual writes
+    Single app receives updates, writes to all datastores
+    Writes synchronously performed
+      Reply to client after
+    Possible to violate atomicity
+      One updated, other fails
+      System becomes inconsistent
+      How to respond to client?
+    Isolation issues
+      What if two requests updating same item wind up reordered?
+      Different final writes in different datastores
+    Solution
+      Distributed transaction protocol
+      Two-phase commit
+      Two-phase locking
+      Datastores need to support
+      Affects performance and availability though
+
+Event sourcing
+  Another way to synch data
+  Write updates to append-only event log
+  Apps consume events from log
+  Can derive state of system by consuming events from log
+  Save periodic snapshots (checkpoints) to avoid reconsuming whole log
+  Recover from failure, replay log from last snapshot
+  Does not violate atomicity
+    No need for atomic commit protocol
+  No isolation issue
+    All consume events in same order
+  Caveat
+    May consume events from log at different speeds
+    Can be handled
+      If item unavailable, query other datastores
+    Or indexed item may not be stored in authoritative data store
+      Identify and discard items
+      Or concurrency control protocol
+  Problems
+    If always need perfectly up-to-date view of data
+    Conditional update operation (compare-and-set (CAS))
+    Apps consume log asynch, eventually consistent
+
+Change Data Capture (CDC)
+  Another data synch approach
+  Solves asynch consumption of event sourcing
+  Select datastore as authoritative data source
+  Then create event log fom datastore
+    Consumed by all other operations like event sourcing
+    Primary - relational a good fit
+      Strong transactional guarantees
+      Use a write-ahead-log (WAL)
+      Impose order on operations
+        Debezium
+
+Shared-nothing archs
+  Sharing -> coordination
+  Coordination -> lower availability, performance, scalability
+  Reducing sharing is often good
+    Some systems allow each node to process everything
+      "Shared-nothing"
+  How to reduce sharing
+    Decompose stateful and stateless parts
+    Stateless = fully symmetric and homogenous, usually
+    All instances identical, handle incoming stateless request
+    Introduce more instances to handle load with load balancer
+      Instances send heartbeats to balancer
+      Or instances can expose API, balancer sends requests occasionally
+    Balancer also needs multiple redundant nodes
+      Single DNS -> multiple IPs for various load balancer servers
+      Web browsers can rotate between IPs
+      DNS needs to specify small time to live (TTL)
+        Identify new load balancers quickly
+  Stateful systems
+    Harder to manage
+    Nodes not identical
+    Cannot completely eliminate sharing if high avail needed
+    Combo partitioning and replication
+      Partition to reduce sharing and create independence
+      Replicate partitions for fault tolerance
+        Cassandra
+        Kafka
+  Sharing is a spectrum
+    All in one node at one end
+    No transactions across partitions at other end
+  Benefits of shared-nothing
+    High performance
+    Fault tolerance
+    Scalability
+      Easier in stateless, less data transfer
+    Availability
+      Resilient to single and multi-node failures
+      Stateless -> remaining nodes handle more load, or provision more servers
+      Stateful - single-node easy to handle
+        Consensus-based technique for replication
+        Multi-node failures affecting majority -> partition unavailable
+          Rest of partitions still available at least
+    Good fit for problems with fine-grained partitioning
+      Managing user sessoins
+      Managing catalog products
+      Sessions can be assigned unique identifier
+        Attribute can partition them
+      Products can be partitioned with similar product identifier
+    Limited concurrency control
+      Optimistic approaches very common
+        Reduce overhead and contention
+        Include version on every data item
+        Perform read before write to find current version
+        Include current version in update as condition to complete
+  Drawback
+    Reduced flexibility
+    New data access pattern needed? May be tricky
+      Data has already been partitioned a certain way
+      Query by secondary attribute not partitioning key is tough
+    Need to read lots of items with strong isolation? Not good
+    Write multiple items in single atomic transaction? Tough
+      Lots of extra overhead
+
+Leases in Distributed Systems
+  Concurrency reminder
+    Creates a lot of complexity in dist systems
+    Need mechanism to make sure handled safely
+    Inconsistency must be avoided
+  Leader election
+    Only one node at a time
+  Locking simplest solution
+    But subjects to different failure modes in distributed system
+  Locks
+    Mutual exclusion
+      Only one actor performs critical operation at a time
+    Sequence
+      Acquire lock
+      Perform op
+      Release lock
+      Other workers proceed
+    Easy to implement in single app with single memory address space
+      Tough in distributed
+        Partial failure risks main issue
+    Complication
+      Nodes can fail independently
+      Node holding lock might fail before releasing
+        Bring system to halt unless released via e.g. operator
+        Availability down
+  Leases instead of locks
+    Lock with expiry timeout
+    Automatically released by lock management after time
+    Automatic recovery if node with lock fails
+    But adds safety risks
+      Nodes have different clocks, may not agree who has a lock
+      Failure detector cannot be perfect
+      Not only can nodes fail, but network partitions can happen
+      Or even node gets busy doing something else
+      Ex.
+        One node acquires lease
+        Gets delayed
+        Second node acquires lease, performs op and writes
+        First node tries to perform op
+        Informed it does not have lease
+      Fencing solves a lot of issues
+  Fencing
+    Prevents safety risks in leases
+    System can block nodes from malfunctioning
+    Associate every lease with a monotonically increasing number
+    Keep track of which node has performed operation with recent lease
+    If node with older lease performs, reject and notify not lease owner
+    Lock management must be performed collectively by all elements of system
+    Monotonically increasing ID
+      Zookeeper - zxid, znode version number
+      Hazelcast - part of FencedLock API
+    External systems protected need to provide conditional updates
+      with linearizability guarantees
+
+Backwards compatibility
+  How to deploy new software versions with zero downtime?
+    Rolling deployments
+    Sometimes critical, not just nice to have
+    Ex.
+      Mobile apps, user updates whenever they want
+      Can run different versions at any time
+  Implications
+    Two apps communicating with each other
+    Each updates
+    One might want to expose more data
+      Other might not understand new data
+      Interaction fails
+    Backwards compat
+      Interoperability with earlier version
+    Forward compt
+      Interop with later version
+  Not compatible
+    Changing data type of attribute
+    If one changes
+    Partner needs to change to read
+    Only then can newer partner start populating new attribute
+  Tradeoff
+    Agility vs. safety
+
+Maintaining backwards compat
+  Version API of application
+    Compare versions on different nodes
+    Semantic versioning
+      X.Y.Z
+  Protocol negotiation
+    Using explicitly versioned software
+    Ex. on mobile apps
+      Explicit handling of older version of client contacting app
+  X.Y.Z
+    Z: Patch version
+      Backwards compatible bug fix
+    Y: Minor version
+      New functionality added in backwards compatible way
+    X: Major version
+      Backwards incompatible change
+    Easy for clients to understand implications of new version
+    Version usually embedded in binary artifact
+    Consumers take action if includes backwards incompatible change
+  Semantic versioning in live apps
+    Embed major version in address of application endpiont
+    Minor/patch versions in app responses
+    Clients automatically upgrade if desired
+  What if app unaware of what is consuming data?
+    Publish-subscribe model
+    Can embed schema in message itself
+    Can place reference to schema in message
+      Schema stored separately
+      Avoid excessive duplication
+      Kafka: Schema Registry
+    Other issues
+      What if consumer using old schema?
+        Producer needs to make sure usable
+        Or make sure all consumers up on new schema
+      Compatibility of new schema with old data
+        Make sure all old schema messages consumed first
+        Schema Registry allows different categories
+          Producers or consumers upgrade first
+          Can also check for compatibility
+  Two-phase deployment
+    Not only data schema changes break backwards compatibility
+    Slight changes in behavior or semantics
+      Ex
+        Node sends heartbeat every 1s
+        Fail if not received 3s
+        Lot of traffic!
+        Let's increase to 5s/15s
+        Rolling deploy
+        Servers with old version think nodes with new version failed
+        Avoid?
+          Raise threshold 3 -> 15 first
+          Then change behavior
+          Two-phase deployment
+
+Failure handling
+  Failure is norm in dist system
+  Three parts to handle
+    Identify
+    Recover
+    Contain if possible
+  Hardware failures
+    Can be most damaging
+      Data loss
+      Data corruption
+    Probability higher due to large number of hardware components
+    Silent failures biggest impact
+      Ex. node corrupts part of message
+        Recipient receives data different from sender
+        Sender cannot detect
+      Ex. data written to disk corrupted
+        Not detected until later
+  Handling failures
+    Include checksum derived from payload w/messages
+      Request retransmission of data if failure
+    Storing data to mulitple disks
+      Discard corrupted data later
+      Read data from disk with valid checksum
+    Error correcting codes (ECC)
+      When retransmitting, duplicating data impossible/costl
+      Similar to checksums
+      Can be used to directly correct corruption errors
+      Downside: larger than checksums
+        More data to store/transmit
+
+Applying failure handling
+  End-to-end argument principle
+    Fault tolerance can be implemented only with help of
+      applications at endpoints of comm system
+    Ex (classic) careful file transfer app
+      Move file from comp A to comp B w/o damage
+      Many possible hardware failures
+        Computer disks
+        File system software
+        Hardware processors, local memory
+        Communication system
+      Even if subsystems embed error recovery
+        Can only cover lower levels of system
+        Cannot protect from errors at higher level
+      Ex.
+        Disk level error detection & recovery
+        Can't protect if wrong data written to start
+          Must implement at app level
+        Implement redundantly at lower levels
+          But mostly as performance optimization
+          Ex. in networking
+            Link layer provides reliable data transfer (WiFi)
+            Even though also at transport layer (TCP)
+          Not always beneficial
+          Depends on use case
+  Exactly-once guarantees manifest
+    Have run into many times
+    Provide at app level
+    Ex. app A trigger app B op exactly once
+      Each app is a single server
+      Use TCP
+      Reliable data delivery via retries, ack, dedupe
+      TCP still not sufficient
+      TCP layer on app B side receive packet & ack
+        Buffers packet locally to deliver
+        App crashes before receiving from TCP layer
+      TCP layer receives packet and delivers
+        Failure happens
+        App A did not receive ack, attempt to resend
+      TCP reliable only in scope of single connection
+        Cannot detect if packet previously received
+    Takeaway
+      Functionalty for exactly-once - retry, ack, dupe
+        *must* be implemented at app level
+  Mutual exclusion
+    Slightly different shade of end-to-end principle
+    Fencing technique extends to all involved parties in app
+
+Retries
+  How to recover from failure
+  Stateless
+    Pretty simple
+    Nodes identical
+    Client can retry request on any node
+  Stateful
+    More complicated
+    Nodes not identical
+    Must direct retries to correct node
+    Failure of leader node must failover to new leader
+      Same with consensus-based replication
+
+Containing failure
+  Fault isolation
+    Deploy app redundantly in multiple physically isolated facilities
+      Independent failure modes
+    Availability/latency tradeoff
+      Physical isolation increases network distance, latency
+      Cloud providers have multiple physically isolated datacenters
+      All close to each other in single region
+        "Availability zones"
+  Graceful degradation
+    Reduce quality of service to avoid complete failure
+    Say ad service for search engine having issues
+      Show search results without ads instead of error/empty
+  Failure-containing techs
+    Client-side
+    Server-side
+
+Backpressure
+  Resistance to desired flow of data through system
+    Increased latency
+    Failed requests
+    etc
+  Implicit
+    Overloaded by traffic, becomes slow
+  Explicit
+    Rejects requests to maintain qualty during traffic
+  Good for system to know limits
+    Explicit backpressure > implicit, overloaded
+      Avoid unexpected failure modes, harder to deal with
+  Exerting backpressure
+    Load shedding
+      Reject requests above load threshold
+    Selective client throttling
+      Give each client a quota
+      Can prioritize key clients
+    ex.
+      Price serving system
+      Throttle product pages ahead of receiving orders, charging
+    Async message queues
+      Upper bound queue size
+      But note cannot absorb all backpressure!
+        Backlog increases
+        Latency goes up
+        System can even fail
+
+Reacting to backpressure
+  Clients need to be able to react
+  Retry
+    Usually fail -> success
+    Can overload system though
+      Esp if multiple retires for every failure
+  Avoid overloading services
+    Retry at highest level possible
+      Has context, is it worth retrying?
+    Exponential backoff
+      Wait longer and longer between retries
+      Also jitter to avoid spikes
+  Circuit breaker
+    Monitor percentage of failed requests
+      Stop sending when threshold crossed
+    Allows downstream service to recover
+    Reduces request latency when downstream not needed
+  Timeout hint
+    Tell downstream service when response not needed
+      Discard requests stuck in message queues, memory buffers
+
+Tracing
+  Recording program execution
+  Simple
+    Assoc every request with unique id
+    Record logs for most important ops with request id
+    When diagnosing customer issue, filter down to chron log
+      with request assoc
+    Summarize operations program carried out
+  Collating traces
+    Distributed serves through multiple apps
+    Need to pull together to understand how served, why error
+    Problem
+      Each app using own identifiers
+      Processing concurrently
+    Solution
+      Correlation identifiers
+  Correlation identifier
+    Unique id from top-level client request
+    Include in logs along with request id
+      Add timing, get performance data
+  Libraries
+    OpenTracing
+    Zipkin
+  

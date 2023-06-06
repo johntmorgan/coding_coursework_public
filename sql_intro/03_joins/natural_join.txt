@@ -1,0 +1,36 @@
+Natural Join
+  Syntactic sugar
+  Tries to find the natural join by matching columns with same name
+    Inner join
+
+  // Returns actor names with all their URLs
+  // Result is a cartesian product - ActorID and ID do not match
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  NATURAL JOIN DigitalAssets;
+
+  // Now let's make the column names match
+  ALTER TABLE DigitalAssets CHANGE ActorId Id INT;
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  NATURAL JOIN DigitalAssets;
+
+  // Results are the same as doing the inner join
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  INNER JOIN DigitalAssets USING (Id);
+
+  // Natural left and right joins also possible
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  NATURAL LEFT OUTER JOIN DigitalAssets;
+
+  // Nothing magical about the natural join
+  // Just syntactic sugar implicitly finding columns to join the tables
+  // Ideally avoid natural join
+    Hides columns that will be used for join
+    Can subtly introduce bugs
+      What if extra column match introduced by changing a col name?

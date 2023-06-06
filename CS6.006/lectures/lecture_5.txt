@@ -1,0 +1,179 @@
+Linear Sorting
+  Last week, looked at search problem
+    Comparison model -> omega(logn) time to search
+      Decision tree at least log(n) height
+    Do faster using RAM and direct access array
+      Store item with key k, store at location k, find and manipulate in constant time
+        Direct access array not really different than regular array
+          Except now I'm not putting just any item in any slot
+          Instead, where an item now to do with what it is
+        Problem: space
+          If have large positive numbers like MIT IDs
+            Access has to span whole space, can be much larger than n
+      Space O(u) reduce space via hash h(k): U -> N
+        Give a fixed hash function, not going to be good for all inputs
+          Good if inputs well distributed over key space
+            But some inputs will be bad
+        Instead choose randomly from among a large set of functions
+          And if input generator doesn't know what it is
+            Algorithm should behave very well
+      Expected O(1) time dictionary ops - find, insert, delete!
+        Chain lengths where stored collisions wouldn't be very long
+          If constant, don't have to store more than a constant length of things
+            when go to hashed index location
+    Back to chart - set interface
+      Array, sorted array, direct access array, hash table
+      Hash table
+        build - n(e)
+        find(k) - 1(e)
+        insert/delete - 1(a)(e) - amortized, expected
+        find_min/max - n
+        find_prev/next - n
+      Note these are all expected
+        Choose the worst case, find/insert/delete all n
+        Hashed everything to one index - now linear search again
+          Java uses another structure as chain, worst case logn (next week!)
+        But if you absolutely can't afford linear worst case, don't use hash table
+          No hash tables on PSet 2 (yep, that's right - JM)
+        Rebuild hash table, amortized bounds
+          How Python implements dictionaries, sets, even objects when mapping keys to different things
+      If range of keys is small
+        Of if you have the ability to choose the keys you identify with
+        You don't need to bother with hash - use a direct access array
+          A lot of C programmers would do this
+  Today, sorting instead of searching
+    Last week - saw a few ways to do sort
+      O(n^2) - insertion sort, selection sort
+      O(nlogn) - merge sort
+        Seems pretty good but can you better?
+          Not in the comparison model!
+  In the comparison model, nlogn time is optimal
+    Review search binary branching argument - decision tree
+    At least n outputs (+ 1) - order n
+    Height of tree must be at least log(n)
+      log(number of leaves)
+    If decision tree reflects search algorithm
+      Have to go down tree to reach output
+  In the sort problem
+    What is the output? A list
+    Given input A with size n - |A| = n
+      Give you a permutation of that list
+      Where do first, second, third item go to?
+      How many choices for first item?
+        n
+      For second item?
+        n - 1
+      Get n! permutations
+      So for output to be correct, need at least n! leaves
+    So number of leaves = omega(n!)
+    Height of tree = omega(log(n!))
+      And could be different routes to get to same output - so these are lower bounds
+    What is log(n!)
+      Could plug in Sterling approximation -> cnlogn
+    What's another way to do it?
+      Look at your array n * (n - 1) * (n - 2)
+      Half the elements are >= n/2
+      Can certainly lower bound by n/2^(n/2)
+      Take a log of that, asymptotically nlogn
+    So merge sort is the best we can do
+    But last week we did better on search with a direct access array
+    Let's assume the keys you're sorting are unique and in a small range
+    "Direct Access Array sort" - prof likes to call it that, real name coming
+      Instantiate big array from 0 to u - 1 - takes O(u)
+      Look at each item and stick exactly where it needs to go in O(1) time - takes O(1) * n
+      Can walk down list front to back, pick off every item that does exist, stick in array, done - O(u)
+      Total: O(n + u)
+      Great!
+        u is bigger than n because we assume distinct keys
+        But if u is on the order of n, (u = theta(n) then we now have a linear time sorting algorithm
+      But unique key and small u requirement are pretty restrictive - so want to generalize some
+    What if we had a set of keys that's a little larger?
+      Say u < n^2
+      If we instantiated this array... quadratic time algorithm, not helpful
+      But what if we broke this into smaller numbers?
+        Any integer between 0 and n^2 and can be written as k -> (a, b)
+        Let's let a be k when floor divided by n
+        a = k // n - constant time
+        b = k % n - constant time
+        Both numbers are less than n
+        Can recover k at any time
+        k = an + b
+        Decomposed into a base n representation of the number
+          a = 1s digit
+          b = 0s digit
+    Example
+      [17, 3, 24, 22, 12]
+      Have 5 numbers, n = 5
+      Going to represent this as 5 pairs of numbers
+      [(3, 2), (0, 3), (4, 4), (4, 2), (2, 2)]
+      Python: a, b = divmod(k, n)
+      Now have a bunch of tuples I want to sort based on transformation
+      So linear time: could just sort by bigger digits
+        Kind of sorted these things then
+      How to actually sort?
+      "Tuple Sort"/"Excel spreadsheet sort"
+    Tuple Sort
+      Wrong
+        Sort by first digit
+        03 22 32 44 42
+        Then second digit
+        22 32 42 03 44
+        Nope!
+      Also wrong
+        Sort by second digit
+        32 42 22 03 44
+        Then first digit
+        03 22 32 44 42 - oops - not a "stable" sorting algorithm
+          Really need to be using a stable sorting algorithm
+        03 22 32 42 44
+      Now, can you use direct access array sort here?
+        No, the keys are not unique!
+        What if we just put a list here?
+    Counting Sort
+      Still have direct access array 0 -> u - 1
+      Store a pointer to a chain at key k
+        Need to make sure that as inserting, maintaining order they come in
+      Need a sequence data structure to maintain the order they came in
+        Dynamic array or linked list, add things to end
+      When read off the things, look at who has a non empty data structure, read in order
+      From example
+        DAA with 0-4 on the slots
+        Stick attached to slots
+        0 - 03
+        1
+        2 - 22
+        3 - 32
+        4 - 42 - 44
+      How long does this take?
+        Takes order (n + u)
+        Need to able to append to chains in constant time, cycle over them in linear time
+        But if you have that, you get n + u
+        Linear time sorting on n^2 size numbers
+        But what if you have n^3
+        Or up to size = n^3
+          Divide off an n
+          Then divide it again, 3 digits
+          Tuple sort by increasing priority
+          Linear work per digit
+    Radix Sort
+      Break up integers max size u into a base-n tuple
+      # of digits = logn(u)
+      Tuple sort on digits using counting sort from least to most significant
+      Running time
+        Break up and create tuples - n + nlogn(u)
+      Tuple sort
+        n + nlogn(u)
+      For what values of u is this linear time?
+        If u < n^c for some constant c
+        Then c comes out of algorithm, linear time
+      So that's how we can sort in linear time if things are only polynomially large
+
+  Recitation notes
+    Basically just repeats class notes - got radix sort working and tested it
+    Radix sort on negative numbers?
+      Shift all positive, Radix sort, then shift back afterwards
+    Linear time to sort a set of n strings, each having k english chars
+      Break up by letter - representing with number and sort from last to first
+      k rounds of counting sort
+      each round takes theta(n) time
+      Running time is theta(nk)

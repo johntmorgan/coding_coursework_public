@@ -1,0 +1,41 @@
+Ternary operators
+  Shortcut to if condition
+
+  <Condition> ? <Expression1> : <Expression2>;
+
+  variable = variable === 0 ? 1 : 0;
+
+  Ternary operators are right-associative
+  Chain as follows (Can write whole thing in a single line too)
+
+  variable = 0;
+  variable = variable === 0 ? 1 // if value is equivalent to 0, assign it 1
+      : variable === 1 ? 0 // otherwise if value is equivalent to 1, assign it 0
+      : variable === -1 ? 0 // otherwise if value is equivalent to -1, assign it 0
+      : variable; // Finally, if no case passes, assign it back the original value
+  console.log('variable:', variable);
+
+  Nest in arithmetic expressions
+
+  let num = -1;
+  let incr_abs = 1 + (num < 0 ? num * -1 : num);
+
+  Printing
+
+  let test = false;
+  console.log( test ? "Test Passed!" : "Test Failed!");
+
+  Replace regular if condition
+
+  let check = false;
+  // Regular if condition
+  if (check)
+    console.log("True branch");
+  else
+    console.log("False branch");
+
+  // Ternary operators alternate
+  check ? console.log("True branch") : console.log("False branch");
+
+  Limitation of ternary operators: cannot leave else condition empty
+    Must populate both true and false branches

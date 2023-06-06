@@ -1,0 +1,132 @@
+Achieving atomicity
+  Guarantees either all of transaction ops performed or none of them
+    No partial failures for app dev to worry about
+  Hard to achieve generally
+  Even harder in distributed systems
+  Why hard?
+    Components can fail unexpectedly
+      Software
+      Hardware
+    Even writing bytes to a file requries work to avoid corrupted state
+  How
+    Journalling/write-ahead logging is common
+      Metadata about operation written to separate file
+      Markers denote whether completed or not
+      System can identify which ops in progress during failure
+        Undo and abort or complete
+      Used extensively in file systems and DBs
+  Distributed systems
+    More complicated
+    Components separated by slow, unreliable network
+    Need to ensure operation atomic across all nodes or none
+    2PC, 3PC, and quorum-based commit protocol
+    Going to discuss solutions in improving, chronological order
+
+2-Phase Commit - 2PC
+  Just sending a message to involved nodes not enough
+    Network unreliable
+    Node initiating would not know whether executed successfully
+  Simple idea: add another round of messages to check result on nodes
+    2PC
+  Coordinator coordinates phases of protocol
+  Particpants are all nodes in transaction
+  Voting phase
+    Send transaction to all participants
+    Participants execute up to commit
+      Usually with locking like 2-phase locking
+        So participants cannot be forced to change minds
+    Respond to coordinator with vote - yes/no
+  Commit phase
+    Coordinator gathers votes
+    If all vote yes, then message again instruction to commit
+    If one vote no, instruct to abort
+    Participants reply with acknowledgment
+  Coord and participants use write-ahead log
+    Persist decisions during steps to recover in case of failure
+  Coord uses timeout during first phase
+    Participants do not apply timeout while waiting for coord message
+  Handling failures
+    Participant fails in voting phase
+      Coord timeout waiting, assume No vote, abort
+    Participant fails in commit phase
+      Protocol concludes without node
+      If node recovers, identify pending transaction
+        Communicate with coord about result, conclude same way
+        If trans was successful, crashed participant finds out and commits
+        Does not allow unilateral abort
+    What if participant handles when try to commit (out of disk space)
+      Participants need to write all data on disk during first phase
+        Just flip a bit during second phase
+    Network failures
+      Similar results to previous
+    But single point of failure: coordinator
+    Blocking nature of 2-phase commit
+      If coordinator goes down at specific piont, whole system can halt
+      Coordinator fails after sending message to participants
+        All participants block
+      Coord failures decrease availability significnatly
+      If coord disk cannot be recovered, result of pending transactions not recovered
+        Manual intervention needed to unlock
+  Widely used despite blocking nature
+    Specification: eXtended Architecture (XA)
+  2PC protocol satisfies safety property
+    All participants arrive at same decision
+    Does not satisfy liveness property, will not always make progress
+
+3-Phase Commit (3PC)
+  Would like participants to be able to take lead if coord goes down
+    Not easy
+    Participants not aware of state of other participants
+  Split voting phase into 2 subrounds
+    Coordinator communicates votes result to nodes
+    Then waits for acknowledgment
+    Then proceeds with commit or abort
+    Participants know results from votes, complete protocol in case of coord failure
+  3PC increases availability and prevents coord from being point of failure
+    Comes at cost of correctness, vulnerable to network partition
+      Coord sends prepare to commit to some but not all and then fails
+      Unlikely failure case but disastrous consequences
+        Atomicity violated
+  Satisfies liveness at expense of safety
+
+Quorum-based commit protocol
+  Cope with partition without compromising safety
+  Significantly more complex than first two
+    Original paper covers edge cases, high level only here
+  Commit quorum (Vc) and abort quorum (Va)
+  Node can proceed with committing only if commit quorum formed
+  Node can proceed with aborting only if abort quorum formed
+  V = total number of participants
+  Va + Vc > V
+  Three different subprotocols
+    Commit protocol when transaction starts
+    Termination protocol when network partition
+    Merge protocol when recover from network partition
+  Commit protocol
+    Very similar to 3PC
+    Coord waits for Vc acknowledgments to proceed with committing
+  Termination protocol
+    Surrogate coordinator selected by participants with leader election
+      Which leader election algo is irrelevant
+        Even electing multiple leaders works
+    Elected coordinator queries nodes of partition for status
+      If at least one participant has committed or aborted
+        Coordinator commits or aborts transaction
+      If at least one participant prepare to commit
+        + Vc participants waiting
+        Send prepare to commit
+      If no participant at prepare to commit
+        + Va participants waiting
+        Send prepare to abort
+    Wait for acknowledgments, attempt to complete similar to commit
+  Merge protocol
+    Simple
+    Leader election amongst leaders of merged partitions
+    Execute termination protocol
+  Satisfies safety property
+    Does not satisfy liveness property
+    Always degenerate, extreme failure cases
+      Multiple, continuous, small partitions
+    Much more resilient than 2PM and other protocols
+    Can make progress in most common failure situations
+  

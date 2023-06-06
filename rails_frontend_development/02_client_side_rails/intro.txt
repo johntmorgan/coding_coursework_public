@@ -1,0 +1,39 @@
+Client-side rails
+  Rails is server-side framework
+  Has tools that make it easier to deliver client-side to browser
+  Client-side tools have gotten more powerful but complicated over time
+  Rails still has opinions about how to handle
+  A lot of tools in JS ecosystem for working with Rails
+  Focus on 2 - work well, support simple logic
+    Stimulus
+      From same Basecamp team that supports Rails
+      Extension to HTML markup writing
+      Well suited to small interactions, little state management
+        Or where state is mostly managed by server app
+    React
+      Replaces HTML with JS/HTML hybrid JSX
+      Automatically calls DOM when data changes
+      Suited for more complicated, larger interactions
+      State stored on client
+  Two foundational tools
+    TypeScript
+      Extends JS by allowing specification of type
+        Variables
+        Class attributes
+        Function arguments
+        Function return values
+      Catches mistakes for you
+      JS with a few extra features
+      Will explain as-needed to start
+        Then more detail in later chapters
+    Webpacker
+      Puts these pieces together
+      Rails tool
+      Sensible defaults & useful conventions for webpack
+      webpack takes all code - JS, TS, CSS, images
+        Structure how please, package for browser
+
+Start
+  TypeScript w/o framework
+  Get used to TypeScript
+  Illustrate limitations of framework-less development

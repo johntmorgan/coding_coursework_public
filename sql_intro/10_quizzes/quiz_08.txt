@@ -1,0 +1,44 @@
+1. b is a column name in this statement
+CREATE VIEW a (b) AS SELECT c FROM d;
+
+2.
+CREATE VIEW A AS
+    SELECT num
+    FROM xyz
+    WHERE num > 10;
+
+CREATE VIEW B AS
+    SELECT num
+    FROM A
+    WHERE num<20
+    WITH CHECK OPTION;
+
+INSERT INTO B (num)
+VALUES (5);
+
+// Fails because view A condition blocks - WITH CHECK OPTION defaults to cascading
+
+3. About WITH CHECK OPTION
+
+The WITH CHECK OPTION clause prevents inserts of rows for which the WHERE clause
+in the select_statement is not true.
+
+The WITH CHECK OPTION clause prevents updates to rows for which the WHERE clause
+is true but the update would cause it to be not true
+
+4. ALGORITHM can take 1 of 3 values - MERGE, TEMPTABLE, UNDEFINE
+
+  CREATE ALGORITHM=MERGE VIEW ActorView(
+     Id, firstName, lastName, birthday) AS
+  SELECT 
+     ActorId, FirstName, LastName, Dob
+  FROM Actors;
+
+  SELECT * FROM ActorView
+  WHERE lastname < 'J';
+
+  // MySQL will combine the input query with the SELECT statement of the view definition
+    into a single query and execute the query to get the result.
+
+5. Which statement is true about tables and views?
+  A table is an independent object and a view is a dependent object.

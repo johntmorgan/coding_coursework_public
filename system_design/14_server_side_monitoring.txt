@@ -1,0 +1,135 @@
+Server-side monitoring
+Monitoring requirements
+  Crashes in critical local processes on server
+  Anomalies in CPU/memory/disk/bandwidth on server processes
+  Overall server health
+    CPU/memory/disk/bandwidth
+    Average load
+  Hardware component faults
+    Memory failures
+    Failing or slowing disk
+  Server ability to reach critical services out of server
+    Network file systems
+    etc
+  Data center hardware
+    Network switches
+    Load balancers
+    etc
+  Power consumption
+    Server
+    Rack
+    Data center
+  Power events
+    Server
+    Rack
+    Data center
+  External clients
+    Routing information
+    DNS
+  Network links & path latency across data centers
+  Network status at peering points
+  Overall service health across data ceters
+    e.g. CDN and performance
+
+Monitoring should be automated
+  Identify anomalies
+  Inform alert manager
+  Show progress on dashboard
+  ex. cloud services
+    AWS
+    Azure
+    Google
+
+Building block:
+  Blob storage
+    To store info about metrics
+
+High level design
+  Storage
+    Time-series database for metrics data
+  Data collector service
+    Fetch data and save in storage
+  Querying service
+    API query on time-series database
+
+Storage
+  Time-series database to store locally on server where service running
+    Integrate with separate storage node
+    Blob storage for metrics
+  Separate storage area with rules and actions
+    "Rules database"
+
+Data collector
+  Update about several data centers
+  Choose a pull strategy
+    Use a distributed messaging queue
+    Message in queue: service name, ID, short log description
+      Identify metric and info for service
+  Ex DigitalOcean
+    Pull-based approach
+    Monitors millions of globally dispersed machines
+  Why not push approach?
+    Can easily overwhelm network if care isn't taken
+      Tons of microservices sending metrics constantly
+    Also need to install daemons on each target to send metrics
+      More work
+
+Service Discoverer
+  Monitoring system finds services this way
+  Use a discovery solution
+  Integrate with
+    EC2
+    Kubernetes
+    Consul
+
+Querying service
+  Access database, fetch relevant query results
+    Need to e.g. view node's memory usage
+  Alert manager
+    Send alerts on violation of set rules
+      Email
+      Slack message
+  Dashboard
+    Display required information
+      Say # requests in last week
+
+System so far
+  Pros
+    Ensures smooth operation, high avail
+    Keeps eye on impending problems
+    Pull approach does not overload network
+  Cons
+    *Seems* scalable
+      Managing more servers to monitor can be problem
+    Server running monitoring can be SPOF
+      Ok, add a failover nerver
+      Need to maintain consistency with failover
+      Will still hit a scalability ceiling eventually
+    Keeping data forever may not be feasible
+      Need a delete policy
+
+Push-based strategy
+  Let's add this
+  Still use pull for some servers
+  Assign monitoring servers for hundreds/thousands more
+    1 server/5000 servers
+    "secondary monitoring servers"
+  Secondary servers push to primary data center server
+  Primary data center server pushes to global monitoring service
+  Hierarchy again - very common way to scale in system design
+  What happens if primary/global go down
+    Store data locally, wait for recovery
+    Limit though - delete previous data or don't store more
+      Need to create policies
+
+Visualizing data
+  Use a heat map to display info about thousands of servers compactly
+  Sort by data center, then cluster, than row
+    Clear if problem at specific level
+  Can use one bit - one for live, zero for dead
+    (But there are intermediate yellow colors in the example... - JM)
+    If so 1m servers -> 125kb of data
+  Use heatmaps for other resources too
+    Filesystems
+    Networking switches
+    Links

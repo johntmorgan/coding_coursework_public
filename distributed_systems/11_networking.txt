@@ -1,0 +1,479 @@
+Networking
+So far have treated connections between nodes as a black box
+Now going to examine network components
+  Facilitate communication between nodes
+Applications rely on well-specified protocols
+  Can build without understanding in many cases
+  But key to creating scalable, efficient, fault-tolerant systems
+    Troubleshoot efficiently
+Fallacies review
+  Network is reliable
+  Latency is zero
+  Bandwidth is infinite
+  Topology doesn't change
+  Transport cost is zero
+  Network is homogenous
+Many different protocols
+  Going to just focus on internet protocol suite
+    Problems solved are general
+    Principles in other models like OSI
+Internet protocol suite
+  Layered architecture
+  Functionality divided into spearate layers
+  Each layer service to layer above and uses services below
+  Layers
+    App layer
+    Transport layer
+    Network layer
+    Link layer
+    Physical layer
+  When receiving data from layer above, a layer wraps with metadata for protocol
+    Metadata = "Headers"
+    Data = "Payload"
+    "Encapsulation"
+  When passing data up to higher layers
+    Payload extracted and handed off
+    "Decapsulation"
+Physical layer
+  Transmits data in form of raw bits over physical link between nodes
+  Line coding
+    Bits -> voltage, current, or photons
+    Unipolar
+      0 = zero voltage
+      1 = positive voltage
+    Polar
+      0 = negative voltage
+      1 = positive voltage
+    Bipolar
+      0 = zero voltage
+      1 = pos or neg voltage
+    Manchester code
+      0 = low to high transition
+      1 = high to low transition
+    Each encoding has pros and cons
+    Pick depending on other factors like transmission medium
+  Modulation/demodulation
+    Mixing signal corresponding to data to transmit
+      "Data signal", "message signal"
+    With separate period signal "carrier signal"
+    Multiple data signals can be sent over channel if use carriers at slightly different freqs
+    Antennas 1/10th signal wavelength, use high frequencies to save $$
+    Three basic types
+      Amplitude modulation
+      Frequency modulation
+      Phase modulation
+  Carrier sense and collision detection
+    Determine if another device transmitting
+      If so, if collision and loss of data
+  Auto-negotiation
+    Make 2+ sides of network connection agree on comm params
+      Speed and transmission mode
+    In practice: devices advertise what can support
+      Highest performance supported selected
+  Transmission medium
+    Guided media
+      Physical path or conductor
+      Wired communication
+        Twisted pair cabling
+          Two conductors in circuit twisted together, improve electromagnetic compatibility
+          Reduce EM radiation
+          Reduce EM interference from other sources
+          Made of copper usually
+        Coaxial cable
+          Inner conductor, concentric conducting shield
+          Separated by insulating dielectric material
+        Fiber-optic cable
+          Optical fibers, carry light
+          Coated with plastic, contained in protective tube for environment
+    Unguided media
+      Through air, no direction
+      Wireless communication
+        Radio waves
+        Microwaves
+        IR light
+  Techs
+    DSL
+    ISDN
+    Bluetooth
+    USB
+  Ethernet
+    IEEE 802.3 standard
+      Physical layer specs, link layer protocols
+      Various physical media - coaxial cable, copper wire, optical fiber
+    10BASE-2
+    10BASE-T
+    10BASE-F
+      Number = speed (10MBit/s)
+      Last - medium
+  Wi-fi
+    IEEE 802.11 standard
+    Achieve wireless communication
+  Physical layer proved to computer through network interface card
+    Typically MAC address
+      Unique ID for device in local network
+
+Link Layer Services
+  Responsible for moving packet of info from node to neighbor
+    Neighbor = connected through single link, wired or wireless
+  Framing
+    Encapsulate payloads from higher stack layer
+  Link access
+    Many nodes may access a link, need to not transmit at same time
+    Medium access control (MAC) protocols
+      Channel partitioning split into parts used concurrently
+        Time division multiple access
+          Access in different time slots
+        Frequency division multiple access
+          Transmit on specific frequencies
+        Code-division multiple access
+          Use different encoding schemes
+      Random access
+        Any node can transmit at full rate whenever
+          Transmissions may collide, retransmission may be required
+        ALOHA protocol
+          When have data, transmit
+          If receive while transmitting, then transmit again later
+        CSMA
+          Listen to channel first, transmit only if idle
+          Multiple variants as far as collision handling (not in course)
+      Taking-turn
+        Polling
+          Designate leader node, which passes sequentially through others
+        Token-passing
+          No leader node, pass a token that gives access
+  Reliable delivery
+    Guarantee transmitted data received by destination
+      Not all link layer protocols provide
+    Often provided in links prone to high error rates, e.g. wireless
+      Not in low error rate wired links to save money
+    Achieved by recipient transmitting acknowledgment, sender retrying
+  Error detection
+    Errors due to signal attenuation, EM noise
+    Data sent alongside redundant data used to determine if changed in any way
+      Checksums
+        Data treated as sequence of k-bit integers, summed to produce checksum
+      Cyclic redundancy checks (CRC)
+        A list of bits appended to data
+        Resulting number exactly divisible by pre-agreed number
+  Contains some parts implemented in hardware - network interface card
+  Contains parts in software - device drivers
+    Higher levels exclusively software - OS kernel, third-party libraries
+  Forms a bridge between hardware and software
+    Though hardware is evolving rapidly and doing more - TCP offload engine
+
+Link Layer Protocols
+  Ethernet
+    Initially connect multiple computers over shared coaxial cable
+      "Bus topology"
+      Any data transmitted by node received by all others on cable
+      Network card read metadata of each packet
+      Pass packets to processor where addressed
+      Each card has 1+ unique addresses - MAC (media access controller)
+        48-bit number allocated by IEEE
+    Every frame has source and destination MAC
+      Also a broadcast address FF:FF:FF:FF:FF:FF accepted by all nodes
+    Preamble
+      Static value - synchronize clocks of sender and receiver
+      EtherType - identifier - network-layer protocol to pass to
+      Payload - carries data
+      CRC - used to detect bit errors
+    If two stations transmit at once, may cause collision -> corrupt data
+      CSMA/CD - early version of CSMA - recover and transmit successfully
+        Length limits on cable - keep propagation delay and signal degradation to tolerable levels
+    Bus topology -> star topology
+      Multiple nodes connected to hub with twisted-pair copper wire
+      Hub physical layer device, acts on bits not frames
+      When bit arrives, hub recreates, boosts signal, transmits to other interfaces
+      Remains a shared-broadcast medium, CSMA/CD
+      Better fault tolerance, disconnect faulty peers
+    Switches
+      Replaced hubs
+      Receive link-layer frames
+      Forward to specific addresses
+      Maintains switch table mapping MAC addresses to corresponding interface
+        Automatic, no config or extra protocols
+      Switch table starts empty, filled by inspecting source addresses of incoming frames
+      If table does not have destination, forward to all interfaces "flooding"
+      No possibility of collistion
+        No need for CSMA/CD
+        Bandwidth used more efficiently
+        Overall traffic reduced, performance up
+  Wifi
+    Two basic modes of operation
+      Ad-hoc
+        Each node transmits directly to other nodes
+      Infrastructure
+        Comms through central access point (AP)
+        AP connects wireless stations to wired network
+        Used more widely/everyday
+    Infrastructure cot'd
+      Basic service set - group of stations all connected to same access point
+      Each access point has Service Set Identifier (SSID)
+      APs periodically transmit special messages "beacon frames"
+        Contain AP SSID and MAC address
+        Wireless station listens and selects or presents to user
+          "Passive scanning"
+      Wireless device can also perform "active scanning"
+        Broadcast probe frame received by all access points within range
+        APs respond to probe request frame with probe response frame
+      Device sends assoc request frame, AP responds with assoc response frame
+      Once assoc complete, device sends and receives data frames to and from network
+    Multiple access protocol needed to coodrinate
+      802.11 uses CSMA with collision avoidance (CSMA/CA)
+        Costly to build detection hardware
+    Wireless links suffer more from signal attenuation & interference
+      Acknowledgment protocol used
+      Stations introduce additional delays when channel not idle - collision avoidance
+    Hidden terminal problem
+      Two stations can't detect each other - too far but both still within AP range
+      Station may need to send a Request to Send (RTS)
+        receive back Clear to Send (CTS) if no other transmitting
+    Types of frames
+      Data - transmite data payloads
+      Control - facilitate exchg of data frames, CTS/RTS, acknowledgement
+      Management - maintain/discontinue comms - beacon, probe requests
+    Frames share many similarities with Ethernet
+    Payload contains payload of encapsulated higher-level protocol
+      and CRC to protect against transmission errors
+    Frame contains 4 MAC addresses
+      Direct receiver - access point (AP)
+      Direct transmitter - source station
+      Indirect receiver/transmitter - destination station
+    Frame also contains sequence numbers for deduplication purposes
+      Duration field for reserving channel
+      Frame control field with various subfields
+        Protocol version
+        Frame type
+        etc.
+
+Network layer
+  Link layer transfers packets between directly linked nodes
+  Network layer transfers packets between nodes not directly linked
+    May belong to different networks
+  Two main divisions
+    Control plane
+      Gathers all necessary meta-information needed to route packets
+    Data plane
+      Routes data packets between nodes, leveraging info provided by control plane
+  Protocols
+    Many different ones - just focusing on most central
+    MAC address assigned statically, not hierarchical - unsuitable for routing
+    IP address used for routing instead
+  IP addresses
+    Assigned statically by admin or dynamically by network
+    Hierarchical
+      Each address part of a network that can contain multiple addresses
+      Network can be part of a larger network
+    Evolved with time to address user needs
+      IP v4 -> 32-bit number
+      IP v6 -> 128-bit number
+        Adoption of v6 is ongoing process
+        Using v4 in examples here
+    Structure: four decimal numbers representing 8 bits, 0-255 range
+      Separated by dot
+      Ex. 172.16.254.1
+    First part contains higher-order bits
+      Common for all addresses in network
+      Network prefix
+    Second part identifies node in network
+  Networks connected via routers
+    Route packets properly across networks to reach destination successfully
+  IP Protocol central in network layer
+    IP delivers datagrams from one node to another
+    Datagrams encapsulated in link layer frames (e.g. Ethernet frames)
+      Composed of set of headers & payload crresponding to packet of next layer in stacks
+    Main headers are source and destination IP address
+      Protocol of higher layer
+      Version of IP protocol used
+  Address resolution protocol (ARP)
+    Nodes addressed globally via IP addresses
+    For a packet to reach a node, neighboring node must know MAC address
+    ARP maps IP address to MAC address
+      Whether ARP is link-layer or network layer is controversial, debated
+        Network layer because packets encapsulated in link-layer protocol frame
+        Link layer because not routable, only exchanged within single network
+      Presented as network layer because authors believe easier to understand
+    Node sends ARP request message to all nodes locally
+      Using broadcast MAC as destination address, including IP address in request
+      ARP encapsulated in link-layer frame
+      In case of ethernet, frame's payload ARP message, type correspond to ARP type (0x0806)
+      Will skip structure of message
+    Each node receiving ARP request check if IP address matches theirs
+      Will reply with MAC if matches
+      Nodes store mappings in local ARP table to avoid repetitive requests
+  Across multiple networks
+    Routers maintain special routing tables
+      Info on how specific IP addresses can be reached
+    Routing tables
+      Network destination and network mask - fields form a network identifier
+      Gateway
+        Next node to send packet to reach final destination
+          Can be IP address of a router
+          Can have value 0.0.0.0 if network accessible locally
+        Interface
+          Network interface through which gateway can be reached
+      Every time a node needs to send a network layer packet
+        It performs a lookup on routing table with dest IP of the packet
+        Then packet sent through correct interface to corresponding gateway
+      Populated when routers exchange info about IP addresses reachable through them
+        Routers then form a map of network
+        (Process is complex)
+  Autonomous system
+    Multiple nodes can be grouped into an autonomous system (AS) in practice
+      Routers under the same administrative control
+    Intra-AS routing protocol
+      Routers in AS share information about each other
+      Ex. open shortest path first protocol (OSPF)
+        Layer to which this belongs also controversial
+        Encapsulated inside IP, but OSPF packets only flow across single link
+          Do not traverse routers to travel more than one hop
+    Inter-AS routing protocol
+      ex. border gateway protocol (BGP)
+        External BGP (eBGP)
+          Runs between routers in different autonomous systems
+        Internal BGP (iBGP)
+          Runs between routers in same autonomous system
+      BGP run by most ISPs to establish routing between each other
+  Limitations
+    Does not provide guarantees message from node eventually reach destination
+      Router may fail
+      Router may drop packet due to network congestion
+        Routers store packets in memory until transmission
+        Too many packets arriving = router forced to drop some
+        Queueing algorithm governs how dropped
+          FIFO
+          Priority queue
+          Weighted fair queue
+    Does not provide ordering guarantees
+      Message sent later may arrive earlier
+        May follow different paths
+        Routers may not preserve packet order
+    Does not provide strict throughput or timing guarantees
+      Apps cannot reserve resources for specific period of time
+      Apps must use whatever bandwidth available at transmission time
+    This comes down to IP protocol being packet-switched protocol
+      There are other circuit-switched protocols - but have their own drawbacks
+
+Transport layer
+  Network layer provides node-to-node communication
+  Transport layer provides app-to-app communication
+    Can be many different apps in node want to communicate with apps in different node
+  Achieved via concept of ports
+    Each node may have many different apps running and listening on diff ports for network data
+  User datagram protocol (UDP)
+    Simple protocol, apps can use to send messages called datagrams
+    Connectionless protocol - send without setting up channel first
+      Just specify IP address of destination node and port
+    Composed of
+      Payload corresponding to app message
+      Header: source & destination ports, length of datagram, checksum (optional)
+  Transmission control protocol (TCP)
+    More complex, provides more services
+    Connection-oriented - client-server conn needs to be established
+    3-way handshake - establish connection and several params
+      Size of in-memory buffers - temp hold received data before delivered
+      Start: client sends request to initiate connection (SYN)
+      Server responds with confirmation, request revers connection (ACK & SYN)
+      Client responds with confrim (ACK)
+    Data transfer as stream of bytes
+      App needs to indicate beginning and end in stream
+        Delimiters or special headers indicating message size
+    Benefits
+      Reliable, in-order delivery
+        Achieved through use of sophisticated ack protocol
+        Sender tags data with seq number aligned with number of bytes in payload
+        Rec sends back ack indicating sequence up to which successfully received
+        Send resends data not ack after period of time
+        Rec able to deliver data to app in order using sequence numbers
+      Flow control and congestion control
+        Rate of data transmission carefully managed to avoid rec/network overload
+        Flow control: recip includes size of receive bufffer in ack
+        Cong control: sender adjust based on perceived packet loss
+          Packet loss hard to identify precisely at two ends
+          Nodes use heuristics to get approx - lost if not ack in time window
+    Details
+      Not getting into them - TCP packets much more complex than UDP packets
+      Header contains lots of additional fields for functionalities
+        Sequence number, ack number, window size, etc.
+  Why TCP > UDP: provides more services as listed above
+  Why UDP > TCP
+    TCP requires connection first - heavyweight, slower
+    Reliable/in-order - memory overhead, network traffic, retries expensive
+    TCP data is byte stream without boundary indicators
+      App layer needs to add boundary indicators with parsing, buffering
+    UDP provides better control over when message sent
+      TCP must abide by several params
+      Nagle's algo can combine several small outgoing packets
+  Which protocol?
+    Real-time video & audio - UDP - can tolerate packet loss, packets late ok
+    Fast, small exchange - UDP - faster this way
+      Ex: DNS
+    All data in order - TCP
+      Email transfer (SMTP)
+      File transfer (FTP)
+      Web content (HTTP)
+
+Application layer
+  Relies on transport layer for data transfer
+  Defines syntax and semantics of data & protocol of exchanges between two sides
+  Most crowded layer, vast number of protocols
+    Let's look at 2 that form foundation of WWW
+      HTTP
+      DNS
+  DNS
+    Map human-friendly names to IP addresses
+      Easy for humans to remember
+      Agnostic to actual network topology
+    Users
+      Clients resolve name into IP address to send packet
+      Servres store and serve information to clients
+    DNS specifies protocol
+      Defines data structures servers can maintain
+      How clients can request data they need
+      A record: contains IP address for associated domain name
+    Client sends DNS query message to DNS server
+      Contains name to resolve, record type requested
+    DNS servers form hierarchy with three basic layers
+      Client needs IP addresses of root servers
+        Published by ICANN as "root zone file"
+    Normally DNS uses UDP as a transport protocol
+      Resolving domain name
+        Single UDP reqeust from client
+        Single UDP response from servers
+  HTTP
+    For distributed, collaborative hypermedia information systems
+    In other words: distributing info throughout internet
+      Each piece of info can link to a different piece of info
+    Functions as request-response protocol between clients and servers
+      Client can be browser requesting web page
+      Server can be computer hosting webpage
+    Uses TCP as transport layer protocol
+    Uses own headers to specify message size
+    Many versions
+      HTTP/3 uses UDP mostly for performance reasons
+    Request message
+      Several parts separated by <CR><LF> - carriage return, line feed
+      Request line with reqeust method & location
+      Header fields like host
+      Empty line
+      Optional message body, populated if data submitted to server
+    Response
+      Again separated <CR><LF>
+      Status line - code and message - success/failure and why
+      Header fields - e.g. Content-Type
+      Empty line
+      Optional message body - send data if needed
+
+Taking a step back
+  Lots of complexity underlying simple request from web browser to say Google
+  Many moving parts involved in transfer
+    Same applies to most distributed systems these days
+      Work on top of same or similar architecture
+  Diagram
+    When layers missing from node, node agnostic to layer
+      Switches forward ethernet frames without inspecting network packet
+      Routers route IP packets without inspecting TCP or UDP packets within
+  Each layer provides useful abstraction leverage to build applications
+  Important to understand main mechanisms layers use to build apps
+    Eval diff protocols to use for application
+    Know costs, troubleshoot when issues arise

@@ -1,0 +1,213 @@
+RSA Public Key Encryption
+  Rivest, Shamir, Adleman - 1977, MIT
+  Based on number theory
+  As with Turing, messages are nonneg ints of fixed size
+  But sender and receiver do not need a secret key share before
+  Instead receiver has a private key and a public key
+    This is how you engage in secure transactions online now
+      Without giving a private key to e.g. Amazon beforehand
+  RSA does NOT operate modulo a prime
+    But modulo the product of two large primes
+      Typically hundreds of digits long
+    Instead of encrypting by multiplication with a secret key
+      Exponentiates to a secret power
+      Euler's Thm central to RSA
+  If message m relatively prime to n
+    Then application of Euler's Thm implies decoding reproduces the original message
+      The decoding always works even in the unlikely case m is not rel prime to n
+  Key creation
+    Generate 2 distinct primes, p and q
+      Current practice, hundreds of digits long
+    Used to generate private key
+    Let n ::= pq
+    Select integer e in [0..n) such that gcd (e, (p - 1)(q - 1)) = 1
+    The public key is the pair e, n
+    Private key d in [0..n) is the inverse of e in the ring Z(p-1)(q-1)
+      Can be found using the Pulverizer
+  Encode
+    message m in [0..n)
+    m-hat ::= m^e (Zn)
+    m-hat can then be publicly transmitted
+  Decode
+    m = m-hat^d (Zn)
+  Why secure?
+    Easy to figure out d if you know p and q
+      Can do it via Pulverizer, receiver does
+    But it's hopelessly hard to factor a number product of 2 primes with hundreds of digits
+  Could be a way to decode that sidesteps private key
+    Unproven conjecture that ANY way of cracking RSA would imply ability to factor
+    No significant weakness has been found after 40 years however
+    And Gauss himself worked on factoring for years with little to show
+  Falls apart if efficient test for satisfiability
+    RSA works because prime mult is fast
+    But prime factoring incredibly demanding
+    A digital circuit can be described by prop formulas about same size as circuit
+      So testing for SAT is equivalent to SAT for prop formulas
+    Designing digital mult circuits is completely routine
+      Product checker circuit out of AND, OR and NOT gates
+        1 output wire, 4n digital input wires
+          n for i, n for j, 2n for k
+          output 1 iff ij = k and i, j > 1
+          straightforward design uses proportional to n^2 gates
+      How to factor any number m with a length 2n binary representation
+        Fix the last 2n digital inputs so that k = m
+        Then set the first of the n digital inputs for the rep of i to be 1
+        Do a SAT test to see if there is a satisfying assignment of values for the
+          remaining 2n - 1 inputs used for the i and j representations
+          See if 1 and j can be filled in a way that you get output 1
+          If so, then fix first i-input to be 1, otherwise fix to be 0
+          Now have set first digit of i such that ij = m
+            Repeat for all n digits in i
+            Now have complete n-bit binary representation of i > 1
+              such that ij = m for some j > 1
+            So we have integer i that is a factor of m
+              Find j by dividing m by i
+        After n SAT tests, we have factored m
+          Therefore if SAT for digital circuits with 4n inputs and n^2 gates
+            Determined by procedure taking a number of steps bounded high side by
+              degree d polynomial in n, then 2n digits numbers factored in n times as many steps
+              steps bounded by polynomial degree n + 1 in d
+              So if SAT solved in polynomial time, then factoring too, RSA "easy" to break
+
+Lecture
+  RSA is a public key cryptosystem
+  Anyone can send a secret encrypted message to a designated receiver
+    No prior contact, using publicly available info
+    Great - send something to Amazon, whole world sees it, only Amazon knows what you sent
+  Hard to believe if you think about it
+    How can secrecy be possible using only public information?
+    Actually has paradoxical consequences
+      Mental chess
+        Chessmasters don't need a board or pieces, can play game in heads by talking code
+        Grandmasters can play multiple games of mental chess and beat weaker opponents with board
+      How about we play mental poker?
+        Only condition is - I'll deal
+          But no joke, it's possible... using public key crypto
+        (ARM couldn't persuade a dean it would work)
+      Intuitively if you have function output and it's an injection (or bijection I assume? - JM)
+        Then it should always be easy to reverse
+        And you *can* always reverse - but sometimes the search may be prohibitive
+      The paradoxical assumption is that there are one-way functions
+        easy to compute, hard to invert
+      In particular, easy to compute product n of two (large) primes p & q
+        "In fact, faster ways to multiply than you know - ARM"
+          (Faster than that logarithmic method seen earlier? - JM)
+        But given n, it is generally very hard to factor n to recover p and q
+          It's an open problem similar to P = NP
+            Actually weaker, could factor and still P != NP
+            But closely related
+          But though it's not settled - banks, governments, commercial world
+            Have bet family jewels on difficulty of factoring
+      ARM - joke that his biggest contribution to MIT was hiring the RSA guys
+        (RSA first initials of their last names)
+  How does RSA actually work
+    Have to make some info public so people can communicate
+    A receiver and a sender
+    Receiver generates primes p, q
+      Large, hundreds of digits each
+      Chosen more or less randomly - or vulnerable
+        Lots of primes in hundreds of digits, hopeless to guess
+      First mutiply p and q together
+        n ::= p * q
+      Selects e relative to (p - 1)(q - 1)
+        Notice this is Euler's function, phi(n)
+        Don't want e to be too small
+      (e, n) ::= public key, publishes widely, easily found
+      finds d ::= e^(-1) (Z*(p - 1)(q - 1))
+        Do this with a pulverizers
+      d is private key, keeps hidden
+    Sender
+      m in [1..n) - number around 400 digits each
+        Bigger? Break into ~400-digit pieces
+      send m-hat ::= m^e (Zn)
+    Decoding m-hat
+      computes m = m-hat^d (Zn)
+      Follows easily from Euler's Theorem when m in Z*n
+        Odds of finding m not relatively prime are low, otherwise can factor...
+        Actually works for all m (explained in class problem)
+    Think about feasibility of all this
+      Receiver needs to be able to find large primes
+        Lots of primes - given prime number theorem
+          about n digits numbers, about logn will be primes
+          don't have to go too long before stumbling on prime
+          200 digit number, finding within a few hunded numbers
+        How do you know if it's a prime?
+          Fast test for primality
+        find e rel. prime to (p - 1)(q - 1)
+          lots of relatively prime nums
+          randomly guess medium-sized e
+            likely to find within a few steps
+          confirm rel prime by computing gcd - easy
+        find d thats e-1
+          easy using pulverizer
+      More about lots of primes
+        pi(n) ::= |primes <= n| ~ n/lnn (deep thm)
+        Self-contained for our purposes - Chebyshev's bound
+          "elementary" proof
+          n/4logn lower bound
+          only have to search ~1k numbers at len ~200 digits to stumble on a prime
+            almost guaranteed 2k
+        Fermat Primality test
+          special case of Euler's Them
+          check if a^n-1 = 1 (Zn)
+          if fails, not prime
+          may pass if not prime though
+          However if not prime Pr(fails) > 1/2 (rare exceptions)
+          So just test ~50 times, choosing a in [1, n)
+          Now 1/(2^50) chance of error
+          What are rare exceptions? Carmichael numbers - very sparse, don't worry about
+    Why do we believe RSA secure?
+      Easy to break if you can factor n - you have p and q
+        You know p-1 and q-1, you can find d the same way the receiver did via Pulverizer
+      Conversely, from d can factor n
+      Factoring appears hard so finding d must also be hard
+      Unfortunately not the strongest security guarantee
+        Would like a theorem proving it, but not known for RSA
+        Really believe in it, people have been trying to factor for 100+ years
+        And RSA has withstood 35 years of attacks
+          Various glitches found though - how you find p, q, e
+           But fixed, RSA seems robust these days
+  Factoring reduces to SAT
+    We've mentioned P = NP as most important theoretical question in CS
+    One way to formulate: is there an efficient - polynomial time - procedure
+      To test whether a formula in propositional logic is satisfiable
+    Why such an important problem?
+      Illustrate how to use satisfiabilty tester to factor easily, breaking RSA
+    Suppose we DO have a satisfiability tester
+      Easy enough to design a digital circuit that multiplies
+      k bits for input x
+      k bits for input y
+      2k(+ 1) bits for output x * y
+      Not a terribly big circuit
+      Number of gates about k^2
+      Easy to design one with size <= 5k^2 + C
+        Small polynomial
+      Now suppose there's a way to test satisfiability of circuits
+        Let's suppose number factoring in n, product of p and q
+      Easy to design an n-tester
+        2k input lines, one output yes if n, no if not
+          trivial circuit to build, stick on multiplier
+      Take circuit, first input bit to 0
+        is there a way to get a 0 out of the circuit
+          If yes - then x first bit is 0
+          If no - then set to 1
+      Then ask about the next bit
+        After 2k SAT test, know p and q
+      If SAT tester if polynomial in k, then just a degree higher
+    Now what we did was write out a formula and ask if satisfiable
+      And instead here we're talking about SAT of binary circuits
+      You can describe a binary circuit
+        Assign a fresh variable to each wire
+        Write formula for each gate
+        Take AND of all formulas and you've described circuitry
+      By assuming test satisfiability of formulas
+        Can test satisfiability of circuits
+        And therefore can factor
+      Simple trick to find formula equi-satisfiable to circuit of about same size
+      Can reduce most any kind of one-way function to a few SAT tests this way
+  Problems
+    How many numbers 1-3780 are relatively prime to 3780 inclusive
+      phi(n) = phi(2^2) * phi(3^3) * phi(5) * phi(7)
+              (2^2 - 2^(2-1)) * (3^3 - 3^2) * (5 - 1) * (7 - 1)
+              2 * 18 * 4 * 6 = 864
+    

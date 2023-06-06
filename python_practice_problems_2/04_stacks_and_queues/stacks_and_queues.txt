@@ -1,0 +1,118 @@
+Stacks and Queues
+Stacks = LIFO
+  Think undo option in applications
+  Depth-first search
+  Expression evaluation algorithm
+  Key functions
+    push(element)
+    pop()
+    peek()
+    IsEmpty()
+    size()
+
+Python comes with a Stack class
+Can implement yourself
+  Use lists or linked lists
+  We'll use a list implementation
+
+  class MyStack:
+    def __init__(self):
+      self.stack_list = []
+      self.stack_size = 0
+
+    def is_empty(self):
+      return self.stack_size == 0
+
+    def peek(self):
+      if self.is_empty():
+        return None
+      return self.stack_list[-1]
+
+    def size(self):
+      return self.stack_size
+
+    def push(self, value)
+      self.stack_size += 1
+      self.stack_list.append(value)
+
+    def pop(self)
+      if self.is_empty():
+        return None
+      self.stack_size -= 1
+      return self.stack_list.pop()
+
+  if __name__ == "__main__":
+    stack_obj = MyStack()
+
+  All functions O(1)
+
+Queues
+  FIFO
+  Slightly trickier, track both ends of array
+  Most operating systems use priority queue
+
+  enqueue()
+  dequeue()
+  front()
+  rear()
+  isEmpty()
+  size()
+
+  Four main types
+    Linear
+      The standard FIFO
+    Circular
+      Connect both ends to form a circle
+      Front/back move apart as more elements added
+      Used for
+        Simulation of objects
+        Event handling
+    Priority
+      All objects have a priority
+      Most at front, least at back
+    Double-ended
+      Enqueue and dequeue front/back
+      Python deque class
+        Easy solve for right rotate challenge
+
+  Can be implemented by
+    List, linked list, stack
+    Commonly lists are used
+      However dequeue = O(n) operation
+      Linked list, DLL = faster
+    Going to use a DLL here
+
+  from DoublyLinkedList import DoublyLinkedList
+
+  class MyQueue:
+      def __init__(self):
+          self.items = DoublyLinkedList()
+
+      def is_empty(self):
+          return self.items.length == 0
+
+      def front(self):
+          if self.is_empty():
+              return None
+          return self.items.get_head()
+
+      def rear(self):
+          if self.is_empty():
+              return None
+          return self.items.tail_node()
+
+      def size(self):
+          return self.items.length
+
+
+  if __name__ == "__main__" :
+      queue_obj = MyQueue()
+
+      print("is_empty(): " + str(queue_obj.is_empty()))
+      print("rear(): " + str(queue_obj.rear()))
+      print("front(): " + str(queue_obj.front()))
+      print("size(): " + str(queue_obj.size()))
+
+      queue_obj = MyQueue()
+
+  All operations time complexity O(1)

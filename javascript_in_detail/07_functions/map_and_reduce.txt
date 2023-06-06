@@ -1,0 +1,62 @@
+Map and reduce
+
+Map
+  Apply function to each value of array
+  Return new array of the returned values
+  Leaves original array unchanged
+
+  arr.map(<function>);
+  function callbackfn(value: any, index: number, array: any[])
+
+  var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+  var arr1 = arr.map(a => a * 2); // double the element in the array
+  console.log("arr:",arr); // print original array
+  console.log("doubled array:",arr1); // print doubled array
+
+Reduce
+  Reduces array to single value, left to right
+  Leaves original array unchanged
+
+  arr.reduce(<function>);
+  function callbackfn(prev: any, curr: any, index: number, array: number[])
+    Takes 2-4 arguments
+
+  var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+  var val = arr.reduce((prev, curr) => prev + curr); // reduce element to sum
+  console.log("arr:",arr); // print original array
+  console.log("reduced val:",val); // print element returned by reduce
+
+  reduceRight applies right to left
+
+Using map & reduce
+  Let's find the number of values that satisfy a given condition
+
+  var arr = ['Hello', 1, true, NaN, 'Bye']; // initialise an array of elements
+  var countArr = arr.map(ele => typeof ele === 'string' ? 1 : 0); // map to 0 and 1
+  var sum = countArr.reduce((prev, curr)=> prev + curr); // reduce for sum
+  console.log("arr:",arr); // print original array
+  console.log("array from map:", countArr); // print array returned from map method
+  console.log("number of Strings:",sum); // print number of strings
+
+  Chain them together
+
+  var arr = ['Hello', 1, true, NaN, 'Bye']; // initialise an array of elements
+  var sum = arr.map(ele => {
+      return typeof ele === 'string' ? 1 : 0 // map to 0 and 1
+      }).reduce((prev, curr)=> prev + curr); // reduce to find sum
+  console.log("arr:",arr); // print original array
+  console.log("number of Strings:",sum); // print number of strings
+
+  Ex. finding # of elements in 2D array
+
+    var arr = [
+        [1, 2, 3, 4],
+        [1, 2],
+        [1, 2, 3, 4, 5, 6],
+        [],
+    ]; // initialise a two-dimensional array
+    var sum = arr.map(ele => {
+        return ele.length // length of array
+        }).reduce((prev, curr)=> prev + curr); // find sum
+    console.log("arr:",arr); // print original array
+    console.log("number of elements:",sum); // print number of elements in 2D array

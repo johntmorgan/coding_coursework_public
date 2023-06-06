@@ -1,0 +1,21 @@
+1. Given the following Students table, which function has been used to assign ranks
+  to rows based on the Marks column as shown (2, 5, 4, 1, 3)
+
+  ROW_NUMBER() - starts from 1 and increments
+
+  No
+  RANK() - results in gaps between rankings where tie
+
+  No
+  DENSE_RANK() - assigns value to first and next occurrence if tie
+
+2. What can't you use to validate date format
+  No: ISDATE() - SQL Server function, not in MySQL
+  Yes: TIMESTAMPDIFF(), STR_TO_DATE(), DAYNAME()
+
+3. To rotate rows into cols
+  Use CASE expression with aggregate function
+
+4. Which num cam be stored without loss of info if type DECIMAL(6,3)
+  600.034
+

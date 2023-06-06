@@ -1,0 +1,278 @@
+What is a distributed system?
+  Components located on different networked computers
+    Communicate and coordinate by passing messages to each other
+    Can be thought of as software progs that run on physical hardware
+    Can take many forms
+      Web servers
+      Routers
+      Web browsers
+    To keep a generic view, assume each runs on separate machine
+      Refer to each machine as a node
+    Network
+      Direct connections between components
+      Or connections to other components that form network backbone
+    Two categories of central parts that help distributed systems function
+      Parts that compose system: located remotely, separated by network
+      Network that separates various parts of distributed system
+        Acts as communication mech that lets exchange messages
+  Why distributed system
+    3 key benefits
+      Performance
+      Scalability
+      Availability
+    Performance
+      Degree to which system or component meets objectives for timeliness
+      Single computer physical constraints impose limits
+        Very expensive to improve beyond a point too
+      Achieve same performance with 2+ low-spec computers as 1 high-end
+        Better performance, lower cost
+      Can translate to different things depending on context
+        Lower latency on request
+        Higher throughput
+    Scalability
+      Capability of a system, network, or process to handle growing amount of work
+        Or its potential to be enlarged to accomodate that growth
+      Data storage and processing = most value software systems impart in real world
+      As system customer base grows
+        Needs to handle more traffic and store larger amounts of data
+        Can only scale up to a certain point
+      Solution
+        Split and store data in multiple computers
+        Distribute processing work
+      Vertical scaling - adding resources (memory, CPU, disk) to single node
+      Horizontal scaling - adding more nodes to system
+    Availability
+      Work as required, when required, during mission
+      These days online services need to operate all the time - "24/7 service"
+        Huge challenge
+      "Five-nine availability" - 99.999% of the time
+        Can only be down for 5 minutes at most per year
+      Considering how unreliable hardware can be, huge undertaking
+        Not feasible with single computer
+      Solution
+        Redundancy
+          Store data onto multiple redundant computers
+          Now = distributed system
+    Tension between these benefits and other properties
+      Have to make a tradeoff
+      Understand basic constraints and limitations = first part of this course
+
+Fallacies of distributed computing
+  Subject to more constraints vs. single computer
+  Software development is very different
+  8 core fallacies (false assumptions people new to distributed computing make)
+    The network is reliable
+    Latency is zero
+    Bandwidth is infinite
+    The network is secure
+    Topology doesn't change
+    There is one admin
+    Transport cost is zero
+    The network is homogenous
+  Quick preview (more in-depth as proceed through course)
+  Network is reliable
+    Protocols like TCP make us believe this
+    Just an illusion
+    Hardware will fail at some point too
+    Design accordingly
+  Latency is zero
+    Libraries that model remote procedure calls as local - gRPC or Thrift
+    Large difference - ms vs. ns for a local call
+      Even worse between continents
+      Think carefully about how to geo-distribute system
+  Bandwidth is infinite
+    Fallacy weaker nowadays
+    Bandwidth has significantly improved
+      Can now build high-bandwidth connections in own data centers
+        Sometimes traffic still needs to traverse internet
+          Make smart decisions about your system topology
+  Network is secure
+    Wider network not necessarily insecure
+  Topology doesn't change
+    Different orgs may manage different parts
+      Not one admin, network is not homogenous
+  Transport cost is zero
+    Transporting data point to point incurs costs that need to be factored in
+  Global clock fallacy
+    Not part of the set, but still causes confusion
+    Distributed systems do NOT have a global clock
+      There's no local clock like on a single computer
+      Every node has its own local clock
+    There are ways to keep clocks in sync
+      Some are very expensive
+      Not all differences eliminated
+        Physical laws also bind limitation
+          TrueTime API by Google
+          Exposes clock uncertainty explicitly as a first-class citizen
+
+Difficulties of distributed systems
+  Increased risk of error
+  Key reasons
+    Network asynchrony
+    Partial failures
+    Concurrency
+  Network asyncrhony
+    Property of networks that cannot provide strong guarantees around delivering events
+      Max time a message requires for delivery
+    Produces a lot of counter-intuitive heaviors
+      Contrasts to memory operations, much stricter guarantees
+    Messages might take extremely long
+    Messages might deliver out of order
+    Messages might not deliver at all
+  Partial failures
+    Only some components fail
+      Single-server, either everything is working fine or server craash
+    Significant complexity when atomicity required across components
+    Must ensure apply operation to all nodes or none
+      Chapter to analyse this problem
+  Concurrency
+    Executing multiple operations at same time, potentially on same piece of data
+    Computations can interfere with each other
+      Produce unexpected behaviors
+    Simple apps by contrast
+      Just run things in order of sequence of commands
+  Keep these issues in mind when building to handle edge cases
+
+Correctness in distributed systems
+  Two properties must be satisfied
+    Safety property
+    Liveness property
+  Safety
+    Something that must never happen in correct system
+      e.g. oven temperature over limit
+  Liveness
+    Something that must eventually happen in a correct system
+      e.g. oven temp eventually reaching specified value
+  Safety usually more important than liveness
+    Inherent tension
+    Some problems make it physically impossible to satisfy both - see later
+
+System models
+  Real life systems can vary in many dimensions
+    Network, hardware etc.
+  Need a common framework to solve problems generically
+    Key important properties
+      How nodes of distributed system interact with each other
+      How nodes of distributed system can fail
+  Two main categories
+    Synchronous systems
+    Asynchronous systems
+  Synchronous system
+    Each node has an accurate clock
+    Known upper bound on transmission delay and processing time
+    Execution split into rounds
+    Node sends message to another node, messages deliver, modes compute
+      All nodes run in lock-step
+  Aynchronous system
+    No fixed upper bound on how long it takes to deliver message
+      or how much times elapses between consecutive node steps
+    System nodes do not have a common notion of time
+      Run at independent rates
+  Synchronous model much easier to describe, program, reason about
+  Asynchronous model much closer to real life
+    Most algorithms in this course assume an asynchronous system model
+
+Types of failures
+  Fail-stop
+    Nodes halts and remains halted permanently
+    Other nodes can detect this by communicating with it
+  Crash
+    Node halts but silently
+    Other nodes may not detect state
+    Can only assume failure via communication
+  Omission
+    Node fails to respond to incoming requests
+  Byzantine
+    Arbitrary node behavior
+      Transmit arbitrary messages at arbitrary times
+      Take incorrect steps
+      Stop
+    Usually due to malicious actor or software bug
+  Need complex solutions to deal with failures
+    Fail-stop most convenient, not realistic
+      Many cases not easy to identify if crash or not
+  Most algorithms in this class assume crash failures
+
+Exactly-once semantics
+  Nodes may retry messages in case they get lost
+  Sender cannot know for sure what happens
+  Duplicate delivery can have disastrous side effects
+    Imagine bank transaction happening 2x
+  Multiple approaches to avoid
+    Idempotent operations
+      Can apply multiple times without changing result after first application
+      Ex. add value to set of values
+        Assumes operations cannot remove values from set
+      Non-idempotent example
+        Increase counter by one
+          Operation has additional side effects every time
+      Impose tight constraints on system
+        Often cannot build system this way
+    De-duplication approach
+      Give every message a unique identifier
+      Every retried message contains same identifier
+      Must control both sender and receiver
+        Id generation on sender side
+        De-duplication on receiver side
+  Delivery vs. proessing
+    Delivery: arrival at node at hardware level
+    Processing: handling of message from software application layer of node
+    Generally care more about how many times node processes message than receives
+    Impossible to have exactly-once delivery
+      But still sometimes possible to have exactly-once processing
+  Other semantics
+    At-most-once
+      Just send every message only one time no matter what
+    At-least-once
+      Send every message continuously until recipient acknowledges
+
+Failure in distributed systems
+  Challenging to identify
+  Network is asynchronous
+    Node failed or just slow?
+  How to detect failure
+    1. Timeouts impose artificial bound on delays
+      Assume crash when node takes longer
+      Does not represent an actual limit though
+      Small timeout = less time waiting for crashed nodes
+        May declare some nodes crashed when just slow
+      Large timeout = time waste while waiting for nodes
+      Fundamental problem in field
+  Failure detector
+    Component of node used to identify other nodes that have failed
+    Essential for making progress in the presence of failures
+      Extensive research
+    Categorizing solutions
+      Completeness - percentage of crashed nodes identified in period
+      Accuracy - number of mistakes made in a period
+    Perfect failure detector - 100% completeness and accuracy
+      Impossible as you'd expect
+
+Stateless and stateful systems
+  Stateless: maintains no state of what happened in past
+    Performs capabilities purely based on provided inputs
+    Ex
+      Receives a set of numbers as input, calculates max, returns as result
+        Direct inputs: included in request
+        Indirect inputs: potentially received from other systems to fulfill request
+  Stateful: maintains state, results affected by state
+    Ex
+      System with all employees of company, ask it max age
+      Stateful, depends on employees in system
+  Stateful systems useful in real life
+    Computers much more capable that humans of storing and processing data
+  Maintaining state adds complexity
+    How to store and process state
+    How to back up
+  Smart: create architecture with clear boundaries
+    Stateless components perform business capabilities
+    Stateful components handle data
+  Stateless distributed systems much easier to design, build and scale
+    Consider all nodes of a stateless system identical
+    Easy to balance traffic by adding and removing servers
+  Stateful systems many more challenges
+    Nodes can hold different pieces of data
+    Need to direct traffic to right place, ensure instances in sync
+  Some course examples include stateless systems
+    However most challenging problems mainly concern stateful systems
+  

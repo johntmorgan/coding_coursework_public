@@ -1,0 +1,316 @@
+Algorithms and Computation
+  Course is about teaching you to solve computational problems
+  But also
+    Communicating those solutions to others
+    And communicating that your way of solving is correct and efficient
+    (prove correctness, argue efficiency)
+    You'll be doing a lot of writing in this class
+      More writing than coding
+  What is a problem, computationally?
+    You've got a set of inputs
+    Then you have a space of possible outputs
+    Problem is a binary relation between inputs and outputs
+    For each input specify which of outputs is correct
+      Give me the index of 5 in an array - could have multiple answers depending on array
+    There's some kind of mapping
+      Bipartite graph between inputs and outputs
+    Now if you have a problem
+      Not going to be specified by saying here's the correct output for each input
+      Specify some kind of predicate
+        Some way to check if output is correct or not
+      Don't want to talk about small instances of problems
+        Among students in classroom, do any of you have same birthday?
+          If > 365, then yes automatically (by pigeonhole principle)
+          Expand space - same hour and same year too?
+        In fact, as long as space is greater than square of number of students
+          Then less likely than even odds to have a pair
+            Problem I saw repeatedly in discrete math
+        But not going to mess with probability much here
+        Want a deterministic algorithm to determine whether true
+        Bit boring to just determine whether in this classroom
+          Want to apply to every classroom
+          Accept arbitrarily sized input
+            Work for a billion students!
+    So looking for general problems
+      Arbitrarily sized inputs
+  What is an algorithm?
+    Don't know outputs, edges between inputs and outputs
+      Give it an input, will generate an output
+      Better be one of the correct outputs
+    A function, takes inputs, maps to single output, that better be correct
+      f : I -> O
+      Solves problem if returns correct output for every input in our domain
+    How to solve same birth time problem?
+      Interview class one by one, keeping a record
+        Check if birthday in record
+          If so, return pair and stop
+        If not add new student to end of record
+        If get to end and no pairs, return None
+        Formally
+          Maintain record
+          Interview students in some order
+          Check if birthday in record
+            If so return pair
+            Otherwise add new student to record
+          Return None if reach end and no pair found
+        This is the level of description from theory question on problem sets
+          Verbal description in words
+          Maybe not enough for computer
+          But if you said this to friends in the class, they'd understand what you are doing
+      Now, given this solution... how to convince this approach is correct?
+        Say ran it on 4 students in the first row
+          Assign birthdays - maybe some, none, etc. have same birthday
+          Check that it returns correct output
+        But what about for large value? - 365 students in class
+          Induction
+        As computer scientists
+          Write constant-sized piece of code that can take on any arbitrarily size of input
+          If input large and code small will need to loop or recurse
+    What do you need for inductive proof?
+      Base case
+      Hypothesis that should be maintained
+      Inductive step
+        Take a small value, argue it for larger value of well-ordered set
+    So for class birthday algorithm
+      Want to prove that at end of algorithm will return pair if match
+        Or None if no pair in set
+    If interviewed first k students
+      If match in first k students, returned pair
+    Inductive hypothesis
+      If first k students contain a match
+        Algorithm returns a pair before interviewing student k + 1
+      k can increase up to 1
+    Base case:
+      Zero students (k = 0) (could be k = 0 or k = 1)
+        Haven't done any work
+        No match
+        True - initial predicate is false
+        Returns None
+      Assume inductive hypothesis true for k = k'
+      Induction isolates problem to break down to smaller interface, fewer steps
+        if first k' already had a match - already returned by induction
+        else k' + 1 checks against all students - brute force
+          If there is a match, returns
+          If not a match, returns None
+          So that's how we prove correctness
+          More formal than asked to do in class, but is sufficient
+          Bar set if you communicated to someone else in this class your algorithm
+            They'd be able to code it up on a computer
+      Will use induction throughout class
+        Review if unfamiliar! (Went and took a whole class lol - JM)
+  Efficiency argument
+    Not only how fast does algorithm run
+    But how does it compare to other ways of approaching this problem
+    How to do that?
+      Can just time a computer
+        But depends on computer strength
+          Watch will be slower than an IBM supercomputer
+        Also depends on size of data set
+      Want to abstract time it takes machine out of picture
+        Assume each operation the computer can do takes a fixed amount of time
+        How many operations does algorithm need to perform to solve the problem
+    So count fundamental operations, don't measure time
+    What we're going to use is asymptotic analysis
+      Will go through a formal definition of asymptotic notation in recitation
+      But to give you an idea
+    Don't measure time, measure ops
+    Expect performance to depend on size of our input
+      Running birthday algorithm on 1/3 classroom runs faster than whole classroom
+        How differently reflects performance
+    Usually use n as variable for size of input
+      But what if n by n array? n^2
+      Or graph? V + E
+    Compare how fast algorithm is with respect to size of input
+    Asymptotic notatoin
+      Big O notation - upper bounds
+      Omega - lower bounds
+      Theta - both - "tight" - bounded both upper and lower
+    There are a couple common functions that relate input size to performance
+      Linear time algorithm
+        Says time of algorithm is linear to size of input
+      Constant time - theta(1)
+        Performance of algorithm doesn't change with size of input
+      Logarithmic time - theta(lgn)
+      Loglinear - theta(nlogn) - usually just say nlogn
+      Quadratic
+      n^c for some constant - polynomial
+      Polynomial or less = "efficient" in this class (usually)
+      In other classes, huge data sets, cutoff might be ~linear
+      2^theta(n) - exponential time - superlinear, going to be pretty bad
+      (Plotting functions)
+        Constant - line across graph - can be high, but eventually any other will pass it
+        Linear - diagonal line
+      Log much closer to constant than linear at this scale (up to n = 1000) - almost just as good as constant
+      Exponential inverse of log - "bad" (ahem - JM)
+      Almost anything in region to right of it is better
+      Nlogn after a while, looks like linear with constant
+    How do we measure if don't know fundamental operations of computer?
+      Define model of computations
+    Model computation
+      Word-RAM
+      Kind of a loaded term
+      RAM = random access memory
+        Can randomly access different places in memory in constant time
+          That is the assumption of RAM
+        Memory string of bits, 0s and 1s
+        Have a small CPU - can hold just a little bit, change information, operate on it
+          Has instructions to access RAM, bring into CPU, read back
+        But in general, we don't have an address for every bit in memory
+        Modern computer is addressed in bytes - 8 bits
+          Address for every 8 bits in memory
+          Take chunk into CPU and spit back
+        How big of a chunk does computer take in at a time - a "word"
+          64 bits in current computers
+          (Was 32 bits back when I was younger)
+            Actually was a problem
+            Need to be able to store address in memory in word
+            Can address 2^32 addresses - 4 GB - used to have to partition hard drive
+              That was very limiting actually
+          With 64 bits
+            20 exobytes of byte-addressable memory
+            All of Google data across world is about 10 exobytes
+            We're not gonna hit this limit anytime soon
+        What do you do in a CPU?
+          Binary operations
+          Compare 2 words
+          Do integer arithmetic
+          Logical operations
+          Bitwise operations
+            Not much in this class (whew - JM)
+        Can read and write word from/to memory in constant time
+          Some CPUs give you a lil more power
+      But notice CPU built to operate on a constant amount of info at once
+        2 words in memory
+        Operation produces a 3rd one, spit out
+      Operate on linear amount of memory, how long will that take
+        Linear time
+        Have to read every part of that thing
+      For the first ~half of this class (first 8 lectures)
+        Talking about data structures
+        Not concerned about operating about constant amounts of data in constant time
+        But on store large amounts of data and supporting different operations on that on data
+      Storing birthdays?
+        Static array
+        (Might be unfamiliar from Python)
+        Python has a lot of really interesting data structures - list, set, dict
+          Lot of code between you and the computer
+          May be unclear how much time interface is taking
+        Ways to store non-constant amounts of information to make operations faster
+      How to solve algorithms problem
+        Reduce to a problem you already know how (use data strucutre or algorithm)
+        Or come up with your own
+      First 8 lectures:
+        Data structures and sorting
+      Then:
+        Shortest path algorithms and graphs
+      Finally:
+        Dynamic programming
+
+    Notes from recitation etc
+      Problem is a binary relation connecting problem inputs to correct outputs
+      A (deterministic) algorithm is a procedure that maps inputs to single outputs
+      An algorithm "solves" a problem if for every problem input it returns a correct output
+      A problem input may have more than one correct output
+        However the algorithm should return only one output for a given input (it is a function)
+        Problem input sometimes called "instance" of problem
+      Try to solve problems that genrealize to inputs that are arbitrarily large
+      Correctness
+        Via induction - birthday problem
+        Induct on the first k students interviewed
+          For k = 0 there is no matching pair, algorithm returns there is no matching pair
+          Assume that returns correctly on the first k students
+            If the first k students contained a matching pair, then so do first k + 1 students
+              and algorithm already returned a matching pair
+            Otherwise first k do not containa  matching pair
+              So if k + 1 contain a match, it includes student k + 1
+                And algorithm checks whether student k + 1 has the same birthday as anyone already processed
+      Efficiency
+        Solve same problem input with less resources
+          Larger input expected to take more time to solve than another withs amller size
+          Resources used may depend on the machine as well as the algorithm used
+        Compare programs based on asymptotic performance relative to problem input size
+      Asymptotic notation
+        O(f(n)) Set of functions with domain over the natural numbers satisfying the following property
+          Non-negative function g(n) is O(f(n)) iff there exists a positive real number c and positive integer n0
+            such that g(n) <= c * f(n) for all n >= n0
+          Upper bounds the asymptotic growth of function for sufficiently large n
+            Bound on growth is true even if shift function by constant amount
+          People commonly say g(n) is O(f(n)) or equal to O(f(n))
+            What they really mean is set containment, i.e. g(n) in O(f(n))
+        Omega
+           Non-negative function g(n) is O(f(n)) iff there exists a positive real number c and positive integer n0
+            such that c * f(n) <= g(n) for all n >= n0
+        Theta
+          When a function both asymptotically upper bounds and asymptotically lower bounds, use theta
+          When g(n) = theta(f(n))
+            f(n) represents a tight bound on g(n)
+            theta notation
+              Non-negative g(n) is theta(f(n)) if and only if g(n) in O(f(n)) int omega(f(n))
+        Shorthand to characterize asymptotic growth (i.e. asymptotic complexity) of common functions, as shown below
+          Here assume c in theta(1)
+          (Normal times follow)
+          Exponential: 2^theta(n^c)
+        Linear time often necessary when entire input must be read
+          However if already accessible in memory, may solve in sub-linear time
+          Find value in sorted array already loaded can be solved in logarithmic time via binary search
+        Focus on polynomial time algorithms in this class
+          Typically for small values of c
+        Huge difference - log, linear, exponential
+          For n = 1000
+            log(n) = 10
+            n = 1000
+            2^n = 10^300 (there are ~ 10^80 atoms in the universe)
+      Input size is typically n
+      Graph input will be theta(|V| + |E|) rather than O(n^2) etc.
+      Matrix input will be theta(n^2)
+        Specifying each element of the n x n matrix
+
+      w-bit Word-RAM model of computation
+        Models computer as a random access array of machine words called memory
+        Together with a processor that can perform operations on the memroy
+      Machine word sequence of w bits
+        Represents integer from set { 0, ..., 2^w - 1 }
+      Can perform basic binary operations in constant time
+        Addition, subtraction, multiplication, integer division, modulo, bitwise ops, binary comparisons
+        Can read or write word at address in constant time
+      If machine word only contains lomega bits
+        Then processor will only be able to read and write from at most 2^lomega addresses in memory
+      When solving problem on input stored in n machine words
+        Always assume Word-RAM has a word size of at least w > log2(n) bits
+          Otherwise machine cannot access all of the input in memory
+
+      Set of operations supported by data structure = interface
+        Many problems solved trivially by storing in appropriate choice of data structure
+
+      StaticArray(n) - equivalent of C++ array
+        Allocate static array of size n initialized to 0 in theta(n) time.
+      StaticArray.get_at(i) - return word stored at array index i in theta(1) time.
+      StaticArray.set_at(i, x) - write word x to array index i in theta(1) time.
+        get_at, set_at run in constant time because each item sized at one machine word
+          Can store larger items, interpret machine word at index as a memory address to a larger piece of memory
+      Python tuple
+        Static array without set_at(i, x)
+      Python list
+        Dynamic array (lecture 2, basically Stanford lib Vector I would assume)
+
+    class StaticArray:
+      def __init__(self, n):
+        set.data = [None] * n
+      def get_at(self, i):
+        if not(0 <= i < len(self.data)): raise IndexError
+        return self.data[i]
+      def set_at(self, i, x)
+        if not (0 <= i < len(self.data)): raise IndexError
+        self.data[i] = x
+
+    def birthday_match(students):
+      n = len(students)
+      record = StaticArray(n) <- takes O(n)
+      for k in range(n)
+        (name1, bday1) = students[k]
+        for i in range(k):
+          (name2, bday2) = record.get_at(i)
+          if bday1 == bday2:
+            return (name1, name2)
+        record.set_at(k, (name1, bday1))
+      return None

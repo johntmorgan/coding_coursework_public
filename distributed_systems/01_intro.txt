@@ -1,0 +1,8 @@
+Intro
+  Need no prior knowledge of concepts and algorithms for distributed systems
+  Target audience
+    Engineers little to no experience
+    Non-developers who want to learn
+  Gets to underlying logic behind concept/algorithm
+  Does not provide full analysis or proof of every single algorithm
+  

@@ -1,0 +1,257 @@
+Distributed Logging
+Logging
+  Log file records details of events
+    Microservices
+    Transactions
+    Service actions
+    Anything useful to debug event flow
+  Need
+    Essential in understanding event flow
+    Seems tedious, but...
+    Pinpoint where system failed
+      Security breach
+      Node etc. down
+    Decreases mean time to repair
+  Why not print statements to understand flow?
+    Possible, not ideal
+    No way of tracking message severity
+    Output goes to terminal
+      Need to persist on local/remote store
+    Millions of statements
+      Structure & store properly
+  Challenges
+    Concurrent activity on many nodes
+    Causality needed to stitch together proper flow
+    Be careful dealing with causality
+    Use logging service to manage diagnostic, exploratory data
+  Logging
+    Understand code
+    Locate unforseen errors
+    Fix identified errors
+    Visualize application performance
+  Log analysis
+    Troubleshooting
+      Applications
+      Nodes
+      Network issues
+    Adhere to policies
+      Security
+      External regulations
+      Compliance
+    Recognize and respond
+      Data breaches
+      Other security problems
+    Comprehend user actions
+      Input to recommendation system
+
+Logging in distributed system
+  More designs moving to microservice, not monolithic
+  Logs of each microservices accumulate in that machine
+  Hard to go to every node, figure out flow, view error messages
+  Handy if trace log for any flow beginning to end
+  Microservice may be on thousands of nodes
+
+Restrain log size
+  Only increased over time
+  Hundreds of concurrent messages to log
+    But are they all important enough?
+    Decide what to log into system
+  Use sampling
+    Say lots of message from same set of events
+      People commenting on a post
+    "Sampler service" only logs smaller set of messages
+    ex. Facebook
+      Billions of events per second
+      Not viable to log all
+      Appropriate sampling threshold and strategy needed
+    Categorize message types
+      Apply filter to identify important messages
+  Where is sampling bad?
+    Financial ATM transaction
+      Fraud detection
+      Expiration time checking
+      Card validation
+    Need to check end to end flow
+  Use categorization
+    Python
+      log4j
+      logging
+    In logging
+      DEBUG
+      INFO
+      WARNING
+      ERROR
+      FATAL/CRITICAL
+    Production logs set to print messages with severity of WARNING
+      But for more detail, debug and info can be used as well
+  Structure logs
+    Applications can structure log data
+    Write as binary or text
+    Enforce some structure
+      Better writer/reader interoperatbility
+      Make log processing faster
+      Dense topic (PhD thesis)
+  Points to consider
+    Be careful
+    Only log relevant information
+    Do not breach security concerns
+    Log encrypted data
+    Do not log personally identifiable info (PII)
+      Names
+      Addresses
+      Emails
+    Do not log sensitive information
+      Credit card numbers
+      Passwords
+    Avoid excessive info
+    Logging should be secure
+      Contain application flow
+      Insecure logging = hacker vulnerability
+    Vulernability example
+      Log4j - Java famework - recent vulnerabilty
+        Log4Shell vuln
+        Apache gave CVSS of 10, highest severity
+        Simple exploit
+        Affects millinos of devices
+        Devastating international cyberattacks possible
+          Run malicious code
+          Take control of machines
+
+Requirements
+  Functional
+    Write logs
+      Services must be able to write into
+    Searchable logs
+      Effortless for system to find
+      Application flow end to end should be effortless
+    Storing logging
+      In distributed for easy access
+    Centralized visualizer
+      Provide unified view of globally separated services
+  Non-functional
+    Low latency
+      Logging is I/O intensive
+        Often slower than CPU operations
+      Keep off app critical path
+    Scalablity
+      Handle more logs, more concurrent users over time
+    Availability
+
+Building blocks
+  Pub-sub system
+  Distributed search
+
+API design
+  write(unique_ID, message_to_be_logged)
+  searching(keyword)
+
+Initial design
+  Clients generate events on service nodes
+  Nodes generate logs while handling requests
+    Logs accumulated locally
+  Log accumulator
+    Collect logs from each node, dump in storage
+  Storage
+    Blob storage to save
+  Log indexer
+    Use distributed search to index for searchability
+  Visualizer
+    Provide unified view
+  Issues
+    Single log accumulator = major scalability problem
+    Millions of servers to handle
+
+Logging at different levels
+  In a server
+    Multiple apps running
+    Each app multiple microservices
+    ex. e-commerce
+      Auth users
+      Fetch carts
+      etc.
+    Every service produce logs
+    app_id, service_id, timestamp to uniquely identify
+      Timestamps help with causality
+    Each service pushes data to log accumulator
+    Log accumulator
+      On server, covering various services on server
+        Server may even have multiple accumulators
+      Receives logs
+      Stores locally
+      Pushes to pub-sub
+        Handles huge amount of logs
+      Send logs async via low priority thread
+        Do not affect performance of other apps
+  Be mindful
+    Data can be lost while logging huge amounts of messages
+    Tradeoff between user-perceived latency and guarantee of persisting log data
+      Lower latency - keep data in RAM, persist async
+    Minimize data loss via redundant log accumulators
+  What about when hosting on AWS (vs. proprietary servers?)
+    Security - encrypt all logs end to end
+      Not free
+      Performance penalties
+    Strict separation of logs is required
+      Where single-tenant can improve storage/processing handling
+      Every tenant needs pub-sub
+    ex. Facebook
+      Millions of machines
+      Several PB per hour
+      Publish to pub-sub system Scribe
+        Retains for a few days
+        Other systems process
+      Also store in distributed storage
+    Financial & banking
+      Logs must be very secure
+      Encrypt data and log
+  At data center level
+    Push logs to pub-sub
+    Use horizontally scalable pub-sub, handling huge amounts
+    May use multiple instances of pub-sub per center
+      Avoid bottlenecks
+      Publish to blob storage
+  Pub-sub
+    Data does not stay forever
+    Deleted after a few days, stored in archival storage
+    Can use while still available in pub-sub
+    Following services use
+  Filterer
+    Identifies application, stores in blob storage for that application
+  Error aggregator
+    Picks up messages and informs client
+    Don't make search logs
+  Alert aggregator
+    Crucial
+    Must be aware early
+    Identify alerts, notify stakeholders and/or send to monitoring
+  How long do we keep logs in storage?
+    Regular logs
+      A few days to a few months
+    Compliance logs
+      3-5 years
+    Depends on app requirements
+  Expiration checker
+    Verify logs to delete
+    Verify logs to store in cold storage
+      Low-cost, infrequently used data
+  Log indexer, visualizer work on blob storage for good searching
+  How do we stitch together a single user request with 100s of microservices, 1000s of nodes involved?
+    Front-end server gets unique identifier from sequencer
+      Append to all fanned-out services
+      Each log message also emits unique identifier
+    Filter/preprocess log based on unique identifers
+  Windows Azure
+    (Seems like an author worked on this - JM)
+    Stores logs locally
+    Does not push to distributed storage
+    Grep-like utility that works as distributed search
+      Unified view of globally distirbuted data
+
+Overall
+  Design depends on app requirements
+  Logging crucial for understanding event flow
+    Reduce mean time to repair (MTTR)
+  Logging is I/O intensive
+    Handle carefully, do not affect critical path
+  Logging is essential for monitoring
+    Via alert and error aggregators

@@ -1,0 +1,53 @@
+Create, Alter, Delete Stored Procedure
+  To create a stored procedure
+    CREATE PROCEDURE statement
+    BEGIN and END to enclose body of stored procedure
+
+  To delete stored procedure
+    ALTER ROUTINE privilege required
+    DROP PROCEDURE
+      Can use with IF EXISTS
+
+  // Let's create a stored procedure ShowActors that shows all in db
+  DELIMITER **
+  CREATE PROCEDURE ShowActors()
+  BEGIN
+  SELECT * FROM Actors;
+  END **
+  DELIMITER;
+
+  // By default ";" used to separte two statements
+  // Stored procedure can have multiple statements ending with semicolon
+  // DELIMITER keyword used to redefine the delimiter as **
+  // Now can pass whole stored procedure with multiple statements
+  // Use redefined delimiter "**" to end after END
+  // Reset DELIMITER back to ";"" after
+  // Body of procedure is a simple select statement
+
+  // Now to use procedure
+  // Same thing as executing a query
+  CALL ShowActors;
+
+  // View stored procedures in database
+  // Output is massive...
+  SHOW PROCEDURE STATUS;
+
+  // Use a WHERE clause to view stored procedures of specific database - still copious
+  SHOW PROCEDURE STATUS WHERE db = 'MovieIndustry';
+
+  // information_schema database contains data about all stored procedures
+  // This will list 26 procedures
+  SELECT routine_name
+  FROM information_schema.routines
+  WHERE routine_type = 'PROCEDURE'
+  AND routine_schema = 'sys';
+
+  // Delete procedure - IF EXISTS optional
+  DROP PROCEDURE IF EXISTS ShowActors;
+
+  // No way to directly modify procedure param list or body
+  // Delete procedure, then recreate
+
+
+
+

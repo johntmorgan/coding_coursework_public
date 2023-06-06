@@ -1,0 +1,318 @@
+Twitter
+  Free microblogging social network
+  Messages = "Tweets"
+  Users can like, reply to, retweet
+  397m users as of 2021
+  Share breaking news
+  Engage with people from different communities and cultures
+  As of 2022, most used USA & Japan
+
+Requirements
+  Functional
+    Post Tweets
+    Delete Tweets
+    Like or dislike
+    Retweet
+    Reply
+    Search
+    View user/home timeline
+    Follow/unfollow
+  Non-functional
+    Availability
+      Time-sensitive info comms - service outages
+    Latency
+      Tweets to followers must be very fast
+      Show most recent top in timeline can be a bit slower
+    Scalability
+      Read heavy
+      1:1000 write/read ratio, per research
+      Need high storage
+    Reliability
+      Tweets never are deleted
+      Prevent loss or damage
+    Consistency
+      User must see their own like/reply immediately
+      Ok for user on opposite coast to see like/reply a bit late
+  Already used Twitter in back of the envelope chapter
+
+Building blocks
+  DNS - Twitter domains to IP
+  Load balancer
+  Sequencers - for Tweets
+  Databases
+  Blob stores - images and video clips
+  Key-value stores
+  Pub-sub
+  Sharded counters - views, likes, retweets on popular accts
+  Cache - store most requested & recent data in RAM
+  CDN
+  Monitoring
+
+High-level design
+  Users post Tweets
+    To server through load balancer
+    Store in persistent storage
+  DNS provides IP address for user to communicate with service
+  CDN near users for low latency
+    Search CDN proxy for term/tag search first
+  Load balancer chooses servers
+  Storage system
+    Will go more in detail later
+  App servers
+    Provide services, business logic orchestrating components
+
+API design
+  postTweet(user_id, access_type, tweet_type, content, tweet_length,
+    media_field, post_time, tweet_location, list_of_used_hashtags,
+    list_of_tagged_people)
+    access_type: protected or public
+    tweet_type: text only, video, or image
+    tweet_length: duration of video if video
+    Uses Snowflake service to generate unique IDs - details in Sequencer chapter
+    How many hashtags?
+      Can't go over 280 char length
+    Why list of tagged people?
+      Notify people tagged in Tweet
+  likeTweet(user_id, tweet_id, tweeted_user_id, user_location)
+  (Mentions dislikeTweet, but you can't dislike Tweets... - JM)
+  replyTweet(user_id, tweet_id, tweeted_user_id, reply_type, reply_length)
+    (Shouldn't there be a content field? - JM)
+  search: GET method
+  searchTweet(user_id, search_term, max_result, exclude, media_field,
+    expansions, sort_order, next_token, user_location)
+    max_result: 10 by default
+    exclude: no replies & retweets, max limit return 800 w/o replies 3200 with
+    media_field: image, video, gif in returned tweet
+      (e.g. photos & videos tabs - JM
+    expansions: request additional objects - mentioned user, attached media, etc.
+    sort_order: most recent first by default
+    next_token: get next page of results
+  Response: JSON format
+  Two kinds of searches
+    Normal user: last 7 days
+    Academic research: all time
+  viewHome_timeline(user_id, tweets_count, max_result, exclude, next_token, user_location)
+    viewUser_timeline excludes location
+    Ads served based on user_location
+  followAccount(account_id, followed_account_id)
+    (ditto unfollowAccount)
+  retweet(user_id, tweet_id, retweet_user_id)
+    (ditto undoRetweet)
+
+Detailed design
+  Storage
+    Content from Twitter tech blogs, analysis not
+    Tracing changes over time
+    Google Cloud - HDFS (Hadoop Distributed File System)
+      Tens of thousands of servers
+      Over 300 PB data
+      Compressed by LZO, works well in Hadoop
+      Logs
+      MySQL & Manhattan backups
+      Ad targeting
+      Analytics
+      User engagement predictions
+      Social graph anaysis
+      Shifted Hadoop clusters to Google Cloud 2018
+        Better analysis, data management
+        "Partly cloudy"
+          Started shift with ad-hoc (occasional analysis)
+            and cold storage clusters
+      Big data stored in BigQuery
+        Fully scalable serverless data warehouse
+      Presto (distributed SQL query) to access
+    Manhattan
+      Needed scalable solution
+      2010 Cassandra replaced MySQL
+      2014 custom key-value store Manhattan
+      Backend for Tweets, Twitter accts, DMs, etc.
+      Run several clusters per use case
+        Small for non-common, read-only
+        Large for heavy read/write, millions of QPS
+      Also provided time-series
+        Now moved to MetricsDB
+      Uses RocksDB as storage & retrieval engine within node
+    Blobstore
+      Started 2012, photos on Tweets
+      Now videos, binary files, etc.
+      Checkpoints from in-memory to blobstore after a while
+    SQL-based databases - MySQL, PostgreSQL
+      Where strong consistency needed
+      Ads exchange, ad campaigns
+      Vertica to query common datasets
+        Tableau dashboards
+      Around 2012 Gizzard built on top of MySQL for sharding
+        Partition & replicate
+    Kafka & Cloud dataflow
+      400 billion real-time events every day
+      PB of data every day
+      Kafka on-premises
+      Google Dataflow jobs deduping & real-time aggregation
+      Jobs stored for analysis to BigQuery
+      Serving system to BigTable (NoSQL)
+      Convert Kafka topics -> Cloud pub-sub using event processor
+        Avoid data loss
+        Scale well
+    FlockDB
+      User followers, notifications, etc.
+      Graph database
+      Used for huge adjacency lists, fast read/write
+    Apache Lucene
+      Index one trillion records (!)
+      Respond to requests < 100 ms
+      Around 2019, 15s indexing latency
+      Now uses Lucene, inverted index
+      Store real-time index (last week) in RAM
+      Full index 100x size of real-time
+        Batch processing
+  Cache
+    Multi-tenant Twitter Memcached (Twemcache)
+    Redis (Nighthawk)
+    Now shifting to Pelikan
+      Others had unexpected performance, debugging was hard, etc.
+      High throughput, low latency
+      Uses many backend servers
+        peliken_twemcache replaces Twemcache
+        peliken_slimcache Memcached/Redis
+      Segcache
+        New backend server
+        Extremely scalable
+        Memory-efficient for small objects
+          200-300 byte
+          Memcached & Redis = 56 bytes of metadata/object
+          Pelikan = 38 bytes
+        Experimental server, NSDI Community Award
+  Observability
+    Zookeeper for configuration as source of truth
+    LonLens for visualization & service logs
+      Replaced by Splunk Enterprise central logging
+    Zipkin distributed tracing across multiple services
+      How long does each request take?
+      Receives data through Scribe server
+      Store in key-value store with few indices
+    Most real-time apps use Zookeeper for critical data
+      Distributed locking
+      Leader election in distribution system
+      Store service registry
+      Manhattan cluster topo info
+      Metadata
+  Real-world complex problems
+    Millions of accounts
+    Some accounts with millions of followers
+      Millions of engagments with new Tweets
+      "Heavy hitter problem"
+      Millions of counters needed
+      Single counter per operation not enough
+      Multiple distributed counters to manage burst writes
+        Sharded counters
+  Trends
+    Top-k problems (hashtags, keywords)
+      Local and global
+  Timeline
+    Home and user
+    Home timeline discussed here
+      Top-k Tweets in timeline
+      Followed accounts Tweets
+      Liked/Retweeted by followed accounts
+    Sharded counters to solve
+      Place specified counter near user to reduce latency
+        CDN
+      Nearest servers managing shards continuously updating
+    Real-time counts update with long interval
+      Wait for counts submitted from different regions
+
+Complete design
+  End users get address of nearest load balancer from DNS
+  Load balancer routes to appropriate servers
+    Tweet service
+      Forward to appropriate server
+    Say /postTweet
+      Identify attachments, store in Blobstore
+      Text, user info, metadata in different stores
+        (Manhattan, MySQL, Postgresql, Vertica)
+      Real-time processing - pull Tweets, user interactiond data
+        Apache Kafka
+      Data moved to cloud pub-sub through event processor
+      Transferred for deduping and aggrgation to BigQuery through Cloud Dataflow
+      Stored in Google Cloud BigTable
+    Timeline service
+      /viewHome_timeline
+      Forward to CDN with static data
+      Else send to srever with timeline services
+      Fetch data from different databases
+        Returns Top-k Tweets
+          Collects interactions with Tweets from sharded counters
+    Search service
+      Look at RAM in Apache Lucene for real-time Tweets
+      Then look up index server and find all Tweets with keywords
+      Consider time, location, etc, to rank Tweets
+
+Client-side load balancer
+  Dedicated load balancer not a great choice
+    Lots of services, large scale, numerous instances
+  Start of Twitter
+    Monolithic RoR with MySQL database
+    Sharded database for multiple services
+    Monolithic is a disaster because
+      Lots of developers working on same codebase, hard to update
+      Upgrading one service may break another
+      Hardware costs rise, single machine doing lots
+      Failure recovery time-consuming and complex
+    Microservices only way out
+      Server through hundreds or thousands of instances
+  Client-side load balancing
+    No dedicated intermediate load-balancing infrastructure
+    Node requesting set of nodes (client) has built-in load balancing
+      Can use various techniques to select instance
+    Every new service/instance registers with service registry
+  Advantages
+    Less hardware/infrastructure
+    Network latency reduced, no intermediate step
+    Eliminate potential bandwidth bottleneck
+    Reduce points of failure
+    No end user queue waiting for load balancer
+  Used by
+    Twitter, Yelp, Netflix
+  How?
+    Deterministic aperture
+    Part of a larger RPC framework called Finagle
+      Protocol-agnostic, open-source, async
+    Measuring effectiveness
+      Distribution of requests (OSI layer 7)
+      Distribution of sessions (OSI layer 5)
+    Power of Two Random Choices (P2C)
+      Pick two servers, select lower load
+      Exponentially better than random
+    Session distribution
+      Mesh topology - approach 1
+        Start session with all instances of service
+        Fair, evenly distributed
+        But comes at very high cost, esp. scaling
+        Unhealthy/stale may lead to failures
+      Random aperture - approach 2
+        Select random subset of servers
+        But how many to choose randomly?
+        Depends on request concurrency of client
+        Installed feedback controller inside random aperture
+          Decide subset size based on client load
+        Not fair
+        Wind up with imbalances
+      Deterministic aperture - approach 3
+        Learned to subset in last approach
+        But failed to distribute fairly
+        This approach fixes
+          Little client/server coord required
+          Minimal disruption if change in number of clients/servers
+        Represent in ring with equally distance intervals
+          Each object on ring represents node/server with number
+        Define aperture size of 3
+          Client creates session with 3 servers in ring
+          Select by circulating clockwise
+            Similar to consistent hashing
+              Except server dist in ring guaranteed equal
+        When aperture rotates or moves clients establish with new servers
+        But can still get unfair with growing client number
+        Solution:
+          Continuous ring coordinates
+          Derive client/server relationships from overlapping ring slices
+          Ring overlapping can be partial

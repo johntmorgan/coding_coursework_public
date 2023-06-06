@@ -1,0 +1,236 @@
+Abstractions
+  Obfuscating details you don't need
+  Concentrate on the bigger picture
+    Developers use libraries for big systems
+    Easy interface to use functions, hide detail how implemented
+  Database abstraction
+    Transactions
+      Hides many problematic outcomes when concurrent users reading, writing, mutating data
+      Commit in case of success, abort in case of failure
+      Either way data moves from one consistent state to a new consistent state
+      Enables end users to not be bogged down by subtle corner cases
+        Concentrate on business logic
+    Distributed systems abstractions
+      AWS, Google Cloud, MS Azure provide distributed
+      Every service offers different levels of agreement
+        Details of implementation hidden from users
+        Focus on app instead of going into depth on systems
+    Today's apps can't remain responsive/functional based on a single node
+      Exponentially growing users
+      Abstractions help engineers shift to distributed systems quickly to solve
+  This chapter, abstractions in
+    Communcations
+    Data consistency
+    Failures
+    Convey core ideas, not subtleties of concepts
+  Network abstractions: remote procedure calls "RPCs"
+    Abstraction of local procedure call
+    Hide complexities of packing and sending function reqs to remote server
+      receiving return, managing network retries
+  RPCs
+    Interprocess communication tool widely used in distributed systems
+    In OSI model of network communication
+      spans the transport and application layers
+    RPC mechanisms employed when computer program
+      causes proc or subroutine to execute in separate address space
+      Coded as a regular/local procedure call without coding details for remote interaction
+  How does RPC work?
+    Calling environment paused
+    Procedure params sent over network to execution environment
+    Remote procedure finishes
+    Results sent back to caller
+    Execution restarts as regular procedure call
+  Example
+    Client-server program
+      Client
+      Client stub
+      RPC runtime
+      Server
+      Server stub
+    On client machine
+      Client
+      Client stub
+      RPC runtime
+    On server
+      Server
+      Server stub
+      RPC runtime
+  During RPC
+    Client initiates client stub process - give params
+    Client stub stored in client address space
+    Client stub converts params into standardized format
+      Then packs into message
+      Then requests local RPC runtime to deliver
+    RPC runtime @ client delivers to server
+      Waits for message result after delivery
+    RPC runtime @ server receives message
+      Passes to server stub
+    RPC responsible for
+      Network transmission
+      Retransmission
+      Acknowledgment
+      Encryption
+    Server stub
+      Unpacks message
+      Takes out params
+      Calls desired server runtime
+        Local procedure call
+        Due required execution
+    Server
+      Executes routine with params
+      Returns to server stub
+    Server stub
+      Packs returned result into message
+      Sends to server RPC runtime
+    Server RPC runtime
+      Returns to client RPC
+    Client RPC
+      Was waiting
+      Now returns to client stub
+    Client stub
+      Unpacks result
+      Returns to caller
+  Backend use RPC as comm mechanism of choice
+    High performance
+    Simple abstraction
+      Call remote code as local function
+  Summary
+    RPC similar to local procedure
+    Execpt executed in diff process on diff computer
+    Allows apps to be built on top of distributed systems
+    Can us RPC without knowing network comm details
+      Focus on design aspects
+      Don't worry about machine and comm-level specifics
+
+Consistency models
+  Whole spectrum
+  May mean many things in distributed systems
+    Each replica node has same view of data at a given point in time
+    Each read reqeust gets value of recent write
+  Models
+    Abstractions to reason about correctnes of distributed system
+      doing concurrent reads, writes, mutations
+  When using third-party storage
+    S3
+    Cassandra
+    etc
+    Look into consistency guarantees
+  Two ends of guarantee spectrum
+    Strongest
+    Weakest
+  Weakest -> strongest
+    Eventual
+    Casual
+    Sequential
+    Strict/linearizable
+  Consistency in ACID != consistency in CAP
+  ACID
+    Database rules
+    If schema says value must be unique, consistent system ensures so
+    If foreign key will delete assoc rows, consistent system ensures
+  CAP
+    In distributed every replica of same logical value has same value at all times
+    Logical not physical guarantee
+    Due to speed of light, replicating clusters may take time
+    Prevent clients from accessing diff values at separate nodes, logical picture
+  Eventual consistency
+    Weakest
+    App does not have strict ordering requirements
+    Don't require reads to return latest write
+    All replicas eventually return same value to read
+    Returned value not meant to be latest
+    Value will eventually reach latest state
+    Ensures high availability
+    ex. DNS
+      Highly available
+      Lookup 100m devices across internet
+      Eventualy consistency
+    ex. Cassandra
+      NoSQL
+      Highly available
+  Causal consistency
+    Categorize into dependent and independent ops
+    Dependent are causally related
+    Preserve order of causally-related
+    Ex.
+      Set x = a
+      b = x + 5
+      First operation must be performed first
+    Does not ensure ordering for operations not causally related
+    On the weaker side
+      Stronger than eventual consistency
+      Prevents non-intuitive behaviors
+    Ex. commenting system
+      Replies to comment on FB post should display replies after comment
+    More models
+      Causal+ consistency
+        Speed up specific types of operations
+  Sequential consistency
+    Stronger than causal
+    Preserves ordering specified by each client program
+    Doesn't ensure writes visible instantaneously
+    Doesn't ensure writes in same order as occurred on global clock
+    Ex.
+      Don't care about order of friends posts on social media
+      Do care a single friend's posts are in order
+        And again comments in post display in order submitted
+  Strict consistency/linearizability
+    Strongest
+    Read from any replica gets latest write
+    Clients can't read until writing client gets ack
+    Not obvious in distributed system
+    Synchronous rep required
+      Do not send ack to client until new value written to all replicas
+    Affects system availability
+      Not always used
+    Quorum-based replication to increase system availability
+    Ex.
+      Update account password
+      Need to make sure old passwords don't work on any machine instantly
+      Otherwise changing passwords is useless
+    Tech
+      Amazon Aurora
+  Summary
+    Linearizable appear to carry out trans/ops in sequential real-time
+      Easy to create suitable application on top of
+      Worse performance in exchange for strong assurances
+    Need to compromise performance and availability if using strong consistency
+    May need to break invariants for increased performance
+
+Failure model spectrum
+  Obvious in world of distributed systems
+  Can appear in various ways
+  May come and go
+  May persist for long period
+  Easy -> Hard to handle
+    Fail-stop
+    Crash
+    Omission
+    Temporal
+    Byzantine
+  Fail-stop
+    Node halts permanently
+    Other nodes can still comm with it
+    Simplest, most convenient
+  Crash
+    Halts silently
+    Can't detect stopped working
+  Omission
+    Fails to send/receive
+    Send omission - fails to respond
+    Receive omission - fails to receive
+  Temporal
+    Correct results but too late
+    Why?
+      Bad algorithms
+      Bad design
+      Loss of clock synch
+  Byzantine
+    Random behavior
+      Arbitrary messages at arbitrary times
+      Wrong results
+      Stopping midway
+    Due to
+      Malicious attack
+      Software bug
+    Most challenging

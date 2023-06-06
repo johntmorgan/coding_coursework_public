@@ -1,0 +1,55 @@
+Cursors
+  Loop to traverse rows returned by query
+  Shows current position in result set
+  Can only be used in stored procedures, functions, and triggers
+  Read-only, do not update result set
+  Non-scrollable, only go through result set in sequential manner
+    No skipping, no order change
+  Asensitive
+    Point to actual data in table (MySQL)
+    Insensitive create temporary table for result set - not supported in MySQL
+      Any changes made to data via another connection can affect results - so careful!
+  Declare with DECLARE statement
+    Must declare variables used to manipulate results returned by query first
+  OPEN to initialize cursor
+  FETCH to process each row of the result set
+  NOT FOUND to handle lack of new rows - when cursor is done traversing
+  CLOSE deactivates cursor, releases memory
+
+  // Example
+  // Simple loop, no manual row manipulation needed - advantage of cursors
+  // Note that at end not only does cursor need to be closed by LastRowFetched needs to be reset
+    // Otherwise more loops may terminate prematurely.
+
+  DELIMITER **
+  CREATE PROCEDURE PrintMaleActors(
+         OUT str  VARCHAR(255))
+  BEGIN
+    DECLARE fName VARCHAR(25);
+    DECLARE lName VARCHAR(25);
+    DECLARE LastRowFetched INTEGER DEFAULT 0;
+    DEClARE Cur_MaleActors CURSOR FOR
+      SELECT FirstName, SecondName
+      FROM Actors
+      WHERE Gender = 'Male';
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+      SET LastRowFetched = 1;
+
+    SET str =  '';
+    OPEN Cur_MaleActors;
+
+    Print_loop: LOOP
+      FETCH Cur_MaleActors INTO fName, lName;
+      IF LastRowFetched = 1 THEN
+        LEAVE Print_loop;
+      END IF;
+      SET  str = CONCAT(str,fName,' ',lName,', ');
+    END LOOP Print_loop;
+
+    CLOSE Cur_MaleActors;
+    SET LastRowFetched = 0;
+  END **
+  DELIMITER ;
+
+  CALL PrintMaleActors(@namestr);
+  SELECT @namestr AS MaleActors;

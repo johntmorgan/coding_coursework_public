@@ -1,0 +1,50 @@
+Start interviewing
+
+Specific topic reading - while interviewing
+  B-Trees
+    BSTs used to store data in databases
+  Splay Trees
+  Tail recursion
+    From Grokking algorithms - but out of scope for book
+  SHA function
+    Specific details
+  Cosine similarity
+    When using KNN
+  OCR
+    Optical character recognition
+    Entry point into machine learning
+  Naive Bayes algorithm
+  Bloom Filters, HyperLogLog
+  Simplex algorithm
+  A* search (graph shortest path)
+  Viterbi (graph shortest path)
+  Mutexes, semaphores, counters
+
+Web scalability for startup engineers - book
+System Design Interview Vol 2 - book
+Educative
+  Grokking the Advanced System Design Interview
+
+MIT 6.046
+  Algorithms 2 (basically)
+    Topics in 6.006 lecture 20 (of 21)
+
+React
+  Build a side project?
+
+Technical blogs
+  Engineering at Meta
+  Meta Research
+  AWS Architecture Blog
+  Amazon Science Blog
+  Netflix TechBlog
+  Google Research
+  Engineering at Quora
+  Uber Engineering Blog
+  Databricks Blog
+  Pinterest Engineering
+  BlackRock Engineering
+  Lyft Engineering
+  Salesforce Engineering
+
+Grokking Computer Networking for Software Engineers - educative

@@ -1,0 +1,27 @@
+Having
+  Filter groups
+  Can also be used to filter rows
+    Not intended
+    Slower query
+  Should be used to decide which rows for which group
+  Remember it works on groups of rows
+    (WHERE works on individual rows by contrast)
+
+  // Only see single, divorced - avg net worth < 250 and avg net worth > 450
+  SELECT MaritalStatus, AVG(NetworthInMillions) AS NetWorth
+  FROM Actors
+  GROUP BY MaritalStatus
+  HAVING NetWorth > 450 OR NetWorth < 250;
+
+  // If using column/expression in HAVING not in SELECT, probably should be using WHERE
+  // This does work though
+  SELECT MaritalStatus, AVG(NetworthInMillions) AS NetWorth
+  FROM Actors
+  GROUP BY MaritalStatus
+  HAVING MaritalStatus='Married';
+
+  // But this is better
+  SELECT MaritalStatus, AVG(NetworthInMillions) AS NetWorth
+  FROM Actors
+  WHERE MaritalStatus="Married"
+  GROUP BY MaritalStatus;

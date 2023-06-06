@@ -1,0 +1,383 @@
+Facebook
+  Social media platform
+  Users connect and engage with diff types of media & content
+  Friend requests
+  Direct messaging
+  Profile pages
+    Posts to share
+  Create topic pages
+  Create groups for community
+  Personalized feed for users
+
+Questions
+  Discoverability
+    How can you search other users' profiles
+    Can users search via phone, email address?
+
+  Friends and following
+    How are users able to add others?
+    Can users follow and unfollow without becoming direct connection
+
+  Groups and pages
+    How do users create groups and pages
+    How do users join group? Do they need to be friends?
+
+  Privacy
+    How do you limit content being displayed to some connections
+    How do users set privacy of groups?
+      How does this affect member/non-member interaction?
+
+  Notifications
+    How will users be notified?
+    How to select which events to notify about?
+      User control level?
+
+Small start
+  Post
+  Comment
+
+Design pattern
+  Observer (notifications)
+
+Requirements
+  Users create profile page
+    Add info: work experience, education, place of living
+  Users should be able to set profile page privacy
+  Users should be able to search for groups, pages, other users
+  Users should be able to write new post and set privacy
+  Users should be able to send friend requests & respond
+    Unfriend, block
+  Users should be able to follow without adding to friend list
+  Users should be able to like, share, and comment on a post
+  System sends notifications when interaction
+    Message received
+    Friend request
+    Post comment
+  User send and receive message from other users
+  Users follow existing pages and join existing groups
+    Unfollow or leave joined groups or followed pages
+  Users create own groups and pages
+    Users later set privacy or delete groups or pages owned
+
+Use case diagram for Facebook
+  System
+    Facebook
+  Actors
+    Primary
+      Users
+    Secondary
+      Admin
+      System - sends notifications
+
+  User
+    Login/logout (no? - JM)
+    Add/update profile
+    Follow/unfollow user
+    Send message
+    Send friend request
+    Respond to friend request
+    Create/like/share/follow page
+    Create/join/leave group
+    Invite users to join group
+    Add/update/delete post
+    Like/comment/share post
+    Add/update/like/delete comment
+    Update privacy level
+    Search users/groups/pages/posts
+    Accept/reject group invitation
+
+  Admin
+    Block/unblock user
+    Enable/disable page
+    Delete group
+    Change group privacy
+
+  System
+    Friend request notification
+    Post comment notification
+    Message received notification
+    General new post notification (?? - JM)
+
+Relationships
+  Generalization
+    Admin generalization with User
+      Can do all user can do and more
+    Search generalization with "users" "groups" "pages" "posts"
+
+  Include
+    Send friend request with new request notification
+    Send message with new message notification
+    Add post with new post notification
+      (Really think this one is not a great idea - JM)
+    Add comment with new comment notification
+
+Class
+  Account
+    status: AccountStatus
+    accountId
+    username
+    password
+    email
+    resetPassword()
+    (update email? - JM)
+
+  Admin
+    blockUser()
+    unblockUser()
+    disablePage()
+    enablePage()
+    deletePage()
+    changeGroupPrivacy(group)
+
+  Person - abstract
+    name
+    address: Address
+    email
+    phone
+    User extends
+      userID
+      name
+      joinDate
+      pagesAdmin: Page {list}
+      groupsAdmin: Group {list}
+
+  Profile
+    profilePicture: byte {list}
+    coverPhoto: byte {list}
+    gender
+    friends: User {list}
+    workExperience: Work {list}
+    educationInfo: Education {list}
+    places: Place {list}
+    addWorkExperience()
+    addEducation()
+    addPlace()
+    addProfilePicture()
+    addGender()
+    (update, remove - JM)
+
+  Work
+    title
+    company
+    location
+    description
+    startDate
+    endDate
+
+  Place
+    name
+    (lat, lng? - JM)
+    (address? - JM)
+
+  Education
+    school
+    degree
+    description
+    startDate
+    endDate
+
+  Page
+    pageId
+    name
+    description
+    likesCount
+
+  Group
+    groupId
+    name
+    description
+    coverPhoto: byte {list}
+    totalUsers
+    isPrivate
+    users: User {list}
+    updateDescription(description)
+    addCoverPhoto(image)
+    (but no change privacy? - that's on admin, but these aren't? - JM)
+    implementsGroupFunctions interface
+      addUser
+      deleteUser
+      notifyUser
+
+  Post
+    postId
+    text
+    likesCount
+    shareCount
+    postOwner: User (not managed through association?)
+    settings: PostPrivacySettings
+    changePostVisibility(post)
+
+  Comment
+    commentId
+    content
+    likesCount
+    commentOwner: User
+    (so commenter is specified, but not post it belongs to? - JM)
+
+  FriendRequest
+    recipient: User
+    sender: User
+    status: FriendRequestStatus
+    requestSent: date/time
+    requestStatusModified: date/time
+    acceptRequest()
+    rejectRequest()
+
+  Message
+    messageId
+    sender
+    recipient
+    content
+    media: byte
+    addRecipient
+
+  ProfilePrivacy
+    changeFriendsListVisibility()
+    lockProfile()
+    lockProfilePicture()
+
+  Notification
+    notificationId
+    createdOn
+    content
+    sendNotification()
+
+  PageFunctionsByUser interface
+    createPage()
+    likePage()
+    followPage()
+    unlikePage()
+    unFollowPage()
+    sharePage()
+
+  Search interface
+    searchUsers(name): User {list}
+    searchGroups(name): Group {list}
+    searchPages(name): Page {list}
+    searchPosts(keywords): Post {list}
+
+  GroupFunctionsByUser interface
+    createGroup()
+    joinGroup()
+    leaveGroup()
+    sendGroupInvite()
+
+  PostFunctionsByUser interface
+    createPost(content) (update? - JM)
+    commentOnPost(post)
+    likePost()
+    sharePost()
+
+  CommentFunctionsByUser
+    createComment(post)
+    likeComment
+    (createComment(comment)? - JM)
+
+  SearchCatalog
+    userNames: Map<string, User {list}>
+    groupsNames: Map<string, Group {list}>
+    pageNames: Map<string, Page {list}>
+    posts: Map<string, Post {list}>
+    addNewUser()
+    addNewGroup()
+    addNewPage()
+    addNewPost()
+
+Enums
+  AccountStatus
+    Active
+    Blocked/Blacklisted
+    Disabled
+
+  FriendInviteStatus
+    Accepted
+    Rejected
+    Pending
+    Canceled
+
+  PostPrivacySettings
+    Public
+    Friends_of_Friends
+    Only_Friends
+    Custom
+
+CDTs
+  Address
+    zipcode
+    houseNo
+    city
+    state
+    country
+
+Relationship
+  Association
+    User one-way with:
+      Itself
+      Post, Comment, Page, Group, FriendRequest, Message, ProfilePrivacy, PostPrivacy
+      PageFunctionsByUser, GroupFunctionsByUser, CommentFunctionsByUser, PostFunctionsByUser
+      Search
+    Profile with ProfilePrivacy
+    Post with PostPrivacy, Notification
+    Notification with FriendRequest, Message, Comment
+
+  Composition
+    Account composed of User composed of Profile
+
+  Aggregation
+    Profile contains Work, Education, Places
+
+  Generalization
+    SearchCatalog implements Search interface
+    User class implements Admin class
+    Group class implements GroupFunctions interface
+
+  Inheritance
+    User extends Person
+    EmailNotification, PhoneNotification extend Notification
+
+Additional reqs
+  Recommendation
+    rating
+    description
+    isPageOrGroup
+    acceptRecommendation()
+    rejectRecommendation()
+    - creates notification
+    - page, group composed of
+
+Sequence diagram: send a friend request
+  User A searches for User B
+  If User B
+    Catalog returns User B
+    User A adds User B as friend
+    User A sends User B friend req
+    If accepted
+      User B added to User A friends list
+      User A notified
+  If no User B
+    User A receives user not found error
+
+Activity diagram: create new post
+  Initial state: User selects new post option
+  Final state: Post is published
+
+  User selects "create post"
+  "Create post" pop-up opens
+  User selects privacy
+    Public, Friends, Only Me (friends of friends?)
+  User adds text to post
+  Upload media?
+    Yes:
+      Choose media
+        Photo
+        Video
+        Location
+      Upload media
+    Add more?
+      Repeat
+  User presses post
+  TOS check
+    Bad: post rejected
+  Post published
+  (notifications? - JM)
+

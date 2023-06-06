@@ -1,0 +1,151 @@
+Constructors
+  Challenge when using OOPs is general mechanism to generate custom objects
+  Here let's use functions to construct objects, aka constructors
+    This is the best approach for prototype-based OOP
+  Constructor functions contain blueprints to a type of object
+    Has properties and methods to generate objects
+    All objects created from constructor function have same properties and methods
+      Not necessarily same values
+
+  function FunctionName(parameter1, parameter2,...){
+      //all the properties of the object are initialized here
+      //functions to be provided by objects are defined here
+  }
+
+  Keyword function defines the function
+  Constructor function name should be capitalized
+    Convention
+    Works fine without it
+  Body of function is constructor part
+    Initializes properties by setting equal to params passed into function
+      Params are optional
+    Additional functions may be defined within body
+
+  function Employee(_name, _age, _designation) {
+    this.name = _name;
+    this.age = _age;
+    this.designation = _designation;
+    // Method
+    this.setAge = newage => {
+      console.log(`setting age from ${this.age} to ${newage}`)
+      this.age = newage
+    }
+    this.company = 'Amazon';
+  }
+
+  var employee1 = new Employee('Mark', 12, 'Manager'); // create Employee object
+  // Print Employee object assigned to employee1
+  console.log(`employee1 name: ${employee1.name} age: ${employee1.age}`)
+    > employee1 name: Mark age: 12
+  console.log(`employee1 company: ${employee1.company}`)
+    > employee1 company: Amazon
+  employee1.setAge(20); // call method to set age of employee1
+    > setting age from 12 to 20
+  console.log(`employee1 name: ${employee1.name} age: ${employee1.age}`)
+    > employee1 name: Mark age: 20
+
+  Code showcases constructor function on lines 1 to 13
+  Name of constructor function is Employee
+  Is passed params _name, _age, _designation
+    Properties of object are assigned to params provided
+    Method created for property setAge by assigning to arrow function
+      Updates value of age property by referring to it as this.age
+    Company property assigned
+  On object creation, all properties are available
+  Whenever a new object is created
+    this token refers to new object and sets property values
+    Each created object shares the same properties
+      Assigned specific values so functionalities not mixed
+
+  Properties *cannot* be added after object created
+
+  function Employee(_name, _age, _designation){
+    // Properties assignment passed as arguments
+    this.name = _name;
+    this.age = _age;
+    this.designation = _designation;
+    // Method
+    this.setAge = newage => {
+      console.log(`setting age from ${this.age} to ${newage}`)
+      this.age = newage;
+    }
+    // Property assigned by constructor function
+    this.company = 'Amazon';
+  }
+
+  Employee.planet = 'Earth'; // try adding property planet
+
+  var employee1 = new Employee('Mark', 20, 'Manager'); // create Employee object
+  var employee2 = new Employee('Bob', 30, 'Accountant'); // create Employee object
+
+  employee1.gender = 'male'; // add property gender
+  // Print Employee object assigned to employee1 and employee2
+  console.log(`employee names: ${employee1.name}, ${employee2.name}`)
+    > employee names: Mark, Bob
+  console.log(`employee planet: ${employee1.planet}, ${employee2.planet}`)
+    > employee planet: undefined, undefined
+  console.log(`employee gender: ${employee1.gender}, ${employee2.gender}`)
+    > console.log(`employee gender: ${employee1.gender}, ${employee2.gender}`)
+
+Prototype objects with constructor functions
+  All objects created by constructor function share its prototype
+
+  function Employee(_name, _age, _designation){
+    // Properties assignment passed as arguments
+    this.name = _name;
+    this.age = _age;
+    this.designation = _designation;
+    // Method
+    this.setAge = newage => {
+      console.log(`setting age from ${this.age} to ${newage}`)
+      this.age = newage;
+    }
+    // Property assigned by constructor function
+    this.company = 'Amazon';
+  }
+  Employee.prototype.name = 'Bill';
+  var employee1 = new Employee('Mark', 20, 'Manager'); // create Employee object
+  var employee2 = new Employee('Bob', 30, 'Accountant'); // create Employee object
+  // Print Employee objects prototype objects
+  console.log(employee1.name, employee2.name);
+    > Mark Bob
+  console.log(Employee.prototype);
+    > Employee { name: 'Bill' }
+  console.log(`employee protoypes: ${employee1.__proto__}, ${employee2.__proto__}`);
+    > employee protoypes: [object Object], [object Object]
+  console.log(`protoype equalities: ${employee1.__proto__ === employee2.__proto__}`);
+    > protoype equalities: true
+
+  So both created objects have the same prototype object
+  Constructor function has its own prototype object accessed as follows
+    Employee.prototype
+  This prototype is assigned to all objects' __proto__ property
+
+
+  function Employee(_name, _age, _designation){
+    // Properties assignment passed as arguments
+    this.name = _name;
+    this.age = _age;
+    this.designation = _designation;
+    // Method
+    this.setAge = newage => {
+      console.log(`setting age from ${this.age} to ${newage}`)
+      this.age = newage;
+    }
+    // Property assigned by constructor function
+    this.company = 'Amazon';
+  }
+
+  var employee1 = new Employee('Mark', 20, 'Manager'); // create Employee object
+  var employee2 = new Employee('Bob', 30, 'Accountant'); // create Employee object
+  // Print Employee objects prototype objects
+  console.log(`employee protoypes: ${employee1.__proto__}, ${employee2.__proto__}`);
+    > employee protoypes: [object Object], [object Object]
+  console.log(`protoype equalities: ${employee1.__proto__ === employee2.__proto__}`);
+    > protoype equalities: true
+  console.log(`protoype equalities: ${Employee.prototype === employee2.__proto__}`);
+    > protoype equalities: true
+  console.log(Employee, Employee.__proto__, Employee.prototype);
+    > [Function: Employee] [Function] Employee {}
+
+  Note that Employee.protoype is equivalent to __proto__ property of created object

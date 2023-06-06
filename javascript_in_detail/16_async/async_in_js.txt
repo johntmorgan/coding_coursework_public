@@ -1,0 +1,51 @@
+Async in JS
+  JS supports async programming
+  Tricky if don't have knowledge of blocking code, JS
+
+Callback functions
+  To leverage async functions
+  Invoked as soon as blocking function finishes
+
+  function complete(){
+    console.log("function completed!");
+    return;
+  }
+  setTimeout(complete, 2000.0);
+
+  complete is callback function for setTimeout
+  When setTimeout ends, invokes callback function
+    Complete is passed to it as an argument
+  setTimeout is an event
+  When the event ends, call the callback function of the event
+
+Event loop
+  JS always runs within some environment
+    Web browser
+    Or say smart light bulb
+  Environments use JSEngines to run JS
+    The way Chrome uses V8
+  All environments/engines provide JS an event loop
+  JS hands blocking code to the environment
+    Environment schedules and invokes events
+  After event ends, environment adds callback function of events to callback queue
+  Event loop monitors call stack and callback queue
+    Moves callback functions into call stack
+
+  Ex.
+
+  function complete(name){
+    return function (){console.log('function complete: ',name)};
+  }
+  setTimeout(complete('setTimeout 5000'), 5000.0);
+  setTimeout(complete('setTimeout 2000'), 2000.0);
+  console.log('End of program');
+    > End of program
+    > function complete:  setTimeout 2000
+    > function complete:  setTimeout 5000
+
+  Event loop
+    Checks if call stack is empty
+    Checks if functions in callback queue
+    Moves function from callback queue to call stack only when call stack empty
+  Program ends only when call stack AND callback queue are empty
+

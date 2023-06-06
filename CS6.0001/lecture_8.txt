@@ -1,0 +1,134 @@
+OOP
+  Tough if you haven't programmed before
+  Let's talk about objects
+  Every object we've seen has a type
+  Behind scenes every object
+    Data representation
+    Ways of interacting
+  An object is an instance of a type
+    1234 is an instance of an int
+  Even functions are objects
+  Literally everything in Python is an object
+  Can create new objects of a type
+  Can manipulate objects
+  Can destroy objects
+    Explicitly using del or just "forget" about them
+    Python will collect dead objects and reclaim memory
+  Have two objects: blue car, pink car
+    Can be created by same blueprint
+      Number of wheels, doors, height, length
+    Interface
+      Can paint it
+      Can have it make a noise
+      Can drive it
+  [1,2,3,4] is type list
+  Behind scenes list L
+    Linked list of cells
+    Value at specific index
+    + pointer
+    To next value at next index
+    Where is the memory location of n+1 index
+  How to manipulate lists
+    L[i], L[i:j], etc.
+  Internal representation is private
+    We don't know what's internal
+    We don't know how sort() works
+    The beauty of OOP
+  Advantages of OOP
+    Bundle data into packages
+    Contribute to decomposition and abstraction
+    Much more resuable, easier to read
+  Separate bits
+    Implement data type
+    Use implemented data type
+  You implement your own data type iwth a class
+    define the class name
+    define class attributes
+      data representation, ways to interact
+  Use class by creating new instance of class
+  Example today: coordinate object
+  Defines a point in an x,y plane
+  class Coordinate(object):
+  object = class parent
+  object is the most basic type in python
+  in class, data and procedures that belong to class
+  data and procedures work only with object of this type
+  attributes: for coordinate, has two numbers for x and y
+  methods: function that only works with class
+
+  init - special method call function when creating object
+  self - refers to particular instance of class
+    don't have a particular instance yet, self is a placeholder
+    to refer to attribute, use dot notation
+    CAN be named anything, by convention ALWAYS self
+
+  class Coordinate(object):
+    def __init__(self, x, y):
+      self.x = x
+      self.y = y
+
+  Now let's start making objects
+    c = Coordinate(3,4)
+    origin = Coordinate(0,0)
+
+  Only give two parameters - Python says self is c/origin
+  print(c.x)
+  print(origin.x)
+  But no way to interact... yet
+  Let's add some methods
+
+  def distance(self, other)
+    x_diff_sq = (self.x - other.x)**2
+    y_diff_sq = (self.y - other.y)**2
+    return (x_diff_sq + y_diff_aq)**0.5
+
+  print(c.distance(origin)) -> 5
+  Could also write:
+  print(Coordinate.distance(c, zero))
+  Easy to understand, but cumbersome
+  So by convention it's better to do the first one
+    Python will look up the type of the object
+    Have been using this notation from beginning of class
+  c = Coordinate(3,4)
+  print(c)
+  <__main__.Coordinate object at 0x7fa918510488 > (Last bit is memory location)
+  That's uninformative
+  Define a str method that tells Python what to do when you call print
+
+  def __str__:
+    return "<" + str(self.x) + "," + str(self.y) + ">"
+
+  Let's create a coordinate object
+  print(c)
+  print(type(c))
+  <class __main__.Coordinate> - c is an object of type class Coordinate
+  print(Coordinate)
+  <class __main__.Coordinate>
+  print(type(Coordinate))
+  <type 'type'>
+
+  Use isinstance(c, Coordinate)
+  print(isinstace(c, Coordinate))
+  true
+
+  Special operators
+    +, -, ==, len etc.
+  Just like __str__ if you implement
+  __add__
+  __sub__
+  __eq__ (==)
+  __lt__ (<)
+  __len__ len(self)
+  __str__ print self
+
+  Let's create a fraction object - see code sample
+  Represent with num, denom
+  assert type(num) == int and type_denom == int, "ints not used"
+  Note return new Fraction object when returning
+
+Book notes
+  An abstract data type is a set of objects and the operations on those objects
+  Interface with the rest of the program provides an abstraction barrier
+  Try to have an object-centered way of programming
+    Not writing lines of code, but creating abstractions
+

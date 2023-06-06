@@ -1,0 +1,111 @@
+The 'this' keyword and binding in JS
+  Almost all beginners struggle with it
+  The value of this depends on context
+
+When used in a function, value depends on how function is invoked
+
+Implicit Binding
+  When dot notation is used to call function in object or object of class
+  this is bound implicitly
+
+  class Developer {
+    constructor(firstname, lastname) {
+      this.firstname = firstname;
+      this.lastname = lastname;
+    }
+
+    getName() {
+      return `${this.firstname} ${this.lastname}`;
+    }
+  }
+
+  var me = new Developer('Robin', 'Wieruch');
+  console.log(me.getName()); // 'this' is me
+  var hobbit = new Developer('Frodo', 'Baggins');
+  console.log(hobbit.getName()); // 'this' is 'hobbit'
+
+  Left of the Dot Rule
+    Whatever is left of the dot is what this is
+      So me, then hobbit in the above example
+
+Explicit Binding
+  Standalone functions can be bound explicitly to objects at call time
+  Use .call to bind object to this
+  Use .apply to pass all arguments as array
+
+  class Developer {
+    constructor(firstname, lastname) {
+      this.firstname = firstname;
+      this.lastname = lastname;
+    }
+  }
+
+  var printName = function() {
+    console.log(`My name is ${this.firstname} ${this.lastname}`);
+  };
+
+  var me = new Developer('Robin', 'Wieruch');
+
+  // '.call()' can be used to explicitly bind a function to an object
+  printName.call(me);
+
+  // printName() is not bound to an object so 'this' is undefined
+  printName();
+
+  var printInfo = function(lang1, lang2, lang3) {
+    console.log(`My name is ${this.firstname} ${this.lastname} and I know ${lang1}, ${lang2}, and ${lang3}`);
+  }
+
+  // Create an array of languages
+  languages = ['Javascript','C++', 'Python'];
+
+  // Pass each argument individually by indexing the array
+  printInfo.call(me, languages[0], languages[1], languages[2]);
+
+  // Pass all the arguments in one array to .apply()
+  printInfo.apply(me, languages);
+
+
+  bind() sets a this context and returns a new function with a bound this context
+  // Here we bind the me object to the printName() function and get a new function called newPrintName()
+  const newPrintName = printName.bind(me);
+
+  // bound newPrintName() prints appropriately
+  newPrintName();
+
+  // unbound printName() prints undefined
+  printName();
+
+
+New binding
+  Set this explicitly within a function
+
+  var printInfo = function(firstname, lastname, lang1, lang2, lang3) {
+    this.firstname = firstname;
+    this.lastname = lastname;
+    console.log(`My name is ${this.firstname} ${this.lastname} and I know ${lang1}, ${lang2}, and ${lang3}`);
+  }
+
+  languages = ['Javascript','C++', 'Python'];
+
+Global context
+  When this is used outside of any context - class/function/object
+  Refers to global object - usually the window object
+  In a terminal, undefined
+
+Caveat: arrow functions and 'this'
+  Methods like apply() and bind() don't have any effect on this in an arrow function in JS
+  Value remains the same as it was when the function was called
+  To bind to a different value, use a function expression
+
+  printInfo('Robin', 'Wieruch', languages[0], languages[1], languages[2]);
+
+  let me = {
+    name: "Robin",
+    getName: function(){
+      console.log(this.name);
+    }
+  }
+
+  var getMyName = me.getName.bind(me);
+  getMyName();

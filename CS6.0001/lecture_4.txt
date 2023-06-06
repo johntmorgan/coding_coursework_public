@@ -1,0 +1,143 @@
+In the last lecture:
+  More string manipulation
+  Using for loops on strings directly
+  Different implementations to the same problem
+    Guess and check
+    Approximation method
+    Bisection method
+  Finishes introduction to more basic methods
+  How to structure your programs
+  Nice reusable, readable code
+  Functions!
+  So far each file is some piece of code
+  Each code is a sequence of instructions
+  Everything in one file
+  Ok for smaller problems
+    Gets messy quickly
+    Repeat yourself, hard to keep track of details
+  Add more utility to programs, not length
+  Functions are methods to acheive:
+    Decomposition
+    Abstraction
+  But first: real-life example!
+    If I give you all the projector's components
+    Who could build the projector
+      One guy
+    Who could use an assembled projector with a computer?
+      Many
+      Most of us can use the final version
+      But without knowing what's inside - black box
+  Given a projector
+    Want to project large image on large stage (Olympics example)
+    Build one large projector one time?
+    Use several smaller projectors
+      All working together to solve problem
+  That's the idea of decomposition
+    Does the same thing behind the scenes
+    But produces different output for different inputs
+  Apply same concepts to programming
+  Decomposition
+    Problem of creating structure in your code
+    Divide code into smaller modules
+  These modules
+    Self-contained
+    Break up code
+    Reusable
+    Keeps code organized
+    Keeps code coherent
+    Also, in a few weeks - OOP with classes
+  Abstraction
+    You don't need to know the details to use what you wrote
+    Just reuse
+    Write function specification - docstring
+      Input
+      What it does
+      Output
+  Functions reusable chunks of code
+    Wear 2 different hats
+      Writing the function
+      Using the function - assuming it's correct
+  Function characteristics
+    Has a name
+    Has parameters (0 or more)
+    Has a docstring (optional but highly recommended)
+    Has a body
+    Returns something
+  is_even function (see lec_4.py)
+  def keyword
+    Tells Python you are defining a function
+    In parentheses you give any params/arguments
+    Then colon
+  Everything in function is indented
+    Then docstring - triple quotes
+    Multi-line comment
+      Inputs, function does, return
+  To call function
+    Say name, give parameters
+  You can do anything in a function you can do in a normal program
+  Key line, return statement
+    Another keyword
+    (Can leave it out in Rails, for better or worse...)
+  Scope
+    Scope is another word for environment
+    Function environment completely separate from main program
+    Entering scope, passing variable in
+    Function finish, pass value back
+  In the global scope
+    Python sees function def f(x):
+    Python it's some code there, don't care what's in there
+    Then hit a function call, new environment, use new scope
+    First thing you do is map parameters
+    (example: add 1 and kick back out)
+    Once you return something, the function scope gets erased
+  One warning
+    What if no return statement?
+    Python will return None - absence of value
+  Return and no return examples (lec_4.py)
+  Using function to iterate (is_even)
+  In Python, everything is an object
+    Integers, floats, functions
+  Note func_c(func_a) - func_c evaluates first then func_a when return is called
+  Variable defined outside function doesn't matter
+    Can reuse inside scope
+    Unless you use a global variable, but that's frowned on
+      (In the readings)
+      Generally bad idea - loophole around scopes, gets very messy
+        Kinda defeats purpose of functions
+      Occasionally useful - in a few lectures
+  Python Tutor
+    Shows values, scopes being created and destroyed
+
+  Book notes
+    Functions provide "lambda expression" - manipulate whatever objects are used as parameters (including functions themselves)
+    Can also use keyword arguments - set param = in twhen passing in, does not have to be in order
+      Cannot follow keyword arguments with non-keyword arguments
+    Can set default parameter values, as in Ruby
+    "Symbol table" keeps track of all names in a given scope - can be called a "stack frame"
+    When the function completes, the stack frame goes away.
+    Last in first out situation - popped off the top of the stack
+      But if you bind a function to a variable that remains, it stays even though the stack frame has been popped
+    Objects are only treated as local if bound!
+      You can print x from inside a function as long as you do not assign it
+      But you will fail if you assign it after the print function
+    Docstrings can be accessed by typing help(function_name)
+    Recursion (not actually in course!)
+      Simplest definition is factorial
+      Palindrome - return True if length <= 1
+      return if first and last are equal as well as palindrome minus first and last
+    To make a global variable:
+      global numFibCalls
+      And then use!
+      Ruby: $numFibCalls
+    Modules
+      import *name of py file*
+      import circle
+        circle.pi - dot notation
+      from circle import *
+        imports all variables and you don't need to use dot notation to all
+    Files
+      file = open('filename', permissions)
+      file.write
+      file.close() # Important, otherwise may not save
+      \n = newline
+      permissions - write, read, append (if adding to end, write will overwrite)

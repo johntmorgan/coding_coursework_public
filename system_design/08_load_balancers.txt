@@ -1,0 +1,293 @@
+Load Balancers
+  Millions of requests per second in datacenter
+  Thousands, even 100k servers work together to share
+  Load balancers (LB) divide requests among servers
+    Do fairly
+    Avoid crashing/overloading servers
+  First point of contact in data center after firewall
+  Not needed for a few hundred or even thousand requests per second
+  Provide
+    Scalability
+      Seamlessly add servers
+      Upscaling and downscaling transparent to end users
+    Availability
+      Even if some servers go down, service available
+      Load balancer needs to hide faults & failures
+    Performance
+      Forward requests to low load servers
+  Three well-known groups of servers
+    Web
+    App
+    Database
+  Load balancers used between instances of these server types
+    Client -> Web server
+    Web -> App
+    App -> Database
+    Can be used between any two multi-instance services really
+  Key services
+    Health checking of servers
+      Via heartbeat protocol
+    TLS termination
+      Handle TLS termination with client
+      Reduce load on servers
+    Predictive analytics
+      Predict traffic patterns
+        Current traffic
+        Stats on traffic over time
+    Reduce human intervention
+      Less sys admin in handling failures
+    Service discovery
+      Client requests forwarded to appropriate hosting servers
+      Inquiring about service registry
+    Security
+      Mitigate denial of service (DoS) at different layers of OSI
+    Flexibility, reliability, redundancy, efficiency
+  Are they a single point of failure?
+    Usually deploy in pairs
+    Or cluster in enterprises
+      Use heartbeat comms to check health
+    If primary fails, backup(s) take over
+    If cluster fails, manual rerouting
+
+Global vs local
+  Global: distribute traffic across multiple geo regions (GSLB)
+  Local: within a data center
+    Improve efficiency and resource utilization
+  Global server load balancing
+    Make sure all traffic load forwarded to data center
+    Failure in data center -> reroute to other centers
+    Decisions based on
+      User location
+      Number of hosting servers in data centers
+      Health of data centers
+      Also offers automatic zonal failover (coming)
+    Can be installed at centers
+    Can be purchased as a service (LBaaS)
+    Local load balancing layers maintain control plane connection
+      Provide info about local LB health & server farm
+  Load balancing in DNS
+    DNS responds with multiple IP addresses for a query
+    Reorder addresses each time respond
+    Users naturally fan out across servers
+    This is GSLB
+    DNS uses round-robin
+    Round-robin limitations
+      Goes round-robin by ISP
+        ISPs have different users
+      Doesn't consider end-server crashes
+        Keeps distributing until TTL expire
+        Hurts availability
+    Round-robin still widely used by many DNS providers
+      DNS uses short TTL for cached entries
+        Effective load balancing among data centers
+  DNS not the only form of GSLB
+    Application delivery controllers (ADCs)
+      Part of application deliver network (ADN)
+      Superset of LBs offering various services incl. load balancing
+      Perform web accel to reduce load from server farm
+      Services:
+        Caching
+        SSL offloading
+        Proxy/reverse proxy
+        IP traffic optimizatoin
+        GSLB
+    Cloud-based load balancing (discussed later)
+  DNS plays a big role but
+    Small size of DNS packet (512 bytes) can't include all IP addresses
+    Limited control over client behaviors
+      May not take top option from list
+    Some IPs may belong to busy data centers
+    Clients can't determine closest data center
+      DNS geolocation, anycasting can be done, not trivial
+    Failure recovery slow
+      Caching esp with long TTL
+  Local load balancing
+    Within specific data center
+    Like reverse proxy
+    Try to divide incoming request
+    Seamlessly connect using a virtual IP address
+
+Local load balancers, advanced
+  Algorithms
+    Distribute client requests this way
+    Round-robin
+      Forward to server in repeating, sequential manner
+    Weighted round-robin
+      If some servers have higher capacity
+      Higher weight = more assignments
+    Least connections
+      Assign to servers with fewer existing connections
+      Keep state of number & mapping of connections (more later)
+    Least response time
+      Forward to server that is responding fastest
+    IP hash
+      Provide different level of service depending on user IP
+      Hash the user IP address
+    URL hash
+      If some services provided by specific servers only
+    More
+      Randomized
+      Weighted least connections
+  Static vs. dynamic algos
+    Static
+      Do not consider changing server state
+      Based on knowledge of server configs
+      Not complex
+      Single router/commodity machine can handle
+    Dynamic
+      Considers current/recent server state
+      Communicate with servers
+        This adds overhead
+      Algorithm much more complicated
+      Different load balancing servers must comm with each other
+        Algo must be modular, no single entity doing all decision making
+      Improves forwarding decisions
+      Forwards to active servers only
+      Generally worth added effort & complexity
+  Stateful vs. stateless
+    State maintained to hold session info, diff clients w/servers
+      Can be kept at lower layer (distributed cache, database)
+      Otherwise kept at load balancer
+    Stateful load balancing
+      Maintain state of sessions established
+      Incorporates this in algo to perform load balancing
+      Retain a data structure essentially
+        Across all load balancers - share with each other
+      Increases complexity
+      Limits scalability
+    Stateless
+      No state, obviously
+      Faster
+      More lightweight
+      Use consistent hashing for forwarding
+      May not be as resilient if infrastructure changes
+        e.g. new app server joins/leaves
+        Local state may still be required
+    General def
+      Stateful = state maintained across different load balancers
+      Stateless = single load balancer maintains state for internal use
+  Types
+    Perform at transport layer (OSI layer 4)
+      On the basis of protocols - TCP, UDP
+      Maintain connection/session with clients
+      Ensure same TCP/UDP forwarded to same server
+      May support TLS termination
+    Perform at application layer (OSI layer 7)
+      Based on data of application layer protocols
+      App-aware forwarding based on HTTP headers, URLs, cookies, user ID
+      Perform TLS termination
+      May rate-limit users
+        Http route
+        Rewrite headers
+    Layer 7 = smart in terms of inspection
+    Layer 4 = faster
+  Deployment
+    In practice, single layer LB isn't enough at a large data center
+      Multiple layers coordinate
+      May have a 3-layer LB
+        ECMP routers, layer 3
+        TCP/UDP, layer 4
+        App data, layer 7
+  Tiers of LB
+    Tier-0
+      DNS
+    Tier-1
+      Equal cost multipath (ECMP)
+      Divide traffic on basis of IP or other algorithm
+        Round-robin, weighted round-robin
+      Balance load to higher tier load balancers
+      Vital role in horizontal scalability of higher-tier LBs
+    Tier-2
+      Layer 4 load balancers
+      Make sure for any connection, all incoming packets to same tier-3 LBs
+        Consistent hashing
+        But also need to maintain local/global state
+      Glue between tier-1 and tier-3 LBs
+        Remove = erroneous forwarding in case of failure, dynamic LB scaling
+    Tier-3
+      Layer 7, providing services
+      In direct contact with back-end servers
+        Health monitoring at HTTP level
+        Ensure scalability by evenly distributing among healthy back-end servers
+        Ensure availability by monitoring server health
+      Reduce burden on servers
+        Handle low-level details like TCP congestion protocols
+          ex. Tahoe, Reno
+        Discovery of Path MTU (maximum transmission unit)
+          Largest packet size can send on network w/o fragmentation
+        Basically handle trivial tasks, leave computation to app servers
+      May forward requests depending on requested URL (examples)
+    Summary
+      Tier 1 balances load among load balancers
+      Tier 2 ensures smooth transition tier 1 to tier 3 in case of failures
+      Tier 3 does actual load balancing between backend servers
+      All tiers perform tasks to reduce burden on end-servers
+  After response achieved
+    Do not forward back through all load balancer tiers
+    Server forward directly to routers (tier 1) through tier 3
+      Forward response from data center
+      "Direct routing" (DR)
+      "Direct server return" (DSR)
+    Do not send directly to tier 1
+      Tier 3 maintain some state of connection - e.g. SSL encryption/decryption
+      Needed for seamless client experience
+  Which tier is more prone to bugs?
+    Tier 3, more complexity
+  Which tier has the most load balancers
+    Tier 3
+      Performs app-specific analysis and more sophisticated computations
+      Maintains state of large number of app servers
+  Implementations
+    Different options
+      Hardware
+      Software
+      Cloud
+    Hardware
+      Earliest form, 1990s
+      Standalone devices
+      Expensive
+      High performance
+      Handle lots of concurrent users
+      Configuration is problematic, lots of human resources
+      Availability issue, more hardware needed for failover
+      High maintenance & operation costs
+      Compatibility issues, least flexible
+      May have vendor locks
+      Not the go-to option today even for high $$ enterprises
+    Software
+      Increasingly popular
+      Flexible
+      Programmable
+      Cost effective
+      On commodity hardware
+      Scale well
+      Availability good
+        Shadow load balancers are cheap
+      Provide predictive analysis
+    Cloud load balancers
+      Recently introduced
+      LBaaS
+      Users pay by usage or according to service-level agreement (SLA)
+      May not replace local load balancing
+      Ideal for global traffic management between zones
+      Easy to use
+      Low management
+      Metered cost
+      Flexibility in usage
+      Auditing
+      Monitoring services to improve business decisions
+    Client-side
+      Another implementation
+      Suited when numerous services with many instances each
+        ex. Twitter
+      Most three-tier apps use traditional though
+  Conclusion
+    Load balancers have come a long way
+      Hardware -> cloud
+    Key in any enterprise-level service
+      Horizontal scaling requires good load balancing layer
+    Load balancing layer must do
+      Load balancing
+      Session maintenance
+      TLS offloading
+      Service discovery

@@ -1,0 +1,75 @@
+Tying into a page
+First let's combine Row components into a Venue
+  
+  import * as React from "react"
+  import Row from "./row"
+
+  interface VenueProps {
+    rows: number
+    seatsInRow: number
+  }
+
+  const Venue = (props: VenueProps) => {
+    const rowNumbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    const rowItems = rowNumbers.map(rowNumber => {
+      return (
+        <Row
+          key = {rowNumber}
+          rowNumber = {rowNumber}
+          seatsInRow = {props.seatsInRow}
+        />
+      )
+    })
+    return (
+      <table className="table">
+        <tbody>{rowItems}</tbody>
+      </table>
+    )
+  }
+
+  export default Venue
+
+// Here the venue returns an HTML table
+  The props type is a little different
+  Basically the structure is similar
+  Using map to convert a list of rowNumbers to a list of rowItems
+  Cheating by hardcoding the rowNumbers
+    We'll see how to get that from Rails in a future chapter
+
+Tying the components in with Webpacker
+  Want a top-level pack that will embed in existing DOM
+    Different from React apps that take over the entire page
+
+  import * as React from "react"
+  import * as ReactDOM from "react-dom"
+  import Venue from "../components/venue"
+
+  document.addEventListener("turbolinks:load", () => {
+    if (document.getElementById("react-element")) {
+      ReactDOM.render(
+        <Venue rows={10} seatsInRow={10} />,
+        document.getElementById("react-element")
+      )
+    }
+  })
+
+// Install React and ReactDOM - library to interact with DOM
+  Then imports Venue component
+  Standard DOM event listener
+    Waiting for turbolinks:load to signify DOM is complete
+    When event fires, checks to see if DOM element to connect exists
+      This is a DOM element with "react-element" ID
+    If there, calls ReactDOM.render
+      This takes two arguments
+        The component to render (Venue, with props passed in)
+        And a component to render into - same react-element
+      Method gives React control over the DOM element that is second arg
+      Will use first argument as top-level component to draw
+  Replace partial that was rendering seats with simply
+    <div id="react-element" />
+  Also need to load pack on page
+    In layout file app/layouts/application.html.erb
+      <%= javascript_pack_tag("venue_display") %>
+    Will be downloaded with every page, but Turbolinks means only loaded once per session
+      May want to put somewhere else, not ideal from performance perspective
+      

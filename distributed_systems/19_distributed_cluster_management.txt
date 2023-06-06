@@ -1,0 +1,94 @@
+Distributed Cluster Management
+Kubernetes
+  Designed by Google
+    Inspired by Borg, similar system
+  Cloud Native Computing Foundation maintains
+  Manages cluster of nodes and other resources
+  Handles all aspects of running software in cluster
+    Deployment
+    Scaling
+    Discovery
+  Cluster contains set of nodes, two roles
+    Master
+    Worker
+  Worker runs user applications
+  Master manages and coordinates workers
+  Worker nodes make set of resources available to cluster
+  Master nodes decide how resources allocated to applications
+  Apps divided into two categories
+    Long-running services, constnatly run, respond to incoming requests
+    Jobs, run for bounded amount of time doing data processing
+  Availability and durability
+    Multiple master nodes can run in parallel
+      One active leader
+      Multiple passive followers
+  Uses etcd
+    Storing all cluster data
+    Performing leader election
+    Transmitting change notifications between cluster parts
+  Cluster resources
+    Various objects (nodes, services, jobs) = resources
+    Represented in etcd as key-value entries
+    Central resource = pod
+  Pod
+    Smallest deployable unit of computing
+    Group of one or more containers with shared stoarge/network
+      and specification for how to run containers
+    Container = lightweight, portable executable image
+      Contains software and all dependencies
+      Kubernetes supports multiple container runtimes
+        Docker most popular
+  Persistent volume
+    Storage in cluster with lifecycle independent of any pod using it
+  Job
+    Creates one or more pods and ensures specified number succcessfully terminate
+  Service
+    Abstraction that defines logical set of pods and policy by which to access
+    Every resource characterized by desired state
+      Usually desired number of replicas for service
+    Various components cooperate to ensure cluster's current state matches desired state
+
+Components of master & worker nodes
+  Master node
+    API server
+    Scheduler
+    Controller Manager
+  API Server
+    Front-end of Kubernetes cluster
+      Allows users to inspect resources, modify, create new
+  Scheduler
+    Detects newly created pods with no nodes assigned
+      selects a node for them to run on
+      Uses user-specified constraints, affinity specs, data locality
+  Controller
+    Runs all available controllers in master node
+      Controller is a control loop that watches state of cluster through API server
+      Makes changes in order to move current state towards desired state
+    Node controller
+      Notice and respond to node failures
+    Replication controller
+      Maintain correct number of pods according to user spec
+    Endpoints controller
+      Creates endpoints for services
+  Worker nodes
+    Kubelet
+    Proxy
+  Kubelet
+    Agent runs on each node in cluster
+    Receives pod specifications
+    Makes sure containers described in specs running and healthy
+  Proxy
+    Network proxy
+    Maintains network rules
+    Allow network communication to pods
+      from sessions inside and outside cluster
+  Concurrency control
+    Operations under eventual consistency
+    Recovers from failures and converges back to desired state
+    Multiple components read and update state of cluser
+    Need for control to prevent anomalies from reduced isolation
+    Achieve with conditional updates
+      Every resource object has resourceVersion
+        Represents version of resource as stored in etcd
+      Used to perform compare-and-swap (CAS)
+        Prevent anomalies like lost updates

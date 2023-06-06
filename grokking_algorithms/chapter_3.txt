@@ -1,0 +1,32 @@
+Recursion
+  Open a box, it's full of more boxes, key somewhere in there
+    Do you pile up the boxes and then go through them one by one (while loop)
+      If more boxes, add to pile
+    Or open the first box, then the second etc
+      if box inside, look in that (recursion)
+    Second one is clearer to author
+  Recursion is used when it makes the solution clearer
+    There is NO performance benefit
+    In fact sometimes loops are better for perofrmance
+    Although arguably recursion helps *programmer* performance
+  Because recursive functions call themselves, easy to end up in an infinite loop
+    Need a base case to avoid that, where function does NOT call itself
+  The stack (call stack)
+    Imagine a todo list of sticky notes
+    Can only push and pop notes on and off
+    When you call a function from another function
+      The calling function is paused in a partially completed state
+  Recursive functions also use the call stack
+    Basic example with factorial follows:
+      Call fact 3, then from fact 3 fact 2 goes on top of the stack while fact 3 pauses
+      And so on and then fact 1 returns 1, back up through 2 and then 3, returning 6
+    Note each layer of stack has its own x, which other layers can't access
+    Using the stack is convenient
+      However, there's a cost, it takes a lot of memory
+        (Stack overflooooow - JM)
+      If you hit the point where it's a problem
+        Rewrite to use a loop OR
+        Use "tail recursion"
+          Advanced topic out of scope for book
+          Only supported by some languages
+          (Hmm - John)

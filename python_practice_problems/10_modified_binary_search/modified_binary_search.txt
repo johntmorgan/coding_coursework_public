@@ -1,0 +1,15 @@
+Modified binary search
+  Divide in half, start/middle/end pointers
+  If mid > target, then move end to left of mid
+  If mid < target, move end to right of mid
+  O(log(n))
+
+Pattern
+  Sorted array or sequential range
+    Or at least portions - maybe 2 sections
+  Find target (or first/last occurrence)
+
+Real-world
+  Dictionary - find word
+  Debugging - divide code in half
+  Search student docs by id

@@ -1,0 +1,75 @@
+Dynamic programming
+  Let's go back to the knapsack problem
+    Which items to steal by putting in your pack?
+    Can try every possible set of course
+      Power set
+      O(2^n) time
+      Very very slow
+  Dynamic programming time!
+    Solve subproblems and build up
+    Hard concept, lots of examples incoming
+  Knapsack
+    4 lb knapsack
+    Grid out what happens at 1 lb, 2 lb, 3 lb, 4 lb
+    At 1 lb you can only steal the lightest item
+      Optimaly for 1 lb
+    At 2 lb, same
+    At 3 lb, 3 lb item is better to steal
+    At 4 lb, 4 lb item is better to steal
+    But then 3 lb item plus BEST 1 lb item is better!
+    cell[i][j] = max(cell[i - 1][j], current item val + cell[i - 1][j - item weight])
+    What if you add another row?
+      No problem, just calculate out that row
+    Can you fill columns ahead of rows?
+      Yes, for this problem
+      Not for every problem
+    What if you get a fractional weight item
+      Need to recalculate with a higher granularity grid
+    Fractions of an item?
+      Doesn't work for this problem
+      But if you've got $/lb, use a greedy algorithm
+        Steal the most expensive $/item stuff, in descending order
+  British Landmarks example
+    See the best stuff in 2 days - handmade grid
+  What if you added 3 Paris landmarks?
+    Any 1 would take 1.5 days
+    But if you travel 1 day, they take 0.5 each
+    Can't do it!
+    Dynamic programming only works when each subproblem is discrete
+      When it does NOT depend on another subproblem
+  What if you want to solve another subproblem first?
+    "Sub-knapsacks"
+    Yeah no problem
+  Is it possible the best solution doesn't fill the knapsack completely?
+    Yes
+    What if you had a $1m diamond weighing 3.5lb
+  Overall so far
+    Good when you're trying to optimize given a constraint
+    Usable when problem can be broken into discrete subproblems with no dependencies
+    Every solution involves a grid
+      Values in the cells are usually the optimization goal
+    Each cell is a subproblem
+  Longest common substring
+    Someone misspells a word, what did they actually mean
+    Get a list of words off by one letter
+    if word_a[i] == word_b[j]:
+      cell[i][j] = cell[i - 1][j - 1] + 1
+    else:
+      cell[i][j] = 0
+    Then take the largest number in the grid!
+      Not the last cell, like the knapsack problem
+  Longest common subsequence
+    if word_a[i] == word_b[j]:
+      cell[i][j] = cell[i - 1][j - 1] + 1
+    else:
+      cell[i][j] = max(cell[i - 1][j], cell[i][j - 1])
+  Where is this used in the real world?
+    Biology, subsequence finds similarities in DNA strands
+      Similarities between animals, diseases
+    Git diff
+    Levenshtein difference
+      Measures overall string similarity
+      Everything from spellcheck to detecting copyrighted data
+    Word wrap
+      i.e. Microsoft Word
+    

@@ -1,0 +1,646 @@
+Databases
+Problem statement
+  Can you make an app without databases?
+  Say we have WhatsApp
+    People comm with friends
+  Where can store info permanently and retrieve
+    People's names, respective messages
+  What if use simple file?
+    Store all records on separate lines
+  Limits of file storage
+    No concurrent management to separate users
+    Can't grant different access to different users
+    How will system scale with thousands of entries
+    How to search for content in a short time
+
+Solution
+  Databases!
+  Organized collection of data managed & accessed easily
+  To make it easy to store, retrieve, modify, delete data
+  Apps using
+    Banking systems
+    Online shopping
+    etc
+  Different orgs, different databases
+    ex. WDCC (World Data Center for Climate)
+      Largest in world
+      220 terabytes web data
+      6 petabytes additional data
+
+Two basic types
+  SQL (relational)
+  NoSQL (non-relational)
+  Differ in terms of use case, type of info, storage method
+
+Relational databases
+  Like phone books with contact numbers and addresses
+  Organized
+  Predetermined schema
+
+Non-relational databases
+  Like a file directory
+    Store anything from contact info to shopping preferences
+  Unstructured
+  Scattered
+  Dynamic schema
+
+Advantages
+  Essential for every business or organization
+  Stores all essential info
+    Personnel records
+    Transactions
+    Salary info
+    etc
+  Key reasons
+    Managing large data, can't do with other tools
+    Retrieve accurate data (consistency)
+    Easy updating
+    Security
+    Data integrity
+    Availability
+      Replicate on different servers
+    Scalability
+      Divide via partitioning
+      Manage load on single node
+
+Four key lessons
+  Types of databases
+  Replication
+  Partitioning
+  Cost-benefit
+
+Types of databases
+  Relational
+  Non-relational
+
+Relational databases
+  Adhere to schema storing data
+  Data stored has prior structure
+  Organizes into 1+ relations (tables)
+  Unique key for each tuple (instance)
+  Each entity consists of instances and attributes
+    Instances stored in rows
+    Attributes stored in columns
+  Link tuple to tuple in another table
+    Store primary keys in other tables, foreign keys
+  Structured Query Language (SQL) used to manipulate
+    Insert, delete, retrieve
+  Popular, dominant
+  Advantages
+    Simplicity
+    Robustness
+    Perforamnce
+    Scalability
+    Compatibility in managing generic data
+  Provide ACID properties
+    Atomicity
+    Consistency
+    Isolation
+    Durability
+    Powerful abstraction
+    Simplifies complex interaction with data
+    Hides many anomalies
+      Dirty reads, dirty writes, read skew, lost updates, write skew, phantom reads
+      Just a transaction abort
+    ACID is like a big hammer by design
+      Generic enough for all problems
+      If some app only needs to worry about few anomalies
+        Custom solution for better performance
+        Higher complexity
+  ACID
+    Atomicity
+      Transaction = atomic unit
+      Either all statements in transaction execute, or none
+      If statement fails, abort and roll back
+    Consistency
+      Database should be in consistent state at all times
+      If multiple users want to view record, return same result
+    Isolation
+      Multiple concurrent transactions shouldn't affect each other
+      Final state of database as if executed sequentially
+    Durabilty
+      Completed transactions survive permanently, even w/system failure
+  Database management systems (DBMS)
+    MySQL
+    Oracle Database
+    Microsoft SQL server
+    IBM DB2
+    Postgres
+    SQLite
+  Why relational
+    Default choice for structured data storage
+    ACID transactions
+    Very convienient to use
+    Flexible
+      Data definition language -> modify database
+      Can even modify schema while other queries happening
+    Reduced redundancy
+      Info on specific entity in one table
+      Relevant data in other tables linked by foreign keys
+      "Normalization"
+      Remove inconsistent dependencies
+    Concurrency
+      Very important for enterprise
+      Avoid e.g. double booking hotel room
+      Handled through transactional access to data
+    Integration
+      Aggregating data from multiple sources
+      All applications can easily access each other's data
+      Concurrency control handles access
+    Backup & disaster recovery
+      State of data consistent at any time
+      Export & import make backup and restoration easy
+      Cloud-based = continuous mirroring
+  Drawbacks
+    Impedence mismatch
+      Difference between relational model and in-memory data structures
+      Values in a table take simple values
+        Can't be a structure or list
+
+NoSQL
+  Advantages
+    Good for large volume of semi-structured and unstructured
+    Low latency
+    Flexible data models
+    Relax data consistency restrictions
+  Characteristics
+    Simple design
+      No dealing with impedance mismatch
+      Store all data in one document
+        vs. multiple tables with joins
+      Simple and easier, write less code, easy to debug, easy to maintain
+    Horizontal scaling
+      Run databases in large cluster
+      No issue when concurrent user numbers increase
+      Easier to scale out
+        Specific employee in single document instead of multiple tables over nodes
+      Spread data across multiple nodes
+        Balance data and queries automatically
+        Failed node can be transparently replaced
+    Availability
+      Node replacement without app downtime
+      Data replication for high avail, disaster recovery
+    Support unstructured and semi-structured
+      Work with no schema at time of database config or writes
+      Document databases are structureless
+        Docs (JSON, XML, BSON, etc) can have different fields
+    Cost
+      Cheap, open source
+        RDBMSs pretty expensive by comparison
+      Cheap commodity servers
+        Some RDBMSs require proprietary hardware & storage
+  Divided into several categories
+    Document store
+      MongoDB
+    Columnar database
+      Cassandra
+    Key-value store
+      DynamoDB
+    Graph database
+      NeoDB
+  Key-value
+    Use key-value methos like hash table to store data
+    Key serves as unique/primary key
+    Value can be anything - simple scalar to complex object
+    Easy partitioning and horizontal scaling
+    Techs
+      DynamoDB
+      Redis
+      MemcachedDB
+    Use-case
+      Efficient for session-oriented
+      Web apps
+      Store user data in main memory or database during session
+        User profile
+        Recs
+        Targeted promotions
+        Discounts
+        etc
+      Unique ID (key) assigned to session for access and storage
+    Example
+      Product ID & type of item = primary key (Dynamo DB)
+      Attributes can be anything
+        1 Book ID -> book names
+        3 Movie ID -> movie names
+  Document database
+    Store and retrieve docs in XML, JSON, etc.
+    Composed of hierarchical tree structure
+      Maps
+      Collections
+      Scalar values
+    May have varying structures and data
+    Techs
+      MongoDB
+      Google Cloud Firestore
+    Good for unstructured catalog data
+      JSON files
+      Complex structurd hierarchical data
+    Ex.
+      E-commerce, product with thousands of attributes
+        Can't store in relational database
+        Store attributes in single file for easy management & fast read
+      Content management
+        Blogs
+        Video plaforms
+        Entity stored as single document
+  Graph database
+    Use graph structure to store data
+    Nodes = entities
+    Edges = relationships
+    Interesting patterns between nodes
+    Store data once, interpret differently depending on relationships
+    Techs
+      Neo4J
+      OrientDB
+      InfiniteGraph
+    Kept in store files for persistent storage
+    Each file contains data for specific part of graph
+    Use case
+      Social applications
+        Provide interesting facts & figures among diff users & activities
+        Drive analyses and decisions based on entity relationships
+      Data regulation & privacy
+      Machine learning research
+      Financial services apps
+  Columnar database
+    Store data in columns not rows
+    Access all entries in column quickly & efficiently
+    Techs
+      Cassandra
+      HBase
+      Hypertable
+      Amazon SimpleDB
+    Use case
+      Large number of aggregation and data analytics queries
+      Drastically reduce disk I/O
+        Reduce amount of data loaded
+  Drawbacks
+    No specific standard
+    Porting from one NoSQL to another challenging
+    Tradeoffs between consistency and availability - highly variable
+    No strong data integrity
+    Data might be slowly converging - eventual consistency
+
+  Choose the right database
+    Relational DB
+      If data to be stored is structured
+      ACID properties required
+      Size of data small, can fit on node
+    Non-relational DB
+      Data is unstructured
+      Need to serialize and deserialize data
+      Size of data large
+    These days programmer-facing differences are blurring
+      May use SQL constructs to talk to NoSQL, similar performance & consistency
+      Ex.
+        Google Cloud Spanner
+          Georeplicated
+          Automatic horizontal sharding
+          High-speed global snapshots
+  Quiz note
+    Document use-cases
+      Web-based mulitiplayer games
+        Store objects in same structure
+      Real-time feed
+        Variably structured data
+    Key-value use-cases
+      Persist user state
+      Implement caching
+
+Data replication
+  Why
+    Availability under faults
+      Disk failures
+      Node failures
+      Power outages
+    Scalability
+      Increasing reads, writes, etc
+    Performance
+      Low latency and high throughput for clients
+    Hard/impossible to achieve on single node
+  Replication
+    Keeping multiple copies at various nodes
+      Preferably geo distributed
+  For now, let's assume one node can hold all data
+    Partitioning is upcoming, where this is not true
+    Often replication & partitioning go together
+  Complexities
+    Simple if data doesn't require frequent changes
+    Main problem is maintaining changes over time
+    How do we keep multiple copies consistent
+    How to deal with failed replica nodes
+    Replicate synchronously or asynchronously
+      Replication lag in case of async
+    Handling concurrent writes
+    Consistency model exposed to end programmers
+  Sync vs Async
+    Sync: primary node waits for secondary node acknowledgments
+      Only reports to client after all seconday successful
+    Async: primary node doesn't wait
+      Reports to client after self updated
+    Sync keeps all secondary up to date with primary
+      But if secondary node down or network partition
+      Unable to acknowledge client
+      High latency
+    Async
+      Primary node can continue even if all secondary down
+      But if primary fails, uncopied writes lost
+    Typical consistency/availability tradeoff
+  Data replication models
+    Single leader, primary-seconary
+    Multi-leader
+    Peer-to-peer, leaderless
+  Single leader, primary-secondary
+    Data rep across multiple nodes
+    One node is primary
+    Primary processes any writes to data on cluster
+    Primary sends all writes to secondary, keeps in sync
+    Appropriate for read-heavy workload
+    Scale with increasing readers
+      Add more followers
+    Replicating data to many followers = primary bottleneck
+      Bad idea for write-heavy workload
+    Read resilient
+      Secondary nodes handle reads in case of primary node failure
+    Inconsistent if asynch replication
+      Clients reading from replicas may see inconsistent data
+        if primary node fails
+    What happens when primary fails?
+      Secondary node appointed as primary
+        Manual approach: operator decides
+      Automatic approach
+        Leader election
+    Primary-secondary replication
+      Statement-based
+      Write-ahead log (WAL)
+      Logical (row-based) log rep
+    Statement-based replication
+      Primary node saves executed statements
+      Sends statements to secondary
+        Used in MySQL before 5.1
+      Seems good, but
+        Non-deterministic function (e.g. NOW()) may result in different writes
+        What if write statement depends on prior write
+          and reach follower wrong order
+    Write-ahead log (WAL)
+      Primary node saves query in write-ahead log file before exec
+      Logs used to copy data onto secondary nodes
+        Used in Postgres, Oracle
+      Problem: only defines data at very low level
+        Tightly coupled with inner structure of DB engine
+        Leader/follower upgrades complicated
+    Logical (row-based) replication
+      All secondary nodes replicate actual data changes
+      Binary log records changes to DB tables at record level
+      Secondary node reads data and changes accordingly
+      Avoids difficulties of WAL
+        (Why do Postgres etc. still use WAL? - JM)
+  Multi-leader
+    Multiple primary nodes process writes
+    Send to all other primary and secondary
+    Used in databases w/tools, eg. Tungsten Replicator for MySQL
+    Useful in apps where continue offline work
+      Calendar app set meetings w/o internet access
+      Once online, replicate changes to other nodes
+    Better performance, scalability than single-leader
+    Problem
+      Primary nodes may modify same data, creating conflict
+    Conflict handling
+      Conflict avoidance
+        Verify all writes for record go to same leader
+        Still an issue, user moves location and hits diff data center
+      Last-write-wins
+        Assign timestamp to each update
+        Latest timestamp selected
+        But clock synch is challenging
+          Clock skew can result in data loss
+      Custom logic
+        Handle conflict according to application needs
+    Replication topologies
+      Circular
+      Star
+      All-to-all (most common)
+      Circ & star: one node fail = affects whole system
+  Peer-to-peer/leaderless
+    No primary node
+    All nodes have equal weight
+    Popularized: Amazon DynamoDB
+    Can also be inconsistent
+      Concurrent writes
+      Quorums to solve
+    Quorums
+      n nodes, w written, r read from
+      Get updated value as long as w + r > n
+      At least one node will have updated value
+      Configurable in Dynamo-style databases
+
+Data partitioning
+  Why
+    Increasing data & read-write traffic
+    Scalability pressure on traditional databases
+      Latency and throughput affected
+    Trad databases attractive
+      Range queries, secondary indices, ACID transactions
+    Single node database not enough for load
+      Distribute over many nodes
+      Export all nice properties of single-node
+        Big challenge in practice
+    Can move to NoSQL
+      Historical codebase = expensive to handle
+    Can use third-party
+      Integration has complexities
+      Many opportunities to optimize for problem
+    Data partitioning (sharding)
+      Use multiple nodes
+      Each node manages some part of whole data
+  Sharding
+    How to divide among multiple nodes
+    Split into smaller chunks stored diff locations
+    Must be balanced, each node gets similar amount
+      Otherwise queries fall on specific partitions "hotspots"
+    Options
+      Vertical
+      Horizontal
+  Vertical
+    Put different tables in different instances
+    Break table into multiple tables
+    Be careful if joins between tables
+      Keep in single shard
+    Increase speed of data retrieval from
+      table with columns with wide text
+      binary large object "blob"
+      Split column into different table
+    Intricate
+    Manual common
+      Stakeholders need to carefully decide
+  Horizontal
+    Split by row
+    Suitable to automation, even under dynamic conditions
+    Two strategies
+      Key-range
+      Hash
+    Key-range
+      Continuous range of keys
+      e.g. by customer ID
+      If multiple tables bound by foreign keys, shard with them
+      Partition key column replicated in all tables
+        Increased storage
+        But efficient to locate
+        Data routing uses at app tier to map queries
+      Primary keys unique across all shards
+        Avoid key collsiion during data migratoin
+          and during merging in online analytical processing (OLAP) env
+      Good
+        Easy to implement
+        Range queries using partitioning keys
+      Bad
+        Can't do range queries using other keys
+        Poor key selection may result in uneven data storage
+    Hash-based
+      Hash function on attribute
+      Mod by number of partitions
+      Give each partition range of hashes
+      Good
+        Uniform key distribute
+      Bad
+        Can't perform range queries
+          Keys spread over all partitions
+    How many shards/DB?
+      Find how much each node can serve with acceptable perf
+        Say 50 GB
+        If have 10 TB
+        200 shards
+    Consistent hashing
+      Assign each server/item a place on an abstract circle, ring
+      Scale without compromising performance
+      Good
+        Easy to scale horizontally
+        High throughput & latency
+      Bad
+        Random assignment of nodes in ring -> non-uniform dist
+    Rebalancing paritions
+      When?
+        Data distribution unequal
+        Too much load on single partition
+        Query traffic up, need more nodes
+      Avoid hash mod n
+        Adding/removing nodes changes every partition number
+        Rebalancing very costly
+      Fixed partitions
+        Create more partitions than nodes at start
+        New node can take partitions from existing
+        Bad:
+          Partition small = lots of small partitions, overhead
+          Partition large = rebalancing, failure recovery expensive
+        Used by
+          Elasticsearch
+          Riak
+          Many more
+      Dynamic partitioning
+        Split into two when size threshold reached
+        Assign splits to different nodes
+        Adapts well to overall data size
+        Difficult to rebalance while serving reads & writes
+        Used in
+          HBase
+          MongoDB
+      Partition proportional to nodes
+        Number of partitions proportionate to nodes
+        Every node has fixed partitions
+        New node?
+          Splits some partitions at random, takes half, leaves half
+          Can result in unfair split
+        Used in
+          Cassandra
+          Ketama
+      Automatic or manual
+        Depends on org need
+  Secondary indexes
+    What if have to access this way?
+    Partition by document
+      Each has secondary indices covering documents in partition
+      But have to request from all partitions to cover
+        Expensive!
+        Read latencies high
+    Make a global index for secondary terms
+      Figure out where index is located, say partition by alpha
+      More read-efficient
+      But writing affects multiple partitions
+        Writing more intensive, complex
+  Request routing
+    How does client know which node to connect to?
+    Problem "service discovery"
+    Solutions
+      Allow clients to request any node, forward appropriately
+      Add routing tier
+      Make clients already have partitioning info
+    Zookeeper
+      Separate management server to track changes
+      Each node connects for this information
+      Used by
+        HBase
+        Kafka
+        SolrCloud
+  General
+    Partitioning standard protocol now
+    Increases read & write speeds
+    Increases system availability, scalability, performance
+
+Tradeoffs
+  Centralized - Good
+    Easy data maintenance
+    Strong consistency, ACID transactions
+    Must simpler programming model
+    More efficient for businesses
+  Centralized - bad
+    Can slow down, causing increased latency
+    Single point of failure, may not be accessible
+  Distributed - good
+    Fast, easy access
+      Retrieve from nearest shart
+    Store data with different levels of distribution transparency separately
+      Location transparency - query as if stored locally
+      Partition trans - query as if unpartitioned
+      Replication trans - query as if only single copy
+    Divide intensive transactions into optimized subqueries
+      Process in parallel
+  Distributed - bad
+    If data needed from multiple sites, slow
+    Joins require fetching data from multiple nodes
+      Expensive, complex
+    Difficult to maintain consistency of data
+    Updates and backups take time to synchronize data
+  Example with numbers
+    Vertical shard
+    Three tables - store, product, sales
+    Store 10k tuples, site A
+    Product 100k tuples, site B
+    Sales 1m tuples, site A
+    Select store key from store join sales join product
+      Where region = East (secondary store) est. n = 100k
+      and Brand = Wolf (secondary product) est. n = 10
+    Each tuple = 200 bits, 25 bytes
+    Data rate = 50M bits/second
+    Access delay = 0.1 seconds
+    a = total access delay
+    b = data rate
+    v = total data volume
+    T = comm time
+    T = a + v/b
+    Move product table to A, process at A
+    T = 0.1 + 100k * 20 / 50m = 0.5 seconds
+    Move store and sales to B, process at B
+    T = 0.2 + (10k + 100k) * 200 / 50m = 4.24 seconds
+    Restrict Brand at site B to Wolf "projection" and move to A
+    T = 0.1 + 10 * 200 / 50m = 0.1 seconds
+    Third approach best
+    Careful query optimization required!
+
+Overall
+  Data distribution (sharding) aims to improve:
+    Reliability
+    Performance
+    Balanced storage capcity and dollar costs
+  Optimize queries carefully
+  Centralized databases still have a place
+  Choose carefully according to needs of app!

@@ -1,0 +1,283 @@
+Dynamic Programming 2
+  A bunch more examples today
+  Longest common subsequence
+  Longest increasing subsequence
+  Made up problem from 6.006
+    Alternating coin game
+  Explore some new ideas
+    Multiple sequences
+    Subsequences
+    Parent pointers
+    Subproblem constraints and expansion (more in next lecture)
+  Review
+    Subproblem defintion
+      Trying prefixes, suffixes, and substrings
+      Prefix & suffix nice because only linear number of them
+        Generally want a polynomial number
+      Sometimes need substrings, quadratically many of those
+      Easy to set up subproblems, hard to test if you did it right
+    Did you setup right?
+      Can you write recurrence relation that relates one subproblem solution to smaller subproblem solutions
+      Trick: identify question about subproblem solution that if you knew answer
+        Reduce to "smaller" subproblem
+    Another way to say this
+      Locally brute-force all possible answers to question
+        As long as polynomially many
+        Each recursively calls smaller subproblems
+        But because memoize, only solve each subproblem once
+      And so in the end, running time = # subproblems * recursive work done in relation
+      For that to work - relations between subproblems must be acyclic
+        Give topological order on the subproblem DAG
+        Talked about informally last time
+        But if vertices are subproblems, edge from smaller problem to bigger problem
+          Evaluating b calls a
+          Arrow from a to b, from things you do first to things you do later
+      Base cases - needed
+      Original problem
+        Sometimes can just solve via subprolems
+        Sometimes need to combine multiple
+          We'll see this today
+Longest common subsequence (LCS)
+  Classic problem
+    Even has applications to things like computational biology
+      Measure 2 DNA sequences in common
+      Or edit distance
+  Sequence of letters (for example)
+    Hieroglyphology
+    Michaelangelo
+  Take any subset of letters in sequence - can have blanks
+    Actual answer for Hiero/Michael: Hello
+  Given two sequences A and B
+    Find longest sequence L that's a subsequence of both A and B
+  Whereas in bowling problem
+    Had a simple sequence of numbers
+    Here, have two sequences
+  Subproblems for multiple inputs
+    Multiply the subproblem spaces
+      In the sense of cross product of sets
+    Let's choose suffixes for A and suffixes for B
+      Every subproblem in LCS is going to be a pair of suffixes
+      L(i, j) = LCS(A[i:], B[j:])
+        0 <= i <= |A|, 0 <= j <= |B|
+          Note include empty suffix, easy base case
+  Relate:
+    L(i, j) = if A[i] = B[j]:
+                1 + L(i + 1, j + 1) // A[i] and B[j] might as well be in LCS
+              else: // clearly H or M cannot be in LCS, but don't know which
+                max{ L(i + 1, j), L(i, j + 1)}
+                // one of A[i] and B[j] not in LCS
+    Why just add 1 if A[i] = B[j]
+      Could maybe pair A[i] with something later... but could just pair right away anyway
+    So just two cases, pretty simple formula
+  Topo:
+    for: i = |A|,...,0: for j=|B|,...,0
+  Base:
+    L(|A|, j) = 0 = L(i, |B|) - if done with one string, all done
+  Original problem
+    L(0, 0)
+  Time
+    How many subproblems? * Cost of subproblems
+    Takes constant time for equality check and recursive call
+    theta(|A| * |B|) subproblems * theta(1) = theta(|A| * |B|) - quadratic time
+  Pretty straightforward
+    Understanding case where equal
+    Brute forcing whether to advance in i and j
+  In general, if have constant number of sequences
+    But go to n sequences, can't afford this - probably no polynomial time algorithm
+  LCS subproblem DAG
+    For "their" vs "habit" -> "hi"
+    Drawn in parent pointers
+      Diagonal edges where letters match
+    Wind up starting at end of word from calculation
+      Have predecessors already calculated
+    Follow unique path back to base case
+      Diagonal pointers are the output letters
+      Not only get length, but can find actual LCS using parent pointers
+      Can use in most dynamic programs including the ones from today
+
+Longest increasing subsequence
+  Has almost the same name, but quite different in behavior
+  Another famous example
+  Given one sequence
+    CARBOHYDRATE
+  Find longest subsequence that is strictly increasing - can use same for not strictly
+    ABORT
+  Given sequence A, find LIS(A)
+    Suffixes again (Jason prefers prefixes)
+  Subproblems:
+    L(i) = LIS(A[i:]) // not quite right, needs a tweak
+  Relate:
+    Question: is i in LIS(A)?
+    L(i) = max{L(i + 1), 1 + L(i + 1)} // no, haven't enforced increasing at all
+  Trouble we have here
+    When recursively compute, don't know the first item in that answer
+    Want to add a constraint to know where LIS starts
+  Starting again:
+  Subproblems
+    L(i) = LIS(A[i:]) that starts with A[i] includes A[i]
+      Now no longer solving full problem
+      Another question we ask is where to start - n choices
+      Adding an extra constraint - challenging to think about
+  Orig
+    max{L(i) | 0 <= i <= |A|}
+  Relate
+    L(i) = 1 + max{L(j) | i < j < n = |A|, A[i] < A[j]} U {0} // max if holds in Python
+  Topo order
+    For i = |A|,...,0
+  Base:
+    L(|A|) = 0
+  Time
+    theta(|A|) subproblems
+    But work in relation is non-trivial now
+    theta(|A|) non-recursive work in each subproblem
+    result:
+      theta(|A|^2)
+    (note later, can make nlogn with a bunch of data structure augmentation - fun exercise)
+  So we're using this idea of asking a question
+    And guessing or brute forcing the answer in two places
+    Both i and j - j lets us confirm local increase
+    Then also use local brute force to solve original problem - only |A| choices
+      Should mention in running time analysis - whatever costs to solve original problem
+        + theta(|A|) - still theta(|A|^2) overall
+
+LIS subproblem DAG for Empathy -> Empty
+  Only draw from smaller letters to bigger letters
+  Looking for longest path in DAG
+    No weights in this picture
+    Put -1 on every edge, ask for shortest path
+    Can also get subsequence from other letters
+      How do you get that? Parent pointers, just like before
+  Rather than writing recursive/memoization or bottom up
+    Could instead construct a graph and run DAG shortest paths
+    But these are the same thing - easier to write dynamic programming code
+      Already know topo sort order, don't have to do DFS etc.
+      Much simpler to just write down the recurrence once you figured it out
+        But they are the same
+      Can't write Fibonacci as SSSP problem
+        But a lot of dynamic programming you can
+
+Alternating coin game
+  Last problem for today - more next week
+  2 player game
+  Looking for optimal strategy
+  Sequence of coins
+    5, 10, 100, 25
+  Players take turns
+  Given coins of value v0, ...., v(n - 1)
+    Sequence, given in some order, not necessarily sorted
+  Take turns
+    Choose either first coin or last coin
+      Say you choose first in the above sequence
+      You might think 25 is pretty good
+        But then opponent gets 100 and wins
+      So you are actually better off choosing 5 and then they have to leave an opening for you to take 100 next
+  Exponentially many strategies here
+    Either step, can go left or right
+    DP algorithm that solves fast
+    This is going to be n^2 time
+  Subproblems:
+    Very naturally a substring problem
+      Can't look at just suffixes or prefixes - need to look at left or right
+      If you need both, almost certainly need substrings
+  X(i, j) = max total value I can get from this game if played on coins of value vi,...,vj
+    One way to define it, could write down a relation on this
+      Reasonable way, exploiting that game is zero sum
+  Cleaner way to solve problem - add a third coordinate
+  X(i, j, p)
+    p has only two choices - two players
+    want to know if player p goes first - either player
+  Question: what is first move?
+    Two possible answers, brute force and take max
+  Relate:
+    X(i, j, me) = max{X(i + 1, j, you) + vi, X(i, j - 1, you) + vj}
+    X(i, j, you) = min{X(i + 1, j, me), X(i, j - 1, me)}
+      No + vi or vj, because "me" does not get points
+      "you" is a tough adversary, trying to minimize score
+  Topo order
+    increasing j - i
+  Base
+    X(i, i, me) = vi
+    X(i, i, you) = 0
+  Original problem
+    X(0, n, me)
+  Running time
+     // doing substrings
+    * theta(1) // non-recursive work, max of 2 numbers
+    = theta(n^2), quadratic
+  Picture of solution
+    Two versions of each problem
+      Where you vs me start
+    Maximum points "me" can get is 105
+      Follow parent pointers back, gives you optimal strategy
+      All numbers are how many "me" gets
+        "you" is just total sum minus "me"
+  High level
+    What we're doing is subproblem expansion
+      Will expand on this next lecture
+    Start with the obvious problem - suffix, prefix, substring
+      Sometimes still not enough subproblems
+      Made a move, problem turned upside down
+      When run into a new problem, build more subproblems
+        As long as it stays polynomial, get polynomial time
+  Next lecture
+    A lot of subproblem expansion
+      Multiplying subproblems by n or n^2
+    Can add more constraints
+      Brute force all the possible constraints that could apply
+
+Recitation
+  Max subarray sum
+  Given an array of n integers, what is the largest sum of any nonempty subarray?
+  Example:
+    A = [-9, 1, -5, 4, 3, -6, 7, 8, -2] -> 16 ([4, 3, -6, 7, 8])
+  Solution notes
+    Could brute force in O(n^3) by simple computing sum of O(n^2) subarrays in O(n) time
+    Faster by noticing it must end somewhere
+  Subproblem:
+    Suffix/prefix like longest increasing subsequence
+    x(k) = max subarray sum ending at A(k) // suffix
+    x(k) = max subarray sum beginning at A(k) //prefix
+  Relate
+    Either use k - 1 or do not
+    x(k) = max{A[k], A[k] + x(k - 1)}
+  Topo
+    Subproblems x(k) depend on strictly smaller k so acyclic
+  Base
+    x(0) = A[0]
+  Original
+    max{x(k) | k in {0,...,n - 1}}
+  Time
+    Number of subproblems is O(n)
+    Work per subproblem is O(1)
+    Time to solve original problem O(n)
+    O(n) time in total
+  JM
+    Prefix
+    x(k) = max{A[k], A[k] + x(k + 1)}
+
+  Edit distance
+    Minimum number of edits to transform string A into string B
+    Delete char of A, replace char of A with another letter, insert char between two characters of A
+    Describe O(|A||B|) algorithm to compute edit distance between A and B
+  Subproblems
+    Modify A until last character matches B
+    x(i, j): minimum number of edits to transform A(i) to prefix up to B(j)
+  Relate
+    If A(i) = B(j), then match
+    If not, edit to make last element of A equal to B(j)
+    Edit either insertion, replacement, or deletion
+    Deletion removes A(i)
+    Insertion adds B(j) to end of A, then removes it ant B(j)
+    Replacement changes A(i) to B(j) and removes both
+    x(i, j) = x(i - 1, j - 1) if A(i) = B(j)
+            = 1 + min(x(i - 1, j), x(i, j - 1), x(i - 1, j - 1)) if Ai != B(j)
+  Topo order
+    strictly smaller i and j, so acyclic
+  Base
+    x(i, 0) = i, x(0, j) = j
+  Original problem
+    Solve subproblems via recursive top down or iterative bottom up
+    Solution to original problem is x(|A|, |B|)
+    Number of subproblems: O(n^2)
+    Work per subproblem: O(1)
+    O(n^2) running time

@@ -1,0 +1,34 @@
+With Check
+  Views usually contain subset of rows from table
+  Can insert or update rows which are not visible
+  WITH CHECK OPTION clause used at time of view creation
+    Maintain consistency when updating table through updatable view
+    User may not insert or update rows not visible through view
+
+  CREATE VIEW SingleActors AS
+  SELECT FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions
+  FROM Actors
+  WHERE MaritalStatus = 'Single';
+
+  // Create an inconsistency by insering a married actor
+
+  INSERT INTO SingleActors (FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions)
+  VALUES ('Tom', 'Hanks', '1956-07-09', 'Male', 'Married', 350)
+    > Appears in table when SELECT * FROM Actors;
+    > Does not appear in view SELECT * FROM SingleActors;
+
+  // Now let's restrict - again using OR REPLACE since view already exists
+  CREATE OR REPLACE VIEW SingleActors AS
+  SELECT FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions
+  FROM Actors
+  WHERE MaritalStatus = 'Single'
+  WITH CHECK OPTION;
+
+  // Try
+  INSERT INTO SingleActors (FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions)
+  VALUES ('Matt', 'Damon', '1970-10-08', 'Male', 'Married', 160)
+    > ERROR 1369 (HY000): CHECK OPTION failed 'MovieIndustry.SingleActors'
+
+  // Works fine
+  INSERT INTO SingleActors (FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions)
+  VALUES ('Charlize', 'Theron', '1975-08-07', 'Female', 'Single', 130);

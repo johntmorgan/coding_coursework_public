@@ -1,0 +1,30 @@
+Updateable Views
+  Views can be used to update data in the underlying tables
+  To be updateable
+    View may not have aggregate functions (MIN, MAX, COUNT, SUM, AVG, etc)
+      DISTINCT keyword
+      LEFT JOIN
+      GROUP BY
+      HAVING
+      UNION
+      Subquery that refers to same table appearing in FROM clause
+
+    // Make a simple view with actor names, net worth
+    CREATE VIEW ActorView AS
+    SELECT Id, FirstName, SecondName, NetWorthInMillions
+    FROM Actors;
+
+    // Now let's update Brad Pitt's net worth to $250m
+    // Hits both view and underlying table
+    UPDATE ActorView
+    SET NetWorthInMillions = 250
+    WHERE Id = 1;
+
+    // To find out which views are updateable query views table in information_schema database
+    SELECT Table_name, is_updatable
+    FROM information_schema.views
+    WHERE table_schema = 'MovieIndustry';
+
+    // Now delete an actor
+    DELETE FROM ActorView
+    WHERE Id = 11;

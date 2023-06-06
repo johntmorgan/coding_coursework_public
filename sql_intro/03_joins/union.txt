@@ -1,0 +1,82 @@
+Union
+  Combine results from several queries together
+  Does not join tables
+  Clubs results together
+
+  // Results in a big list of actor first names and URLs
+  SELECT FirstName FROM Actors
+  UNION
+  SELECT URL FROM DigitalAssets;
+
+  // Make a list of full names of richest, poorest actors in list
+  // Queries must be wrapped by parens when using ORDER BY or LIMIT in UNION subqueries
+  (SELECT CONCAT(FirstName, ' ', SecondName) AS "Actor Name"
+  FROM Actors
+  ORDER BY NetworthInMillions DESC
+  LIMIT 2)
+
+  UNION
+
+  (SELECT CONCAT(FirstName, ' ', SecondName) AS "ThisAliasIsIgnored"
+  FROM Actors
+  ORDER BY NetworthInMillions ASC
+  LIMIT 2);
+
+  When using Union, two result sets should have same num, order of columns
+
+  // Error
+  SELECT FirstName, Id FROM Actors
+
+  UNION
+
+  SELECT FirstName FROM Actors;
+
+  // Can insert null column
+
+  SELECT FirstName, Id FROM Actors
+
+  UNION
+
+  SELECT FirstName, null FROM Actors;
+
+  // Result does not output duplicate values
+  SELECT MaritalStatus FROM Actors
+
+  UNION
+
+  SELECT Gender FROM Actors;
+
+  > Just single instance of each marital status, gender
+
+  // To show all duplicates use UNION ALL
+
+  SELECT MaritalStatus FROM Actors
+
+  UNION ALL
+
+  SELECT Gender FROM Actors;
+
+  // UNION may ignore ORDER BY when used without LIMIT
+
+  (SELECT CONCAT(FirstName, ' ', SecondName) AS "Actor Name"
+  FROM Actors
+  ORDER BY NetworthInMillions DESC  LIMIT 2)
+
+  UNION
+
+  (SELECT NetworthInMillions
+  FROM Actors
+  ORDER BY NetworthInMillions ASC);
+    > The net worth results are not ordered!
+
+  // Tacking on a limit fixes this
+
+  (SELECT CONCAT(FirstName, ' ', SecondName) AS "Actor Name"
+  FROM Actors
+  ORDER BY NetworthInMillions DESC  LIMIT 2)
+
+  UNION
+
+  (SELECT NetworthInMillions
+  FROM Actors
+  ORDER BY NetworthInMillions ASC LIMIT 3);

@@ -1,0 +1,123 @@
+Using Values
+  Now let's change the button text
+  Don't have any state storage
+    Must infer state from is-hidden class
+      Not terrible
+      But more explicitness probably good
+  Values let us do this
+    A bit of syntactic sugar
+    Use the data attributes to store data assoc with controller
+    Give controller some methods to manipulate that data directly
+    Similar pattern for targets
+
+  // Dash case here, camelCase in JS
+  data-day-toggle-visible
+
+  Can add value attributes to same element that declares controller
+    But can add anywhere inside too
+
+  <section
+  id="day-body-<%= schedule_day.day.by_example("2006-01-02") %>"
+  data-controller="day-toggle"
+  data-day-toggle-hidden-class="is-hidden"
+  data-day-toggle-visible-value="true">
+
+  Must also declare inside controller
+    Object with type of each value to use, not array
+
+    static values = {visible: Boolean}
+
+  Boolean means expect a boolean, so "true" converts to boolean automatically
+  Available types
+    Array, Boolean, Number, Object, String
+  Boolean and Number converted using toString
+  Array and Object converted using JSON.stringify
+  If value is not specified, default is empty object/array/string, num 0, boolean false
+  Declaring a value gives you 3 properties, as with targets and classes
+    For singular props
+      <valueName>Value
+        Used as getter and also setter. Ex. visibleValue = true
+    Also
+      has<valueName>Value
+        Returns true or false depending on whether attribute actually present in DOM
+    Array similar but plural
+      <valueName>Values
+      has<valueName>Values
+
+    <span
+        data-day-toggle-target="buttonText">
+    Hide
+    </span>
+
+    import { Controller } from "stimulus"
+
+    export default class DayToggleController extends Controller {
+      static classes = ["hidden"]
+      static targets = ["buttonText", "thingToHide"]
+      static values = {visible: Boolean}
+
+      hiddenClass: string
+      buttonTextTarget: HTMLElement
+      thingToHideTarget: HTMLElement
+      visibleValue: boolean
+
+      connect() {
+        this.adjustTarget()
+        this.adjustText()
+      }
+
+      toggle() {
+        this.flipState()
+        this.adjustTarget()
+        this.adjustText()
+      }
+
+      flipState() {
+        this.visibleValue = !this.visibleValue
+      }
+
+      adjustTarget() {
+        this.thingToHideTarget.classList.toggle(
+          this.hiddenClass,
+          !this.visibleValue
+        )
+      }
+
+      newText(): string {
+        return this.visibleValue ? "Hide" : "Show"
+      }
+
+      adjustText() {
+        this.buttonTextTarget.innerText = this.newText()
+      }
+    }
+
+    // Code is longer, splitting off small methods
+    // But only a little more complex than the last version
+    Start by declaring class hidden
+    Declare two targets: button text, element to hide
+    Declare one stimulus value visible, TS property visibleValue
+
+    Action methods next
+      toggle is key - flip state, adjust target, adjust text
+      Must flip state first
+      etc.
+      Using connect method to ensure initial state of toggle is valid
+
+    One more thing in Values API
+      Get callback called <value name>Changed
+      Automatically called after setter on property changed
+      So to rewrite toggle
+
+      toggle() {
+        this.flipState()
+      }
+
+      flipState() {
+        this.visibleValue = !this.visibleValue
+      }
+
+      visibleValueChanged() {
+        this.adjustTarget()
+        this.adjustText()
+      }

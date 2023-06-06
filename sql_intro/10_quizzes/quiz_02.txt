@@ -1,0 +1,20 @@
+
+// Deletes nothing
+  DELETE A, B FROM A, B WHERE A.id in (-7);
+
+// Deletes one row from A, all data from B
+  DELETE A, B FROM A, B WHERE A.id in (1);
+
+// Clause evaluation order
+  FROM WHERE SELECT GROUP-BY HAVING ORDER-BY LIMIT
+
+// Partial indexes
+  Partial indexes are also known as filtered indexes and include only a subset of
+  rows of a table rather than the entire table. The rows are selected for
+  indexing based on some specified condition.
+
+// Clustered indexes
+  In case of clustered index, the table is itself stored on disk as an index,
+  usually, as a B+ tree. Whereas, in the case of a non-clustered index, the
+  table is stored in the order as the rows are inserted and any declared
+  indexes exist as separate data-structures on the disk.

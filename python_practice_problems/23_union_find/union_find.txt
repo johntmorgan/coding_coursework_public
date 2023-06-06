@@ -1,0 +1,33 @@
+Union Find
+  Group elements into sets based on property
+  Sets are non-overlapping
+  Disjoint set data structure e.g. array to track which set
+  Each set forms a tree with representative at root
+  Every element in tree has pointer to parent
+  Parent points to self
+  Pick element in set and follow, reach representative
+  Pattern = two operations
+    find(x) - find representative
+    union(x, y) - merge x and y sets into one
+    Worst-case time complexity O(n)
+      Might need to go through all values to find parent
+  Union by rank
+    Improves pattern
+    When merging, lower rank attached to higher rank
+    Everyone winds up 1 elem away from parent
+      (Or two if existing trees merged)
+      Time complexity down to O(log(n))
+    Path compression
+      On find, update parent of node to point to parent
+      No more intermediate nodes
+      Time complexity down further, to O(alpha(n))
+        Inverse Ackerman function
+      Time complexity for m Union Find operations
+        O(m(alpha(n)))
+
+Pattern matching
+  Arrange elements with propert into groups (connected components)
+  Elements separate sets initially
+    Combine pairs of sets, or find whether elements belong to same set
+  Data good to organize into graph, but not provided as adj list/matrix
+

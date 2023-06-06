@@ -1,0 +1,206 @@
+Databases
+  To manage, huge, constantly changing collections of data
+    Let people read, write, edit at same time
+  Do not implement yourself, use:
+    Database Management System (DBMS)
+  Relational systems are dominant
+    Non-relational can be easier and more efficient
+  Many different solutions, choosing one can be hard
+  Data mining
+    Extract valuable information from data
+      Ex. grocery store found low-selling cheese bought heavily by top customers
+      (I wish TJ's found that with some of my items - JM)
+  Relational model
+    Emerged in 1960s
+    Easy to avoid duplicates and inconsistencies
+    Tables
+      Each works like a matrix or spreadsheet
+    Entries are rows
+    Columns are properties
+      May impose a specific data type
+      May require a row to have a value in the column
+      May require a unique value per row
+    Columns called "fields"
+      Only allows whole numbers = "integer field"
+      Combination of fields and restrictions = "schema"
+    Can be challenging if input data varies too much
+      But great if data pretty homogeneous
+        Make sure your data is valid
+    Duplicated information is hard to update
+      Customer name duplicated over and over
+        Split them off into a different table
+    Unique id values to refer to rows in a table
+      "Primary key"
+      Field that contains references to other tables primary keys = foreign key
+    Completely free of duplicate data = "normalized"
+      Getting rid of duplicate data = "normalization"
+    To update? Schema migration script
+      Automatically updates and transforms
+      Can also generally reverse
+      Most major DBMS have good tools
+        Hard to revert without them
+          Follow best practices!
+    SQL
+      Almost every relational DBMS uses SQL
+      SELECT, FROM, WHERE
+      SELECT * to get all fields in table
+      SELECT * FROM customers WHERE age > 21 AND name = "John";
+      ORDER BY
+      GROUP BY
+      AVG(age)
+      MAX(age)
+      SELECT DISTINCT
+      JOIN orders ON orders.customer = customers.id;
+        Expensive to compute
+        Greatest power, weakness of relational databases
+    Indexing
+      Self-balancing binary search tree with address pointers used to quickly find locations
+        Again O(logn)
+      Usually all primary keys are indexed
+        But can construct for other fields if you search too (yep)
+      Often automatically constructed for all fields with a uniqueness constraint
+        Need to search the whole thing before inserting anyway
+      Sorting
+        Use indices as well
+        But if you're sorting by 2+ fields, need a joint index
+          Single indices don't actually help you
+      Why not just index everything?
+        Adding rows gets computationally expensive
+          (Remember tree balancing)
+        Occupy space, not an unlimited resource
+      DBMS usually have tools to monitor how things work
+        Using explain you can see how a search is done
+        If too much time is spent sequentially searching, time for an index
+      High read, low write databases = more indexes are a good idea
+      Don't index random fields - see how queries are run first!
+        (Well ok, but it's often pretty obvious when you are writing the query - JM)
+    Transactions
+      Multiple clients can usually read & write simultaneously
+        Otherwise DB would be too slow
+      But what if you are transferring money?
+        Subtracted from one column, not yet added to another
+        Someone queries in this time, money is missing
+        Or worse, what if system loses power between operations?
+      Transactions protect against these negative outcomes
+        List of operations that must be executed "atomically"
+        START TRANSACTION;
+        take money out
+        add money back
+        COMMIT;
+        Never perform multi-step operations without transactions
+  Non-relational databases
+    Relational databases hit snags as applications get more complex
+      Many tables, many slow join operations (= bottlenecks)
+    Non-relational model ditches relational rules
+      Not written using SQL - so "NoSQL"
+    Document store - most common version
+      Stored exactly the way needed by an application
+      Rather than post pointing to user, comments
+      Post contains user info and comments
+      Duplicate data *is expected*
+        Hard to keep data up to date and consistent as a result
+        In return, no joins, no fixed schema, each entry can have its own set of fields
+      No tables or rows
+      Each data entry is called a document
+      Documents are grouped in a collection
+      Documents do have a primary key field
+        So joins ARE possible in theory
+        But not optimal... sometimes not even implemented
+        If documents share data, it should really just be replicated in each document
+        Still create indices for primary key fields
+        Can still add indices for fields often queried or sorted
+    Key-value store
+      Simplest form of organized, persistent data storage
+      Use it as a caching mechanism
+        Key is URL
+        Value is HTML of webpage
+      If you have a static page being constantly accessed, good idea
+        Otherwise not that relevant
+    Graph database
+      Entries stored as nodes
+      Relationships as edges
+      Most flexible type of database
+        No tables AND no collections (document store)
+        Store data in intuitive ways
+         (Well, spreadsheets are intuitive for me at this point - JM)
+      If your data looks like a network
+        Many important relationships between data
+    Big Data
+      Extreme situations - volume, velocity, variety (+sometimes variability, veracity)
+      Volume
+        Thousands of TB
+          Large Hadron Collider
+      Velocity
+        Millions of writes per second, no snags
+        Billions of read queries
+      Variety
+        No strong structure, hard to handle with relational databases
+      Non-standard approach required
+        Megadata already being researched - millions of TB handling
+        Generally NoSQL - high flexibility needed for specific task
+  SQL vs NoSQL
+    Relational databases maximize structure and prevent duplication, regardless of needs
+    Non-relational databases directly provide what an app needs
+      Often feel more natural, faster to develop
+      But YOU are responsible for updating duplicated data across collections
+      With great power comes great responsbility
+  Distributed
+    Several computers must act in coordination
+      Database size of hundreds of TB
+      Process several thousand queries per second
+      Mission-critical
+        Air-traffic control
+    Single-master replication
+      One computer is the master and receives all queries
+      Serves writes to all slaves
+      Splits reads between slaves
+      If master shuts down, slaves can coordinate and autopromote
+    Multi-master replication
+      When single master cannot handle all write queries
+      Load balancer splits both read and write queries incoming
+      Propogate write queries among themselves to stay up to date
+        (Sounds like a tough problem, but no more detail in this book - JM)
+    Sharding
+      Really huge write queries
+      Hard to synchronize databases across cluster
+      Partition database
+        A-D on one machine and so on
+      To mitigate failure, each machine is a master with backup slaves
+        Further increases read capacity
+    Data consistency
+      Big problem - what if people buy the same ticket on different servers
+      Systems can issue queries that force consistency across cluster
+        (Along the lines of transactions? - JM)
+      Reduces performance
+        Especially transactions - may need to lock down lots of data
+        Can work under "eventual consistency" if data is not too important
+          The 285th customer review of a product appearing seconds later to some users not a huge deal
+  Geographical
+    Census bureau - store information with cartographic shape of collection areas
+    Geographical information systems (GIS)
+      PointField, LineField, PolygonField
+    Can ask for cities within 10mi of Mississippi River, ordered by population
+    Enforce constraint that land parcels do not overlap
+    Many DBMS provide GIS extensions
+      If you're doing anything geographical make sure you have one
+      Back applications like Google Maps
+  Serialization
+    Store data outside database, transfer between systems (backup)
+    SQL - most common format
+      dump and restore (have done that a lot! JM)
+    XML
+      Another, non-relational way to represent structural data
+    JSON
+      Format the world is converging to
+      Covers both relational and non-relational in an intuitive way
+      BSON - binary, max efficiency
+      JSON-LD - brings XML structure
+    CSV
+      Old, simplest
+      Messy for complex data structures
+  Wrapping up
+    Pick a DBMS in wide use unless you're experimenting (or have a very compelling reason not to? JM)
+      Less buggy, better performance
+      There are no silver bullets (or they'd be standards already - JM)
+
+

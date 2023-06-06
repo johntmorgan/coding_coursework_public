@@ -1,0 +1,32 @@
+Merge Intervals
+  Overlapping interval problems
+  Interval represented by start and end time
+  [10, 20] - start at 10, end at 20
+  Used mostly for scheduling problems
+
+Key to understanding: 6 different ways 2 intervals may overlap
+  1 completely overlaps 2
+  2 completely overlaps 1
+  1 completely in front of 2
+  2 completely in front of 1
+  1 partially in front of 2
+  2 partially in front of 1
+
+Pattern matching
+  Yes:
+    Input is array of intervals
+    Dealing with overlapping intervals
+      Find intersection
+      Find union
+      Find gaps
+  No:
+    Order of intervals is not significant
+    Input list of intervals is not sorted
+      Inefficient, will solve another way
+
+Real world
+  Display busy schedule of a user
+  Schedule a new meeting
+  Task scheduling in OS
+
+  

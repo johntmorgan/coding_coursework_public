@@ -1,0 +1,17 @@
+Print the version of MySQL
+  SELECT VERSION()
+  SHOW VARIABLES LIKE "%version%";
+
+Current time and date
+  SELECT NOW();
+  SELECT CURRENT_TIMESTAMP();
+
+Randomly select 10 countries
+  SELECT CountryName FROM Countries ORDER BY RAND() LIMIT 10;
+
+Delete table
+  // Subquery returns one row, EXISTS true for every other row
+  DELETE FROM Contacts WHERE EXISTS (SELECT "constant");
+
+  // Error since tbl referenced in inner query and updated at same time
+  DELETE tbl FROM tbl WHERE EXISTS (SELECT * FROM tbl);

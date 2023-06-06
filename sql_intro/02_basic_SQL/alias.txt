@@ -1,0 +1,27 @@
+Alias
+  Temp name given to a table or col
+
+  SELECT FirstName AS PopularName from Actors;
+
+  // Use Concat to print full name
+  SELECT CONCAT(FirstName,' ', SecondName) AS FullName FROM Actors;
+
+  // Not just cosmetic, can use in queries
+  SELECT CONCAT(FirstName,' ', SecondName) AS FullName FROM Actors ORDER BY FullName;
+
+  // Equivalent query but verbose
+  SELECT CONCAT(FirstName,' ', SecondName) FROM Actors ORDER BY CONCAT(FirstName,' ', SecondName);
+
+  // Can use in GROUP BY, HAVING, ORDER BY
+  // Can use as shorthand for tables - super useful when doing joins
+  SELECT FirstName FROM Actors AS tbl WHERE tbl.FirstName='Brad' AND tbl.NetWorthInMillions > 200;
+
+  // Use table alias in SELECT clause before defining
+  SELECT tbl.FirstName FROM Actors AS tbl WHERE tbl.FirstName='Brad' AND tbl.NetWorthInMillions > 200;
+
+  // Find two rows with the same value, and not matched to self
+  SELECT t1.FirstName, t1.NetworthInMillions
+  FROM Actors AS t1,
+  Actors AS t2
+  WHERE t1.NetworthInMillions = t2.NetworthInMillions
+  AND t1.Id != t2.Id;

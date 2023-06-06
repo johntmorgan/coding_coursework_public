@@ -1,0 +1,383 @@
+Airline Management System
+  Manage all activities efficiently
+  Schedule flights
+  Manage staff
+  Ticket reservations
+  Track aircraft, pilots, availabilty
+  Customers get full flight info
+  Admin manages all activities
+
+Questions
+  How to ensure no double-booked seats?
+  Can one itinerary reserve multiple flights?
+  How many seats can one user reserve?
+    Can one customer reserve the whole aircraft?
+  What payment methods?
+    Credit card, cash
+  Does customer pay online or in person/JIT?
+  Price set manually?
+    Calculated?
+  Variance in seat prices?
+  Weekday and weekend prices?
+  Price of flight affected by demand?
+  Duration of flight affect payment?
+  Can customers cancel?
+  What is time limit on cancelling?
+  Can some users not cancel?
+
+Start small
+  Seat
+  Flight
+
+Get bigger
+  Plane - many seats
+  Airport
+  Airline
+
+Patterns
+  Singleton - airline
+  Observer - notifications
+
+Requirements
+  Search for flights by date, departure, airport
+  Reserve for available
+    Book multiple tickets at once
+    Book multiple seats per flight
+  Check flight details
+    Available seats
+    Flight schedule
+    Departure/arrival
+  Admin add new flights
+    Update, cancel
+  Airline has many aircraft
+    Admin add to system
+  Airline operates from many airports
+  Admin assigns pilots and crew to flights
+  Customer pays reservations
+  Customer can cancel
+  Front desk can reserve, create itineraries, make payments
+  Flight crew view schedule
+  System sends notification
+    Flight update
+    Booking confirmed
+    Cancellation confirmed
+
+Use Case
+  System
+    Airline
+  Actors
+    Primary
+      Customer
+      Front Desk Officer
+      Admin
+    Secondary
+      System
+      Crew
+
+  Customer/Officer
+    Register
+    Login/logout
+    Reset password
+    Update account
+    Create reservation
+    Cancel reservation
+    Assign seat
+    Make payment
+    View itinerary
+
+  Admin
+    Add aircraft
+    Add/modify flight
+    Assign crew
+    Block/unblock user
+    Cancel flight
+    Search flights
+
+  System
+    New itinerary notification
+    Flight status change notification
+    Reservation cancel notification
+
+  Crew
+    View flight schedule
+
+Relationships
+  Include
+    Create itinerary with create flight reservation, add passenger
+    Create flight reservation with assign seat
+    Cancel flight with cancel reservation
+    Create itinerary with new itinerary notification
+    Cancel itinerary with refund payment, cancellation notification
+    Cancel reservation with refund payment, cancellation notification
+
+  Extend
+    Modify flight extend with assign crew
+
+Class
+  Account
+    status: AccountStatus
+    accountId
+    username
+    password
+    resetPassword()
+
+  Person - abstract
+    name
+    address
+    email
+    phone
+
+    Customer extends
+      customerId
+      viewItinerary()
+      createItinerary()
+      createReservation()
+      assignSeat()
+      makePayment()
+
+    Admin extends
+      addAircraft()
+      addFlight()
+      cancelFlight()
+      assignCrew(Flight)
+      blockUser()
+      unblockUser()
+
+    Crew extends
+      viewSchedule()
+
+    FrontDeskOfficer extends
+      viewItinerary()
+      createItinerary()
+      createReservation()
+      assignSeat()
+      makePayment()
+
+  Aircraft
+    name
+    code
+    model
+    seatCapacity
+    seats: Seat {list}
+
+  Airport
+    name
+    code
+    address
+    flights: Flight {list}
+
+  Airline
+    name
+    code
+    flights: Flight {list}
+    aircraft: Aircraft {list}
+    crew: Crew {list}
+
+  Seat
+    seatNumber
+    type: SeatType
+    class: SeatClass
+
+    FlightSeat extends
+      fare
+      status: SeatStatus
+      reservationNumber
+
+  Flight
+    flightNo
+    durationMin
+    departure: Airport
+    arrival: Airport
+    instances: FlightInstance()
+
+  FlightInstance
+    flight: Flight
+    departureTime
+    gate
+    status: FlightStatus
+    aircraft: Aircraft
+    seats: FlightSeat {list}
+
+  FlightReservation
+    reservationNumber
+    flight: FlightInstance
+    seatMap: Map <Passenger, FlightSeat>
+    status: ReservationStatus
+    creationDate: date/time
+    fetchReservationDetails()
+    getPassengers()
+
+  Itinerary
+    startingAirport: Airport
+    finalAirport: Airport
+    creationDate
+    reservations: FlightReservation {list}
+    passengers: Passenger {list}
+
+  Passenger
+    passengerId
+    name
+    dateOfBirth
+    gender
+    passportNumber
+
+  Search interface
+    searchFlight(Airport, Airport, date, date): FlightInstance {list}
+
+    SearchCatalog implements
+    flights: Map <(Airport, Airport, date, date) FlightInstance {list}>
+
+  Payment
+    paymentId
+    amount
+    status: PaymentStatus
+    timestamp
+    makePayment()
+
+    CreditCard extends
+      cardNumber
+      nameOnCard
+      makePayment()
+
+    Cash extends
+      makePayment()
+
+  Notification - abstract
+    notificationId
+    createdOn
+    content
+    sendNotification()
+
+    EMailNotification extends
+      email
+      sendNotification()
+
+    SMSNotification extends
+      number
+      sendNotification()
+
+Enums
+  SeatStatus
+    Available
+    Booked
+    Chance (??)
+
+  SeatType
+    Regular
+    Accessible
+    EmergencyExit
+    ExtraLegRoom
+
+  SeatClass
+    Economy
+    EconomyPlus
+    Business
+    FirstClass
+
+  AccountStatus
+    Active
+    Disabled
+    Closed
+    Blocked
+
+  PaymentStatus
+    Confirmed
+    Pending
+    Declined
+    Cancelled
+    Failed
+    Refunded
+
+  ReservationStatus
+    Requested
+    Pending
+    Confirmed
+    CheckedIn
+    Canceled
+
+  FlightStatus
+    Active
+    Scheduled
+    Delayed
+    Canceled
+    Landed
+    Departed
+    Diverted
+    Unknown
+
+CDT
+  Address
+    streetAddress
+    city
+    state
+    zipcode
+    country
+
+Relationships
+  Association
+    FrontDeskOfficer, Customer one-way Itinerary
+    FlightReservation one-way FlightInstance, Payment, Notification
+    FlightSeat one-way FlightReservation
+    Person one-way Search
+
+    Airport two-way Flight
+    Aircraft, Crew two-way FlightInstance
+    Airline two-way Crew
+
+  Aggregation
+    Itinerary contains Passenger class
+
+  Composition
+    Person composed of Account
+    Airline composed of Aircraft
+    Aircraft composed of Seat
+    Flight composed of FlightInstance
+    FlightInstance composed of FlightSeat
+    Itinerary composed of FlightReservation
+
+  Inheritance
+    Admin, Crew, FrontDeskOfficer, Customer from Preson
+    FlightSeat from Seat
+    CreditCard, Cash from Payment
+    EmailNotification, SMSNotification from Notification
+
+Sequence - reserve flight
+  Actor
+    Customer
+  Objects
+    SearchCatalog
+    FlightReservation
+    FlightSeat
+    Payment
+
+  Customer searches for flights - airport on date
+  System returns list of flights with available seats
+  Customer selects flight
+  System requests customer select seats
+  Customer selects seats
+  System requests customer details
+  Customer enters details
+  System creates reservation
+  System requests payment
+  Customer initiates transaction
+  If paid
+    System informed payment successful
+    System informs customer
+    System updates seat status to booked
+  Else
+    Customer informed of payment failure
+
+Activity diagram - user receives confirmation notification
+  Initial state: create itinerary
+  Final state: books ticket
+
+  Customer chooses option to create
+    Online?
+      Select itinerary option
+    No:
+      Go to front desk officer
+  Select departure location
+  Select destination location
+  Add another flight?
+    Yes -> select departure again
+  Book ticket

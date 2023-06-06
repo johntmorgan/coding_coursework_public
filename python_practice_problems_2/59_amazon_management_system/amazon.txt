@@ -1,0 +1,381 @@
+Amazon Management System
+  Online retail
+  Buy from and sell to other users
+  Numerous product category
+  Products have reviews and ratings
+  Customers have shopping carts
+  Add products to cart
+  Check out cart
+  Choose payment to place orders
+  Customers notified about order
+  Customers notified about shipment status
+  Users add products to sell
+
+Questions
+  Discovery
+    How does buyer discover product
+    How will search surface result
+  Cart and checkout
+    One-click purchase?
+  Payment
+    How to pay?
+      Credit cards
+      Gift cards?
+      Discounts?
+    How does payment work with checkout
+  Product reviews and ratings
+    When can user post?
+    How to make sure useful reviews surfaced?
+
+Design approach
+  Start with product
+
+Design patterns
+  Factory design pattern (lots of different products - JM)
+  Strategy design pattern (how to price, handle checkout etc.)
+
+Requirements
+  Customer
+    Auth User
+    Guest
+  Auth User
+    Buy
+    Sell
+    Search for products
+    Add to cart
+    Remove from cart
+    Modify in cart
+    Check out & buy
+  Guest
+    Search for products
+  Ordering
+    Specify address
+  Payment
+    Credit cards
+    EBT
+    Cash on delivery (really? - JM)
+  Order canceled if not shipped
+  Notifications sent if change in order/shipping status
+  Shipment tracked for status & est time
+  Admin
+    Add product category
+    Modify product category
+    Remove product category
+    Block users
+
+Use Case
+  System
+    Amazon shopping
+  Actors
+    Primary
+      Authenticated User
+      Guest
+    Secondary
+      Admin
+      System
+
+  Admin
+    Log in
+    Log out
+    Block account
+    Unblock account
+    Delete account
+    Update account
+    Add category
+    Modify category
+    Delete category
+    Modify product
+
+  Auth User
+    Register account
+    Login
+    Logout
+    Update account
+    Delete account
+    Add product
+    Modify product
+    Delete product
+    Search product
+    Add to cart
+    Update cart
+    Remove from cart
+    Check out
+    Add shipping address
+    Pay
+
+  Guest
+    Register account
+    Search product
+    Add to cart (? I thought you had to register? - JM)
+    Update cart
+
+  System
+    Send order notification
+    Send shipment update notif
+    (Cancellation notif? - JM)
+
+Relationships
+  Generalization
+    Auth user generalization with Guest
+    Search product generalizatino with "by category" and "by name"
+
+  Associations
+    Add product and modify catalog include with update catalog
+      Must update catalog when adding/modifying product
+    Make payment with send order notification
+      Must send notification when making payment
+    Cancel order with refund payment
+      Must refund payment when canceling order
+
+Classes
+  Customer
+    cart: ShoppingCart
+    getShoppingCart()
+    (addProductToCart()? - JM)
+
+    Auth User
+      order: Order
+      placeOrder(order)
+      getShoppingCart()
+
+    Guest
+      registerAccount()
+      getShoppingCart()
+
+  Admin
+    blockUser(account)
+    (unblock? view user? - JM)
+    addNewProductCategory(category)
+    modifyProductCategory(category)
+    deleteProductCategory(category)
+
+  Account
+    userName
+    password
+    email
+    name
+    phone
+    status
+    status
+    shippingAddress: Address {list}
+    getShippingAddress()
+    addProduct()
+    addProductReview()
+    deleteProduct()
+    deleteProductReview()
+
+  Product
+    productId
+    name
+    description
+    image: byte {list}
+    price
+    availableItemCount
+    category: ProductCategory
+    reviews: ProductReview {list}
+    updatePrice(newPrice)
+    updateDescription
+
+  ProductCategory
+    name
+    description
+    products: Product {list}
+
+  ProductReview
+    rating
+    review
+    image: byte {list}
+
+  Catalog
+    products: Map<string, Product {list}>
+
+  Search interface
+    searchProductsByName(name): Product {list}
+    searchProductsByCategory(category): Product {list}
+
+  CartItem
+    quantity
+    price
+    updateQuantity()
+
+  ShoppingCart
+    totalPrice
+    items: CartItem {list}
+    addItem()
+    removeItem()
+    getItems()
+    checkout()
+
+  Order
+    orderNumber
+    status: OrderStatus
+    orderDate
+    orderLog: OrderLog {list}
+    sendForShipment()
+    makePayment()
+    addOrderLog()
+
+  OrderLog
+    orderNumber
+    creationDate
+    status: OrderStatus
+
+  Shipment
+    shipmentNumber
+    shipmentDate
+    estimatedArrival
+    shipmentMethod
+    shipmentLogs: ShipmentLog {list}
+    addShipmentLog
+
+  ShipmentLog
+    shipmentNumber
+    creationDate
+    status: ShipmentStatus
+
+  Payment
+    amount
+    status: PaymentStatus
+    makePayment(): PaymentStatus
+    CreditCard
+      nameOnCard
+      cardNumber
+      code
+      billingAddress
+    EBT
+      bankName
+      routingNumber
+      accountNumber
+      billingAddress
+    Cash
+      billingAddress
+      makePayment()
+
+  Notification - abstract
+    notificationId
+    createdOn
+    content
+    sendNotification()
+    PhoneNotification extends
+      sendNotification()
+    EmailNotification extends
+      sendNotification()
+
+  Enumerations
+    AccountStatus
+      Active
+      Inactive
+      Blocked
+
+    PaymentStatus
+      Confirmed
+      Declined
+      Pending
+      Refunded
+
+    ShipmentStatus
+      Pending
+      Shipped
+      Delievered
+      OnHold
+
+    OrderStatus
+      Unshipped
+      Pending
+      Shipped
+      Confirmed
+      Canceled
+
+  Custom Data Type
+    Address
+      zipcode
+      address
+      city
+      state
+      country
+
+Relationship
+  Association
+    Guest one-way with Search
+    Notification one-way with ShipmentLog and OrderLog
+    Product two-way with Account and CartItem
+    Product one-way with ProductCategory, ProductReview
+    ShoppingCart two-way with CartItem
+    Order two-way with CartItem, Payment
+    Order one-way with Shipment
+
+  Composition
+    Shipment composed of ShipmentLog
+    Account composed of CreditCard, EBT, Admin, AuthenticatedUser
+    AuthUser composed of Order composed of OrderLog
+    Customer composed of ShoppingCart
+
+  Aggregation
+    Product contains Catalog
+
+  Generalization
+    Catalog implements Search
+
+  Inheritance
+    Guest and AuthUser extend Customer
+    EmailNotification, SMSNotification extend Notification
+    Cash, EBT, CreditCard extend Payment
+
+Design Patterns
+  Factory for orders, bill generation (? - JM)
+  Strategy to calculate price discounts
+
+Additional reqs
+  Wish list
+    Two-way with product
+    AuthUser composed of
+      addToWishList(item)
+    isAvailable: bool
+    moveToCart()
+
+  Discount
+    Decorator applied to Payment
+    event
+    discountAmount
+    expiryDate
+
+Sequence: checkout and payment
+  Actor
+    Customer
+  Objects
+    ShoppingCart
+    Order
+    Item
+    Payment
+  Customer requests shopping cart
+  Customer places order
+  Items verified for availability
+  If items less than available
+    Order status updated
+    Customer informed
+    Order ready for payment
+    Customer initiates payment
+    Payment is processed
+    Customer informed of updated payment
+  If items greater than available
+    Customer receives error for items
+
+Activity for online shopping
+  Initial state: Customer opens Amazon
+  Final state: Customer proceeds with checkout
+  Customer searches for product OR
+    Search by name OR
+    Search by product
+    Product found?
+      No -> landing page
+  Customer browses a category
+    Customer selects a product
+  View product
+  Add to shopping cart
+  View shopping cart
+    Modify item OR
+    Delete item OR
+    Proceed
+  Checkout
+
+

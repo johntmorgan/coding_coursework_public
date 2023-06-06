@@ -1,0 +1,57 @@
+Variables and type annotations
+  Let's talk more concretely
+  TS allows but does not require annotating JS code with info about types of various data in code
+  Uses info as constraint on values data can contain
+    If declare var as number then assign to "3"
+    TS compiler will complain, not allow code to be compiled
+  Without explicit type info, don't get full benefit of TypeScript
+    Will catch some errors
+      Assigning diff val types to same var
+      Send function wrong number of args
+    Add as much info as possible
+  Adding info
+    Assign using let or const
+      Using var is not recommended
+    Typescript assumes variable intended to be literal type of assigned value
+
+    let index = 1
+
+    TS infers that index is of type number
+
+    Okay:
+      let index = 1
+
+      const Test = (index: number) => 
+          { return index + 1 }
+
+    Error
+
+    let index = 1
+
+    const Test = (index: Object) => 
+        { return index + 1 }
+
+    > index.ts(4,14): error TS2365: Operator '+' cannot be applied to types 'Object' and '1'.
+
+  Buggy code
+
+    // array + string is not an array in JS (is in Ruby)
+    const validValues = this.existingValidValues() + "New"
+    this.elements().forEach(element => {
+      option.hidden = !validValues.includes(element.value)
+    })
+
+    // TS did not catch this
+      Assumed you mean first line - validValues should be string
+        Often could catch validValues.includes as a type error
+        However includes is a method on both string and array in JS
+
+    // To ensure value is of expected type
+
+    const validValues: string[] = this.existingValidValues() + "New"
+
+    // Use type annotations to describe left-hand side of any variable declaration
+    // Generally use : followed by a type
+
+    let validValues: string[] = this.existingValidValues()
+    validValues.push("New")

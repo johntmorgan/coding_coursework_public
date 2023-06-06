@@ -1,0 +1,22 @@
+Aggregate functions
+
+  // Output number of rows in table - output is single value, not rows
+  SELECT COUNT(*) FROM Actors;
+
+  // Add up numeric value of column
+  SELECT SUM(NetworthInMillions) FROM Actors;
+
+  // Get average numeric value of column
+  SELECT AVG(NetWorthInMillions) FROM Actors;
+
+  // Get min value, max value - also work for non-numeric columns
+  SELECT MIN(NetWorthInMillions) FROM Actors;
+  SELECT MAX(NetWorthInMillions) FROM Actors;
+
+  SELECT MAX(FirstName) FROM Actors;
+  SELECT MIN(FirstName) FROM Actors;
+
+  // And finally standard deviations
+  SELECT STDDEV(NetWorthInMillions) FROM Actors;
+
+  Reference: https://www.mysqltutorial.org/mysql-functions.aspx

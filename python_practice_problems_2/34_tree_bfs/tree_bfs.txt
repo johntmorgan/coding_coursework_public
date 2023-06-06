@@ -1,0 +1,26 @@
+Tree Breadth-First Search
+  Important for finding node in tree that satisfies constraints
+  Start at root, move down level by level
+    Explore adjacent nodes at k + 1
+  Good for finding neighbor nodes
+    Peer to peer networking
+
+Pattern matching
+  Yes
+    Solution probably near root of tree
+    Must traverse tree one level at a time
+      May need to find level order traversal
+  No
+    Tree is very wide
+    Solution near leaves of tree
+
+Real-world
+  Traversing DOM Tree I
+    HTML can be represented in tree structure
+    Children of HTML tags -> children of node
+    Traverse nodes level by level
+  Traversing DOM Tree II
+    Create a shadow tree for DOM
+    Each node has pointer to next node on right on same level
+    Avoid queue data structure, stay space efficient
+

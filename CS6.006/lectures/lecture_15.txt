@@ -1,0 +1,426 @@
+Dynamic Programming
+  Totally new section of the class
+  Four lectures
+  Up to now showing lots of cool and powerful algorithms
+  Lots of good stuff to solve lots of algorithmic problems
+    By reducing to known algos or tweaking
+  Now, new section on algorithmic design
+    How to come up with polynomial algo from scratch
+  DP: probably the most powerful paradigm, very general, solve lots of problems
+    Recursive
+    Whole class is recursive at some level
+      Write constant size piece of code solving huge problems
+        Recursion or loops
+        Can convert loops into recursion
+    Taking recursive view today
+      Works well with proof by induction
+      But also gives structure on how subproblems relate
+        "Subproblem graph"
+  SRTBOT: recursive alg. paradigm - "sortbot"
+    Not for sorting
+    Subproblems
+    Relations
+    Topological order
+    Base Case
+    Original problem
+    Time
+    Will help you remember all the steps you need
+  Dynamic programming builds by adding one new idea: memoization
+    Reusing work that you have done before
+SRTBOT
+  Recursive algorithm design paradigm
+  Take problem and split up into subproblems
+    Hardest part figuring out subproblems should be
+  Relate different subproblem solutions recursively
+  Topological order on subproblems to guarantee acyclic
+    Subproblem/call DAG - avoid infinite loop
+  Base case - any recursive setup needs it
+  Original problem - solve
+  Time analysis - at the end
+  6 easy steps
+    Hardest 2 are at the start
+  First two lectures: applying this paradigm over and over
+Example: Merge sort
+  Original problem: sort elements of |A|
+  Subproblems: Sorting subarrays of A[i:j]
+    S(i, j) = sorted array on A[i:j-1]
+      Original problem: S(0, n)
+  Relate S(i,j) = merge(S(i,m),S(m,j)) two-finger algorithm, m = floor((i + j) / 2)
+    Need to make sure narrowing down
+  Topo order: increasing j - i
+  Base cases: S(i, i) = []
+  Original problem: S(0, n)
+  Time: T(n) = 2T(n/2) + O(n) = O(nlgn)
+  --
+  All of this just another way to think of O(nlgn) time merge sort in paradigm
+New problem
+  Does not fit recursion so well, but we can make it better
+Fibonacci numbers - toy problem to illustrate memoization
+  Given n, compute
+  Fn = F(n - 1) + F(n - 2), F1 = F2 = 1
+  Main equation is a recursion, seems natural to write that way
+  Subproblems:
+    F(i) = Fi for 1 <= i < = n theta(n)
+  Relate:
+    F(i) = F(i - 1) + F(i - 2)
+  Topo order:
+    Increasing i base cases up OR
+    for(i = 1, 2, ... n)
+  Base case:
+    F(1) = F(2) = 1
+  Orig: F(n)
+  Time: Given by recurrence - this is where it gets bad
+    T(n) = T(n - 1) + T(n - 2) + 1 additions > F(n) ~ (golden ratio)^n
+    Need to solve, does not fall to master method
+    Terrible way to compute, exponential, bad
+    But tiny tweak to algorithm makes it good: Memoization
+Memoization
+  Big idea, *the* big idea of dynamic programming
+  Going to write things down in memo pad
+  Remember and reuse solutions to subproblems
+  Let's draw the recursion tree for the Fib algo as done so far
+  F(n) calls F(n - 1) and F(n - 2) and so on
+  F(n - 1) calls F(n - 2) and F(n - 3)
+  F(n - 2) calls F(n - 3) and F(n - 4)
+  Notice both call F(n - 3), and F(n - 2)at different levels
+    So why compute it twice? Let's write it down when we solve it
+  Maintain dictionary mapping subproblems to solutions
+    Could use other data structures too
+    Usually can do with direct access array, or can do hash table (expected bounds ofc)
+  Recursive function returns stored solution
+    Or if doesn't exist, then compute and store it
+  So now code
+    First check if in data structure "memo"
+      If so, return memo(i)
+      If not
+        If at base case, done
+        If not, recurse
+    If you think about what happens in example
+      Recurses down left branch of thing
+        Right branch free, just look up memo table
+    Fib time = O(n) additions - in fact exactly n - 2 additions
+      And exactly n subproblems
+  To analyze memoization
+    How many subproblems are there?
+      Solve each subproblem at most once
+    One subtlety
+      Back to Word-RAM model of computation
+      Usually assume additions take constant time
+      w-bit additions - where w is our machine word size
+        Take constant time
+    But for this problem only, Fib numbers grow exponentially
+      O(n) bits to write down
+      n is probably bigger than w
+        We do assume w is at least log(n)
+      to do n-bit additions
+        ceil(n / w) time
+      O(ceil(n / w) * n) = O(n + n^2/w) time
+        A bit of an odd formula but it's polynomial, not exponential anymore
+        Why? Because have few subproblems
+    Time <= sum over subproblems of relate non-recursive work
+      IF we use memoization
+  What if we apply that analysis to merge sort?
+    Does not benefit from memoization, though it also does not hurt us
+    Has the same tree picture of recursive subproblems but there is no shared problem
+      Subranges on opposite halves of tree are entirely disjoint
+    Can throw in memoization anyway
+      n choices for i, n choices for j, theta(n^2) subproblems
+        Merge takes (j - i) time linear time
+      running time <= O(n^3)
+        True, but not very helpful
+        We already know it's actually O(nlogn)
+        So this new analysis tech is not always what you want
+        Often good enough, especially just want polynomial upper bound
+          Optimize
+          As long as number of subproblems and time per subproblem polynomial -> polynomial
+          And indeed n^3 is polynomial, not great
+          But an alternate way
+            Don't do this, but demonstrates technique
+To close the loop here, when say "dynamic programming"
+  Mean recursion with memoization
+  memo = {}
+  def f(subprob):
+    if subprob in memo:
+      return memo[sub]
+    elif base:
+      solve
+      set memo of subproblem
+    else:
+      recurse via relation
+One more algorithm that we've already seen in this class that fits neatly into this structure
+DAG shortest paths
+  Given DAG G and vertex s
+  Compute delta(s, v) for all v in V
+    We saw a way to solve with DAG relaxation
+    Let's see a different way
+      Turns out to be basically the same, but upside down, or flipped left/right
+  Subproblems:
+    delta(s, v) for each v in V
+    |V| subproblems
+  Relate
+    delta(s,v) = min{delta(s, u) + w(u, v) | u in Adj-(v)} v{}
+      Recursive,
+  Topo order
+    Topo order of G (DAG)
+    Know how to compute with DFS
+    Relationship between problems is exactly given graph G
+  Base
+    delta(s, s) = 0
+  Original: all subproblems
+  Time
+    sum over v in V of O(1 + Adj-v) = O(|V| + |E|)
+  Funny thing
+    Although we wrote down topo order
+    Algorithm doesn't need to compute topo order
+    Recurse/memoization is actually a depth-first search through subproblem graph
+      Memo table serving as "have I visited this problem already" in DFS
+  Cool - this approach solves DAG shortest paths without much work
+    Write down sortbot and you're done
+Now have seen ~two examples of dynamic programming
+  Rest of this lecture and next 3: more and more examples, increasingly general problems
+  So far have solved easy and already knew how to solve
+Bowling
+  Boston likes candlepin bowling
+  Today going to play even more unusual version, based on 1908 "linear bowling" hereafter named "bowling"
+  Imagine n identical pins, pretty close together
+  Ball same size as pin
+  You're a really good bowler
+  Pins on line, bowling from very far away
+  Can only hit 0, 1, 2 pins
+    Either direct to 1
+    Or in middle, knock down both on either side
+  Pins have values (toy problem)
+    pin i has value vi
+    Example
+    1 1 9 9 2 -5 -5
+  At a carnival bowling
+  Hit 1 pin i, get vi points
+  Hit 2 pins i & i + 1, get (vi) * (vi + 1)
+  Don't have to hit all pins
+  Goal maximize score
+  In example
+    Hit 9 - 9 -> 81
+    Hit -5 -5 -> 25
+    Hit 1s individually -> 2
+    Hit 2 individually -> 2
+  Many variations of this game
+    Can all be solved quicky with dynamic programming
+    Let's solve this particular one though
+  Now we're really in algorithmic design mode
+  What would the subproblems be here
+    Probably need some tools here
+    Input is an array of numbers
+Subproblem design
+  Trick: if input is sequence x, consider subproblems:
+    All prefixes x[:i]
+    All suffixes x[i:]
+    All substrings x[i:j]
+    Great because all polynomial
+    |x| = n
+    prefixes -> theta(n)
+    suffixes -> theta(n)
+    substrings -> theta(n^2)
+    (subsequences? exponentially many, bad)
+    Generally prefixes and suffixes are equally good, whatever problem
+      Sometimes not enough, substrings - in another lecture or two
+  Let's do suffixes, work left to right
+    Subproblem on suffix
+      Suppose gave decreasing number of pins, what do
+      Some weird subproblem results (e.g. ignore -5 despite hitting -5 x -5)
+      But if can solve suffixes, solve whole problem
+        Because one suffix is whole problems
+Bowling solve
+  Subproblems B(i) = max score possible starting with pins
+    i, i + 1, .... n - 1
+  Original problem
+    B(0) - suffix starting at 0
+  Relate
+    What can I do with pin i?
+      Ignore, score is B(i + 1)
+      Hit singly, score is B(i + 1) + vi
+      Hit together with i + 1
+    B(i) = max(B(i + 1), B(i + 1) + vi, B(i + 2) + vi * v(i + 1))
+    How long to compute? constant time - assume numbers live in w-bit word
+      theta(1)
+    How many subproblems? theta(n)
+  Topo order:
+    decreasing i order
+    as a for loop:
+      for i = n, n - 1, ... , 0 (zero being the final one you wan to compute)
+  Base case:
+    B(n) = 0
+  Time: theta(n) * theta(1) = theta(n)
+  That's it!
+Bottom up DP: another way to put pieces together
+  Base case: B(n) = 0
+  Topo for i = n, n-1, ... , 0:
+    relate B(i) = max(B(i + 1), B(i + 1) + vi, B(i + 2), vi * v(i + 1) if i < n - 1)
+  original return B(0)
+  Good way... how to write if coding
+    Basically considers every possible solve
+    "Local brute force"
+    Expontential if tried every combination
+    But because reuse subproblems, turns out to be linear time
+DP ~~ local brute force
+  And by defining small number of subproblems up front
+  Stay within subproblems, recursing into polynomial space
+    Wind up doing polynomial work despite (kind of?) exploring exponential options
+    Because what you do to pin doesn't depend too much on what you do later
+  Lot of intuition going on here for when DP works
+    But lots of examples coming up
+  Suffixes, think about first item
+  Prefixes, think about last item
+  Substring, think about something in the middle
+  Might be min, max, and/or depending on problem
+Extremely powerful
+  The hard part is - what do I need to know to solve problem
+  Choices polynomial -> Polynomial solve
+  That's the intuition, many more examples next 3 lectures
+
+Recitation
+  Dynamic programming generalizes divide and conquer type recurrences
+    when subproblem dependenceies form a DAG instead of a tree
+    Often applies to optimization problems
+      Max or min a single scalar value
+    Or counting problems, count all possibilities
+    To solve, use SRT BOT
+    S: subproblem definition
+      subproblem x in X
+      Describe the meaning of a problem in words, in terms of parameters
+      Often subsets of input: prefixes, suffixes, contiguous subsequences
+      Often record partial state: add subproblems by incrementing some auxiliary variables
+    R: relate subproblems recursively
+      x(i) = f(x(j),...) for one or more j < i
+    T: Topological order to argue relation is acyclic and subproblems form DAG
+    B: Base cases
+      State solutions for all (reachable) independent subproblems where relation doesn't apply/work
+    O: Original problem
+      Show how to compute solution to original problem from solutions to subproblems
+      Possibly use parent pointers to recover actual solution, not just objective function
+    T: Time analysis
+      Sum over x in X of work(x), or if work(k) = O(W) for all x in X, then |X| * O(W)
+      Work(x) measures non-recursive work in relation, treat recursions as taking O(1) time
+  Implementation
+    Once subproblems are chosen and a DAG of dependencies is found, two primary methods for solving
+      Functionally equivalent but implemented differently
+    Top down approach
+      Evaluate recursion from roots, vertices incident to no incoming edges
+        End of recursive call: calculated solution to subproblem recorded into a memo
+        Start of recursive call: memo checked to see if subproblem already solved
+    Bottom up approach
+      Calculate subproblem according to topo sort order of DAG of subproblem dependencies
+      Also recording each subproblem solution in a memo
+        Usable to solve later subproblems
+        Usually subproblems constructed so topo sort order is obvious
+          Especially when subproblems only depend on subproblems having smaller params
+          Peforming DFS to find ordering is therefore usually not necessary
+    Top down is a recursive view, ottom up unrolls the recursion
+      Both valid approaches and commonly used
+    Memoization used to remember computation from prior problems
+      Typical to memoize all evaluated subproblems
+        But often possible to memoize less, especially when occur in "rounds"
+    Often don't just want optimized value
+      Want to return path of subproblems that resulted in optimized value
+      Maintain auxiliary information
+        Maintain parent pointers to subproblem or subproblems on which solution depends
+        Like maintaining parent pointers in shortest path problems
+
+  Exercise:
+    Simplified blackjack
+    Player vs dealer
+    Ordered deck of n cards
+      Each card ci integer 1-10 inclusive
+        Aces always have value 1 for simplicity
+    Played in rounds
+      Round 1: dealer draws c1 and c2
+      Round 2: player draws c3 and c4
+      Then player either draws or does not draw one additional card
+    Player wins in value <= 21 and exceeds dealer
+      Otherwise player loses
+    Game ends when fewer than 5 cards in deck after round
+    Given a deck of n cards with a known order
+      Describe O(n) to determine max number of rounds player can win
+    Subproblem:
+      Choose suffixes
+      x(i): max rounds player can win by playing blackjack using cards
+    Relate:
+      Guess whether player hits or not
+      Dealer's had has value ci + c(i + 1)
+      Player's hand has value c(i + 2) + c(i + 3) OR
+        c(i + 2) + c(i + 3) + c(i + 4)
+      Let w(d, p) be the round result given hand values d and p
+        Player win: w(d, p) = 1 if d < p <= 21
+        Player loss: w(d, p) = 0 otherwise
+      x(i) = max{w(c1 + c(i + 1), c(i + 2) + c(i + 3)) + x(i + 4),
+        w(c1 + c(i + 1), c(i + 2) + c(i + 3) + c(i + 4)) + x(i + 5)}
+        (for n - (i - 1) >= 5, ie, i < n - 4
+    Topo
+      Subproblems x(i) only depend on strictly larger i, so acyclic
+    Base
+      x(n - 3) = x(n - 2) = x(n - 1) = x(n) = x(n + 1) = 0
+        not enough cards left
+    Original
+      Solve x(i) for i in (1, ..., n + 1)
+      x(1): max rounds player can win with the full deck
+    Time
+      Subproblems: n + 1
+      Work per subproblem: O(1)
+      O(n) running time
+
+  Exercise:
+    Text justification
+    Fit sequence of n space separated words into colum of lines with constant width s
+    Each word represented by width wi < s
+    Minimize white space ->
+      Minimize badness
+    Assume line contains words from wi to wj
+      Badness b(i, j) = (s - (w1 + ... + wj))^3 if s > (wi + ... + wj)
+      or b(i, j) = inf otherwise
+    Good text justification partitions words into lines to minimize total badness sub
+      Cubic power heavily penalizes large white space in a line
+      MS Word uses greedy algo to justify text that puts as many words in a line as possible
+        before moving onto the next line
+        Can result in some *really* bad liens
+      Latex
+        Formats text to minimize badness using dynamic program
+    Describe O(n^2) algorithm to fit n words in column width s that minimizes sum of badness over lines
+    Subproblem:
+      Choose suffixes as subproblems
+      x(i) = max badness sum of formatting words from wi to w(n-1)
+    Relate:
+      First line must break at some word, try all possibilities
+      x(i) = min(b(i,j) + x(j + 1) | i <= j <= n)
+    Topo
+      Subproblems only depend on strictly larger i, so acyclic
+    Base
+      x(n) = 0
+    Original
+      Solve problems via recursive top down or bottom up
+      Solution to original problem is x(0)
+      Store parent pointers to reconstruct line breaks
+    Time
+      # subproblems: O(n)
+      Work per subproblem: O(n^2)
+      O(n^3) running time
+        How to do better?
+    Optimize
+      Compute badness b(i, j) take linear time
+      Precompute and remember each badness in O(1) time
+      work per subproblem O(n)
+      O(n^2) running time
+    Subproblems:
+      x(i, j): sum of word lengths wi to wj
+    Relate:
+      Bad: x(i,j) = sum over k of wk (takes O(j - 1) to compute)
+      Good: x(i, j) = x(i, j - 1) + wj O(1) to compute, faster
+    Topo
+      Subproblems x(i, j) only depend on strictly smaller j - 1, so acyclic
+    Base
+      x(i, i) = wi for all 0 <= i < n, just one word
+    Original
+      Solve subproblems via recursive top down or bottom up
+      Compute each b(i, j) = (s - x(i, j))^3 in O(1) time
+    Time
+      Number of subproblems: O(n^2)
+      Work per subproblem: O(1)
+      O(n^2) running time

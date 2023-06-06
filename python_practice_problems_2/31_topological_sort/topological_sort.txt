@@ -1,0 +1,25 @@
+Topological Sort
+  Find valid orderings of items
+    Dependencies on each other
+    Priority over each other
+  Scheduling and grouping problems
+    Prereqs and dependencies
+  Can be described as a partial order
+    (vs sorting an array - complete order)
+    Say 3 courses, take prereq first, but course without prereq can go anywhere
+  Convert to directed graph
+    Valid order exists if acyclic
+
+Pattern matching
+  Yes
+    Partial ordering required
+    Find ordering based on dependency rules
+  No
+    Total ordering required
+    Cannot convert to graph
+    Graph created is not a tree
+
+Real world
+  Process scheduling in computer system
+    Take account of dependencies
+    Cannot have circular dependencies

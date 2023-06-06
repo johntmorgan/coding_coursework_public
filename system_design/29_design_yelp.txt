@@ -1,0 +1,290 @@
+Yelp
+
+What is it?
+  One-stop platform for users to discover, connect, transact w/local business
+  Join waitlist
+  Schedule appointment
+  Purchase goods easily
+  Provides info, photos, reviews about local businesses
+  User provides name of place or GPS location
+  System finds places nearby
+  User can upload opinions
+    Text
+    Pictures
+    Ratings
+  Other location-based
+    Foursquare
+    Google Nearby
+  Proximity servers
+    Find nearby attractions
+  Challenge
+    Find all places within radius in minimum latency
+    Narrow down up to billions of locations, pinpoint relevant
+
+Requirements
+  Functional
+    User accounts
+      Log in, log out
+      Add, delete, update places
+      Split business owners & other users
+    Search
+      For nearby places
+      For places of interest
+      Based on GPS location
+      Based on name
+    Feedback
+      Review a place
+        Images
+        Text
+        Rating
+  Non-functional
+    Availability
+    Scalability
+      Over day
+      More searches at lunchtime than midnight
+      More searches during tourist season
+    Consistency
+      All users should see same places, reviews, images
+    Performance
+  Resource estimation
+    178 m unique users
+    60 DAU
+    500m places
+    Servers
+      60m/8k = 7500 servers
+    Storage estimation - based on schema in next lesson
+      500m places
+      1296 Bytes/place
+      One photo per place
+      280 Bytes/photo
+        Row size in table, link to blob store
+      1m reviews added daily
+        537 Bytes of storage
+      178m users
+        264 Bytes of storage
+      Total storage
+        835 GB
+    Bandwidth
+      Incoming
+        5 places added per day
+          1296 Bytes
+          3 MB photo with place
+        1m reviews per day
+          537 bytes/review
+        Divide by 86400 seconds/day
+        51 Kbps
+      Outgoing
+        Search returns 20 places
+        Each place has 3 MB photo
+        60M active daily users
+        331 Gbps
+      Overall
+        331 Gbps
+
+Building blocks
+  Cache - store popular places
+  Load balancer - manage large number of requests
+  Blob storage - store images
+  Database - store place and user info
+  Use Google maps to search within radius
+
+Design
+  API
+    search(category, user_location, radius)
+      Return JSON of all items within radius
+        Place name, address, category, rating, thumbnail
+    search(name_of_place, user_location, radius)
+      Return JSON with specified place
+  Add a place
+    add_place(name_of_place, description_of_place, category, latitude, longitude, photo)
+      return response if added, or error if adding fails
+  Add a review
+    add_review(place_ID, user_ID, review_description, rating)
+
+Storage schema
+  Place, photos, reviews, useres
+  Place table
+    Place_ID - from sequencer to generate unique 64-bit/8-byte photo
+    Name_of_Place - string, 256 bytes
+    Category - 8 Bytes
+    Latitude - 8 Bytes
+    Longitude - 8 Bytes
+    Photos - 8 Bytes
+      Foreign key of photos table
+    Rating
+    Can also add
+      menu, address, opening and closing hours
+    Add up, one row = 1296 bytes
+  Photos table
+    Photo_ID
+      Sequencer to generate, 64-bit again
+    Place_ID
+      Foreign key to place table
+    Photo_path
+      Store photo in blob
+      Save path in column, 256
+      One row = 280 bytes
+  Reviews
+    Review_ID 
+      Sequencer etc
+    Place_ID
+      foreign_key
+    User_ID
+      foreign_key
+    Review_description
+      512 bytes
+    Rating
+      1 byte
+    537 bytes/row
+  Users
+    User_ID
+      sequencer
+    User_name
+      string, 256 bytes
+
+Design
+  Segments producer
+    Communicates with Google maps
+    Narrow down places to be saerched
+  Quadtree servers
+    Trees with places in the segments
+    Finds list of places based on radius & provided location
+      Aids search functionality
+    Accumulate all places and send to
+  Aggregators
+    Accumulate all places, return search results to user
+  Read servers
+    Handle all reads
+    Way more reads, so separate from writes
+    Direct requests to QuadTree, return to user
+  Write server
+    Add place, write comment, rate place, etc.
+  Storage
+    SQL database
+      Different tables, seen above
+      Data relational, structured
+      Want users to have a consistent view of the data
+      Use reliable, scalable databases
+    Key-value stores
+      Fetch places in a segment efficiently
+      Store list of places against segment ID in key-value store
+      QuadTree info in key-value store
+        Store against unique ID
+  Load balancer
+
+Workflow
+  Find all places in given radius
+  Searching a place
+    Load balancers to read servers
+    Read servers to QuadTree servers
+    QuadTree to aggregator
+    Aggregator refines & sends to users (via read server, right? - JM)
+  Adding a place or feedback
+    Load balancers to write servers
+    Write servers add entry in relational database
+      Put related images in blob storage
+  Making segments
+    Split world map from third-party into smaller segments
+      Places in each segment stored in key-value
+    One-time job
+      Repeated periodically for new segments & places
+      Not many added, update every month
+
+Design considerations
+  Searching
+    Only search a few segments near user's segment
+      Use given location, defined radius
+    How to find nearby places from table of all places?
+      Store with lat/lng for exact location
+      Index columns to fetch data efficiently
+      Search for place within radius R but finding all places between lat +/- R etc.
+      Apply Dijkstra to find distance between two points
+        (But I thought it was lat/lng addition/subtraction? - JM)
+    How efficient will it be?
+      Concurrent requests challenging
+    Store all places in table, add segment ID
+      Index each segment in database
+      Now fast
+  Improve data fetching
+    Key-value store for quick access to places in segments
+      Key is segment_ID
+      Value contains list of places in segment
+    Space of a segment?
+      Estimate 500 places/segment
+      500 * 1296 Bytes = 0.648 MB
+      No problem
+    Surface area of Earth
+      200m square miles
+      Land surface 60m square miles
+      Radius 10m = 6m segments
+      ~4 TB total
+  Search with segments
+    Combine segments for radius not contained in single segment
+    Identify all locations within segments touching radius
+      Compute distances for those locations from searching point
+    Can still be an issue if a ton of places in segment, e.g. NYC
+      Dynamic segments
+  Dynamic segments
+    Split if places per segment > 500
+    How to map & connect to other segments?
+    Use a QuadTree to manage
+      Each node contains segment info
+      If # of places > 500, split into 5 children
+  Search with QuadTree
+    Start from root node, check for child nodes
+    Connect child nodes with neighbors via DLL
+    Can also find neighbors by following pointer up to parent and down to its other children
+  QuadTree storage
+    PlaceID, latitude, longitude stored in each ndoe
+    500m places, 500 places/node = 1M leaf nodes
+      12 GB space for leaf nodes
+      10.67 MB of space for internal nodes
+      Easy to store on server
+  Data partitioning
+    20% growth per year
+    Partition by region based on zip code
+    Store region info along with place
+      Challenge if region hot during tourism season
+    PlaceID - better
+      Partition by placeID instead of region
+      Avoid some regions getting too hot
+      Use key-value store for places
+      More efficient fetching
+      Use caches for popular places
+  Ensure availability
+    Replicate QuadTrees on multiple servers
+    Distribute traffic, decrease response time
+    Use server ID to identify QuadTree location
+    Single leader, two followers
+      Leader with QuadTree handles all writes
+      Update followers synchronously
+      Followers handle all reads
+      Elect new leaders as needed
+  Insert new place
+    Into database
+    Also into QuadTree
+    Find segment of new place, add to that segment
+      Split segment if required, update QuadTree accordingly
+  Rank popular places
+    Store rating in databae and in QuadTree
+      Return top 50 or 100 popular places within radius
+    Aggregator determines actual top and returns to user
+    Update QuadTrees once a day, is expensive
+      Do when load is minimal
+
+Evaluation
+  Availability
+    Partitioned data into smaller segments
+    Replicated QuadTree data with key-value stores
+  Scalability
+    Split whole world into smaller, dynamic segments
+      Search within radius
+    QuadTrees where each child node holds segment
+    Restructure QuadTrees when place added/deleted
+  Performance
+    Reduce latency by using cache
+      Cache all famous and popular places
+    Consistency
+      Consistent view of places, reviews, photos
+        Reliable and fault-tolerant databases
+          Relational, key-value stores

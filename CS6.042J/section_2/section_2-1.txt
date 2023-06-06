@@ -1,0 +1,537 @@
+Number Theory
+Text
+  Number Theory is the study of the integers
+  Why study?
+    G.H. Hardy was glad it was "impractical"
+    But underlies modery cryptography
+    Also central to online commerce
+    Also an excellent environment to pratice proof techniques
+  We will
+    Work out properties of greatest common divisors (gcds)
+      Prove that integers factor uniquely into primes
+    Introduce modular arithmetic and explain RSA public key system
+  Default convention
+    Variables range over the set Z of integers
+  Divisiblity
+    a divides b (a | b) iff there is an integer k such that
+      ak = b
+    lots of ways to write
+      a | b
+      a divides b
+      a is a divisor of b
+      a is a factor of b
+      b is divisible by a
+      b is a multiple of a
+    for all n:
+      n | 0
+      n | n
+      +- 1 | n
+      0 | n IMPLIES n = 0
+    Seems simple, but let's play with def
+      Perfect number equals sum of divisors excluding self
+        6 = 1 + 2 + 3
+        28 = 1 + 2 + 4 + 7 + 14
+      Euclid characterized all even perfect numbers in 300 BC
+      But is there an odd perfect number?
+        Actually don't know!
+        All numbers up to 10^300 have been ruled out
+    Number theory is full of easy to ask, hard to answer questions
+  Divisibility facts
+    If a | b and b | c, then a | c
+    If a | b and a | c, then a | sb + tc for all s and t
+    For all c != 0, a | b if and only if ca | cb
+    Proof of: If a | b and a | c, then a | sb + tc for all s and t
+      Given that a | b there is some k1 in Z such that ak1 = b
+      Likewise ak2 = c
+      So sb + tc = s(k1a) + t(k2a) = (sk1 + tk2)a
+      Therefore sb + tc = k3a where k3 ::= (sk1 + tk2)
+      Which means a | sb + tc
+    sb + tc is an "integer linear combination" of b and c
+      Or in this chapter (integers only) "linear combination"
+    If a divides b and c, then a divides every linear combination of b and c
+    General definition
+      An integer n is a linear combination of numbers b0... bk iff
+        n = s0b0 + s1b1 + ... + skbk
+    When divisibility goes bad
+      Quotient and remainder
+      Let n and d be integers such that d > 0
+      There exists a unique pair of integers q and r
+      Such that n = q * d + r and 0 <= r < d
+      Notation
+        qcnt(n,d) and rem(n,d)
+        qcnt(2716, 10) = 271 and rem(2716, 10) = 6
+        qcnt(-11, 7) = 2 and rem(-11, 7) = 3
+      Remainder operator built into many languages - %
+        Java, C, C++
+      However these languages treat negative numbers inconsistently!
+        Stick to the chapter definition
+      Remainder on division by n is in interval 0 to n - 1
+      Interval notation
+        (k..n) ::= {i | k < i < n}
+        (k..n] ::= (k, n) U {n}
+        [k..n) ::= {k} U (k,n)
+        [k..n] ::= {k} U (k, n) U {n} = {i | k <= i <= n}
+    Die Hard Water Jug Invariant
+      Jugs with capacities a and b, b >= a
+      Lemma: Every step, amount of water in each jug is a linear combo of a and b
+      Induction hypothesis P(n), after n transitions, amount of water in each jug is linear combo
+        Base case (n = 0): P(0) is true
+          Both jugs are empty, 0 * a + 0 * b = 0
+        Inductive step
+          Suppose machine is in state (x, y) after n steps. Two cases
+            Fill a jug from fountain or empty jug, then jug is empty or full
+            Amount in other jug remains a linear combination of a and b
+            P(n + 1) holds
+          Pour water from one jug to another until one is empty or other is full
+            Amount of water in each jug is linear combo prior to pouring
+            After pouring, one jug is empty, or full
+            Other jug contains x + y, x + y - a, or x + y - b - all linear combos of a and b since x + y are
+            Therefore P(n + 1) holds for this case as well
+        Since P(n + 1) holds in any case, inductive step proven, completing proof by induction
+      Jug problem has preserved invariant
+        Amount of water in every jug is a linear combo of capacities of jugs
+        Corollary:
+          In trying to get 4 from 12 and 18
+          Or 32 from 899 and 1147... Bruce will die!
+        Proof
+          With 12, 8, the amount in any jug is a linear combination of 12 and 18
+          This is always a multiple of 6, so Bruce can't get four
+          Meanwhile 899 and 1147 is a multiple of 31, so he can't get 32
+        But what about 3 from 21, 26?
+          Only positive factor of both 21 and 26 is 1
+          And of course 1 divides 3
+          So Lemma neither rules out nor confirms the possibility
+    Linear combinations closely related to greatest common divisors
+  Greatest Common Divisor
+    Common divisor of a and b is a number that divides them both
+    Greatest common divisor is written gcd(a,b)
+      gcd(18, 24) = 6
+    As long as a and b are not both 0, they will have a gcd
+      Very useful for reasoning about a/b relationships, and integers in general
+    For n > 0
+      gcd(n, n) = n
+      gcd(n, 1) = 1
+      gcd(n, 0) = n // everything is a divisor of 0
+    Euclid's algorithm
+      How to find gcds
+      For b != 0, gcd(a, b) = gcd(b, rem(a, b))
+      Proof
+        a = qb + r
+        r = rem(a, b)
+        So a is a linear combination of b and r
+        Any divisor of b and r is a divisor of a
+        r is linear combination, a - qb, of a and b
+        So any divisor of a and b is a divisor of r
+        a and b have the same common divisors as b and r, so they have same gcd
+      test
+        gcd(1147, 899) = gcd(899, rem(1147, 899))
+                       = gcd(899, 248)
+                       = gcd(248, rem(899, 248) = 155)
+                       = gcd(155, rem(248, 155) = 93)
+                       = gcd(93, rem(155, 93) = 62)
+                       = gcd(62, rem(93, 62) = 31)
+                       = gcd(31, rem(62, 31) = 0)
+                       = 31
+        gcd(26, 21) = gcd(21, 5) = gcd(5, 1) = 1
+          So can't rule out reaching 3 gallons of water
+          In fact, Bruce can get ANY number of gallons into the big jug up to capacity
+    Euclid's algorithm as state machine
+      Set of states is N^2
+      Transition rule: (x, y) -> (y, rem(x - y))
+        gcd(x, y) = gcd(a, b)
+          Preserved invariant on states (x, y) - true in start state (a, b)
+        If y every becomes 0, the invariant will be true
+          So x = gcd(x, 0) = gcd(a, b)
+          Value of x is the desired gcd
+        x and therefore y reach 0 pretty fast
+          Two transitions result in a state with first coord at most 1/2 size of x
+          x will reach minimum value - gcd(a, b) - in at most 2loga transitions
+          Algorithm terminates in at most 1 more transition after that
+          Euclid's algorithm terminates in at most 1 + 2loga transitions
+    The pulverizer
+      Lot of mileage from Thm gcd(a, b) = sa + tb for some integers s and t
+        We already know that every linear combination of a and b is divisible by any common factor
+        So divisible by greatest of common divisors
+        Any constant multiple of linear combo is also linear combo
+        So any multiple of gcd is a linear combination
+      Corollary
+        An integer is a linear combo of a and b iff it is a multiple of gcd(a, b)
+        "kuttak" proof method, The Pulverizer (from 6th C India)
+      "The extended Euclidean gcd algorithm"
+        GCD of 259 and 70
+          = gcd(70, 49)
+          = gcd(49, 21)
+          = gcd(21, 7)
+          = gcd(7,0)
+          = 7
+        The Pulverizer does same steps
+          But keep track how to write each of the remainders as a linear combo of a and b
+          259 70 49 = a - 3 * b
+          70 49 21 = b - 1 * 49
+                   = b - 1 * (a - 3 * b)
+                   = -a + 4b
+          49 21 7  = 49 - 2 * 21
+                   = (a - 3 * b) - 2 * (-1 * a + 4 * b)
+                   = 3 * a - 11 * b
+          Only requires a little more computation than Euclid
+            Can "pulverize" very large numbers very quickly
+            Very useful in cryptography
+      Solving all water jug problems
+        3 = s * 21 + t * 26
+        can force s to be positive - assign to s' - then t' must be negative
+        How to make 3 gallons from 21 and 26
+        Repeat s' times:
+          Fill 21 gal jug
+          Pour 21 gal into 26 gal
+          If 26 gal becomes full, empty out, continue pouring
+          At end of process, must have emptied 26 gal -t' times
+            If less than -t', then big jug has 26 + 3 gal
+            If more than -t', then big jug has 3 - 26 gal - not possible
+          Don't even need to know s' and t' to use this strategy!
+            Can just repeat until we obtain 3 gallons
+        Theorem
+          Suppose we have jugs with capacities a and b
+          For and c in [0..a] is is possible to get c gallons in the size a jug iff c is a multiple of gcd(a, b)
+  Prime Mysteries
+    A prime is a number > 1 that is divisible only by itself and 1
+      A number other than 0, -1, and 1 that is not prime is "composite"
+    Three famous mysteries
+      1. Twin Prime Conjecture
+        There are infinitely many primes p such that p + 2 is also a prime
+        Chen showed infinitely many p such that p + 2 is product of at most 2 primes
+          Known to be almost true!
+      2. Conjectured inefficiency of factoring
+        Given n = pq where p and q large primes
+        There is no efficient procedure to recover primes p and q
+          i.e. no polynomial time procedure to find p and q
+          in a number of steps bounded by a polynomial in the length of the binary representation of n
+          This length is at most 1 + log2(n)
+        Best algorithm known is "number field sieve" which runs in:
+          e^(1.9(lnn)^1/3 * (lnlnn)^2/3)
+          Grows more rapidly than any polynomial in logn
+          Infeasible when n has 300 digits or more
+          Mystery of particular importance in computer science
+      3. Goldbach's Conjecture
+        Already mentioned several times
+        Every integer > 2 is the sum of two primes
+        4 = 2 + 2, 6 = 3 + 3, 8 = 3 + 5, etc
+        Proven: every even number can be written as the sum of not more than 300k primes
+          Now know every even number is the sum of at most 6 primes
+    Primes show up almost erratically ni the sequence of integers
+      Density has a precise limit
+      Let pi(n) denote number of primes up to n
+        pi(n) ::= |{p in [2..n] | p is prime}
+      pi(1) = 0, pi(2) = 1, pi(10) = 4 - 2, 3, 5, 7
+      Step by step, pi grows erratically
+        overall growth rate smooths out as growth of function n/lnn
+        lim n -> inf pi(n) / (n / lnn) = 1
+      Therefore primes gradually taper off
+        About 1 integer out of every lnn in the vicinity of n is a prime
+      Proof is beyond text, but here is a proof of a related result
+      Chebyshev's Theorem on Prime Density
+        For n > 1
+        pi(n) > n / (3lnn)
+      Google hiring - find first 10 digit prime in consecutive digits of e
+        Among 10-digit numbers, about 1 in ln 10^10 ~= 23 is prime
+  Fundamental theorem of arithmetic - aka Unique Factorization Theorem
+    Every positive integer number has a unique prime factorization
+      So every positive integer can be built from primes in exactly one way
+    Prime numbers are building blocks for all integers
+      Usually not a unique way to express a number as a product of primes
+      12 = 2 * 2 * 3 = 2 * 3 * 2 = 3 * 2 * 2
+      If we sort the primes by size, products is really unique
+        A sequence of numbers weakly decreasing when each in sequence at least as big as #s after
+        Sequence of 1/0 is also weakly decreasing by this definition
+    Thm
+      Every positive integer is a product of a unique weakly decreasing sequences of primes
+      75237393 = 23 * 17 * 17 * 11 * 7 * 7 * 7 * 3
+    Thm would be false if 1 were considered a prime
+      Can write 15 = 5 * 3 = 5 * 3 * 1 etc.
+    Unique factorization actually fails for many other integer-like sets
+      Complex numbers n + m * sqrt(-5) for m, n in Z
+    Proving Unique Factorization
+      Lemma: if p is a prime and p | ab, then p | a or p | b
+        But proving it this way is kinda circular and "cheating"
+      One case is if gcd(a, p) = p
+        Then claim holds because a is a multiple of p
+      Otherwise, gcd(a, p) != p
+        Then gcd(a, p) must be 1 since 1 and p are only positive divisors of p
+        Now gcd(a, p) is a linear combination of a and p
+          So we have 1 = sa + tp for some s, t
+          Then b = s(ab) + (tb)p
+          b is a linear combination of ab and p
+          since p divides both ab and p, it also divides their linear combination b
+      Now proof by WOP
+        Assume contra there exist positive integers that can be written as product of primes in > 1 way
+        There is a smallest integer n with property
+        n = p1 * p2 * ... * pj
+          = q1 * q2 * ... * qk
+        Both sequences weakly decreasing, p1 <= q1
+          if q1 = p1, then n / q1 would also be the product of different sequences
+            p2 ... pj
+            q2 ... qk
+          however then n / q1 < n, which can't be true because n is smallest, so p1 < q1
+          since pis are weakly decreasing, all the pis are less than q1
+            but q1 | n = p1 * p2 ... pj
+              (Why? I got lost here - JM)
+            So q1 divides one of the pis, which contradicts q1 being bigger than all pis
+  Alan Turing
+    Amazingly important in computer science
+    But this is about one of his less good ideas, involving number theory
+      Today, number theory is key to encryption
+    Turing devised a code
+      Translate a text message into an integer
+        Just replace all letters with 2 digits
+        String together to form one huge number
+        Pad with digits to make a prime
+          Prime Number theorem indicates only a few digits needed
+        m is unencoded
+        m-hat is encrypted
+        k is key
+      Sender and receiver agree on secret key, large prime k
+      Encrypt
+        m-hat = m * k
+      Decrypt
+        m-hat / k = m
+    How can sender and receiver ensure m and k are both prime?
+      Tests for primes known even at time
+      Recently super fast primality tests have been found
+    Is it secure?
+      Recovering the message requires factoring m-hat
+      No really efficient filtering algorithm ever found
+        Appears to be fundamentally difficult
+    Seems promising, but there is a major flaw....
+    But first, primality testing
+      Easy to see n is prime if not divisible by 2 to floor sqrt(n)
+        Naive way to test of course, takes > sqrt(n) steps
+        Exponential in the size of n measure by the number of digits in decimal or binary rep of n
+      1974 Volker Strassen - simple, fast probability test
+        Right when applied to any prime
+        Occasionally wrong on nonprime, very rarely
+      2002 - 13 line description of polynomial time primality test
+        Degree 12, since reduced to degree 5, but still too large to be practical
+          May be able to be reduced a bit more
+          But matching speed of probabilistic tests remains a daunting challenge
+    Code break!
+      What happens when the sender transmits a second message?
+      m1-hat = m1 * k
+      m2-hat = m2 * k
+      gcd of m1-hat and m2-hat is k
+      and gcd of two numbers is *very* efficient to compute, as we've seen
+      So after the second message, secret key is recoved
+      likely Turing had a slightly different system in mind eventually, based on mod arithmetic
+
+Lecture
+  Why now?
+    Still practicing proofs
+    Number theory nice self contained subject
+    Ultimate punchline is to understand RSA crypto and how it works
+  Arithmetic assumptions
+    Assume usual rules for +, *, -
+    a(b + c) = ab + ac, ab = ba
+    (ab)c = a(bc), a - a = 0, a + 0 = a, a + 1 > 1...
+    All standard algebraic facts
+  For b > 0 and any a, have
+    q = quotient(a, b)
+    r = remainder(a, b)
+    there exist unique numbers q, r such that a = qb + r and 0 <= r < b
+    Take this fact for granted too
+      Pretty obvious, could presumably be proved by induction, but meh
+  c divides a (c | a)
+    iff a = kc for some k
+    a is a multiple of c, c is a divisor of a
+    5 | 5 because 15 = 3 * 5
+    n | 0 because 0 = 0 * n
+  c | a IMPLIES c|(sa)
+    a = k'c IMPLES (sa) = (sk')c
+                        = kc
+    if c | a and c | b then c | (a + b)
+      if a = k1c and b = k2c
+         a + b = (k1 + k2)c via distributivity law
+    if c|a and c|b
+      c | sa + tb
+      "integer linear combination of a and b"
+        dropping "integer" after this
+      c is a common divisor of a & b
+      common divisors divide integer linear combinations
+  GCD - rest of today
+    greatest common divisor of a and b
+      exists by wop with upper common bound, which is a
+    let's look at examples
+      gcd(10, 12) = 2
+      gcd(13, 12) = 1 - no common factors - easy to see because 13 is prime
+      gcd(17, 17) = 17 - gcd(n, n) is always just n
+      gcd(0, n) = n for n > 0 because everything is a divisor of 0
+  One more setup fact
+    lemma: p prime implies
+      gcd(p, a) = 1 or p
+    proof: the only divisors of p are +-1 and +- p
+    if p divides a, gcd is p, otherwise gcd is 1
+  Euclidean algorithm: computing GCDs
+    GCD are easy to compute
+      Very important fact for number theory
+      And modern codes based on number theory
+    The Euclidean algorithm - thousands of years old
+    GCD remainder lemma
+      gcd(a, b) = gcd(b, rem(a, b)) for b != 0
+    Proof:
+      a = qb + r
+      any divisor of 2 must divide all 3
+      so a, b and b, r have the same divisors
+    Example
+      a = 899, b =  493
+      GCD(899, 493) = 1 R 496
+      GCD(493, 406) = 1 R 87
+      GCD(406, 87) =
+      GCD(87, 58) =
+      GCD(58, 29) = 2 R 0
+      GCD(29, 0) = 29
+      Fast too - keep dividing numbers - we'll get more precise in a bit
+    As a state machine
+      States ::= N * N
+      start ::= (a, b)
+      state transitions defined by
+        (x, y) -> (y, rem(x, y)) for y != 0
+      by Lemma, gcd(x, y) is constant
+      So preserved invariant
+        P((x, y)) ::= [gcd(a, b) = gcd(x, y)]
+        P(start) is trivially true
+          x, y = a, b
+          gcd(a, b) = gcd(a, b)
+        So if program stops, register x = gcd(a, b)
+        Proof: at termination, y = 0
+          Otherwise transition rule is applicable
+          gcd(x, y) = gcd(x, 0) = x = gcd(a, b) as preserved invariant
+      Termination - it does, and it's fast
+        At each transition, x is replaced by y
+        If y <= x/2, then x gets halved at this step
+        If y > x/2 then rem(x,y) < x / 2
+          So y gets halved when it is replaced by rem(x, y)
+        So y halved either at first step or next step
+          y gets halved or smaller at every other step
+          reaches minimum in <= 2log2b steps
+          Procedure halts in logarithmic steps - length of b in binary, even fewer in decimal
+    Euclid practice (problem)
+      GCD(1944, 874)
+      GCD(874, 196)
+      GCD(196, 90)
+      GCD(90, 16)
+      GCD(16, 10)
+      GCD(10, 6)
+      GCD(6, 4)
+      GCD(4, 2)
+      GCD(2, 0) -> 2
+  GCDs and linear combinations
+    "The Pulverizer"
+    Theorem: gcd(a, b) is an integer linear combination of a and b
+    gcd(a, b) = sa + tb
+    Pulverizer lets us find almost as easily as Euclidean algorithm
+    Corollary: the multiples of gcd(a, b) are exactly the linear combinations of a and b
+    How do we get s and t?
+    Find coefficients as you go
+    gcd(x, y) = gcd(a, b)
+    Track coeffs c, d, e, f
+    ca + db = x and ea + fb = y - another invariant of pulverizer/extended Euclid
+    to start: x = a = 1a + ob
+    y = b = 0a + 1b
+    xnext = y = ea + fb
+    ynext = rem(x, y) = x - qy = ca + db - q(ea + fb) = (c - qe)a + (d - qf)b
+    Example a = 899, b = 493
+      899 = 1 * 493 + 406 so 406 = 1a + -1b
+      493 = 1 * 406 + 87 so 87 = 1b - 1 * 406 = 1b - (1a - 1b) = 2b - 1a
+      406 = 4 * 87 + 58 so 58 = 1 * 406 - 4 * 87 = (1a - 1b) - 4 * (2b - 1a) = 5a - 9b
+      87 = 1 * 58 + 29 so 29 = 1 * 87 - 1 * 58 = (2b - 1a) - (5a - 9b) = 11b - 6a
+      58 = 2 * 29 + 0 so answer gcd = 29 = 11b - 6a s = -6, t = 11
+    Would be nice to control what's positive and negative
+      One has to be pos and one neg, obviously
+      gcd(899, 493) = -6 * 899 + 11 * 493
+      What if I wanted 899 coeff to be positive? Lil trick
+        (-6 + 493k)*899 + (11 - 899k)*493
+        Can make first coefficient as big as I like
+        set k = 1
+        487 * 899 - 888 * 493 s = 487, t = -888
+    The pulverizer is also very efficient, like Euclidean algorithm
+      Same number of transitions
+      log2(b) transitions
+        A few more multiplications/additions per transition
+          6log2b (or 10? confused)
+          But very efficient anyway
+    Problem
+      GCD 21212121 and 12121212
+      GCD(21212121 and 12121212) = 9090909
+      GCD(12121212, 9090909) = 3030303
+      GCD(9090909, 3030303) = 0
+      GCD(3030303, 0) -> 3030303 3 steps - terminates when 0
+  Die Hard and Unique factorization
+    A fun proof and an important one
+  Die Hard
+    Did with buckets - 3 gal and 5 gal, 3 gal and 9 gal
+    State machine
+      Gals in each bucket are linear combinations of a and b
+        After any number of moves
+      Linear combinations are same as multiples as gcd(a, b)
+        gcd is divisor of a and b
+        divides any linear combination of a and b
+        we can ONLY get multiples of gcd
+        but in fact can get ANY multiple in if it will fit in bucket
+    Suppose 0 < sa + tb < b
+      Get sa + tb into the b bucket
+      Assume s > 0 do s times:
+        Fill bucket a, pour into b
+        If b fills, empty it
+      Total volume filled = sa
+      0 <= amount left < b
+      # of b emptyings must be -t
+        If more than t emptyings, b goes negative
+        If fewer than t, more than b in b
+      So what left is sa - tb
+      In fact, no need to count, you don't need to know s and t are
+      Fill bucket a, pour into b - if b fills empty it
+        Until desired gals in b
+  Unique prime factorization theorem
+    Lemma: p prime and p | ab implies p | a or p | b
+    Proof:
+      say not(p | a), so gcd(p, a) = 1
+      so sa + tp = 1
+      sab + tpb = 1b
+      sab divisible by p (ab)
+      tpb is divisible by p (p in term)
+      left hand side is divisble by p
+      so b on right divisible by p, and we're done
+    Corollary
+      If p is prime and p | a1 * a2 * a3 ... * am
+      then p | ai for some i (so must divide one member)
+      proof by induction on m (not very interesting, skipping)
+    Thm
+      Every integer > 1 factors uniquely into weakly decreasing sequence of primes
+    Example:
+      61394323221 = 53 * 37 * 37 * 37 * 11 * 11 * 7 * 3 * 3 * 3
+      Will always get this sequence if express as weakly decreasing sequence
+    Proof:
+      Suppose not. Choose smallest n > 1 - must be a least that can be factored 2 different ways
+      n = p1 * p2 * p3 ... pk = q1 * q2 * ... * qm
+      p1 >= p2 >= ... >= pk
+      q1 >= q2 >= ... >= qm
+      What if q1 = p1?
+        Then p2... pk = q2... qm is smaller nonunique - but n was supposed to be the smallest
+        So p1 cannot equal q1
+        One must be greater. Let's assume q1 > p1
+        Well p1 >= all pi
+        But q1 divides n and n is a product of the ps
+        So q1 | pi for some i by Cor
+        Contradicting that q1 > pi
+  Problem
+    40500 prime factors
+    20250 2
+    10125 2
+    3375 3
+    1125 3
+    375 3
+    125 3
+    25 5
+    5 5
+  Problem 12 prime divisors
+    12 2
+    6 2
+    3 3
+  12 divisors - 6 positive - incl (1, 12)

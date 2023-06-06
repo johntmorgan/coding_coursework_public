@@ -1,0 +1,112 @@
+Creating Tables
+  Data Types
+    Let's make a table Actor
+      Columns for age, gender, DOB, etc.
+      Name consist of alphabets
+      Age is a number
+      DOB is a date
+    MySQL provides various data types
+      Similar to strongly-typed langs like Java or C#
+    Major categories
+      Numeric
+        INT, BIGINT, TINYINT, DECIMAL
+      Date and Time
+        DATE, TIME, TIMESTAMP, YEAR
+      String
+        VARCHAR, CHAR, ENUM, SET, BLOB
+      JSON
+        JSON
+      Spatial Data
+        Loc, size, shape of object
+        GEOMETRY, POINT
+      More
+        Ample online documentatoin
+
+    Sample DB
+      FirstName VARCHAR(20) // 65535 abs max possible
+      SecondName VARCHAR(20)
+      DoB DATE
+      Gender ENUM("Male", "Female", "Other")
+      MaritalStatus ENUM("Married","Divorced","Single")
+      NetWorthInMillions DECIMAL
+
+      // CHAR is always fixed in length
+      // VARCHAR only uses 4 chars if "John" entered
+
+Creating table
+  Specify table name, columns, backing data types
+    More you can do, but let's show simple
+
+      CREATE TABLE tableName (
+
+      col1 <dataType> <Restrictions>,
+
+      col2 <dataType> <Restrictions>,
+
+      col3 <dataType> <Restrictions>,
+
+      <Primary Key or Index definitions>);
+
+    CREATE TABLE Actors (
+      FirstName VARCHAR(20),
+      SecondName VARCHAR(20),
+      DoB DATE,
+      Gender ENUM('Male','Female','Other'),
+      MaritalStatus ENUM('Married', 'Divorced', 'Single'),
+      NetWorthInMillions DECIMAL);
+
+    SHOW TABLES;
+      > +-------------------------+
+        | Tables_in_MovieIndustry |
+        +-------------------------+
+        | Actors                  |
+        +-------------------------+
+
+    DESC Actors;
+
+      +--------------------+-------------------------------------+------+-----+---------+-------+
+      | Field              | Type                                | Null | Key | Default | Extra |
+      +--------------------+-------------------------------------+------+-----+---------+-------+
+      | FirstName          | varchar(20)                         | YES  |     | NULL    |       |
+      | SecondName         | varchar(20)                         | YES  |     | NULL    |       |
+      | DoB                | date                                | YES  |     | NULL    |       |
+      | Gender             | enum('Male','Female','Other')       | YES  |     | NULL    |       |
+      | MaritalStatus      | enum('Married','Divorced','Single') | YES  |     | NULL    |       |
+      | NetWorthInMillions | decimal(10,0)                       | YES  |     | NULL    |       |
+      +--------------------+-------------------------------------+------+-----+---------+-------+
+
+    // Column names are case-insensitive and portable across OS
+      Unlike DB names
+    Can add duplicate rows, NULL as column vals
+      Not usually what we want
+
+Restricting table
+  Restrict duplicate rows
+    Designate single column as primary key
+    Need to use a specific column - numeric ID incremented each time
+      Otherwise can still duplicate - same name (oh I know about that - JM)
+      Use AUTO_INCREMENT
+        Only one col per table
+        Can't have a default
+        Must be indexed
+        Isn't portable to other DBs
+        Reset when table truncated or dropped
+    Disallow NULL as a column value
+    Set DEFAULT
+      Say you are not aware of marital status
+      Let's add that as an option in the ENUM
+
+      CREATE TABLE Actors (
+      Id INT AUTO_INCREMENT,
+      FirstName VARCHAR(20) NOT NULL,
+      SecondName VARCHAR(20) NOT NULL,
+      DoB DATE NOT NULL,
+      Gender ENUM('Male','Female','Other') NOT NULL,
+      MaritalStatus ENUM('Married', 'Divorced', 'Single', 'Unknown') DEFAULT "Unknown",
+      NetWorthInMillions DECIMAL NOT NULL,
+      PRIMARY KEY (Id));
+
+    Can also use IF NOT EXISTS like on DB
+      CREATE TABLE IF NOT EXISTS Actors (cols here)
+
+

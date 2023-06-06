@@ -1,0 +1,72 @@
+Functions as Components
+
+Functional Stateless Components
+  Concept from functional programming
+  Use components like functions
+
+  import React from 'react';
+
+  export function App() {
+      return (
+        <p>Hello, from a functional stateless component!</p>
+      );
+  }
+
+An example with input from props
+Does not need to manage any state
+Does not need to be aware of any methods - class methods, lifecycle methods
+Only use render() method from React components
+
+  // functional stateless components can also receive props
+  import React from 'react';
+
+  export function Greeting(props) {
+    return(<p>{props.greeting}</p>);
+  }
+
+  // index file
+
+  import React from 'react';
+  require('./style.css');
+
+  import ReactDOM from 'react-dom';
+  import {Greeting} from './app.js';
+
+  ReactDOM.render(
+    <Greeting greeting = "hello from a functional stateless component that takes props!"/>,
+    document.getElementById('root')
+  );
+
+Functional stateless components are the preferred way of defining components in React
+  Less boilerplate
+  Less complexity
+  Simpler to maintain
+  However both are ok as of now
+
+Using arrow functions
+
+  import React from 'react';
+
+  // JavaScript ES6 arrow function
+  export const Greeting = (props) => {
+      return(<p>{props.greeting}</p>);
+  }
+
+  import React from 'react';
+  require('./style.css');
+
+  import ReactDOM from 'react-dom';
+  import {Greeting} from './arrow.js';
+
+  ReactDOM.render(
+    <Greeting greeting = "hello from a JS ES6 arrow function component"/>,
+    document.getElementById('root')
+  );
+
+Using arrow functions - no body and implicity return
+
+  import React from 'react';
+
+  // JavaScript ES6 arrow function without body and implicit return
+  export const Greeting = (props) =>
+    <p>{props.greeting}</p>;

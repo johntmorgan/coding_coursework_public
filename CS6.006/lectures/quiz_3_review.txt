@@ -1,0 +1,249 @@
+Quiz 3
+Dynamic Programming - four lecture
+Quiz 1 & Quiz 2 - data structures & graph - not explicitly tested
+  May have to store something in a data structure here or there
+Really haven't learned all that much new material in these lectures
+Recursive framework (SRTBOT)
+  Framework for breaking down problem into subproblems related recursively
+  Then if relationship depends on problems decreasing, directionality
+    And that dependency graph is acyclic
+    Then can solve via dynamic programming via memoizing from bottom up
+    Or top down by calling and remembering what we've called before (also via memoization)
+  Framework good for any recursive algorithm
+    In the special case where subproblems may be used more than once
+      Then we get this really nice speedup by recognizing we don't have to do that work more than once
+      Rather than a tree of recursive calls, collapse nodes of same value down to 1, get a DAG
+  Subproblem definition
+  Relate recursively
+  Topological order
+  Base cases
+    Constant time solve with no recursive work
+  Original problem
+    Could combine many subproblems, or just a starting point for one subproblem
+    Possibly storing parent pointers for sequence
+  Time analysis
+    Not really important for solving the problem
+    But really important in this class, want to know if algorithms are efficient
+Subproblem
+  Describe meaning of subproblem in words, in terms of parameters x in X
+    What's in memo, how big it is
+  Now if have params in subproblem not in definition, doing it wrong
+    Even if correct subproblem and doing it right, part of class is about communication
+    If you don't communicate to us, hard to convince algorithm is correct
+  Describe in words output, what will memo return
+  When making, recursing on different values of indices in a sequence, or numbers in your problem (last lecture)
+    An integer in problem is the number of things in a sequence
+    Those integers happen to be size of problem, others might be larger, psuedopoly time bound
+  Common choices of subproblems
+    Prefixes or suffixes - do locally with one item and then recurse
+    Substring - choice in middle or both ends
+      Might need that flexibility when recursing downward
+    Diff prefix/suffix? Not much
+      Concentrating on suffixes - what am I doing with first thing, recurse on later
+      When doing bottom up, actual computation evaluated first is last, last element is first
+        Recursive solve everything else before figure out what to do with thing
+        Start at end and work way back to front
+      Prefix
+        What doing with last element, recurse on before
+        Bottom up starts from front, works way up
+      Two sides of same coin, interchangeable
+        Suffix read from left to right, easier to figure out what's happening conceptually
+        Actually the same thing
+      Useful to be able to switch back and forth, will be using suffixes today
+    Often multiple subsets across multiple inputs
+      Take indices in each one - prefix/suffix
+    May need to maintain aux information - max or min sum? Player 1 or player 2 turn?
+      Where was finger when playing piano?
+      Expand state based on numbers in problem
+        How much space left in knapsack or similar
+  This is the key part about dynamic programming
+    Choosing a set of subproblems
+    You build subproblems to fit well with a relation
+Relate recursively
+  Usually what want is a mathematical expression relating the def of a subproblem
+    Relating those in math terms to the other things
+    Really important to write in math - needs to be precise to communicate well
+      Can write in words
+      But a lot more concise for us to see
+  I'm going to write x(i) = f((j), ...) max, min, and, or, choices you might make
+    Going to depend on other subproblems that are smaller in some sense
+    The idea of a smaller subproblem isn't well defined yet - but in next step
+  Identify question about subproblem solution
+    What do I do with the first character in this string?
+    Which cage do I put this tiger in?
+    I don't know answer, but if know answer, could recurse on smaller problem
+      Reduce to smaller subproblems
+    Only poly number of subproblems, and already computed & memoized
+      Locally brute force over all possible answers to question
+Topological order
+  Argue relation is acyclic
+    Basically just define what "smaller" means when recursing on smaller subproblems
+    Some index or param always decreases
+    Or maybe the sum of a couple of indices
+    But in general, as long as argue acyclic, then DAG, compute bottom up w/o loops
+Last things are kinda bookkeeping but if don't write can't get points!
+Base case
+  State solutions for all reachable independent subproblems where relation breaks
+  If you write code without a base case, it's gonna be wrong
+    For anything at the bounds of your computation
+    Where recursive relation would go outside bounds of memo
+      Dealing with subsequence, point to state where zero or neg elements in sequence
+        Bad thing
+      Define how to compute in constant time so algo terminates at that point
+      We'll do some of that today
+Original problem
+  Show how to compute from solutions to subproblem
+  Usually just "here's a subproblem that uses all of the things"
+  Not always
+    LIS, max subarray sum take max over all things computed
+    But in general output to subproblems wants to be scalar value to optimize, or boolean
+    Not storing whole sequence of how we got there
+      Isolating complexity of subproblem down to single number
+  But want to reconstruct how got tigers into cages, not just minimum discomfort
+    Every time max subproblem, remember subproblems you depended on
+    Walk back in subproblem graph, figure out which path to base case lead to optimal solution
+Time analysis
+  Generally just summing work done by each subproblem
+  But if work per subproblem bounded by same value, multiply out
+    Weaker bound but usually asymptotically equivalent
+  How do you determine how many subproblems?
+    Look at possible value of each param and then multiply together
+      Able to choose independently
+  Work done by each subproblem
+    Usually size of thing maxing or minimizing over in relation
+    Number of subproblems, look at subproblem statement definition
+    Work done by each subproblem, look at recursive relation
+Now have framework, practice problems
+1) Future investing
+  Second back to the future movie
+  Make money from the lottery
+  Don't play every day
+  Play at most twice in every 7 day period
+    This was a particularly difficult first dynamic programming problem
+  How deal with subproblems here
+    What do I do on the first day?
+      Do I play the lottery or not?
+      Say L(i) is winnings on day i in {1...n} // 1 indexed for whatever reason
+    x(i) = max winnings possible for days i...n
+      What would this subproblem lead me to?
+  R
+    x(i) = max{ L(i) + x(i + 1), x(i + 1)}
+    Why don't we like this? Always going to pick the first term, positive payouts every day
+      Not dealing with condition only play twice every 7 days
+      How can remember what days able to pick later on
+        Might not be able to play until day i + 6
+      At beginning, no restrictions
+        Generalize subproblems by storing additional information
+        Need to remember two days
+        Say have to play on day i
+  Sub again
+    x(i, j) - max winnings assume play on day i and next allowable play on day i + j
+      for j in {1...6}
+      expanded subproblems by constant number
+  R
+    Now assuming play on day i
+      Locally allowed to play
+    x(i, j) = max {L(i) + x(i + k, max{1, 7  - k}) | k {j,...,11}} and i + k <= n
+      How big can k be? Check up to 7?
+    Looping over choices of next day to play
+      Recursing when do play that day, but remembering what allowed to play next
+    This was a pretty difficult problem (I like my easier soln better and still think it's right)
+  T
+    k will always be positive, so i is always increasing
+    depends on strictly larger i
+      smaller subproblem, taking smaller suffix
+  B
+    x(n, j) = L(n) (handled by relation, should acknowledge)
+  O
+    max over i < 7 {x(i, 1)}
+  T
+    linear number of subproblems
+    n * O(1) => O(n)
+  Daunting first problem but
+    Suffix subproblem, where expanded by some local information remembering the next time can play
+    Recurrence relation has constant branching
+    And combining a bunch of subproblems
+  This is the most complicated one today - start hard
+    This is the most complicated version of relatively simple dynamic programming setup
+      With suffixes and constant local work, just complicated local setup
+    Easy conceptually, hard to implement
+2) DNA matching
+  Match DNA to two subsequences of parents
+  CATG vs. AATT, CCGG works -> CG and AT
+    Are not consecutive but any subsequences
+  AGTC does not work, G and C swapped
+    Easy to see with these strings, hard to solve with longer
+  There is no biological basis for this lol
+  There's an exponential number of ways can partition string
+    What problem does this look like?
+    Longest common subsequence, but have 3 sequences not 2 and need exact partition of one of them
+  A, B, C are n length strings
+  Subproblems
+    Keep track of suffix or prefix of each one of strings
+    x(i, j, k) A[i:] B[j:] C[:k]
+      Always need to match all of C
+      Using exactly n/2 in A, exactly n/2 in B
+      How to remember how many characters to assign A vs B
+      Remember how many left to match in A in C, or remember how many already matched
+    x(i, j, ki, kj)
+      True if can match ki-length subsequence of suffix A[i:] and length-kj subsequence of suffix B[j:]
+      To all chars in C[(n - ki - kj):]
+  R
+    x(i, j, ki, kj) = OR 1. x(i + 1, j, ki - 1, kj) if A[i] = C[n - ki - kj] and ki > 0
+                         2. x(i, j + 1, ki, kj - 1) if B[j] = C[n - ki - kj] and kj > 0
+                         3. x(i + 1, j, ki, kj) if i < n
+                         4. x(i, j + 1, ki, kj) if j < n
+  T
+    i + j is strictly increasing
+  B
+    x(n, n, 0, 0) = True
+    x(n, j, ki, kj) = False if ki > 0
+    x(i, n, ki, kj) = False if kj > 0
+  O
+    x(0, 0, n/2, n/2)
+  T
+    O(1) work - just checking val of 4 subproblems
+    n loops - i, j, ki, kj -> O(n^4)
+
+(Skipping Gokemon Po)
+  Catch pocket monsters
+    Go to location and catch for free but costs money to get there
+    Or don't go to location and buy in-app, but costs different amount of money
+      Stay at location if buy in-app - need to remember where last
+
+3) Tapas
+  Order from menu of n items
+  Maximize value eaten
+  Eat no more than k calories during meal
+  Order exactly s sweet plates
+  Similar to Knapsack O-1
+    Cannot take a plate more than once
+    O(nks) to max volume
+  Is this a polynomial running time?
+    No, it's pseudopolynomial - they give you the running time
+    note that s is polynomial, smaller than n (exam trick? JM)
+    but k is just a random number
+  S
+    x(i, j, s'): max volume of food possible for plates pi...pn
+      using at most j cal from remaining dishes
+      eating exactly s' sweet plates
+  R
+    x(i, j, s') = max 1. vi + x(i + 1, j - ci, s' - si) if ci <= j, si <= s'
+                      2. x(i + 1, j, s') always
+  T
+    strictly increasing i
+  B
+    x(n + 1, j, 0) - good at end
+    x(n + 1, j, s') = -infinity if s' > 0
+  O
+    x(0, k, s)
+  T
+    n + 1 * k + 1 * s + 1
+    O(nks) subproblems
+    O(1) work
+    O(nks) time total
+
+Gokemon Po
+  Remembering more info that's not really pseudopolynomial
+    Non-trivial way of expanding subproblems
+  

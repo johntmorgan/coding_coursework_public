@@ -1,0 +1,88 @@
+Concurrency & multithreading
+  Sync vs. Async
+  Deadlocks
+  Mutex
+  Monitors
+  Semaphore
+  Threading
+  Event loops
+  Multiprocessing
+  Deferred callbacks
+
+Simple solutions to
+  Reader-Writer problem
+  Dining Philosopher problem
+  Unisex Bathroom problem
+
+Why important?
+  Performant, efficient programs
+  Run into issue working on any big project
+
+Simplest example - threads
+  Single-processor machine running IDE
+  Edit file and click save
+  Initiates workflow
+  Bytes written out to physical disk
+  IO is expensive
+  CPU idle while bytes written out
+  IO thread is switched out
+  UI thread scheduled on CPU
+  IDE remains responsive
+  Threads give illusion of multitasking
+    Even though CPU only executing one at a time!
+  Each thread gets a slice of time then switched out
+    When starts task that requires waiting, not using CPU
+    Or when finishes slot on CPU
+  Many nuances, but this is the basic idea
+
+Now common to have multi-core machines
+  Have a dedicated CPU run each thread
+  Standard Python is limited in its ability to do so
+
+Why threads
+  Higher throughput
+    Can have overhead of switching actually result in worse performance!
+      Bad
+      Exception not norm
+  Responsive applications
+    Give illusion of multitasking on single-core
+  Efficient use of resources
+    Thread creation is lightweight vs. new process
+    Web servers using threads consume less resources
+    All threads share same address space, no shared memory use
+      Unlike processes
+
+Example
+  Compute sum of all integers from 1 to 30m
+  Actually slower in multithreaded than single thread
+  Python's Achilles heel, Global Interpreter Lock
+    Entity in Python framework
+    Single thread execute even when 1+ idle CPUs
+  Multithreaded may not experience any performance gains on CPU intensive tasks
+    Threads don't execute in parallel
+    Incur additional cost of management, coalescing partial results
+  Multiple processes also slower
+    Schedule onto different CPUs
+    Overhead of creating, tearing down processes
+      Higher than for threads
+    Python's inter-process communication machinery:
+      Proxy pattern
+      Adds network latency
+
+What tasks do see better performance?
+  Blocking operations
+    Network
+    Disk I/O
+
+Problems with threads - tanstaafl
+  Usually very hard to find bugs
+    May only appear in production
+    Hard to reproduce consistently
+    May depend on thread sequence
+  Higher cost of code maintenance
+  Increased utilization of system resources
+    Consumes more memory, CPU cycles for book-keeping, wastes time in context switches
+  Programs may experience slowdown
+    Thread coordination comes at a price
+      Acquiring and releasing locks adds to program execution time.
+    Threads fighting over locks cause lock contention

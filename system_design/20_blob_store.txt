@@ -1,0 +1,417 @@
+Blob Store
+What is it?
+  Storage for unstructured data
+    Photos
+    Audio
+    Videos
+    Binary execs
+    Other multimedia
+  All stored as blob
+    "Binary large object"
+  Flat data org
+    No hierarchies
+      Directories, sub-directories etc.
+  Used when
+    Write once, read many (WORM)
+    Nobody changes once written
+    Can't be deleted until specified interval
+    Can't be modified to protect key data
+    Not *every* app using it is WORM
+      But assume no modifications
+    Upload new instead of modifying to change
+  Key for
+    YouTube
+      Google Cloud
+      Stores over 1 PB per day
+      Video in multiple resolutions
+      Replicated many times across centers/regions
+    Netflix
+      S3
+    Facebook
+      Tectonic
+  Features
+    Scalable
+    Reliable
+    Highly available
+
+Requirements
+  Functional
+    Create container
+      Group blobs
+        Put user account in container
+        Put videos, images together
+      Blob store can create many containers
+      Each container can have many blobs
+      Cannot put container inside container
+        For simplicity
+        (Guess it is possible in the real world - JM)
+    Put data
+      Upload blobs to containers
+    Get data
+      URL access to blob
+      System creates URL
+      User uses URL later
+    Delete data
+      User delete blob
+      Retention time option
+    List blobs
+      Inside specific container
+    Delete container
+      And all blobs inside
+    List containers
+      User list under specific account
+
+  Non-functional
+    Availability
+    Durability
+      Don't lose uploaded data unless deleted
+    Scalability
+      Billions of blobs!
+    Throughput
+      Transferring gigs of data
+    Reliability
+      Detect and recover from failures promptly
+    Consistency
+      Diff users should see same view of blob
+
+  Resource estimation
+    Blobs can have all kinds of data
+    Let's use YouTube
+      Videos
+      Thumbnails
+    DAU: 5m (seems low - JM)
+    RPS: 500/server
+    Video size: 50 MB
+    Thumbnail size: 20 KB
+    Videos/day = 250k
+    Read requests/user/day = 20
+    Calcs
+      Number of servers = 10k
+      Storage/day = 12.51 TB (single resolution!)
+      Upload bandwidth = storage/day / seconds/day
+                = 12.51 / 86400
+                = 1.16 Gb/s
+      Download bandwidth = 462.96 GBps
+
+Building blocks
+  Rate limiter
+    Control user interaction
+  Load balancer
+    Distribute requests
+  Database
+    Store blob metadata
+  Monitoring
+    Inspect storage
+    Add storage if needed
+
+Design
+  High-level
+    Clients
+    Front-end servers
+    Storage disks
+  API
+    (Skipping user reg/auth)
+    createContainer(containerName)
+    putBlob(containerPath, blobName, data)
+      May need multistep streaming call for very large data
+    getBlob(blobPath)
+    deleteBlob(blobPath)
+    listBlobs(containerPath)
+    deleteContainer(containerPath)
+    listContainers(accountID)
+    API provides metadata on size, version number, access privileges, name, etc.
+
+Detailed design
+  Client
+    User or program performing API functions
+  Rate limiter
+    Limits requests based on user subscription
+      Or from same IP address at same time
+      Users may not exceed limit
+  Load balancer
+    Reroute to regions, data center, servers in data center
+    DNS load balancing too
+  Front-end servers
+    Forward user requests to storage servers
+  Data nodes
+    Hold actual blob data
+    Hold pieces of blob data
+      Split into chunks
+  Master node
+    Manages data nodes
+    Stores info about storage paths, access priv of blobs
+    Access privileges
+      Private, only account containing can access
+      Public, anyone can access
+    Data nodes send heartbeat
+      If no heartbeat, dead, route to replica nodes
+      Maintain log of pending operations to replay on dead node after recovery
+    Data nodes send chunk report
+      List all chunks on node
+  Metadata storage
+    Distributed database
+    Used by master node to store all metadata
+    Account metadata
+      User and containers held
+    Container metadata
+      List of blobs in each container
+    Blob metadata
+      Where blob is stored
+  Monitoring service
+    Monitors data nodes, master node
+    Alert admin in case of failure
+    Get info about total available space left, alert to add more
+  Admin
+    Handle notifications from monitor
+    Routine checkups
+
+Workflow
+  User already logged in, container created
+  Client generates upload request
+  Passes through rate limiter
+  Load balancer forwards to front-end server
+  Front-end server requests master node for data node to store
+  Master node assigns blob ID using unique ID generator
+  Master node splits blob into fixed-size chunks
+  Master node assigns chunks to data node
+    Determines space avail using free-space management system
+  Front-end server writes chunk to data nodes
+  Replicate chunk for redundancy
+    Master node makes all decisions
+  Master node stores blob metadata in metadata storage
+    (Schema in next lesson)
+  Blob path returned to client
+    User ID
+    Container ID
+    Blob ID
+    Blob access level
+
+  What if user writes blobs with same name to same container?
+    Master node serializes
+    Assigns version number to later blob
+
+Reading a blob
+  Request to front-end server
+  Front end asks master node for blob metadata
+  Master node checks public/private
+  After auth, look for chunks in metadata
+  Look at mappings to data nodes
+  Return chunks and mappings to client
+  Client reads chunk data from nodes
+    Cached on client machine
+      Don't burden master node on repeats
+      Read operation faster next time
+
+  What if data moved to different node due to (impending) disk failure?
+    Client read fails
+    Client flushes cache
+    Client fetches new metadata from master node
+
+Deleting a blob
+  Mark as deleted in metadata
+  Free up space later with garbage collector
+    (More in next lesson)
+
+Is the master node a SPOF?
+  Yes
+  Need a backup or shadow server
+  Checkpointing, snapshot data at intervals
+  Maintain operation log in external storage/snapshot repository
+  Automated system or admin restarts
+    Replays operation log
+
+Design considerations
+  How to store large blobs?
+    Same disk
+    Same machine
+    Divide into chunks
+  How many replicas of blob?
+  How to search and retrieve quickly?
+
+User abstractions
+  Hide internal complexity
+  User account
+    Via account_ID
+    Blobs stored in user containers
+  Container
+    Identified by container_ID
+    Containers contain blobs
+  Blob
+    Identified by blob_ID
+    Metadata of blobs
+
+Blob metadata
+  Split into small chunks on upload
+  Chunks stored in different nodes
+  Billions of blobs in storage
+  Master node stores chunk info
+    Assigns ID to each chunk
+  Info about blob:
+    chunk IDs
+    Assigned data node for each chunk (and replicas)
+  Chunk sized fixed for all blobs
+    Avoid complexity
+    Size depends on performance requirements
+    Large chunks = less metadata, high disk latency
+    Disk can have similar write latency over size ranges
+      4-8 MB, 9-20 MB
+      Due to use of contiguous sectors on disk
+        Caching on disk and on server by OS
+    Three replicas for each block
+      Master node identifies using free space management system
+      Replicas used for failure
+      Replicas also used to serve read/write, split load
+    What if last chunk partial
+      Store at full size, just won't be full
+      Master node tracks size of each blob
+
+Partition data
+  Looking for data node with blob = slow, billions of blobs
+  Group data nodes = partition
+  Partition map table with all blobs in partition
+  Partition based on complete path of blob
+    account ID, container ID, blob ID
+    Co-locate blobs for single user on same partition server
+    Better performance
+    Master node maintains mappings
+
+Blob indexing
+  Define key-value tag attributes
+    Container name
+    Blob name
+    Upload date and time
+    Type of file
+    etc
+  Blob indexing engine reads tags, indexes, exposes to searchable index
+  Pagination for listing
+    Listing = returning list of blobs to user
+    Select based on prefix - char or string starting blob name
+    User may want all blobs in account
+      Blobs in container
+      Some public blobs based on prefix
+    List may be very long
+      Return in parts
+    ex. User has 2000 blobs tants all
+      Return first 5 results, next button
+      "Pagination"
+    How to set number of results
+      How long users should wait for query
+      How many results can be returned
+        (5 is very low, just easy to visualize)
+    Which results to return first?
+      Use indexing to sort/categorize
+      Do this in advance, slow to do at request time
+  Pagination
+    Continuation token
+      String token included in query response
+    Serves as a pointer, pick up where left off
+    (Have used a LOT of those before - JM)
+
+Replication
+  Carried out at two levels
+  Sync rep among nodes in data center used for read requests
+    Keep data consistent
+  Async replicate to different regions/data centers after this
+    Don't serve from there until replicated
+
+  Sync rep in data cluster
+    Storage cluster is N racks of nodes
+    Each rack configured as fault domain
+      Redundant networking and power
+    All data written kept durable
+    Master node maintains enough replicas across distinct fault domains
+      Ensure durability in cluster in event of disk, node, rack failure
+    Intra-cluster replication on critical path of write requests
+    Success to client once sync rep inside storage cluster
+    Quick writes
+      Replicated locally, low latency
+      In-lined data copying
+        Use redundant network paths to copy in parallel
+
+  Asycn rep across data centers, region
+    Asia-Pacific, Europe, Eastern US, Western US, etc.
+    More than one data center per region
+      If one goes down, others step in
+    Three data centers per region
+      Separate by miles in case of fires, floods etc
+
+  Number of copies of blob = replication factor
+    Three is usually sufficient
+    Four copies overall
+      Primary
+      Local copy in case of rack/drive failure
+      Copy in data center in same region
+        In case fire/flooding in primary data center
+      Third copy in different region
+        Protect against regional disasters
+    (Can't be good enough for YT though, can it?
+      Would need a copy in every region at least? - JM)
+
+Garbage collection
+  Deleting from nodes takes time
+  Holding client is not viable
+  Just mark blob as DELETED in metadata
+    Now inaccessible to user
+  Remove later
+  Internal metadata inconsistencies
+    Don't have as much space as you think you have
+    But disk info is only updated by garbage collector later
+
+Stream a file
+  How many bytes read at once, X
+  0 to X - 1 first time
+  X to 2X - 1 next time
+  Use offset value to track
+
+Caching
+  Metadata for blob chunks cached client side
+    Don't need to comm with master node again
+  Front-end servers cache partition map
+  Frequently accessed chunks cached at master node
+  Blob store caching usually done using CDN
+
+Evaluation
+  Availability
+    Replication - 4 replicas
+    Distribute request load
+    If node fails, other replicas serve
+    Replica placement handles data center failure, region issues
+    Make sure enough replicas via monitoring
+      Copy quickly if too many failures
+    Writes replicated in fault-tolerant way
+      Quickly respond to user
+    Backup master node
+      Initialize new instance from saved state if failure
+  Durability
+    Replication and monitoring
+    If disk fails
+      Monitoring service alerts admins, master node
+      Master node copies to different disk
+      Master node updates mapping
+  Scalability
+    Splitting into small chunks helps scale
+    Partition into ranges, served by partition servers
+    Partition provides automatic load balancing
+    Horizontally scalable
+      Add more nodes as needed
+    Master node can become bottleneck
+      10k queries per second
+      Make new instance of system
+        Own master node and set of data nodes
+  Throughput
+    Save chunks on different node
+      Parallel chunk fetching = fast
+    Caching
+      Client-side
+      Front-end servers
+      Master node
+  Reliability
+    Monitoring, heartbeat protocol
+    Make replicas as needed in case of failure
+    Track available space on disk
+  Consistency
+    Snyc rep within storage cluster
+      Strongly consistent
+      On user critical path
+      Serve reads from cluster until replicated elsewhere
+    Async rep later in other clusters/regions for availability

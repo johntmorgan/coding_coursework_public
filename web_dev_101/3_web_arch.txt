@@ -1,0 +1,465 @@
+Web architecture
+  Involves multiple components
+    Database
+    Message queue
+    Cache
+    User interface
+  All running in conjunction to form an online service
+  This unit: basics of typical architecture
+    Understand components, build to fulfill complex reqs
+
+Client-server architecture
+  Fundamental building block of the web
+  Works on a request-response model
+    Client sends the request to the server for information
+    The server responds with it
+  Every website you browse is build on this architecture
+    A few use peer-to-peer - discussed later
+
+Client
+  Holds the user interface
+    Presentation part of the appliation
+      HTML, JS, CSS
+    User interface runs on the client
+  Client is the gateway to the application
+    Can be a mobile app, a desktop app, or a tablet like an iPad
+    Can also be a web-based console, running commands to interact with backend server
+  Current open-source tech for writing
+    vanilla JS, jQuery, React, Angular, Vue, Svelte
+      All written in Javascript (except vanilla which *is* JS - JM)
+    Many other techs can be used as well
+  Different platforms require different libraries
+    Android phones different from Apple, Windows OS
+
+Types of clients
+  Thin client
+    Holds just the user interface of the application
+      Contains no business logic
+    For every action, client sends request to backend server
+      Like in a three-tier application
+  Thick client
+    Holds some or all business logic
+      Two-tier application
+    Utility apps, online games, etc.
+
+Server
+  Receives requests from client, provides response after executive business logic
+    based on params from client
+  Every online service needs a server to run
+    Common: "application server"
+  Other servers with specific tasks
+    Proxy server
+    Mail server
+    File server
+    Virtual server
+    Data storage server
+    Batch job server
+  Server config and type varies depending on use case
+    Backend code written in Java?
+      Apache Tomcat or Jetty
+    Hosting simple website?
+      Apache HTTP server
+  Stick to application server for now
+  All components need a server to run
+    Database, message queue, cache, other component
+    Even user interface hosted separately on a dedicated server now
+  Server-side rendering
+    Render the user interface on the backend, send generated data to client
+      Pros and cons vs. client-side rendering - covered later
+
+Client-server communication
+  Request-response model
+    Client sends request, server responds with data
+    If there is no request, there is no response
+  HTTP protocol
+    Request-response for info exchange over www
+    Stateless protocol
+      Every process executed indepedently
+      Has no knowledge of previous processes
+    Mozilla article
+      Complete document reconstructed from subdocuments fetched
+        Text, layout description, images, videos, scripts, and more
+      Sent over TCP
+        Or a TLS-encrypted TCP connection
+        Any reliable transport protocol could theoretically be used
+      Extensible
+        Fetches not only hypertext docs, but images and video
+        Also post content to servers
+      Requests sent by one entity, the user-agent
+        Or a proxy on behalf of it
+      User-agent
+        Usually a web browser
+        Can be anything - say a robot crawling to maintain search engine index
+      Request sent to server, handles and provides answer called response
+        Numerous entities between client and server called proxies
+          Proxies do different things - act as gateways or caches
+        Routers, modems between too
+          Thanks to layered design of web, hidden in network and transport layers
+        HTTP on top, at the application layer
+          Important to diagnosing network problems
+          But underlying layers mostly irrelevant to description of HTTP
+      Browser is always the entity initiating the request
+        Never the server
+          Though some mechanisms added to simulate server initiated requests over the years
+        Sends request to fetch HTML doc representing page
+          Parses file, making additional requests
+            Execution scripts, CSS layout to display, subresources in page (image, video)
+          Combines elements to present complete document web page
+            Scripts can fetch more resources and update later
+        Web page: hypertext document
+          Some parts of displayed content are links
+            Activated by mouse click to fetch new page
+            Allows user to direct user-age and navigate through the web
+              Browser translates directions into HTTP requests
+                Interprets responses for user
+      Web server
+        Serves the document as requested by the client
+          Appears as only a single machine virtually
+          May actually be a collection of servers sharing the load (load balancing)
+          May be a complex piece of software interrogating other computers
+            Cache, DB server, e-commerce serer
+            Or partially generating the document on demand
+          Several server instances can be hosted on the same machine
+            With HTTP/1.1 and the host header, may even share IP address
+      Proxies
+        Numerous computers and machines relaying HTTP messages from web browser to server
+          Due to layered nature of web, operate at transport, network, or physical levels
+          Transparent at the HTTP layer
+          Potentially have a big impact on performance
+        Operating at application layers: proxies
+          Can be transparent, forwarding requests without altering
+          Non-transparent: change request in some way before passing to server
+            Caching (public or private, like browser cache)
+            Filtering (antivirus scan, parental controls)
+            Load balancing (allow multiple servers to serve different requests)
+            Authentication (control access to resources)
+            Logging (allow storage of historical information)
+      HTTP
+        HTTP is simple
+          Designed to be human readable
+          HTTP/2 encapsulates HTTP messages into frams - still simple
+        HTTP is extensible
+          Headers introduced in HTTP/1.0
+          Easy to extend and experiment with
+          Introduce new functionality by agreement between client and server about new header's semantics
+        Stateless, not sessionless
+          Stateless: no link between two successive requests on same connection
+          HTTP cookies allow the use of stateful session
+        HTTP connections
+          Controlled at the transport layer, out of scope for HTTP
+          HTTP just requires transport protocol to be reliable
+            Don't lose messages, or present an error when you do at minimum
+          TCP is reliable, most common
+            UDP is not
+          HTTP relies on TCP standard, whcih is connection-based
+          Request/response starts with TCP connection establish
+            Requires several round trips
+            HTTP/1.0 open a separate TCP connection for each request/response pair
+              Less efficient than sharing a TCP connection when multiple requests close together
+            HTTP/1.1
+              Pipelining (difficult to implement)
+              Persistent connections: underlying TCP connection partially controlled using Connection header
+            HTTP/2
+              Multiplex messages over a single connection
+                Keep connection warm and efficient
+            Experiments underway to design a better transport protocol
+              Google working on QUIC building on UDP
+        HTTP control
+          Caching - how documents are cached
+            Server instruct clients, proxies what to cache and how long
+            Client can instruct intermediate cache proxies to ignore stored document
+          Relaxing origin constraint
+            To prevent snooping, browsers enforce strict separation between web site
+              Only pages from same origin can access all info of a web page
+              Burden to the server
+              HTTP headers can relax strict separation on server side
+                Allowing a document to become patchwork from different domains
+                May even be security-related reasons to do so
+          Authentication
+            Protect pages so only specific users can access them
+              Basic authentication provided by HTTP
+                Using WWW-Authenticate and similar headers
+                Set a specific session using HTTP cookies
+          Proxy and tunneling
+            Servers and clients often located on intranets
+              Hide their true IP address from other computers
+            HTTP go through proxies to cross this network barrier
+              Not all proxies are HTTP proxies
+                SOCKS protocol operates at a lower level
+                FTP protocol can be handled by these proxies
+          Sessions
+            Using HTTP cookies, link requests with state of server
+              Creates sessions despte HTTP being stateless
+        HTTP flow
+          1. Open TCP connection
+            Open new, reuse existing, or open several
+          2. Send HTTP message
+            Pre-HTTP/2, human readable
+            HTTP/2: encapsulated in frames, can't read directly, same principle still
+
+            GET / HTTP/1.1
+            Host: developer.mozilla.org
+            Accept-Language: fr
+
+          3. Read response sent by server
+
+            HTTP/1.1 200 OK
+            Date: Sat, 09 Oct 2010 14:28:02 GMT
+            Server: Apache
+            Last-Modified: Tue, 01 Dec 2009 20:18:22 GMT
+            ETag: "51142bc1-7449-479b075b2891b"
+            Accept-Ranges: bytes
+            Content-Length: 29769
+            Content-Type: text/html
+
+            (web page, 29679 bytes long)
+
+          4. Close or reuse connection for further requests
+
+          Note
+            HTTP pipelining
+              Send several requests without waiting for first response to be received
+              Difficult to implement in existing networks
+                Old software co-exists with modern versions
+              Superseded in HTTP/2 with robust multiplexing requests within a frame
+
+        HTTP messages
+          HTTP/1.1 - human readable
+          HTTP/2 - embedded into binary structure, frame
+            Optimize by compressing headers, multiplexing
+            Client virtually reconstitutes original HTTP/1.1 request
+            Useful to comprehend HTTP/2 in HTTP/1.1 format
+
+        Requests consist of
+          Method: GET, POST etc.
+          or Noun: OPTIONS, HEAD, etc that defines operation to perform
+            GET, POST most common
+          Path of resource to fetch
+            URL stripped of elements obvious from context
+              No protocol (http://)
+              No domain (developer.mozilla.org in above example)
+              No TCP port: here, 80
+          Version of HTTP protocol
+          Optional headers with more info
+          A body, for some methods like POST, containing resource sent
+
+        Responses consist of
+          HTTP version
+          Status code: successful or not and why
+          Status mesage: non-authoritative short description of the status code
+          HTTP headers: like those for requests
+          Body containing resource (optional)
+
+        APIs based on HTTP
+          XMLHTTPRequest most common
+            Exchange data between user agent and server
+          Fetch API
+            Same features, more flexible and powerful feature set
+          Server-sent events
+            One-way service, allow server to send events to client
+            Use HTTP as transport mechanism
+              Uses the EventSource interface
+              Client opens a connection, establishes event handlers
+              Browser converts messages that arrive on HTTP stream to Event objects
+              Delivers to event handlers registerd for event type if known
+              Or to onmessage event handler if no type-specific event handler established
+
+  REST API and API endpoints
+    In modern n-tier web applications
+      Every client has to hit a REST endpoint to fetch data from the backend
+    Backend application has a REST-API implemented
+      Acts as an interface to the outside world requests
+      Every request has to hit the REST endpoints to fetch the data
+    Example
+      App to track birthdays of Facebook friends
+        Send reminder a few days before birthday
+      Client hits the Facebook Social Graph API
+        Which is a REST-API
+        Get the data, run our business logic on the data (if they'll give it to you - JM)
+      Has several upsides
+
+  REST API
+    REST = representational state transfer
+      Style for implementing web services
+      RESTful = implemented using REST style
+    Acts as an interface
+      Client/server communication happens over HTTP
+      REST API takes advantage of HTTP to establish client/server commmunication
+      REST enables servers to cache response to improve application performance
+    Client/server communication is stateless
+      Every communication is like a new one
+      There is no memory carried over from previous communications
+        Client has to send authentication every time
+          Backend figures out whether client authorized to access the data
+      When implementing REST API, client communicates with backend endpoints
+        Decouples backend and client code
+    API/REST/Backend endpoint
+      URL of service client can hit
+        https://myservice.com/users/{username}
+      REST-based service exposes URL to clients to fetch user details using above URL
+    The backend service does not worry about the client implementation
+      Calls its clients and tells them to hit URL when need infro
+    With REST
+      Devs can have different implementations for different clients
+        Use different techs with separate codebases
+        Different clients = mobile browser, desktop browser, tablet, API testing tool
+      Adding client types and modifying client code does not affect backend functionality
+        Clients and backend service are decoupled
+    Before REST
+      Backend code was tightly coupled with client
+        Java Server Pages (JSP)
+        Business logic in JSP tags
+        Code refactoring, adding new features hard
+          Business logic spread across different layers
+        Write separate code/classes for handling requests from different clients
+          Separate servlet for requests from mobile, web-based, etc.
+    After REST
+      Don't worry about type of client
+        Provide service endpoints
+        Send response in standard data transport format like JSON
+        Client parses and renders response data
+        Cuts down a lot of unnecessary work
+        Adding new clients much easier
+    Hardly any online service implemented without a REST API
+      Use REST API to access public data of any social network
+    Acts as a gateway or single entry point to system
+      Encapsulates business logic
+      Handles all client requests
+        Authorization, authentication, sanitizing input data
+        Then provides access to application resources
+
+  HTTP Push and Pull
+    Most comm on web happens over HTTP
+      Esp when client-server architecture involved
+    Two modes of data transfer: HTTP PUSH, HTTP PULL
+    HTTP PULL
+      Default
+      Client sends request, server responds with data
+      Client pulls whenever required
+        Does this over and over to fetch latest data
+      Every request to server consumes bandwidth
+        Costs money, adds load on server
+      What if no updated data?
+        Client does not know, keeps sending requests
+        Worst case can take down server
+    HTTP PUSH
+      Client sends request for info just once
+      Then server pushes updates when available
+      This is known as a callback
+        Common example: user notifications
+      AJAX: Asynchronous JavaScript & XML
+        Both HTTP PULL and HTTP PUSH mechanism
+      Technologies
+        Ajax long polling
+        Web sockets
+        HTML5 Event Source
+        Message Queues
+        Streaming over HTTP
+
+  HTTP pull: Polling with AJAX
+    Two ways to get data from server:
+      HTTP GET - manually trigger event on user interface
+      AJAX - pull data dynamically at regular intervals using AJAX without human intervention
+        Sends requests over and over at stipulated intervals
+        Section of page updated dynamically by callback method
+          See this on news, sports - event info updated on page without reloading
+    AJAX
+      Uses an XMLHttpRequest object to send requests to server
+      Object buit in browser
+        Uses JavaScript to update HTML DOM
+      Commonly used with jQuery to implement asynchronous behavior on UI
+      "Polling" - requesting info at regular intervals
+      ** AJAX polling and AJAX Long polling are different techniques
+        AJAX Long polling - HTTP push/pull hybrid based on BAYEUX protocol (upcoming)
+
+  HTTP Push:
+    Time to Live (TTL)
+      In regular HTTP Pull communication, Time to Live (TTL) for every request
+        Could be 30-60s, depends on browser
+      If client does not receive response within TTL, kill connection
+        Client re-sends request
+      Open connections consume resources
+        Limit to number of open connections server can handle
+          Will run out of memory
+      But what if response will take more than TTL?
+    Persistent connection
+      Remains open rather than being closed after a single communcation
+      This facilitates HTTP PUSH-based communication
+      Connection stays open with Heartbeat Interceptor
+        Blank request responses to prevent browser from killing connection
+        Resource intensive
+      Use cases where needed
+        Browser-based multiplayer game
+          Lots of request-response activity
+    Techniques
+      AJAX Long Polling, Web Sockets, Server-Sent Events
+
+  HTTP Push tech:
+    Web Socket
+      Persistent bi-directional low latency data flow
+        Messaging, chat apps, real-time social streams, browser-based MMOs
+      Keep connection open as long as you want
+      Do NOT work over HTTP
+        Runs over TCP
+      Server and client must both support web sockets
+    AJAX long polling
+      Somewhere between Ajax and web sockets
+      Instead of immediately returning an empty response
+        Hold response until finds update to be sent to client
+      Connection stays open a bit longer than polling
+        Server doesn't return empty response
+        If connection breaks, client must re-establish
+      Fewer client-server requests than regular polling
+        Cuts down on bandwidth
+      Use in simple asynchronous fetch use cases
+        Where do not want to poll the server every now and then
+    HTML5 Event-Source API and Server-Sent Events
+      Server automatically pushes data to client whenever updates available
+      Incoming messages are treated as events
+      Servers can initiate data transmission once connection initially established
+        Eliminate blank request-response cycles
+      Backend languate needs to support tech
+      HTML5 Event-Source API used to receive data by client from backend
+      Ex
+        Real-time Twitter feed, displaying stock quotes, real-time notifications
+    Streaming over HTTP
+      Stream extensive dta by breaking into chunks
+      HTML5 and Javascript Stream API
+      Multimedia streaming
+        Large images, videos, etc.
+        Watch partially downloaded video by playing downloaded chunks on client
+
+  Client-Side vs. Server-Side Rendering
+    Client-side
+      Browser receives page from server
+      Renders in window in form of HTML page
+        Browser engine
+        Rendering engine
+        JS interpreter
+        Networking and the UI backent
+        Data storage
+      Little detail here
+      Key point: browser has to do a lot of work
+        Rendering engine constructs the DOM tree
+          Renders and pains construction
+        Takes time
+    Server-side
+      Render UI on server, generate HTML, send HTML to UI
+      Page already created, browser does less assembling and rendering work
+    Which to use?
+    Server-side
+      Static content like a WP blog
+      SEO, crawlers can easily read
+    But modern websites highly dependent on AJAX
+      Content for module or page section fetched and rendered on the fly
+        Server-side doesn't help much there
+          Will generate entire page on server rather than just sending updated content to client
+          Resource-intensive
+          Consumes bandwidth
+          Not smooth user experience
+          Does not scale well as concurrent users increase
+    Client-side
+      Best for modern dynamic AJAX-based websites
+    Hybrid approach
+      Server-side for static conent
+      Client-side for dynamic content

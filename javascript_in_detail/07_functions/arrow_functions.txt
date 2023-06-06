@@ -1,0 +1,43 @@
+Arrow functions
+  Writing one-liners (and small functions) is very common
+    Tedious
+    Sometimes hard to debug
+  Solution, arrow functions
+    More concise syntax
+    aka "fat arrow function"
+    Avoid return token, function token, and curly braces
+
+  One-line version
+    var func = (<arguments>) => <Value/Expression>;
+
+  Multi-line adds curly braces
+    var func = (<arguments>) => {
+      statement;
+      statement;
+    }
+
+    var func = (a, b) => a + b;
+
+    var func = (a, b) => {
+      var sum = a + b;
+      return sum;
+    }
+
+  Also called anonymous functions
+    They are unnamed functions
+
+  Can also drop parens for single argument
+    var func = a => a * 2;
+
+  Empty parens for no args
+    var func = () => console.log("Hello");
+
+Returning from arrow functions
+  Encapsulate object in parens
+    var func1 = a  => ({'1' : a }); // arrow function creating object
+
+  Curly brackets with return statement
+    var func2 = a  => { return {'1' : a }}; // arrow function creating object
+
+  Causes error
+     var func = a => {'1': a };

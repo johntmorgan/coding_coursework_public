@@ -1,0 +1,195 @@
+Depth-First Search
+Little Review
+  Breadth-first search last time
+  Graph definitions
+    Collection of nodes/vertices and edges
+    Directed vs. undirected
+    V = Vertices
+    E = Edges C= V x V // "An edges is a pair of vertices"
+    Simple graph
+      No repeated edges
+    Neighbors of a vertex
+      Outgoing neighbors - Adj+
+    Finally started talking about paths
+      Get from one vertex to another just following edges in graph
+      Simple path - no vertex more than once
+  Shortest path between two vertices
+    Canonical question in graph theory
+    Can also ask questions about e.g. reachability
+  One more piece of terminology to adjust
+    "Linear Time"
+    O(|V| + |E|)
+    In the size of the input
+    Need the size of the vertices and edges
+  Breadth-First Search
+    Level sets
+Today, depth first search
+  Start at source vertex, keeps walking all the way out until it can no longer do that
+  BFS and DFS are the two extremes in terms of technique
+    Building blocks for graph theory
+First: reachability problem
+  Can you reach a node from the source?
+  Many ways to solve
+    Could just compute shortest path distance from source to other nodes
+    And distance to unreachable node = infinity
+  Can decorate each node with previous node on path from source to that thing
+    Like last time, start with target and follow parents, flip to get path
+      Parent tree, just like talked about in last lecture
+    But this time not going to require shortest path
+      For reachability, don't care
+  Reachability
+    Can use shortest path - O(|V| + |E|) time
+    Can we do better? Yes.
+    DFS, recursive algorithm
+    visit(u):
+      for every v in Adj+(u):
+        if P(v) == None:
+          Set P(v) = u
+          Call visit(v)
+    Notice that it is *not* following level sets
+Correctness proof
+  Claim: DFS visits all reachable v in V and correctly sets P(v) in process
+  Induction for all vertices distance k from source
+  Base case:
+    k = 0 - the source
+  Inductive step
+    Consider vertex v with delta(s, v) = k + 1 (distance from s to v)
+    Take u in V prev on shortest path from s to v
+      delta(s, u) = k
+    Two cases
+      DFS consider v in Adj+(u)
+      If P(v) != None, already found parent, in good shape
+      If P(v) = None, go ahead and set it
+  Showed that DFS algorithm can dig around in graph, show all things reachable in graph
+  Straightforward from intuitive perspective
+    Can get a bit lost when follow inductive proof - feel like tautology
+Now let's analyze this
+  Going to visit every vertex at most once
+  Can't hit any edge more than once
+  Never visits a vertex not reachable from source
+  Runtime not exactly the same
+    O(|E|)
+    Linear from the number of edge
+  Compare to BFS
+    If the graph has no edges, BFS still takes O(|V|) time
+    Algorithms for different tasks
+      BFS gives us shortest path
+      (There are other BFS algorithms that do not, will not see in this class)
+Why use DFS?
+  A graph is connected if path connecting every pair of vertices
+    In a directed graph, u may be reachable from v, but v may not be reachable from u
+    Connectivity is more complicated for directed graphs
+      Going to focus on undirected graphs
+  Example
+    Graph with line and triangle
+    Two connected components
+      No edge between them
+    Want to enumerate - DFS good at solving
+      Everything in component is reachable from a vertex
+    But just starting at a single vertex, you won't get everything
+  Full-DFS
+    For v in V
+      if v is unvisited:
+        DFS(v)
+    How long does it take?
+      Sneaky, thinking about runtime of for loops would tend to think |V|
+      But in fact edge never gets traversed more than one time
+      Call to DFS has a side effect, marking to not revisit
+      So time is now O(|V| + |E|), linear in the size of the input
+    Useful?
+      Imagine trying to find friend network at social media company
+        Might be disconnected groups
+DAG
+  Directed acyclic graph
+    A directed graph that contains no cycles
+    Can still be e.g. a square if can't loop around
+    Example: a tree
+    Can compute a topological order on a graph
+  Topological order
+    Ordering f over vertices where f(u) < f(v) for all (u, v) in E
+    If directed edge from u to v
+    So in order, u before v
+    Could be other ways to order depending on graph
+  Finishing order
+    Call Full-DFS on graph
+    Order in which a full-DFS finishes visiting each vertex
+  Claim:
+    If you have a reverse finishing order, going to give you a topological ordering
+  G DAG -> reverse of finishing order is a topological order
+    (Graph that is a DAG)
+    Btw, not going to prove converse
+    Proof:
+      (u, v) in E, want u is ordered before v
+    Two cases
+      1. u is visited before v
+        visit(u) is going to call visit visit(v)
+        visit(v) completes before visit(u)
+        So flip backward in list
+      2. v is visited before u
+        one more observation
+          what's graph look like?
+        got to v before u
+        can get from u to v
+        can you also get from v to u? No, because it's a DAG
+        u cannot be reached from v
+        visit(v) completes without seeing u
+        same thing we showed in the first case
+        ordering is preserved
+    Nice way of taking nodes in DAG and ordering in way that respects topology of graph
+Cycle detection
+  Given a directed graph, don't know if DAG or not
+  Does there exist a cycle?
+  Let's think through the logic
+    If DAG, call DFS and get finishing order, reverse -> topological order
+    What if you find an edge that does not respect that order?
+      Can the graph be a DAG? No, because the order must be respected
+  So secretly gave you an algorithm for checking if graph is a DAG at all
+  Have a cycle if and only if not a DAG
+  But still want to find the actual cycle
+  If G contains a cycle, then full DFS will traverse an edge from a vertex v to some ancestor of v
+    Proof: Take a cycle from (v0, v1, ..., vk, v0)
+    Can move things from end to beginning, still a cycle
+    Without loss of generality, assume v0 first visited by DFS
+    Get all the way to vertex vk
+      Iterate over neighboring vertices, see v0
+      Well it's an ancestor
+  So to get the cycle
+    Do DFS to compute topological order
+    Check at same time that traverse back, then done
+
+Recitation 10
+  DFS called on each vertex at most once
+    Called only when no parent pointer, given parent immediately before recursive call
+  Amount of work done by each recursive search from v proportional to out-degree deg(v) of v
+    So amount of work = sum for v in V of deg(v) = O(|E|)
+    Parent array returned has length |V|
+    Overall DFS runs in O(|V| + |E|) time
+  Full graph exploration
+    Conceptually equivalent to adding an auxiliary vertex with an outgoing edge to every vertex
+      and then running BFS or DFS from the added vertex
+  DFS edge classification
+    Classify the edges of a graph in relation to a depth-first search tree
+    Consider graph edge from u to v
+    Edge is a tree edge if part of the DFS tree (parent[v] = u)
+      Otherwise not a tree edge, and a back edge, forward edge, or cross edge
+      Back edge: u is a descendant of v
+      Forward edge: v is a descendant of u
+      Cross edge: neither is a descendant of the other
+    Exercise:
+      Forward and cross edges cannot occur when running DFS on an undirected graph
+      Keep track of set of ancestors
+      While processing neighors of v, if v is an ancestor of s, then it's a back edge
+      And if v is not an ancestor of s, then it's a fresh tree edge - JM
+  Topological Sort
+    A directed graph containing no directed cycle is a DAG
+    Topological sort of DAG G = (V, E) is a linear ordering of the vertices
+    For each edge (u, v) in E the vertex u appears before vertex v in the ordering
+      Ordering - the order in which the recursive DFS call finishes
+    Assuming acyclic graph, the order returned by dfs (or graph_search)
+      Is the reverse of a topological sort order
+    Exercise
+      Give out diplomas with student overseeing others getting first
+      If there's cycle in the graph, you are out of luck
+      Otherwise draw an edge from overseer to overseen
+      Run DFS, obtain order of DFS vertex finishing times in O(|V| + |E|) time
+      Order is the reverse of a topological sort

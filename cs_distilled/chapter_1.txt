@@ -1,0 +1,39 @@
+Flowcharts
+  States and instruction steps -> rectangles
+  Decision steps -> diamonds
+  Connect steps with arrows
+  Mark beginning and end (rounded rectangles?)
+
+Operators
+  A -> B if a is true, b is implied to be true
+  Every conditional expression has a contrapositive
+  !B -> !A
+  But A -> B does not guarantee B -> A "inverse error"
+  Unless you use the biconditional: "if and only if"
+  (and, or, xor review)
+
+Boolean algebra
+  Associativity
+    (A and B) and C = A and (B and C)
+    (A or B) or C = A or (B or C)
+  Distributivity
+    A and (B or C) = (A and B) or (A and C)
+    A or (B and C) = (A or B) and (A or C)
+  DeMorgan's Law
+    !(A and B) = !A or !B
+    !A and !B = !(A or B)
+
+Permutations
+  Order n objects in n! ways
+
+Permutations with duplication
+  N object
+  R repeats
+  N!/R!
+  R2 more repeats
+  N!/(R!*R2!)
+
+Combinations
+  N objects
+  M selections
+  N!/(M! * (N - M)!) 

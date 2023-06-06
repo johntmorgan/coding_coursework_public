@@ -1,0 +1,293 @@
+Estimation by Random Sampling
+Reading
+  Suppose before election
+    p is fraction of voters favoring candidate
+      Want to estimate this
+      Have a random process for selecting voters to poll from registration list
+    Indicator variable K
+      K = 1 if voter prefers candidate
+      K = 0 otherwise
+  To estimate p, take a large number n of random choices of voters
+    Count fraction that prefers candidate
+    Define variables K1, K2, ...,
+    Where Ki is the indicator variable for event that ith chosen voter prefers candidate
+    Assume mutually independent
+    Sn is sum
+    Sn = sum i = 1 to n of Ki
+    Sn / n describes fraction of sampled voters who favor candidate
+    Intuitive - and correct - assume fraction gives a useful approx to unknown fraction p
+    Will use Sn / n as statistical estimate of p
+    We know Sn has a binomial distribution with parameters n and p
+      Can choose n, but p is unknown
+  How many to sample?
+    Say want estimate to be within 0.04 of fraction p 95% of the time
+    Pr[|Sn / n - p| <= 0.04] >= 0.95
+    Determine n via Chebyshev's Thm
+    Sn is binomially distributed
+    p(1 - p) is maximized when p = 1 - p
+    Var[Sn] = n(p(1 - p)) <= n * 1/4 = n / 4
+    Bound the variance of Sn / n
+    Var[Sn / n] = (1 / n)^2 * Var[Sn]
+               <= (1 / n)^2 * n / 4
+                = 1 / 4n
+    So
+    Pr[|Sn / n - p| >= 0.04] <= Var[Sn / n] / (0.04)^2 = 1 / (4n * (0.04)^2) = 156.25 / n
+    Want righthand side to be at most 1/20, so n >= 3125
+  Matching birthdays
+    We already saw that in a class of 95, virtually certain one pair has same bday
+    n students and d days in the year
+    M is the number of pairs with matching bdays
+    However these are not mutually independent events
+      If Alice matches Bob and Carol, then Bob and Carol match
+      Just pairwise independent
+      So can apply same reasoning as in polling
+      Let B1, B2, ... Bn be birthdays of n independently chosen people
+      Let Ei,j be the indicator variable that ith and jth people have same bday
+      Bis are mutually independent
+      Ei,j are pairwise independent
+    M = matching pairs of birdays among n choices, sum of Ei,j
+    M ::= sum 1 <= i <= j <= n of Ei,j
+    Ex[M] = Ex[sum 1 <= i <= j <= n of Ei,j]
+          = sum 1 <= i <= j <= n of Ex[Ei,j] = (n ch 2) * 1 / d
+    Var[M] = (n ch 2) * 1 / d * (1 - 1 / d)
+    So with 95 students and 365 possible birthdays
+      Ex[M] ~= 12.23
+      Var[M] = 12.23(1 - 1/365) < 12.2
+      Pr[|M - Ex[M]| >= x] < 12.2 / x^2
+      Letting x = 7
+        There is a better than 75% chance that in a class of 95
+          the # of pairs of students will be between 6 and 19
+  Pairwise independent sampling
+    Similar to reasoning above
+    But not restricted to zero-one valued variables
+    Or to variables with the same distribution
+    Let G1,...,Gn be pairwise independent variables with the same mean mu and SD sigma
+    Define
+      Sn ::= sum i = 1 to n of Gi
+      Then
+      Pr[|Sn / n - mu] >= x] <= 1 / n * (sigma / x)^2
+    Proof
+      Ex[Sn / n] = Ex[sum i = 1 to n of Gi / n]
+                  = sum i = 1 to n of Ex[Gi] / n]
+                  = sum i = 1 to n of mu / n
+                  = n * mu / n = mu
+      Var[Sn / n] = (1 / n)^2 * Var[Sn]
+                  = 1 / n^2 * Var[sum i = 1 to n of Gi]
+                  = 1 / n^2 sum i = 1 to n of Var[Gi]
+                  = 1 / n^2 * n * sigma^2 = sigma^2 / n
+      Chebyshev apply:
+        Pr[|Sn / n - mu] >= x] <= Var[Sn / n] / x^2
+                                = sigma^2 / n / x^2
+                                = 1 / n * (sigma / x)^2
+    Provides a general statment about how the average of independent samples approaches the mean
+    Law of Large Numbers
+      With a very large sample size, can get arbitrarily accurate esimates of the mean
+    Corollary
+      Weak Law of Large Numbers
+      Sn = sum i = 1 to n of Gi / n
+      Then for every eps > 0
+        lim n -> inf of Pr[|Sn - mu| <= eps] = 1
+  Confidence vs. probability
+    Chebyshev's bound implies 3125 voter sample will 95% of time give est within .04 of actual
+    The actual size of the population is never considered
+      It does not matter
+    Suppose a pollster samples 3125
+      Finds 1250 prefer a candidate
+      Tempting *but sloppy* to say
+      False
+        With probability 0.95 the fraction p of voters who prefer is 1250/3125 +- 0.04
+        Since 1250 / 3125 - 0.04 > 1/3
+        There is a 95% chance more than 1/3 of voters prefer
+      What is wrong?
+        Talks about probability a real world fact is true
+        But p is what it is, no sense to talk about the probability it's something else
+        Suppose p is actually 0.3
+        Then nonsense to ask about probability within 0.04 of 1250/3125. It just is not.
+        Being unknown does not make a quantity a random variable
+      What to say
+        The probability our estimation procedure will yield a value within 0.04 of p is 0.95
+      Mouthful so special phrasing closer to slop used
+
+Lecture
+  Law of large numbers
+    Precise formal statement of basic intuitive idea underlying probability theory
+    And our interest in random variables - means
+  What does the mean mean?
+    The mean of a fair die roll is 3.5
+    But we will never roll 3.5
+    So why do we care what the mean is?
+    We believe after many rolls, the average will be 3.5
+  What probability means
+    Pr[roll 6] = 1/6
+    After many rolls, fraction of 6's will be around 1/6
+  Jacob Bernoulli - discovered law, died at 46 - Ars Conjectandi published posthumously
+    Even the stupidest man knows more observations, less danger of straying from the mark
+    As n -> inf #6s rolled / n -> 1/6
+  An unlucky average might be way off, but that's unlikely
+  Let's look at actual numbers
+    Roll n times, prob +- 10% 5%
+    6     0.4
+    60    0.26
+    600   0.72
+    1200  0.88
+    3000  0.98
+    6000  0.999
+  As more rolls, probability of being in interval rises
+  Tighten tolerance to 5%, then takes longer to get there
+  And if you rolled 3000 times and did not get 450-550 6's
+    Can be 98% confident your die is loaded
+  More Bernoulli
+    Is there some asymptote to certainty with additional sampling?
+    Random var R with mean mu
+    Make n "trial observations" of R and take the average
+    Mutually independent, identically distributed (i.i.d) random variables
+      R1, ..., Rn
+      with mean mu
+    What Bernoulli proposes
+    An ::= (R1 + R2 + ... + Rn) / n
+    Is An probably close to mean mu if n is big?
+    Pr[|An - mu| <= delta] = ?
+    As close as delta > 0
+      0.1, 0.01... what amount would persuade you it's the actual mean?
+    Took Bernoulli 200 pages
+      We're going to do it in a lecture (350 years of tuning, yay)
+  Bernoulli question
+    lim n -> inf Pr[|An - mu| < delta] = 1 // Bernoulli's answer
+    With enough trials, as certain as you want as close as you want
+      "Weak law of large numbers"
+    Usually stated the other way though - deviation basically zero from mean
+    lim n -> inf Pr[|An - mu| > delta] = 0
+    Not yet really useful in this form
+    Need to know about the rate of approach to limit
+    Proof will follow easy from Chebyshev inequality bound and variance properties
+  Independent sampling theorem
+    An ::= avg of n indep RV's with mean mu
+    Thm: for all delta > 0
+    lim n -> inf Pr[|An - mu| > delta] = 0
+    Proof:
+      One assumption not explicitly mentioned
+      Random variables identically distributed and independent but *also*
+        Have a variance
+        Finite mean (yes there are variables that don't - coming soon)
+      E[An] = E[(R1 + R2 + ... + Rn) / n]
+            = (E[R1] + E[R2] + ... + E[Rn]) / n
+            = n * mu / n = mu
+      So by Chebyshev
+        Pr[|An - mu| > delta] <= Var[An] / delta^2
+        Need only show that Var[An] -> 0 as n -> inf
+      Var[An] = Var[(R1 + R2 + ... + Rn) / n]
+              = (Var[R1] + Var[R2] + ... + Var[Rn]) / n^2
+              Each variance is sigma^2
+              = n * sigma^2 / n = sigma^2 / n
+              sigma^2 is a constant
+              n is going to infinity
+              so right-hand side goes to 0 as n increases
+                QED
+    Analysis of proof
+      Only used that R1, ... , Rn have
+        Same mean
+        Same variance
+        And their variances add
+          Which follows from pairwise independence, don't need mutual independence
+        Also don't need a particular distribution
+    Thm
+      Let R1,...,Rn be pairwise independent random vars with the same finite mean mu
+        and variance sigma^2
+      An ::= avg of n indep RV's with mean mu
+      Then
+      Pr[|An - mu| > delta] < 1 / n * (sigma / delta)^2
+      So if you give me sigma and tell me your target delta, know what n to choose
+    Punchline
+      We now know how big a sample is needed to estimate the nean of any random variable
+        with any desired tolerance with any desired probability
+        as long as variance < inf, tolerance > 0, and probability < 1
+    Matching Birthdays
+    If you have 27 random people, ~2/3 likely matching birthday
+    With a class of 110, the odds are also 750k to 1
+    Pairwise but no mutual independence
+    This has some real applications in many areas
+      Birthday attack on a cryptosystem - find matching pairs of keys with relatively small sample
+    P ::= # pairs with matching bdays among n people in a d-day year
+      Assume equally likely (not actually true, Jan and Nov very popular)
+    Mij ::= indicator that ith and jth birthdays match
+    P = sum i <= 1 < j <= n of Mij
+    E[Mij] = 1/d
+      Whatever ith person's bday is, j has a 1/365 chance of equaling
+      So by linearity of E[]
+    E[P] = sum i <= 1 < j <= n of E[Mij] = (n choose 2) * 1 / d
+    For 110 students
+    E[P] = (110 choose 2) / 365 ~= 16.4
+    How likely is P near 16.4?
+      Pr[|P - 16.4| > k]
+      Hard to calculate - it's a mess
+      But variance is easy to calculate -> Chebyshev
+    Pairwise independence
+      Indicator variables are pairwise independent
+      Albert and Drew have same bday is independent of David and Mike have same bday
+      But Albert and Drew have same bday independent of Albert and Mike too
+        Could go wrong - if not uniform
+          Albert and Drew more likely... and therefore Albert and Mike too
+        But really just need Mike is uniform
+        But they are certainly not 3-way independent
+          If Albert & Mike same bday, Albert & Drew same bday, 100% Mike & Drew same bday
+      Var[Mij] = (1 / 365) * (1 - 1/365) (p * (1-p))
+      Var[P] = sum Var[Mij] = (110 ch 2) * Var[Mij]
+             = (110 ch 2) * 1/365 * (1 - 1/365) ~= 16.37
+            sigma < 4
+    Chebyshev time
+      Pr[16.4 +- 2sigma pairs] > 1 - (1/2)^2 (less than 1/4 that it's > 2sigma away)
+                               = 3/4
+      Sigma ~4 so 9-25 pairs 75% of the time
+        Actually found 21 pairs - 12 pairs and 3 triples
+  Sampling
+    Remember
+    Pr[|An - mu| > delta] < 1 / n * (sigma / delta)^2
+    Just going to be plugging into this formula
+    Example
+      Swimming in the Charles
+      Has a coliform count (bad bacteria from fecal matter - still bad, eh? - JM)
+      For swimming EPA requires CMD < 200 (coliform microbial density)
+    Make 32 measurements of CMD at random times and locations
+      A few are over 200
+      But the average is just 180
+      Can we convince the EPA that avg in the whole river is < 200?
+      So convince EPA that estimate on 32 samples is within 20 of the actual average?
+    c ::= actual average CMD in river (don't know, trying to estimate)
+    CMD sample <-> ran var with mu = c
+    n samples <-> n mutually indep ran vars with mu = c
+    An ::= avg of the n CMD samples
+    Pr[|An - mu| > delta] < 1 / n * (sigma / delta)^2
+    n = 32, mu = c, and delta = 20
+    Pr[|An - mu| > 20] < 1 / 32 * (sigma / 20)^2
+    Problem! don't know sigma (standard deviation)
+      Sometimes you can argue you have a theory of random distribution
+      Other times can actually take a sample of the deviation of your sample
+        Kinda circular, don't wanna go there
+      But if you had some bounds on the maximum possible discrepancy
+      Never observed 2 more than 50 apart
+      Suppose L is the max possible difference of samples
+        The worst possible standard deviation sigma = L / 2
+      Say we know L = 50 -> sigma 25
+    Pr[|An - mu| > 20] < 1 / 32 * (25 / 20)^2 < .05 (~.0488 - JM)
+    Or to flip it around
+    Pr[|An - mu| <= 20] > .95
+    Confidence
+      Tempting to say: "the probability that c = 180 +- 20 with probability 0.95"
+      But wrong!
+      Not probable reality
+      We're talking about confidence instead
+      c is the *actual average* in the river
+      c is unknown
+        But not a random variable!
+      The possible outcomes of our sampling process is a random variable, so say:
+      "The probability that our sampling process will yield an average that is +- 20 of the true average at least 0.95"
+      That's the right thing to say
+      For simplicity we say that
+        c = 180 +- 20 at the 95% confidence level - a shorthand way of saying this
+    Moral:
+      When you are told something holds at a high confidence level
+      Remember that a random experiment lies behind this claim
+      You can always question whether you believe in this - "what experiment"?
+        And why are you hearing about this - how many tried and not reported? (oh yeah - JM)
+        Drug company GlaxoSmithKline - $3B payment in 2012 for suppressing negative clinical trials
+          Had to agree to make negative positive

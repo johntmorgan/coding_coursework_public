@@ -1,0 +1,27 @@
+Top K Elements
+  Find some specific number of K elements
+  Optimize time complexity
+  Common:
+    Top
+    Smallest
+    Most/least frequent
+  Unsorted list common
+    Sort in O(nlogn)
+    But pattern allows solve in O(nlogk) without sort
+  Use a heap to track elements!
+
+Pattern matching
+  Yes:
+    Find smallest, largest, frequent in unsorted list
+  No:
+    Input data structure = no random access
+    Input data already sorted
+    Only one extreme value required
+      Just do a linear scan
+
+Real world
+  Uber:
+    Select nearest n drivers, avoiding too far away
+  Stocks
+    Determine top k broker performances
+    

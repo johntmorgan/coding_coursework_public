@@ -1,0 +1,205 @@
+Dynamic Programming 2
+  Easier set this time
+  Pseudopolynomial time added
+    Makes things a little easier to formulate
+    All the numbers are staring you right in the face
+      So long as it's efficient in the values you care about
+    5 problems squeezed in today
+1) Coin crafting
+  Thief who needs money
+  Has n identical coins
+  Melt coins into other objects
+  Buyer - list of n objects
+    price, number of coins
+    Can only make 1 of each object
+  SRTBOT
+    Number objects 1 to n
+    pi = price of object i
+    ki = melting # of object i
+    Want to find smaller subproblems
+    Either choose to make object i or not
+      Order doesn't matter
+  S
+    x(i,j) = revenue from i coins + objects 1 to j
+  R
+    Can either use object j or not use object j
+    x(i, j) = max { x(i, j - 1)
+                    pj + x(i - kj, j - 1) } if i >= kj only
+  T
+    x(i, j) only depends on x(?, j - 1)
+      Roughly how you prove convergence in a differential equations course too
+  B
+    x(0, j) = 0
+    x(i, 0) = 0
+      For all i, j
+  O
+    x(n, n)
+  T
+    Both i can go from 0 to n
+      (n + 1)^2 subproblems
+      O(1) work/subproblem
+    O(n^2)
+  What would this mean in terms of code?
+    Two options - both easy for this particular problem
+    1) Memoization
+      X = array that is memo pad (pass by reference C++)
+        Initialized NaN
+      function revenue(i, j, X)
+      if x(i, j) != NaN, return x(i, j) <- dynamic programming magic here
+      else evaluate R (recursive formula) + store in x(i, j)
+        then return x(i, j)
+      This is the easiest one to think about
+        A lil annoying from runtime analysis though
+        But look at recursion tree, have to do counting carefully
+    2) Bottom up
+      Maybe more/less efficient but generally within constant factor
+      Build up so no recursion at all
+        Memoization is "top down"
+      But here we start with x(0, j) = x(i, 0) = 0 for all i, j
+      for j = 1 to n
+        for i = 1 to n
+          x(i, j) evaluate R
+      Here the runtime is staring you in the face - n^2 subproblems O(1) work
+      BUT here you have to evaluate all x(i, j)
+        Can't prune as much as memoization in some cases
+        But with memoization
+          you have the overhead of all recursion calls
+      On average on most computers on most problems this approach wins because of that overhead
+        But that is a massive blanket statement with lots of exceptions
+
+2) Tim the Beaver, the continuing saga
+  Going to a career fair, pick up free stuff
+  n booths
+  ci = coolness of object i
+  wi = weight of object i
+  ti = time to get object i
+    takes one minute to get in line at any booth
+  b = max weight
+  h = time to go home and bank + 1
+  want max total coolness in k minutes O(nbk)
+  notice example of problem not kosher last week, k is included in runtime
+  S
+    What are the subproblems here?
+    What's limiting Tim?
+    Only has so much time, and time always moves forward
+      Good candidate, no cyclical dependency
+    Twist, bag can empty itself out - can't monotonically decrease bag
+      But still costs time to do that
+    x(i, j) = max coolness in i minutes and j weight left in bag
+    Note he could also sit and do nothing (but no need to account for it here)
+  R
+    x(i, j) = max { 0 // do nothing, gave up
+                    ck + x(i - tk - 1, j - wk) if applicable (both better be > 0 for all k)
+                    x(i - h - 1, b) if i > h // go home}
+  T
+    All options give up complete or decrease time
+    Topo order, time always moves forward
+  B
+    x(0, j) = 0 for all j
+  O
+    x(k, b)
+  T
+    How many subproblems? Number of indexes
+      Time between 0 - k
+      Space between 0 - b
+      O(kb) subproblems
+      O(n) time per subproblem - n booths
+    O(kbn) time
+  Notice both problems similar in nature
+    "It's important not to think here"
+    Problems look more complicated than they are
+
+3) Protein parsing
+  Tripped up a bit, runtime is not runtime of obvious solution
+  Strand of DNA = string of characters ACTG
+  Strand S can be cut up
+  List P of markers - seq of <= k nucleotides
+  Division D = (d1,...,dm) substrings that concat to make S
+  Value of a division = # of strands that are in P
+  Want max value
+  Kind of a weird runtime, should make a little suspicious
+    O(k|P| + k^2|S|)
+  Version 1 (a bit wrong, too slow)
+    Looking easy to start
+    S - x(i) = max value of suffix S[i:]
+      Reasonable set of subproblems, lop off part of string
+    R - (pseudocode, step description not formula)
+      x(i) <- x(i + 1)
+      Go down list P of markers, see if match char, get value, on to next thing
+      Get value if can find substring in list
+      For each marker in P
+        If marker matches S[i,...,l]
+      x(1) <- max(x(i), 1 + x(i + len))
+        solve problem and give correct answer
+    Time
+      How many subproblems?
+        Only indexed by i
+        |S| subproblems total
+      Work per subproblem
+        for loop over all markers in P |P|
+        To check if strings are equal k (check if strings are equal)
+        O(|S||P|k) // too slow :(
+  Version 2
+    See two terms - hmm, maybe some pre-computation
+    Have to do a lot of string matching, make more efficient
+    Have |S| subproblems, can do k^2 work and k|P| pre computation
+    m(i, j) = 1 if S[i:j] in P -> note that don't care which marker
+              0 otherwise
+    |i - j| <= k
+    Do a lot of string matching, pays to put into hash table
+    1) put P -> hash - O(k|P|) time
+      P hashes, takes k to read
+    2) for i = 1 to |S|
+        for j = i + 1 to i + k
+          hash S[i:j] O(k)
+          search to see if in hash table, then m = 1, else m = 0
+      O(k^2|S|) time to fill in hash table
+    R'
+      x(i) = max { m(i, j) + x(i + j) | j in {1, .... m in k, |S| - 1}}
+        |S| subproblems * k
+        Less than any terms in runtime
+
+4) Egg drop
+  Building with n floors
+  Have k eggs
+  Each floor has a different height hi
+  Get high enough, egg breaks
+  What is highest floor can drop and remain intact
+  Kind of experimental design
+  Carefully design sequence of floors to drop from, how many experiments need to do?
+  If egg below breaking, can drop and recover egg
+    Why not start on first floor and then work way up?
+    Will only break one egg
+    But have to schlep up and down stairs each time
+    Rather than try to minimize number of eggs
+  min sum over heights of drops
+    for any amount of eggs
+    O(n^3 * k) - apparently many eggs, not many floors
+  S
+    x(i, j, e) = min sum of heights where have e eggs left + floors i to j inclusive to check
+    Can drop from any floor f in {i,...,j}
+      Have to pay when drop for running up and down stairs
+  R
+    x(i, j, e) = min(hf + max(x(i, f - 1, e - 1), x(f + 1, j, e))) f in range i to j
+      first term: egg broke, coming down
+      second term: egg broke, going up
+  T
+    don't always spend an egg
+    j - i always decreasing
+  B
+    x(i, j, 0) = infinite for i,j in 0...n // bad news out of eggs and didn't find height
+      Avoid choosing floor where run out of eggs
+    x(i, i - 1, e) = 0
+      Have e eggs left, have narrowed down to bounds
+  O
+    x(1, n, k)
+    bottom to top floor and all eggs
+  T
+    <= n^2 subproblems to account for 2 floors
+    k eggs
+    for loop over f, up to n floors
+    O(n^3k) runtime
+  One of the harder things to get right in dynamic programming: minimax games
+    In lecture, separated out min and max
+    Could probably write this one in that form as well
+

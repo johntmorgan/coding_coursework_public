@@ -1,0 +1,55 @@
+What are Modules
+  Define only one class per file to make it strongly cohesive
+  These files are basically modules
+  If Person and Student defined in same file
+    Split into person.js and student.js
+    Must place files inside App directory
+    Classes defined in modules are private by default
+      Must use import/export statements
+      New with ES6
+
+  create-react-app project
+    import React, { Component } from 'react';
+    import logo from './logo.svg'
+    import './App.css'
+
+  const firstname = 'Robin';
+  const lastname = 'Wieruch';
+
+  export { firstname, lastname };
+
+  import { firstname, lastname } from './myfile.js';
+
+Not about importing/exporting components or functions
+  Sharing everything assignable to a variable - when it comes to JS
+
+Import all files with star
+
+  const firstname = 'Robin';
+  const lastname = 'Wieruch';
+
+  export { firstname, lastname };
+
+  import React from 'react';
+  import * as person from './myfile.js';
+
+  export default class App extends React.Component {
+    render() {
+      return (
+        <p>Hello, {person.firstname}!</p>
+      );
+    }
+  }
+
+Imports can have an alias
+
+  import React from 'react';
+  import { firstname as username } from './myfile.js';
+
+  export default class App extends React.Component {
+    render() {
+      return (
+        <p>Hello, {username}!</p>
+      );
+    }
+  }

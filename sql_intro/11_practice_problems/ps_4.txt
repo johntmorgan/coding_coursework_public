@@ -1,0 +1,69 @@
+1. Write a query to display the average collection in millions of producers who have produced more than one movie.
+  SELECT Producer AS Producer_Name, AVG(CollectionInMillions) AS Average_Collection_In_Millions
+  FROM Movies
+  GROUP BY Producer HAVING COUNT(*) > 1;
+
+2. Find all those actors who have not worked with producer Ryan Seacrest.
+  SELECT DISTINCT CONCAT(FirstName, " ", SecondName) AS Actors_Who_Not_Worked_With_Ryan_Seacrest
+  FROM Actors
+  WHERE Id NOT IN (
+    SELECT ActorId
+    FROM Cast
+    WHERE MovieId IN (
+      SELECT Id
+      FROM Movies
+      WHERE Producer = "Ryan Seacrest"
+    )
+  );
+
+  // Solution with joins (But it leaves out those with no movies - JM)
+  SELECT DISTINCT CONCAT (FirstName, " ", SecondName) AS Actors, MovieId, Producer
+  FROM Actors JOIN Cast
+  ON Actors.Id = Cast.ActorId
+  JOIN Movies
+  ON Cast.MovieId = Movies.Id
+  AND Producer <> 'Ryan Seacrest';
+
+  // Another solution
+  SELECT DISTINCT(CONCAT (a.FirstName, " ", a.SecondName)) AS Actors_Who_Have_Not_Worked_with_Ryan_Seacrest
+  FROM Cast c, Movies m, Actors a
+  WHERE c.MovieId = m.Id
+  AND m.Producer <> 'Ryan Seacrest'
+  AND c.ActorId = a.Id;
+
+3. Populate a table DigitalActivityTrack with the last digital activity of each actor
+  along with the asset type on which the activity occurred.
+  CREATE TABLE DigitalActivityTrack (
+  Id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+  Actor_Id INT NOT NULL,
+  Digital_Asset VARCHAR(20) NOT NULL,
+  Last_Updated_At DATETIME Not NULL DEFAULT NOW()
+  );
+
+  INSERT INTO DigitalActivityTrack (Actor_Id, Digital_Asset, Last_Updated_At)
+  SELECT ActorId, AssetType, LastUpdatedOn
+  FROM DigitalAssets
+  WHERE (ActorId, LastUpdatedOn) IN (
+    SELECT ActorId, MAX(LastUpdatedOn) FROM DigitalAssets
+     GROUP BY ActorID)
+     ORDER BY LastUpdatedOn DESC;
+
+  SELECT CONCAT(a.FirstName, " ", a.SecondName) AS Actor_Name, Digital_Asset, Last_Updated_At
+  FROM Actors a, DigitalActivityTrack
+  WHERE a.Id = Actor_Id;
+
+// Common interview question
+// Slow though...
+4. Find the actor with the third lowest Net Worth in Millions without using the LIMIT clause
+    SELECT CONCAT (FirstName, " ", SecondName) AS Actor_Name, NetWorthInMillions AS 3rd_Lowest_Net_Worth_In_Millions
+    FROM Actors a1
+    WHERE 2 = (SELECT COUNT(DISTINCT (NetWorthInMillions))
+      FROM Actors a2
+      WHERE a2.NetworthInMillions < a1.NetworthInMillions);
+
+5. Write a query to display actors along with a comma separated list of their digital assets.
+  SELECT CONCAT(FirstName, " ", SecondName) AS Actor_Name, GROUP_CONCAT(AssetType) AS Digital_Assets
+  FROM Actors
+  LEFT JOIN DigitalAssets
+  ON Actors.id = DigitalAssets.ActorId
+  GROUP BY Id;

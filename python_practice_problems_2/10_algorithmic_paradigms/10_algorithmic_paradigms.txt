@@ -1,0 +1,66 @@
+Algorithmic Paradigms
+
+Brute Force
+  Go through all possibilities
+  Ex. linear search for min/max or element
+    O(n)
+  Good
+    Guaranteed to find solution
+    Think of quickly
+  Bad
+    Most inefficient
+
+Greedy
+  Builds up piece by piece
+  Choose next piece that offers most obvious, immediate benefit
+    Locally optimal
+  Hope it will lead to globally optimal
+  Problem should have:
+    Greedy choice property
+      Global optimum arrived at by selecting local optimum
+    Optimal substructure
+      Optimal soution to complete problem contains optimal subproblem solution
+  Recursively construct pieces from smallest possible constituent parts
+  Does not always result in optimal solution!
+    (Longest binary tree path example)
+  Good
+    Smaller instances easy to understand
+    Works sometimes
+      Optimal solution of subset is solution for superset as well
+  Bad
+    Sometimes optimal short-term solutions -> worst possible solution to whole problem!
+
+Divide and conquer
+  Divide into subproblems until reach a point where each problem similar & atomic
+  Conquer by solving atomic subproblems
+  Merge subproblems to formulate solution
+  Good
+    Optimal for general case solution where problem is easy to divide
+      Subproblem is easy to solve
+    Efficient use of memory cache
+      Divide -> subroblems small enough to solve in cache
+  Bad
+    Recursive approach may be slow
+      Sometimes more complicated than iterative esp. wth large n
+      Ex. adding numbers via loop easier than dividing into groups, adding, merging
+    Recursion may duplicate subproblems
+      Recursive stacks consume extra space
+
+Dynamic programming
+  Combine results of subproblems
+  Chars:
+    Overlapping subproblems - subproblems are not independent
+    Optimal substructure - construct optimal solution from optimal subproblem solns
+  Patterns
+    Top-down
+      Memoization
+      Look for answer of subproblem before computing solution
+    Bottom-up
+      Avoid recursion
+      Fill lookup table, compute solution to top/original based on results
+  Good:
+    Recursive, low code
+    Speeds up processing by using answer of previous subproblem
+  Bad:
+    Takes a lot of memory to store calculated result of every subproblem
+    No general form, every problem must be solved in its own way

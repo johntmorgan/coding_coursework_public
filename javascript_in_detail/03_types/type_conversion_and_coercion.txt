@@ -1,0 +1,98 @@
+Type conversion
+  JS is a weakly-typed language
+  At-time type conversions done automatically
+
+  Implicit type conversion/coercion
+    console.log(1 + '1' , typeof(1 + '1')); // prints a string value
+      > 11 string
+    console.log(null == 'null', typeof(null == 'null')); // prints a boolean value
+      > false 'boolean'
+
+    JS automaticlaly converts types of the two operands to be the same type
+      Automatically converts 1 to string
+        What if you wanted the opposite behavior? Explicit conversion
+
+  Explicit type conversion
+    var str_version = new String(<Original Value>).valueOf(); // explicit
+
+    var num = 1; // initialize num to 1
+    var boolean = true; // initialize boolean to true
+    var nul = null; // initialize nul to null
+    var undef = undefined; // initialize undef to undefined
+
+    // Explicit type conversion into string below
+    var str_num = new String(num).valueOf(); // number to string
+    var str_bool = new String(boolean).valueOf(); // boolean to string
+    var str_nul = new String(nul).valueOf(); // null to string
+    var str_undef = new String(undef).valueOf(); // undefined to string
+
+    // Print all variables and their types after type conversion
+    console.log("num:", str_num, " - type:",typeof(str_num) );
+      > num: 1  - type: string
+    console.log("boolean:", str_bool, " - type:",typeof(str_bool) );
+      > boolean: true  - type: string
+    console.log("nul:", str_nul, " - type:",typeof(str_nul) );
+      > nul: null  - type: string
+    console.log("undef:", str_undef, " - type:",typeof(str_undef) );
+      > undef: undefined  - type: string
+
+    Can also use JSON.stringify()
+
+To boolean
+  var bool_version = new Boolean(<Original Value>).valueOf();
+
+  Implicit
+    var bool_version = !! <Original Value>;
+
+    var num = 1; // initialize num to 1
+    var str = 'true'; // initialize boolean to true
+    var nul = null; // initialize nul to null
+    var undef = undefined; // initialize undef to undefined
+
+  Explicit
+    // Explicit type conversion into boolean below
+    var bool_num = new Boolean(num).valueOf(); // number to Boolean
+    var bool_str = new Boolean(str).valueOf(); // string to Boolean
+    var bool_nul = new Boolean(nul).valueOf(); // null to Boolean
+    var bool_undef = new Boolean(undef).valueOf(); // undefined to Boolean
+
+    // Print all variables and their types after type conversion
+    console.log("num:", bool_num, " - type:",typeof(bool_num) );
+      > num: true  - type: boolean
+    console.log("str:", bool_str, " - type:",typeof(bool_str) );
+      > str: true  - type: boolean
+    console.log("nul:", bool_nul, " - type:",typeof(bool_nul) );
+      > nul: false  - type: boolean
+    console.log("undef:", bool_undef, " - type:",typeof(bool_undef) );
+      > undef: false  - type: boolean
+
+    // May be hard to predict - Boolean('false') will give you true
+      For strings, only Boolean('') will give you false
+
+To number
+  Implicit
+    var num_version = <Original Value> * 1; // implicit
+
+  Explicit
+    var str = '1000'; // initialize str to '1'
+    var boolean = true; // initialize boolean to true
+    var nul = null; // initialize nul to null
+    var undef = undefined; // initialize undef to undefined
+
+    // Explicit type conversion into number below
+    var num_str = new Number(str).valueOf(); // number to Number
+    var num_bool = new Number(boolean).valueOf(); // boolean to Number
+    var num_nul = new Number(nul).valueOf(); // null to Number
+    var num_undef = new Number(undef).valueOf(); // undefined to Number
+
+    // Print all variables and their types after type conversion
+    console.log("str:", num_str, " - type:",typeof(num_str) );
+      > str: 1000  - type: number
+    console.log("boolean:", num_bool, " - type:",typeof(num_bool) );
+      > boolean: 1  - type: number
+    console.log("nul:", num_nul, " - type:",typeof(num_nul) );
+      > nul: 0  - type: number
+    console.log("undef:", num_undef, " - type:",typeof(num_undef) );
+      > undef: NaN  - type: number
+
+    // parseInt, parseFloat to explicitly convert to number types

@@ -1,0 +1,35 @@
+Default ORDER BY
+  ASC
+
+
+CREATE TABLE MyTable (
+  ID INT AUTO_INCREMENT,
+  PRIMARY KEY (ID));
+
+INSERT INTO MyTable VALUES (21);
+INSERT INTO MyTable VALUES ();
+
+SELECT * FROM MyTable ORDER BY ID;
+
+// Returns 21, 22
+
+INSERT INTO MyTable VALUES (NULL);
+
+// Returns 21, 22, 23
+// Table was not constrained to NOT NULL
+
+
+-- Create table with a single column
+CREATE TABLE MyTable (Name VARCHAR(20));
+
+-- Insert a NULL value
+INSERT INTO MyTable VALUES (NULL);
+
+SELECT *
+FROM MyTable
+WHERE Name = NULL;
+
+// Returns empty set - NULL means no data or missing/unknown value
+
+UNION operator does not include duplicates
+UNION ALL to include duplicates

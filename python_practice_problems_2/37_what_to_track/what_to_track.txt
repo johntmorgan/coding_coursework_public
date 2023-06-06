@@ -1,0 +1,35 @@
+What to track
+  Mostly frequency counts
+  Avoid O(n^2) by simplifying problem
+    Identify key numeric properties in data
+  Often used with array & strings
+    Solve counting data freqs, return booleans
+  Often solvable with comparison & checks
+    Check if first array values have squared in second array
+    Check if 2 strings are anagrams
+    Check if player wins game
+  Hashmaps to store frequency count
+    Allow search & retrieval of data in O(1)
+  Sometimes not hashmaps
+    Separate arrays or vars to store freq counts
+
+Pattern matching
+  Yes
+    Problem seems hard with naive O(n^2)
+    Often - boolean output, True/False, Player 1/Player 2, etc.
+    Key characteristics
+      Freq of chars in string
+      Pattern of generation of seq of permutations
+      Implications of given move in game like tic-tac-toe or chess
+  No
+    Can't identify key chars to simplify
+    Need to locate element, not just give True/False etc.
+      Say need to return all palindromic permutations
+
+Real world
+  Video streaming
+    Return most frequently watched show
+      Place in continue-watching slot
+  E-commerce
+    Show recommendations with frequently grouped items
+

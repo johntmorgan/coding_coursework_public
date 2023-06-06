@@ -1,0 +1,195 @@
+Order
+Two main types
+  Total
+  Partial
+Total order
+  Binary relation that compares any two elements of a set witch each other
+  Derive only a single order for all elements in set
+  {7, 9, 3, 2, 6} -> [2, 3, 6, 7, 9]
+Partial order
+  Binary relation comparing only some elements of a set with each other
+  {{0}, {1}, {2}, {0, 1}, {1, 2}}
+  {0} C= {0, 1}
+  but {0, 1} and {1, 2} cannot be ordered
+  neither is a subset of the other
+Total ordering in single node
+  Easy and intuitive
+  Single actor where all events happen
+  Much simpler to build protocols and algorithms
+  Clock errors can be ignored
+Partial ordering in distributed systems
+  Not so straightforward
+  Can use any valid partial ordering if no strict need for total ordering
+  Clock errors cannot be ignored
+Causality
+  Humans used to total ordering
+    Most natural phenomena appear subject to it
+    Shopping? Placed in queue, total order
+    Intersection? Again, queue
+  But many systems where total ordering not really necessary
+    Do we really care about post order in the usual social media platform?
+      (In some systems kinda yes, actually? - JM)
+    Can leverage partial ordering
+      Need to preserve events tightly linked - comment/response
+        This is the notion of causality
+  Remember causal consistency model
+    Violating can lead to hard to understand behaviors
+  Determining casuality
+    Based on set of loosely synchronized clocks, under illusion of global clock
+      Works in most cases, time duration coarse-grained in real life
+        Information "flows" slowly
+  In distributed systems
+    Leverage in design
+    Dist systems inherently asynchronous
+      Introducing coord & synch -> concurrency and performance down
+  Event causality using logical clocks
+    Data structure local to every node used to represent logical time
+    Protocol to update data structures accordingly as events happen and time passes by
+  Each node
+    Local logical clock to measure own progress
+    Global logical clock reflecting view of logical global time
+  Two main rules
+    R1: how local logical clock updated when event executed
+    R2: how global logical clock is updated
+    Different logical clock types have same core parts
+      May differ in data structures used to represent, or logic in rules
+  Events in dist systems
+    Local events happen at node and change its state
+    Send events - node sending message to other node to inform change
+    Receive events - node receiving message from other node about change
+  Causality build on top of happened-before relation
+    Strict, partial order
+    If a and b are happening at same node, a -> b if a preceded occurrence of b
+    If a is node sending message and b is diff node receiving message, a -> b
+    If a -> b and b -> c, then a -> c
+    Not causally related? (a || b)
+  Can be referred to as potential causality
+    Does not necessarily indicate cause and effect relationship, but only potential for it
+      Ei -> Ej
+      Does NOT mean Ei caused or affected Ej
+      It means Ei *could* have caused or affected Ej
+    Applications can leverage algorithms we're about to learn to track actual causality instead
+    Potential causality is already very useful to avoid (user) confusing behaviors!
+      However system might be storing and transmitting more info than necessary
+Lamport Clocks
+  One of first and simplest logical clocks
+  Every node maintains clock in form of counter starting from 0 when node starts operating
+  Increment counter before send/receive/local event
+  Every sent message piggybacks clock value of sender at sending time
+    Receiver updates clock to max of local clock and received clock + 1
+      Then delivers message
+  Satisfies clock consistency condition
+    If one event e1 causally precedes another event e2, C(e1) < C(e2)
+    However reverse: strong consistency condition - is not satisfied
+      C(e1) < C(e2) does not mean e1 causally precedes e2
+      Lamport clocks cannot be used to infer partial orderings causally consistent
+        Can still be used for non causally consistent total orderings
+Vector clocks
+  Lamport clocks do not satisfy the strong clock condition
+    Cannot be used to infer causal relationships between events
+    Both local and global clocks flattened into a single number
+      Does not provide all info necessary to track causal relationships
+  Vector clocks do satisfy that condition
+  Protocol rules
+    Before executing any event, increment counter of logical clock
+    Every sent message piggybacks clock value of sender at sending time
+    When ith node receives message with vector from jth node
+      Increments
+      Updates each element in vector by taking max of value in own vector clock and value in received message
+      Delivers message
+  Satisfies strong clock condition
+    Can detect events not causally related, consider concurrent
+    Allow different nodes of system to make progress independently and efficiently
+      No synch/coord bottlenecks
+  In a system of n nodes, vector clock composed on n elements
+    So require a lot of storage when number of participating nodes large
+      Web apps where every browser = client
+Version vectors
+  Very similar mech to version clocks
+    VCs used to maintain logical form of time
+  Better suited for applications that store data
+    Every item tagged with a version vector
+    Data can be potentially updated in multiple parts of system concurrently (e.g. when partition)
+      Help us identify items automatically reconciled, and those req. conflict resolution
+  Maintain state identical to vector clock
+    One integer entry per node
+    Rules slightly different
+      Can experience local updates or synch with another node - when recovering from partition
+    All vectors start with all elements at zero
+    Update own counter in vector by one when local update
+    When nodes synch, set elements in vector to max of events across both vectors
+      After synch, both nodes have same vectors
+      One may supersede the other, or conflict resolution logic may be executed
+  Beneficial in datastores
+    Server or replica nodes
+    Each read operation returns current value with corresponding version vector
+    Each write operation has version vector given as context, client node id, and value to be written
+  Limitation
+    Size does not scale nicely
+    Lots of clients in distributed systems
+      2-3x order of magnitude of datastores
+  Coping
+    Want vector clock size to scale with # server nodes, not clients
+    Can we remove client entries from vector clocks?
+      No, then system cannot detect some operations performed concurrently
+        Will discard some values that should be preserved
+Dotted version vectors
+  Successfully identify concurrent versions
+  Allow version vectors to scale with number of servers
+  Each entry is not a single number but a pair
+    Encode a gap
+    Count as concurrent unless gaps completely do not overlap
+Distributed snapshot problem
+  How to record snapshot of distributed system comprising multiple nodes doing continuous computation
+    Can be used as a recovery mechanism when failures happen
+  Chandy-Lamport algorithm
+  State consists of state of nodes and any messages in transit between nodes
+  Main challenge is no common clock - cannot record at precisely same instant
+  Nodes must coordinate with each other
+    Exchange messages, record node state and state of assoc comm channels
+    Collection of all node and chnnel states = global state
+    Communication must not alter underlying computation
+  Analogy
+    Several photographers photographing big flock of migrating birds
+      Not taking at same time
+      Do not disturb birds - cannot get to stay motionless
+      Must still reassemble meaningful composite picture
+        No point in snapshot if leads to erroneous/corrupted state
+  Consistent snapshot
+    event e at node p, may send message M on c
+    represent tuple <p, s, s', M, c>
+      s and s' are node before and after states
+    Ssnapshot is consistent if reachable from Sstart and Send reachable from it
+Chandy-Lamport
+  Solves consistent snapshot in distributed system
+  Key idea: marker message sent between nodes using available comms to record snapshot of current state
+  Node that initiates records state and sends marker message to all outbound channels
+    Marker sent before any further messages sent to other channels
+    When node receives marker
+      Record state if not recorded, record state of channel as empty sequence, send marker outbound
+      If recorded, record state of channel as sequence of messages after record and before message
+Closing thoughts
+  Physical time - based on physical phenomena
+    Granularity days to seconds to nanoseconds
+    Time flows continually between discrete values
+      (in the context of hardware/software - physics outside the bounds of discussion)
+    Non-distributed sytem: use measurements to associate occurring events
+    Distributed system
+      Clocks might not be in sync
+      Must do additional work to make sure values can be compared safely
+      Exchange messages between nodes containing values of clocks
+        Adjust to synchronize
+  Logical time
+    Uses local events to measure, not physical phenomena
+      e.g. increment counter every time something happens
+      Time relative not absolute
+      Does not flow continously, only when events happen
+    No absolute semnatics, nodes must exchange perception of logical time
+  Logical and physical seem very different at first
+    Share basic properties, more similar than you think
+      Time flows in discrete increments every time something happens
+      Communication required to synchronize
+  Logical clocks can be adapted so only necessary causal relationships captured
+    Good performance, safety
+    But cannot be used for tasks where time must flow with no events
+      Identify slow/crashed node - use timeouts, physical time

@@ -1,0 +1,388 @@
+Car Rental System
+  Rent for few days to few weeks
+  Offices in different locations
+    Mostly airports or downtown areas
+  Users reserve and return
+  Track all clients in database
+    Name, address, phone number
+  Member
+    Reserve car
+    Hire car (different? - JM)
+    Return rented car
+  Reservation
+    Pickup location
+    Drop off location
+    Type of vehicle
+    Day and time
+
+Questions
+  Vehicles
+    What types?
+    How to identify vehicle?
+      VIN or license - JM
+  Search
+    Search by vehicle name/type?
+    Search for vehicle by model number
+  Services
+    Assign driver to customer?
+    Roadside assistance
+  Cancel reservation
+    Can you?
+    Who can request and when?
+    (Full money back? - JM)
+  Payment flexibility
+    Cash, credit, check?
+    If multiple branches, how to track?
+
+Design
+  Smallest start
+    Vehicle
+    Reservation
+    Vehicle log
+
+Patterns
+  Decorator
+
+Requirements
+  Two user types
+    Customers
+    Receptionists
+  Multiple vehicle types
+    Cars
+    Trucks
+    Vans
+    Motorcycles
+  Vehicle subtypes
+    Car
+      Economy
+      Luxury
+      Standard
+      Compact
+    Van
+      Passenger
+      Cargo
+    Motorcyle
+      Cruiser
+      Touring
+      Sports
+    Truck
+      Light
+      Medium
+      High-duty
+  Track who reserved vehicle
+  Track date of vehicle issue
+  Find out how many vehicles customer has rented
+  Customers can cancel at any time
+  Vehicle log to track all events
+  Add equipment
+    Ski rack
+    Child seat
+    Navigation
+  Add services
+    Driver
+    Wi-fi
+    Roadside assistance
+  Send notification if not returned on time
+    Fine customer
+  Allow user to search by type or model
+  System manages multiple branches
+  Every branch has parking stalls
+
+Use case diagram
+  System
+    Rent a car
+  Actors
+    Primary
+      Member
+    Secondary
+      Receptionist - can do anything member
+        Plus add, remove, modify vehicle
+        Modify vehicle reservations, update logs
+      Worker
+        Update logs, return vehicles, pay bill
+      System
+        Notifs to users
+  Use cases
+    Member
+      Create account
+      Update account
+      Cancel account
+      Log in
+      Log out
+      Search vehicle inventory
+      Make reservation
+      Cancel reservation
+      Update reservation
+      Return vehicle
+      Pick up vehicle
+      Pay bill
+    Receptionist
+      Create account
+      Update account
+      Cancel account
+      Log in
+      Log out
+      Search vehicle inventory
+      Make reservation
+      Cancel reservation
+      Update reservation
+      Add vehicle
+      Remove vehicle
+      Modify vehicle
+      Update log
+    System
+      Overdue notification
+      Reservation notification
+      Cancelation notification
+
+  Relationships
+    Generalization
+      Add vehicle with add car, add truck, add van, add motorbike
+      Remove vehicle with ""
+      Modify vehicle with ""
+
+    Associations - see use cases
+
+    Include
+      Return vehicle has include with pay bill
+
+    Extend
+      Add rental insurance, add additional driver, add service, add equipment
+        With make a reservation
+
+Classes
+  Address
+    streetAddress
+    city: city
+    state
+    zipcode
+    country: country
+
+  Person
+    name
+    address: Address
+    email
+    phone number
+
+  Account - abstract
+    accountId
+    password (string? encrypt that! - JM)
+    status: AccountStatus (enum)
+    resetPassword()
+    Receptionist extends
+      dateJoined
+      searchCustomer()
+      addReservation()
+      cancelReservation()
+      resetPassword()
+    Customer extends
+      licenseNumber
+      licenseExpiry
+      addReservation()
+      cancelReservation()
+      getReservations()
+      resetPassword()
+
+  Driver
+    driverId
+
+  Vehicle - abstract
+    vehicleId
+    licenseNumber
+    passengerCapacity
+    hasSunroof
+    status: VehicleStatus (enum)
+    model
+    manufacturingYear
+    mileage
+    log: VehicleLog {list}
+    reserveVehicle()
+    returnVehicle()
+    Car extends
+      type: CarType
+    Motorcycle extends
+      type: MotorcycleType
+    Truck extends
+      type: TruckType
+    Van extends:
+      type: VanType
+
+  Equipment - abstract
+    equipmentId
+    price
+    Navigation extends
+    ChildSeat extends
+    SkiRack extends
+
+  Service - abstract
+    serviceId
+    price
+    DriverService extends
+      driverId
+    RoadsideAssistance extends
+    WiFi extends
+
+  Notification - abstract
+    notificationId
+    createdOn
+    content
+    sendNotification(account)
+    SMSNotification extends
+      sendNotification(account)
+    EmailNotification extends
+      sendNotification(account)
+
+  ParkingStall
+    stallId
+    locationIdentifier
+
+  VehicleLog
+    logId
+    type: VehicleLogType
+    description
+    creationDate
+
+  VehicleReservation
+    reservationId
+    customerId
+    vehicleId
+    creationDate
+    status
+    dueDate
+    returnDate
+    pickupLocationName
+    returnLocationName
+    equipments
+    services
+    getReservationDetails()
+    addEquipment()
+    addService()
+
+  Payment - abstract
+    paymentId
+    createdOn
+    content
+    sendNotification(account)
+    CreditCard extends
+      nameOnCard
+      cardNumber
+      code
+      billingAddress
+      makePayment()
+    Cash
+      makePayment()
+
+  Fine
+    amount
+    reason
+    calculateFine()
+
+  VehicleCatalog
+    vehicleTypes: Map<string, Vehicle {list}>
+    vehicleModels: Map<string, Vehicle {list}>
+    implements Search interface
+      searchByType(type)
+      searchByModel(model)
+
+  CarRentalSystem
+    name: string
+    branches: CarRentalBranch {list}
+    addNewBranch(branch)
+
+  CarRentalBranch
+    name
+    address: Address
+    stalls: ParkingStall {list}
+    getLocation()
+
+  Enums
+    VehicleStatus
+    AccountStatus
+    ReservationStatus
+    PaymentStatus
+    VanType
+    CarType
+    MotorcycleType
+    TruckType
+    VehicleLogType
+
+  Relationships
+    Account, VehicleReservation one-way with Vehicle
+    Fine one-way with Payment
+    VehicleReservation two-way with Payment, Notification
+
+  Composition
+    CarRentalBranch composed of ParkingStall
+    Vehicle composed of VehicleLog
+
+  Aggregation
+    CarRentalSystem contains CarRentalBranch
+    ParkingStall contains Vehicle
+    VehicleCatalog contains Vehicle
+    VehicleReservation aggregates Equipment and Service
+
+  Inheritance
+    Customer, Receptionist extend Account
+    Account, Drive extend Person
+    Car, Truck, Van, Motorcycle extend Vehicle
+    Driver, RoadsideAssist, WiFi extend Service
+    Navigation, ChildSeat, SkiRack extend Equipment
+    SMSNotif and EmailNotif extend Notif class
+    Cash and CreditCard extend Payment
+    VehicleCatalog class implements Search interface
+
+  Design pattern
+    Discount decorator
+    Peak season decorator
+    Damage fine decorator
+    Partially filled fuel tank decorator
+
+Additional reqs
+  Barcode scanner on car
+    BarcodeReader
+      id
+      registeredAt
+      active (bool)
+    Barcode
+      barcode (string)
+      issuedAt
+      active
+    Vehicle composed of barcode
+
+Sequence diagram: vehicle reservation
+  Actor:
+    Member
+  Objects
+    Catalog
+    Reservation
+    Payment
+  Member searches for vehicle
+  Assuming vehicle available:
+  Member selects vehicle to reserve
+  System creates reservation against vehicle
+  Reservation fee sent to system
+  System requests payment from member
+  Member initiates payment agsinst fee
+  Payment is processed
+  If payment
+    System informed
+    System updates reservation status to confirmed
+    Member is informed vehicle is reserved
+  If not
+    System informed
+    System deletes reservation
+    System informs member that reservation unsuccessful
+  If vehicle not available
+    Member notified
+
+Activity diagram: vehicle pickup
+  States
+    Initial: Member comes to pick up vehicle
+    Final: Guest gets vehicle or system shows reservation error
+  Actions
+    Receptionist scan vehicle ID
+    Receptionist scan member ID (not this first to get reservations? - JM)
+    Reservation is valid?
+      No: show error
+    Yes: Update vehicle status to loaned
+    Update reservation to completed

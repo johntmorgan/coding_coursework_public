@@ -1,0 +1,18 @@
+1. TRUNCATE tblA;
+  The relationships defined on this table with other tables, the integrity checks and
+  constraints, access privileges and other grants that the table has are not deleted
+  and the table retains its original structure.
+
+2. Truncate
+  Deletes rows, frees the space containing the table but cannot be rolled back?
+
+3. Create empty table from existing table
+  SELECT * INTO tblCopy from tbl WHERE 1=2;
+
+4. Operators for pattern matching
+  LIKE
+  REGEXP
+
+5. Write a query to change the values of Col1 from 1 to 0 and from 0 to 1.
+  UPDATE tbl
+  SET Col1 = 1 - Col1;

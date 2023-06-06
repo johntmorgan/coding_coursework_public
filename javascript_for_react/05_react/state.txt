@@ -1,0 +1,62 @@
+State in React
+  The core of every React component is its state
+  The state determines what the component looks like
+    Update as you go!
+  The entire page does not reload if state is updated, only the component
+    This is why React is great for dynamic, interactive pages
+
+  import React from 'react';
+
+  export default class App extends React.Component {
+    constructor(props) {
+    super(props);
+    }
+
+    // creating state
+    this.state = {
+      firstname: 'Robin',
+      lastname: 'Wieruch',
+     }
+    }
+
+    getName() {
+      // using state to get information
+      return (`${this.state.firstname} ${this.state.lastname}`)
+    }
+
+    render() {
+      return (
+        <h1>{this.getName()}</h1>
+      );
+    }
+  }
+
+Changing states
+  Wrong - causes error
+    this.state.data = newValue
+  Right - use setState()
+
+  this.state = {
+    firstname: 'Robin',
+    lastname: 'Wieruch',
+   }
+  }
+
+  getName() {
+    // using state to get information
+    return (`${this.state.firstname} ${this.state.lastname}`)
+  }
+
+  render() {
+    var changeName = setTimeout(function() {
+      this.setState({lastname: 'Hood'})
+    }.bind(this), 5000);
+    return (
+      <h1>{this.getName()}<h1>
+    )
+  }
+
+Big caveats
+  setState does not update immediately
+  May update later in batch with a bunch of other components
+    To check updating, use componentDidMount() - next chapter

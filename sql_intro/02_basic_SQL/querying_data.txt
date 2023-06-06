@@ -1,0 +1,52 @@
+Querying Data
+  SELECT col1, col2, ..coln
+  FROM *
+  WHERE <condition>
+
+  SELECT * from Actors;
+
+  SELECT FirstName, SecondName from Actors;
+
+  SELECT FirstName, SecondName from Actors WHERE FirstName="Travolta";
+    > Empty set (0.00 sec)
+
+  SELECT FirstName, SecondName from Actors WHERE FirstName="Brad";
+  > +-----------+------------+
+    | FirstName | SecondName |
+    +-----------+------------+
+    | Brad      | Pitt       |
+    +-----------+------------+
+    1 row in set (0.00 sec)
+
+  SELECT FirstName, SecondName from Actors WHERE NetWorthInMillions > 500;
+  > +-----------+------------+
+    | FirstName | SecondName |
+    +-----------+------------+
+    | Tom       | Cruise     |
+    | Kylie     | Jenner     |
+    | Shahrukh  | Khan       |
+    +-----------+------------+
+
+  SELECT FirstName, SecondName from Actors WHERE NetWorthInMillions > 0;
+    // Returns all rows
+
+Operators you can use in a where claus
+  >, >= , <, <=, !=
+  <> - also not equal
+  <=> - NULL-safe equal to operator
+  =  - equal to operator
+  BETWEEN ... AND ... - whether value is within range of values
+  COALESCE() - return first non-NULL argument
+  GREATEST() - return the largest argument
+  IN - whether value is within set of values
+  INTERVAL - return index of argument greater than first argument
+  IS - test against boolan
+  IS NOT - ditto
+  IS NOT NULL
+  IS NULL
+  ISNULL() - test whether argument is null
+  LEAST() - return smallest argument
+  NOT BETWEEN ... AND ...
+  NOT IN()
+  NOT LIKE
+  STRCMP() - compare two strings

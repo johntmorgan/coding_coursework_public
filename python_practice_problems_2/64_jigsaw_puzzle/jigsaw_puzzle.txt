@@ -1,0 +1,68 @@
+Jigsaw Puzzle
+  You know what this is
+
+Questions
+  Picture or patttern?
+  What shape? Rectangular
+  What kind of shape to puzzle pieces?
+  How do pieces fit together?
+  Will all pieces be unique?
+
+Bottom up
+  Edges of piece
+  then puzzle piece
+  then puzzle board
+
+Design pattern
+  Singleton
+
+Requirements
+  Rectangle puzzle
+  Four sides per piece
+    Indentation
+    Extrusion
+    Flat edge
+  Four corner pieces
+  Some edge pieces
+  Some middle pieces
+  All pieces unique
+    Each fits with only one other set of pieces
+  Fit by matching indentation with extrusion
+
+Class diagram
+  Side
+    edge: Edge
+
+  Piece
+    sides: Side {list} - list of size 4
+    checkCorner()
+    checkEdge()
+    checkMiddle()
+
+  Puzzle
+    board: Piece {list} - 1D list
+    free: Piece {list} - 2D list
+    insertPiece(piece, row, column)
+
+  PuzzleSolver
+    matchPieces(board)
+
+  Enum
+    Edge
+      Indentation
+      Extrusion
+      Flat
+
+Relationships
+  Association
+    Puzzle one-way with PuzzleSolver
+
+  Composition
+    Puzzle composed of pieces composed of sides
+
+Extension
+  Rotate piece
+
+  Piece
+    rotatePiece(piece): void
+

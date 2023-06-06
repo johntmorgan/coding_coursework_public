@@ -1,0 +1,174 @@
+Counting with Bijections
+Reading
+  Motivation
+    How do you count people in a crowded room?
+    Could count heads, for each person exactly one head
+    Count ears and divide by two
+    Can often count one thing by counting another
+      Though some fudging may be required
+    Number of elements of an n-element set = number of n-length bitstrings
+      Described by a bijection between the subests and the bit-strings
+    Most direct way to count by counting another is find a bijection
+  The Bijection rule
+    Acts as a magnifier of counting ability
+    Figure out the size of one set
+      Can immediately determine size of many other sets via bijetion
+      A = all ways to select 12 from 4 types
+      B = all 16 bit sequences with exactly 4 ones
+    Elem of set A
+      00 (blank) 000000 00 00
+      Each donut = 0, put a 1 into the gaps
+      0011000000100100
+      This suggests a bijection from A to B
+      |A| = |B| by the bijection rule
+    Lemma
+      The number of ways to select n donuts from k flavors
+      Is the same as the number of binary sequences with exactly n zeros and k - 1ones
+  Counting Sequences
+    Let's get good at this one, then use bijections
+  Product rule
+    P1, P2, Pn are sets
+    P1 * P2 * ... * Pn
+      Set of all sequences whose first term from P1, second from P2, etc.
+    If P1, P2, etc are finite sets then
+      |P1 * P2 * ... * Pn| = |P1| * |P2| ... |Pn|
+    Daily diet
+      Sets of breakfast, lunch, dinner options
+      B * L * D is the set of all possible daily meals
+      |B * L * D| = |B| * |L| * |D|
+                  = 4 * 3 * 5
+                  = 60
+    Subsets of an n-element Set
+      2^n subsets of an n-element set
+        Proven with bijection to length-n bit-strings
+          Note this transformed set question to sequence question
+      Can fill in explanaition of why 2^n length-n bit-strings
+        Write set of all n-bit sequences as a product of sets
+        {0, 1}^n = {0, 1} * {0, 1} * ... * {0, 1}
+        Apply product rule
+        |{0, 1}^n|^n = |{0,1}|^n = 2^n
+  Sum rule
+    Lisa has 20 crabby days, 40 irritable days, 60 generally surly days
+    How many days can Lisa be out of sourts one way or another
+    |C U I U S|
+    If A1, A2, ... , An are disjoint sets then:
+      |A1 U A2 U ... U An| = |A1| + |A2| + ... + |An|
+      |C U I U S| = |C| + |I| + |S|
+                  = 20 + 40 + 60
+                  = 120
+  Counting passwords
+    Few problems can be solved with a single rule
+    Usually a flurry of sums, products, bijections
+    For solving passwords, telephone numbers, license plates
+      Sum and product rules useful together
+    Say a valid password has 6-8 symbols
+      First symbol must be a letter, remaining letters or digits
+      First define two sets
+      F = {a, b, ..., z, A, B, ... , Z}
+      S = {a, b, ..., z, A, B, ... , Z, 0, 1, ..., 9}
+      Set of all possible passwords is
+      (F * S^5) U (F * S^6) U (F * S^7)
+      Sets are disjoint,, woks as follows
+      = 52 * 62^5 + 52 * 62^6 + 52 * 62^7
+
+Lecture
+  Rules for counting
+  "Combinatorics"
+  Counting in Gambling
+    Disreputable origins of field
+    What fraction of poker hands are "a pair of Jacks"?
+      (probability of a pair of Jacks)
+  Counting in games
+    # of different chess positions after n moves
+      How much searching ahead to find good moves?
+    # of different positions for a Rubik's cube
+  Counting in algorithms
+    # of ops to update a data structure
+      # of comparisons needed to sort n items
+    # of steps in a computation
+      (# of multiplies to compute d^n)
+        Saw in fast exponentiation
+  Counting in Cryptography
+    # of possible passwords
+      need a space too large for exhaustive search
+    # of possible keys
+      also needs to be way too large for ex. search
+  Sum Rule
+    Very rudimentary
+    If sets A and B that are disjoint (not overlapping)
+    |A U B| = A + B
+    Class has 43 women, 54 men (and no non-binary or other) so
+    Total enrollment = 43 + 54 = 97
+    26 lower case letters, 26 upper case letters, 10 digits
+    Number of chars = 26 + 26 + 10 = 62
+  Product rule
+    If there are 4 boys and 3 girls, how many boy-girl couples can I make?
+      4 * 3 = 12
+      4 ways to choose boy, for each 3 ways to choose gir
+    If |A| = m and |B| = n
+    then |A * B| = m * n
+  Suppose
+    A = {a, b, c, d} and B = {1, 2, 3}
+    Can list A x B in a nice orderly way
+    {(a, 1), (a, 2), (a, 3),
+    (b, 1), (b, 2), (b, 3),
+    (c, 1), (c, 2), (c, 3),
+    (d, 1), (d, 2), (d, 3)}
+  Product rule: counting strings
+    Length-4 binary strings
+    |B x B x B x B|
+    = 2 x 2 x 2 x 2 = 2^4 = 16
+    Length n strings from an alphabet of size m
+      Size m is m^n
+  Counting with Bijections
+    Elementary idea, gets you a long way
+    Let's start - look at stuff easy to count with sum & product rules
+    Counting passwords
+      chars are digits & letters
+      6-8 chars long
+      start with a letter
+      case sensitive
+    L = {a, b, ..., z, A, B, ... , Z} // L for all letters
+    D = {0, 1, ... , 9}
+    Pn ::= length n words starting with letter
+         = |L x (L U D)^(n - 1)|
+         = |L| x |(L U D)^(n - 1)|
+         = |L| x (|L| + |D|)^(n - 1)
+         = 52 * (52 + 10)^(n - 1)
+    Set of passwords:
+      P ::= P6 U P7 U P8
+      |P| = |P6| + |P7| + |P8|
+          = 52 * (62^5 + 62^6 + 62^7)
+          ~= 19 * 10^14 
+    Example, 4-digit nums with >= one 7
+      Cases by 1st occurrence of 7
+        x: any digit 
+        o: any digit != 7
+        7xxx or 07xx or 007x or ooo7
+        10^3 + 9 * 10^2 + 9^2 * 10 + 9^3
+        = 3439
+    Another way to count at least one 7, comes up in combinatorics
+    Count complement
+    |4 digit nums| - |those with no 7|
+    10^4 - 9^4 = 3439
+  Mapping rule: bijections
+    If there is bijection from A to B, then |A| = |B|
+  Bijection: pow(A) and Binary Strings
+    A: {a1, a2, a3, a4, a5, ... , an}
+    subset: {a1,  a3, a4,   ...., an}
+    string:  1  0  1  1            1
+      "characteristic function"
+    This is a bijection
+    |n-bit binary strings| = pow(A)
+    2^n subsets
+    |pow(A)| = 2^|A|
+  Counting doughnut selections
+    Learn something by finding bijection even if don't know how to count yet
+    5 flavors of doughnuts, select a dozen
+    00 (none) 000000 00 00
+    let A ::= all selections of all doughnuts
+    B ::= 16-bit words with four 1s
+    Put in 1s as delimiters between flavors
+    0011000000100100
+    So |A| = |B|
+    How to count that? Next lecture.

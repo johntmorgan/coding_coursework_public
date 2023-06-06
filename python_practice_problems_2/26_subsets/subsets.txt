@@ -1,0 +1,14 @@
+Subsets
+  Find combinations and permutations of data elements in structure
+  Consider data structure as set
+  Make series of subsets from set
+  O(n * 2^n) time, where n is number of element in data structure
+
+Pattern matching
+  Yes
+    Create permutations or combinations of set of elements
+
+Real world
+  Combination of movies to watch from set of genres in sequence
+  Generate all possible orders of said movies for marathon
+  Calculate cost of subsets of items while shopping

@@ -1,0 +1,112 @@
+Web development
+  Traditionally, HTML builds webpages
+  JS adds the interactive aspect
+    Single pop-up to full-fledged games
+
+Where is JS used?
+  Browser has a root object window
+    Child objects DOM, BOM, JS
+  JS can manipulate all of these objects
+  DOM
+    Document object model
+    All elements in web page - text to buttons
+  BOM
+    Browser object model
+    Additional objects provided by browser besides DOM
+
+Window object
+  Root of browser's window
+  Refers to every element and other object within tab of browser
+    Each tab has own window in tabbed browsers
+  Connects directly or indirectly to every value within tab
+  JS accesses using window variable
+
+  console.log(`outer width:${window.outerWidth}`);
+  console.log(`outer height:${window.outerHeight}`);
+
+  Above uses code to access properties outerWidth and outerHeight
+  Each tab has window object with global scope
+  Each created var or function becomes property of window
+
+  var temp_object = {}; // assign empty object
+  var func = () => { return 'func'}; // function that returns 'func' string
+  // printing values
+  console.log(temp_object, func);
+    > {} 0 items
+  console.log(window.temp_object, window.func);
+    > {} 0 items
+  // checking equality if they are the same
+  console.log(temp_object == window.temp_object);
+    > true
+  console.log(func == window.func);
+    > true
+
+  Tons of properties and methods accessible within window object
+
+BOM
+  All objects provided by browser
+  Interact with everything other than the webpage itself
+    Location, history, navigator itself
+
+  Ex. screen object
+  console.log(`screen height:${screen.height}`); // height of the screen
+  console.log(`screen width:${screen.width}`);
+
+  console.log(`browser information:${navigator.userAgent}`); // browser information
+    > browser information:Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36
+
+  console.log(`history length:${history.length}`); // browser's history length
+    > history length:50
+
+  console.log(`Host name:${location.hostname}`); // URL hostname
+    > Host name:js.educative.io
+  console.log(`Href :${location.href}`); // Href property of location
+    > Href :https://js.educative.io/static/runjs/index.html?id=GRPw2
+
+  Note all BOM objects can be accessed under window since it is root
+    e.g. window.location
+
+DOM
+  Visible objects and elements
+  In JS, use DOM to access document and related elements
+  DOM is a tree of all elements on the web page
+    Can act as map of HTML tree
+
+HTML and DOM
+  HTML page file with .htm or .html extension
+    Displayed easily in browser
+  Ex.
+    <html>
+     <head>
+       <h1> Example </h1>
+     </head>
+     <body>
+       <p>Hello World </p>
+     </body>
+    </html>
+
+  HTML is hierarchical in nature
+    Consists of elements that each have a certain tag
+    For instance, body element goes by tag body between < and >
+
+  All elements accessible in JS using the document object
+    document -> html -> head/body -> h1, p, etc.
+  Each element is called a node
+    Of type object in JS
+
+  Node types
+    Document
+      root node of all documents
+    DocumentType
+      document type definition (DTD) e.g. HTML
+    Element
+      represents a tag e.g. body
+    Attr
+      attribute of a tag
+    Text
+      Represents content of a node
+    Comment
+      Represents comments in document
+
+  All nodes have properties - nodeName, nodeValue
+  <script src="index.js"></script> imports JS

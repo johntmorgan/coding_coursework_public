@@ -1,0 +1,14 @@
+Multidimensional arrays
+  Works like Ruby/Python
+  push() new array to add it...
+
+  To add a new col, just push to each row
+
+  var row0_col = ["Toyota", "Nissan"];
+  var row1_col = ["Ford"];
+  var row2_col = ["Honda"];
+
+  arr[0].push(row0_col);
+  arr[1].push(row1_col);
+  arr[2].push(row2_col);
+

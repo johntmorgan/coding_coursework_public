@@ -1,0 +1,347 @@
+CricInfo
+  Aka ESPNcricinfo
+  Live match coverage
+  Ball by ball comemntary
+  Database with matches back to 18th century
+  Articles and news
+  Search for matches, teams, players, tournaments
+
+Questions
+  How is match info updated
+  How is commentary added
+  How often is commentary added
+  What kind of stats recorded?
+    For both players and teams overall?
+  What people?
+    Players
+    Coaches?
+    Umpires?
+  Who inputs data?
+
+Smallest components
+  Ball
+  Run
+
+Requirements
+  Track stats of all players, teams, matches
+  Track all scores, wickets for each ball
+  Live commentary for every ball
+  Track all matches - Test, T20, ODI
+  Track ongoing & previous tournaments
+  Show points table for all participating
+  Show result of all previous matches
+  Teams select players for tournament
+    (So teams use the site? - JM)
+  Teams select 11 players per match
+  Admin adds tournament, matches, teams, players, news
+
+Use Case
+  System
+    Cricinfo
+  Actors
+    Primary
+      Admin
+      Commentator
+    (no secondary)
+
+  Admin
+    Add/modify team
+    Add/modify player
+    Add/modify tournament
+    Add/modify team squad
+    Add/modify innings
+    Add/modify over
+    Add/modify ball
+    Add match
+    Add/update news
+    Add/modify stadium
+    Add/modify umpire
+    Add/update status
+    (Remove/undo? - JM)
+
+  Commentator
+    Add/modify commentary
+
+Relationships
+  Generalization
+    Add/update stats with Add/update player status, match stas, tourney stats
+    Add match with Add T20, Add test, Add ODI
+
+  Associations
+    Extend
+      Add/modify ball extend with Add/modify run Add/modify wicket
+        Always when adding ball
+
+Classes
+  Admin
+    addPlayer()
+    addTeam()
+    addMatch()
+    addTournament()
+    addStats()
+    addNews()
+
+  Run
+    totalRuns
+    type: RunType
+    scoredby: Player
+
+  Ball
+    balledBy: Player
+    playedBy: Player
+    type: BallType
+    runs: Runs {list}
+    wicket: Wicket
+    addCommentary()
+
+  Wicket
+    type: WicketType
+    playerOut: Player
+    balledBy: Player
+    caughtBy: Player
+    runoutBy: Player
+    stumpedBy: Player
+
+  Over
+    number
+    bowler
+    totalScore
+    balls: Ball {list}
+    addBall()
+
+  Innings
+    bowling: Playing11
+    batting: Playing11
+    startTime
+    endTime
+    totalScore
+    totalWickets
+    overs: Over {list}
+    addOver()
+
+  Match - abstract
+    startTime
+    result: MatchResult
+    totalOvers
+    teams: Playing11 {list}
+    innings: Inning {list}
+    tossWin: Playing11
+    umpires: Map<Umpire, UmpireType>
+    stadium: Stadium
+    commentators: Commentator {list}
+    stats: MatchStat {list}
+    assignStadium(Stadium)
+    assignUmpire(Umpire)
+
+    ODI extends
+    Test extends
+    T20 extends
+
+  Stadium
+    name
+    location: Address
+    maxCapacity
+
+  Player
+    name
+    age
+    country
+    position: PlayingPosition
+    teams: Team {list}
+    stat: PlayerStat
+
+  Coach
+    name
+    age
+    country
+    teams: Team {list}
+
+  Umpire
+    name
+    age
+    country
+    assignMatch()
+
+  Team
+    name
+    players: Player {list}
+    coach: Coach (not multiple? - JM)
+    news: News {list}
+    stats: TeamStat
+    addSquad(TournamentSquad)
+    addPlayer(Player)
+    addNews(News)
+
+  TournamentSquad
+    players: Player {list}
+    tournament: Tournament
+    stats: TournamentStat
+    addPlayer(Player)
+
+  Playing11
+    player: Player {list}
+    addPlayer(Player)
+
+  Tournament
+    startDate
+    teams: TournamentSquad {list}
+    matches: Match {list}
+    points: PointsTable
+    addTeam()
+    addMatch()
+
+  PointsTable
+    teamPoints: Map<string, float>
+    matchResult: Map<Team, MatchResult>
+    tournament: Tournament
+    lastUpdated
+
+  Stat - abstract
+    updateStats()
+
+    PlayerStat extends
+      ranking
+      bestScore
+      bestWicketCount
+      totalMatchesPlayed
+      total100s
+      totalHattricks
+
+    TeamStat
+      winPercentage
+      topBatsman
+      topBowler
+
+    MatchStat
+      totalSixes
+      totalFours
+      totalReviews
+
+  Commentator (not extend abstract role w/admin? - JM)
+    name
+    assignMatch()
+
+  Commentary
+    text
+    createdAt
+    commentator: Commentator
+
+  News
+    date
+    text
+    image: byte {list}
+    team: Team
+
+Enums
+  RunType
+    Normal
+    Four
+    Six
+    Wide
+    LegBye
+    Bye
+    NoBall
+    Overthrow
+
+  MatchResult
+    Live
+    BatFirstWin
+    FieldFirstWin
+    Draw
+    Canceled
+
+  WicketType
+    Bold
+    Caught
+    Stumped
+    RunOut
+    Lbw
+    RetiredHurt
+    HitWicket
+    Obstruction
+    Handled
+
+  PlayingPosition
+    Batting
+    Bowling
+    AllRounder
+
+  BallType
+    Normal
+    Wide
+    NoBall
+    Wicket
+
+  UmpireType
+    Field
+    Reserved
+    ThirdUmpire
+
+CDT
+  Address
+    zipCode
+    streetAddress
+    city
+    state
+    country
+
+Relationships
+  Association
+    Admin one-way Player, Team, Match, Tournament
+    Player one-way Run, Ball, Wicket, Over
+    Team one-way TournamentSquad, Tournament
+    TournamentSquad one-way Playing11
+
+    Ball two-way Run, Wicket, Commentary
+    Team two-way Coach, News
+    Commentary two-way Commentator
+    Match two-way Umpire, Commentator, Stadium
+
+  Aggregation
+    Tournament contains TournamentSquad
+
+  Composition
+    Player composed of PlayerStat
+    Team composed of Player TeamStat
+    Tournament composed of Match PointsTable
+    Match composed of Playing11, Innings, MatchStat
+    Innings composed of Over
+    Over composed of Ball
+
+  Inheritance
+    ODI, Test, T20 derived from Match
+    TeamStat, MatchStat, PlayerStat derived from Stat
+
+Pattern
+  Factory - create diff types of matches, tournaments, squads @ runtime
+
+Sequence - add a match
+  Actors
+    Admin
+    Umpire
+    Commentator
+
+  Admin creates new match of type
+  Admin adds teams
+  Admin assigns stadium
+  Admin assigns umpire
+  Admin assigns commentator
+
+Activity diagram - making record of ball
+  Initial state: system adds ball to over
+  Final state: ball record is saved
+
+  System adds ball to over
+  Select ball type
+    Normal, wide, no ball
+    No ball: award next ball a free hit
+    Wide, no ball: add 1 to score of batting team
+  Batter out?
+    No: record score
+    Yes
+      Wicket
+      Leg before wicket
+      Ball caught
+      Run out
+  Ball commentary added
+  Ball record saved

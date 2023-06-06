@@ -1,0 +1,21 @@
+SQL
+  Structured Query Language
+    "cousin" of relational database
+  Stack Overflow runs a SQL server
+  Rise of Big Data & NoSQL hasn't put SQL & relational DBs out of fashion
+    Techs server different, complimentary use cases
+      Overlap in capabilities of both
+  SQL is the de factor standard for relational DB interaction
+  Even in Big Data
+    Hive & Phoenix have SQL-like interfaces, syntax
+
+This course
+  Brief & cursory overview of DB theory
+    Check DB design fundamentals
+  Focus on practical hands-on learning
+  Each lesson with interactive shell
+  Quizzes & common interview questions
+  Get SQL skills to intermediate level
+    Beginner to intermediate SQL job interviews
+
+

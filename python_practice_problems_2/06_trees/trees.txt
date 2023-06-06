@@ -1,0 +1,367 @@
+Trees
+  Vertices/nodes & connecting edges
+  Hierarchical
+  Like graphs but cannot have cycles
+
+Definitions
+  Root node
+    Node with no parent
+    Trees do not have to have a root
+    But rooted trees are largely what we use
+  Child node
+    Linked to upper parent node
+  Parent node
+    Node with one or more child node
+  Sibling
+    Share same parent node
+  Leaf node
+    Has no child nodes
+  Ancestor nodes
+    Nodes on path from a node to the root node
+      Parents, grandparents, etc.
+  Sub-tree
+    Tree formed by node and descendants
+  Degree
+    Number of children
+  Length
+    Number of edges in path
+  Depth
+    Length of path from node to root
+    Root depth is 0
+  Level
+    Depth of node + 1
+  Height
+    Length to deepest descendant
+    Tree height = root node height
+    Leaf node height = 0
+
+Tree types
+  Optimized for different use cases
+  Binary trees
+  Binary search trees
+  AVL trees
+  Red-black trees
+  2-3 trees
+
+N-ary tree
+  Each node has no more than N children
+  Also known as a k-way tree, k-ary tree, or M-ary tree
+    (Yelp quadtree... - JM)
+  Binary tree
+    Special case where k = 2
+    Used extensively!
+
+Balanced trees
+  For each node, difference between height of right and left is at most 1
+
+Binary trees
+  0-2 children per node
+  Complete binary tree
+    All levels fully filled, except last level (filled left to right)
+  Full binary tree
+    All nodes have 0 or 2 children
+    No nodes with 1 child
+  Perfect binary tree
+    All internal nodes have 2 children
+    All leaves at same level
+
+Complete binary trees
+  All levels fully filled except for last
+  Nodes on last level as far left as possible
+  Total number of nodes: 2^h < nodes < 2^(h + 1) - 1
+    Geometric series: 2^0 + 2^1 + 2^2 + 2^3
+  When inserting, insert level by level
+    Fill left subtree before right
+
+Skewed trees
+  All nodes except one have only one child
+  All child nodes are either left or right
+  Avoid at all cost, high time complexity of operations
+
+Binary search tree
+  Special kind of binary tree
+  Each tree has key-value pair
+  Values of all keys in left subtree less than node value
+  Values of all keys in right subtree greater than value of node
+    "BST rule"
+  Not every binary tree is a binary search tree
+
+Implementing BST
+  Start at root node
+  Check if value to be inserted is greater then root/current value
+    If yes, then head for right subtree and repeat
+    If no, then head for left subtree
+    Repeat until no right/left child
+    Insert value
+
+Coding BST
+  Two options
+    Recursive
+    Iterative
+  Let's do both (see code)
+  Iterative
+    insert(val) takes integer
+    If root exists, calls Node class's insert function
+    Otherwise makes root the value
+    Node class insert() is the meat
+      Cleaner and easier to maintain than putting it in BST class (usually!)
+      Start from root, move left or right depending on value
+      Stores parent node while moving
+      When current node becomes empty or None, inserts there
+        By making current node parent's child
+
+Deletion
+  Search for node
+  Make node None
+    Make left/right child of parent None
+  Six possible cases
+    In an empty tree
+      return False - edge case for error handling
+    Leaf node
+      Just remove node - make parent left/right child None
+    Node with one child
+      Replace parent's child node with current node
+    Node with two children
+      Replace with smallest node in right subtree
+      Or largest node in left subtree
+
+Traversal
+  Pre-order
+    Root-left-right
+    Root - LC - LLC - LRC - RC - RLC - RRC
+
+    def preOrderPrint(node):
+      if node is not None:
+        print(node.val)
+        preOrderPrint(node.leftChild)
+        preOrderPrint(node.rightChild)
+
+  Time complexity: O(n)
+    A total of n recursive calls occur
+
+  Post-order
+    Left-right-root
+    LLC - LRC - LC - RLC - RRC - RC - root
+
+    def postOrderPrint(node):
+      if node is not None:
+        postOrderPrint(node.leftChild)
+        postOrderPrint(node.rightChild)
+        print(node.val)
+
+  In-order
+    Left-root-right
+
+    def inOrderPrint(node):
+      if node is not None:
+        inOrderPrint(node.leftChild)
+        print(node.val)
+        inOrderPrint(node.rightChild)
+
+AVL Trees
+  Adelson-Velsky and Landi
+  BST such that for every internal node, heights of children differ by at most 1
+  Time complexity for BSTs
+    Insert: O(h)
+    Delete: O(h)
+    Search: O(h)
+    Worst case: O(n) - skewed BST
+    Best case: O(logn) - completely balanced BST
+  AVL are best-case BSTs, always balanced
+
+AVL insertion
+  Works just like BST insertion
+  But does not allow to become imbalanced
+  Rebalance after insertion
+    Rotation
+    Left, right, right-left, left-right
+
+AVL deletion
+  Very similar to insertion operation
+  Fix first unbalanced node through rotations
+  Then move up and fix the next unbalanced node
+  Keep fixing until you reach the root
+
+Red-black trees
+  Another type of self-balancing binary search tree
+  Nodes are colored either red or black
+    Help rebalancing tree after insertions or deletion
+  Rules
+    Root is always black
+    Red nodes cannot be adjacent
+    Every path from root to None contains same number of black colored nodes
+    None nodes are colored black
+  Coding
+    Add isRed = None boolean variable during init
+  Time complexity
+    Tree is NOT perfectly balanced
+    However it gets close, good enough for ~O(logn) operations
+  AVL vs. red-black
+    AVL more balanced
+    AVL takes more rotations during insertion/deletion
+    So if search-heavy app with rare insertion/deletion -> AVL
+    Otherwise -> red-black
+
+Red-black insertion
+    Insert node using standard BST insertion
+    Color node red
+    If node is root, change color back to black
+    If node is not root, perform operations to make tree follow red-black
+  Rebalancing tree
+    Two options
+      Recolor nodes
+      Rotate nodes L/R
+    If parent of inserted node is black, you're fine (?)
+    If parent of inserted node is red, check sibling of parent of newly inserted node
+      If red
+        Parent and sibling of parent change to black
+        Grandparent changes to red
+        Repeat with grandparent as current node
+      If black, four scenarios
+        Left-left: parent is left node of grandparent, current node is left child of parent
+          Right rotate grandparent
+          Swap colors of parent and grandparent
+        Left-right: parent is left node of grandparent, current node is right child of parent
+          Left rotate parent
+          Repeat left-left steps
+        Right-right: parent is right node of grandparent, current node is right child of parent
+          Left rotate grandparent
+          Swap colors of parent and grandparent
+        Right-left: parent is right node of grandparent, current node is left child of parent
+          Right rotate parent
+          Repeate right-right steps
+
+Red-black deletion
+  Big difference from insertion
+    During insertion, worry about violating no neighboring red nodes property
+    During deletion, worry about same number of black nodes from root to None
+    During insertion, check color of sibling of parent
+    During deletion, check color of sibling of deleted node
+  Algorithm
+    Search for node with value to remove
+    Remove node using standard BST deletion earlier
+      Either deletes a leaf node, or a node with only one child
+        If deleting internal node, swap it with leaf or node with 1 child
+    Cases
+      Deleted node or replacement is red
+        Make replacement black and link to parent of deleted node
+      Deleted node and replacement are black
+        Make replacement "double black"
+          If not root of tree, more steps depending on sibling of replacement
+        Sibling is black and 1-2 children are red
+          Left-left
+            Sibling is left child, red node is left child
+            Rotate parent right
+            Make right child of sibling left child of former parent
+          Right-right
+            Sibling is right child, red node is right child, or both are red
+            Rotate parent left
+            Make left child of node S right child of former parent
+          Left-right
+            Sibling is left child, red node is right child
+            Rotate sibling left
+            Rotate parent right
+          Right-left
+            Sibling is right child, red node is left child
+            Rotate sibling right
+            Rotate parent left
+
+2-3 Trees
+  Another search tree
+  Very different from BST
+  Balanced and ordered
+  Very efficient storage
+  Fast operations
+  Remains balanced no matter how many insertions or deletions
+  Leaf nodes always present on same level, quite small in number
+    Make sure height doesn't increase too much
+    Height always logarithmic to height of tree
+  Two forms:
+    2-node tree
+      Left key smaller than parent key, right key larger than parent key
+    3-node tree
+      Each node can contain 2 keys and 3 children
+      First parent key X is greater than left child and smaller than middle child
+      Second parent key Y is greater than middle child, smaller than right child
+  Properties
+    All leaves are same height
+    Each internal node can have either 2 or 3 children
+    Node with one key?
+      Leaf node OR
+      Has exactly 2 children
+    Node has two keys?
+      Leaf node OR
+      Has exactly 3 children
+    Height of tree always less than log_2(n + 1)
+  Same basic operations
+    Search
+    Insert 
+    Delete
+    All run in O(logn), once again
+
+2-3 insertion
+  Very different from BST
+  Search element in O(log(n)) time, insertion in O(1)
+    Overall time complexity O(log(n))
+  If tree is empty
+    Create leaf, insert value
+  If tree is not empty
+    Traverse tree, find right leaf node where should be inserted
+    If leaf has only one value, insert into node
+    If leaf has more than two values, split node
+      Move middle element to top node
+    Keep forming new nodes wherever 2+ elements
+
+2-3 deletion
+  Again O(log(n))
+  Element at leaf
+    How many keys in node?
+      More than one key
+        Just delete elemnt
+      Only one key
+        Must adjust keys of subtree
+        If a sibling has more than one key
+          Move element from sibling to parent, shift parent down
+          "Redistribution by rotation"
+          Right/left rotation
+        No sibling has more than one key
+          Merge nodes by key rotation
+          "Merge by rotation"
+          If child nodes have more than one key
+            Shift element from child to make parent
+          Only one key at each child, delete node
+  Element at internal node
+    Swap element with in-order successors
+    Get to leaf node
+    Delete at leaf
+    Can swap with largest key on left, or smallest key on right
+
+2-3-4 Trees
+  More advanced version of 2-3 trees
+  Can accommodate more keys, more child nodes vs. 2-3 trees
+  Satisfies all 2-3 tree properties, plus:
+    Each internal node at max 3 keys
+    Each internal node at max 4 child nodes
+    Left child smaller than left key
+    LeftMidChild between left and mid key
+    RightMidChild between mid and right key
+    RightChild larger than right key
+  Insertion and deletion follow same patterns as 2-3 trees
+    But nodes may have 3 keys at a time instead of 2
+
+Tree overview
+  Binary
+    Each vertex has 2 children at most
+    Types: Perfect, Full, Complete, Skewed
+  Binary search trees
+    Every node has value >= nodes in left subtree and < nodes in right subtree
+  Red-black
+    All nodes colored red or black
+    No two adjacent nodes have red color
+    Null nodes are considered black
+  AVL trees
+    Height of left and right subtree of each node differs by at most one
+  2-3 trees
+    Balanced and ordered tree
+    Each node may have two keys and three children max
+    2-3-4 tree more advanced version

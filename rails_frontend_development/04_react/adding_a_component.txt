@@ -1,0 +1,109 @@
+Adding The First Component
+  Concert page, right now just a grid of squares in a HTML table
+
+  react/01/app/views/concerts/_seats.html.erb
+
+  <table class="table">
+    <tbody>
+      <% concert.venue.rows.times do %>
+        <tr>
+          <% concert.venue.seats_per_row.times do |seat_number| %>
+            <td>
+              <span class="button"><%= seat_number %></span>
+            </td>
+          <% end %>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  First let's convert this partial to give React control
+  Great feature for React - interactive, but does not use traditional browser form elements
+    Might already have a lot of built-in functionality in the browser
+  React encourges splitting page into lots of small components
+  Let's have 3
+    Each individual seat
+    Each row that contains a row's worth of seats
+    Venue itself, combining all the rows
+
+Put all React components in subdirectory of app/javascript
+  Named components (lack of creativity, can name it anything)
+
+Seat component file
+
+  import * as React from "react"
+
+  interface SeatProps {
+    seatNumber: number
+  }
+
+  const Seat = (props: SeatProps) => {
+    return (
+      <td>
+        <span className="button">{props.seatNumber}</span>
+      </td>
+    )
+  }
+
+  export default Seat
+
+  // The core of the file is the actual component, the constant function Seat
+  Syntax inside seat is not JS/TS, it looks like HTML dropped right into TS file
+    That's JSX
+    JSX = extension to JS that allows HTML-like elements inside angle brackets
+  React uses JSX to define HTML tags that are part of React components
+    Also a way to call React components from other React components
+  React JSX parser converts .jsx and .tsx files to plain JS or TS
+    Conversion already set up by Webpacker
+
+Functional vs Class components
+  React components can be either functions that return a JSX element
+  Or a class that contains a render method that returns a JSX element
+    Only class can maintain internal state... until hooks in React 16.8
+  Clear direction for React towards functional components atm
+    But lots of class components in older code
+
+Using JSX
+  Look at the Seat function
+  Takes one element props and just returns and element that uses JSX to describe an HTML table cell
+  Return value encloses JSX in parentheses
+    Common idiom for returning multi-line JSX
+    Start JSX line after return statement and preserve logical indenting
+  Returned value starts with <td>
+    When React sees an angle bracket, looks to convert expression to a React element
+      Uses function React.createElement
+    JSX is mostly a shortcut for calling React.createElement over and over!
+  If text in angle brackets is lowercase, React assumes HTML
+  If text in angle brackets starts uppercase, React assumes it's another React component
+  Using JSX, include HTML attributes in React components almost identically to HTML markup
+    Note class is a reserved JS word, so we use className for DOM classes
+  Inside span element have props.seatNumber
+    Curly brace is React interpolation marker (like <%= %> in ERB)
+    Inside curly braces, arbitrary JS expressions executed and passed through to resulting element
+    Taking the seat number and rendering each Seat component using actual seat number
+
+Props
+  Short for "properties"
+  Term for attributes of component meant to be stable
+    Component cannot change props!
+  Passed into a component as a single argument when component created
+    Are the only argument to a component
+    Can name argument anything, "props" is a convention
+  Convention to define interface for props object
+    Declares the prop object keys and types
+    Here only one key, SeatNumber, and it's a number
+  By declaring interface, TS can do compile-time checking
+    Ensure that necessary values are passed to components
+    Then use props object, interpolating props.seatNumber into JSX
+
+Dereferencing
+  Can also be used to declare component
+    export const Seat = ({ seatNumber })
+    Then use that value directly in the component
+    <span className="button">{seatNumber}</span>
+    Incoming props object dereferenced directly to seatNumber
+
+Most important!
+  Component cannot change its own props once instantiated
+  Changeable values = state
+    Handled differently

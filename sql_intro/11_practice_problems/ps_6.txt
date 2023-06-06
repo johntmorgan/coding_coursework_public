@@ -1,0 +1,73 @@
+// Copied for future reference - using functions not taught in course...
+1. Find the top two movies of distributors who have more than one movie to their name.
+  (
+    SELECT Distributor, Name AS Movie, CollectionInMillions
+    FROM   Movies
+    WHERE  Distributor = 'Paramount Pictures'
+    ORDER BY CollectionInMillions DESC
+    LIMIT 2
+  )
+  UNION
+  (
+    SELECT Distributor, Name AS Movie, CollectionInMillions
+    FROM   Movies
+    WHERE  Distributor = 'Warner Bros'
+    ORDER BY CollectionInMillions DESC
+    LIMIT 2
+  );
+
+2. Find the total, average, minimum and maximum of the production budget and revenue earned from the Movies table and append the summary data to the top of the table.
+  SELECT 'Total' AS Name, SUM(BudgetInMillions) AS BudgetInMillions, SUM(CollectionInMillions) AS CollectionInMillions
+  FROM Movies
+  UNION
+  SELECT 'Average' AS Name, AVG(BudgetInMillions) AS BudgetInMillions, AVG(CollectionInMillions) AS CollectionInMillions
+  FROM Movies
+  UNION
+  SELECT 'Maximum' AS Name, MAX(BudgetInMillions) AS BudgetInMillions, MAX(CollectionInMillions) AS CollectionInMillions
+  FROM Movies
+  UNION
+  SELECT 'Minimum' AS Name, MIN(BudgetInMillions) AS BudgetInMillions, MIN(CollectionInMillions) AS CollectionInMillions
+  FROM Movies;
+
+3. Calculate the mean median and mode of the running time of movies.
+  SELECT 'Mean' AS 'Measure', ROUND(AVG(RunningTime),1) AS 'Value'
+  FROM Movies
+  UNION
+  SELECT 'Median', ROUND(AVG(RunningTime),1)
+  FROM (
+    SELECT @row_num := @row_num + 1 as rownum, RunningTime
+    FROM Movies, (SELECT @row_num := 0)x
+    ORDER BY RunningTime
+  )m
+  WHERE m.rownum IN(FLOOR((@row_num + 1)/2), CEIL((@row_num + 1)/2))
+  UNION
+  SELECT 'Mode', GROUP_CONCAT(RunningTime)
+  FROM(
+   SELECT RunningTime, COUNT(*) AS Frequency
+   FROM Movies
+   GROUP BY RunningTime
+   HAVING COUNT(*) >= ALL
+    (SELECT COUNT(*) FROM Movies GROUP BY RunningTime)
+  )m;
+
+4. Find the correlation between budget, collection and running time of movies and display the results as a table.
+  // skip - even solution stats are not working...
+
+5. Find the market share of top 3 distributors and aggregate the remaining distributors in a single row.
+  CREATE TEMPORARY TABLE TOP3(
+     SELECT Distributor, SUM(CollectionInMillions)
+     FROM Movies
+     GROUP BY Distributor
+     ORDER BY SUM(CollectionInMillions) DESC
+     LIMIT 3);
+
+  CREATE TEMPORARY TABLE TOP3AGAIN
+  SELECT * FROM TOP3;
+  
+  SELECT * FROM TOP3
+  UNION
+  SELECT 'All Others' as Distributor,
+         SUM(CollectionInMillions)
+  FROM Movies
+  WHERE Distributor NOT IN (SELECT Distributor
+                            FROM TOP3AGAIN);

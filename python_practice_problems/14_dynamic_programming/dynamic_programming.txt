@@ -1,0 +1,14 @@
+Dynamic Programming
+  Recursive divide and conquer
+  If optimal substructure, solve smaller to solve bigger
+  May be overlapping subproblems
+  To solve:
+    Top down with memoization
+      Store solved subproblems in array or hash map
+    Bottom up with tabulation
+      Avoid recursion
+      n-dimensional array to store results
+      May require 2d arrays
+        Optimize with 1d, same array for previous and next comp
+          Tricky, not always applicable
+        

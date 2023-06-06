@@ -1,0 +1,93 @@
+Objects
+  Almost everything in JS is made up of objects
+  All the non-primitive types
+    Arrays, dates
+  Mutable
+  To access property or data, use . or [] operators
+  Create objects using {} operator
+    var obj = {}; // Declare our object
+
+    //print value and type of obj
+    console.log('Our object:',obj);
+      > Our object: {}
+    console.log('Type of our object:',typeof(obj));
+      > Type of our object: object
+
+  While or after declaring object, assign and modify properties
+    Property is a key, value pair (like items in python...)
+
+    var obj = {name : "obj" , 'age': 20};
+    obj.number = 13; 
+    obj['obj2'] = {};
+
+    console.log('Our object:',obj);
+      > Our object: { name: 'obj', age: 20, number: 13, obj2: {} }
+    console.log('Type of our object:',typeof(obj));
+      > Type of our object: object
+
+  Both of these work:
+    <Object Name>.<Property Name> = Value;
+    <Object Name>['Property Name'] = Value;
+
+  Value can be any variable, expression or object
+
+  Object's property can also be assigned to a function
+    These functions are methods of object
+
+  Accessing properties
+  var obj = {name : "obj3", number: 13, obj2: {} }; // Declare our object
+  var num_obj = obj['number'];
+  var name = obj.name;
+
+  console.log('Our object:',obj);
+    > Our object: { name: 'obj3', number: 13, obj2: {} }
+  console.log('Type of our object:',typeof(obj));
+    > Type of our object: object
+  console.log(`obj['number']: ${obj['number']} , ${num_obj}`);
+    > obj['number']: 13 , 13
+  console.log(`obj.name: ${obj.name} , ${name}`);
+    > obj.name: obj3 , obj3
+  console.log(`types: ${typeof(obj['number'])}, ${typeof(num_obj)}`);
+    > types: number, number
+  console.log(`types: ${typeof(obj['name'])}, ${typeof(name)}`);
+    > types: string, string
+
+Mutability
+  var a = [1, 2, 'hello']
+  // Creates obj with 0: 1, 1: 2, 2: 'hello'
+  a[0] = 5
+  // Now 0 is set to 5
+
+Other objects
+  Many with predefined properties
+  Date
+    Store date and time
+
+    var obj =  new Date() // create a Date obj and assign to obj
+
+    console.log(obj); // print obj
+      > 2023-05-17T19:35:22.665Z
+    console.log(obj.getFullYear()); // print getFullYear method of date
+      > 2023
+
+  Arrays
+    Special kind of object
+    Conveniently create a list to store all kinds of values and objects
+    Interface similar to regular object
+      But built in methods to manage
+
+    var arr1 = new Array(1,2,"hello"); // create a Array obj and assign to arr1
+    var arr2 = ["hello",2,1];
+    // printing the respective arrays
+    console.log("arr1:",arr1);
+      > arr1: [ 1, 2, 'hello' ]
+    console.log("arr2:", arr2);
+      > arr2: [ 'hello', 2, 1 ]
+    console.log(`type of arr1: ${typeof(arr1)} and arr2: ${typeof(arr1)}`);
+      > type of arr1: object and arr2: object
+    // Some Array properties in action below
+    arr2.sort(); // sort the array
+    console.log("sorted arr2:",arr2);
+      > sorted arr2: [ 1, 2, 'hello' ]
+    console.log("length of arr2:",arr2.length);
+      > length of arr2: 3

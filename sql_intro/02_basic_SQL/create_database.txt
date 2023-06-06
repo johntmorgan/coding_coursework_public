@@ -1,0 +1,28 @@
+Create Database
+  DB = container that holds tables
+  Table = container for subset of data
+  Table holds data in rows & columns
+    Column = attribute of entity
+    Row = set of columns defining attributes of entity
+
+  CREATE DATABASE MovieIndustry;
+    > Query OK, 1 row affected (0.00 sec)
+
+  // Behind scenes db.opt file created
+    Holds database options
+      Default char set
+      Collation for database
+
+  CREATE DATABASE IF NOT EXISTS MovieIndustry;
+
+  // Will throw error if recreating same database
+    Linux, Mac case-sensitive
+    Windows case-insensitive
+
+  SHOW DATABASES;
+    // shows databases
+
+  DROP DATABASE MovieIndustry;
+    // Drops the database
+    // All tables, indexes, other structures also deleted
+

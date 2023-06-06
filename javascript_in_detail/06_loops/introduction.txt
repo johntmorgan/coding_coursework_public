@@ -1,0 +1,79 @@
+Loops
+  Repeat instruction while condition true
+
+  var count = 0; // assign 0 to variable count
+  while (count < 5){
+      console.log("count",++count); // increment then print count
+  }
+
+  Types of loops
+    While
+    do/while
+    for
+    for/in
+    for/of
+    forEach
+
+while - execute instructions while condition true
+
+  var count = 0; // assign 0 to variable count
+  var shouldRun = true;
+  while (shouldRun === true) {
+      console.log("count", ++count); // increment then print count
+      if(count === 5) { // Check if count value is 5
+          shouldRun = false; // assign false to shouldRun
+      }
+  }
+  console.log("Program has ended with count:", count);
+
+do/while
+  Execute instructions before checking condition
+  Then keep executing while condition true
+
+  var count = 0; // assign 0 to variable count
+  do {
+      console.log("count",++count); // increment then print count
+  } while (count < 5)
+  console.log("Program has ended with count:", count);
+
+  Everything is basically the same as while except starts with do token
+
+for
+  three statements separated by ;
+  initializer, condition, iterator
+
+  for(var i = 0; i < 5, i++) {
+    console.log(i);
+  }
+
+  you may leave initializer and iterator blank
+    i = 0 start and i++ iterator assumed
+
+  Initialize variables within loop - doable!
+
+  var i = 0;
+  var count = 0;
+  for(name = "i", loop = "loop"; i < 5; i+=2, count++){
+      console.log(name, loop, i); // print name, loop and i
+  }
+  console.log("count value:",count);
+
+break and continue
+  continue skips back to beginning of loop
+    Everything after continue not executed
+
+  for(var i = 0; i < 10; i++) { // For loop to make 10 iterations
+      if (i % 2 === 0){ // See if even number
+          continue; // continue to next iteration
+      }
+      console.log('i value', i); // Print i value
+  }
+  console.log('Program ended.')
+
+  break exits loop
+  for(var i =0; i < 5; i++){ // For loop to make 5 iterations
+    console.log('iteration #', i+1); // Print iteration number
+    break; // break statement
+    console.log('Will not execute');
+  }
+  console.log('Program ended.')

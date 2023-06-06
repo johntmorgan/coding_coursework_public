@@ -1,0 +1,241 @@
+https://www.youtube.com/watch?v=nykOeWgQcHM&list=PLUl4u3cNGP63WbdFxL8giv4yhgdMGaZNA&index=4
+https://ocw.mit.edu/courses/6-0001-introduction-to-computer-science-and-programming-in-python-fall-2016/pages/assignments/
+
+6.0001 (half semester, also 6.0002?)
+Course info
+What is computation - high level, get on same page
+Python basics
+Mathematical operations
+Python variables and types
+
+All slides and code up ahead of time
+Download and have open
+  Type whatever she types
+Can take notes on codes
+This is a fast paced course
+  Read PSets when they come out
+New to programming? Practice!
+You can't really break your computer
+  Don't be afraid to type stuff and see what it does
+Three big things to learn
+  Knowledge of concepts
+  Programming skills
+  Problem solving (PSets)
+Three core sections of learning
+  1. What objects to create
+    How do you represent knowledge with data strucutres
+    Programs aren't just linear
+      Control flow
+  2. Abstract
+    How do you write good code?
+    Well organized, modular, easy to understand
+    Others (and you later) can re-read
+  3. Algorithms
+    More of the CS part
+    How do you compare programs in Python?
+      Efficiency
+      One algorithm is better
+
+High level: what does computer do?
+  Performs calculations
+  1B/s these days, computers are fast!
+  Stores them somewhere
+    100s GBs memory
+  What kinds of calculations?
+    Built-in to language
+      Addition, multiplication, subtraction etc.
+    Create new types put together
+  Computers only know what you tell them
+    They're not magical
+
+Types of knowledge
+  Declarative knowledge - statements of fact
+    Someone will win a raffle
+  Imperative knowledge - recipe, how-to
+    You sign up, Ana picks a random number
+
+Declarative
+  Square root of number x is y such that y*y = x
+
+Imperative
+  Start with a guess, g
+  If g * g is close enough to x, stop and say g is the answer
+  Otherwise average g and x / g
+
+What is a recipe?
+  1. Sequence of simple steps
+  2. Flow of control process
+    Specify when each step is executed
+  3. Means of determining when to stop
+
+  1 + 2 + 3 = algorithm
+
+How to capture an algorithm
+Historically - fixed program computers
+  Calculator - does addition, multiplication etc
+    But that's it
+    No plotting, no internet
+    Want to do something else? Make a different one.
+    Not great, bob.
+  Stored program
+    Execute sequence of instructions
+
+Four basic main parts
+  Memory
+  Input
+  Output
+  ALU - Arithmetic Logic Unit
+    Does really primitive operations
+  + Control Unit - program counter
+    Then tells ALU what to do
+    Might get data from memory, store it there etc
+    Goes linearly instruction by instruction
+
+  Memory contains data and sequence of instructions
+  Output at the end
+  ALU can do
+    arithmetic and logic - simple operations
+    simple tests
+    moving data
+  Interpreter executes each instruction in order
+  Can actually do everything with 6 primitives
+    Move left
+    Move right
+    Read
+    Write
+    Scan
+    Do nothing
+  Then programming languages came about
+    More convenient primitives
+  If you write a program in Python
+    You can write it in every other language
+    Very powerful!
+  Once you have primitives in a language
+    Start creating expressions
+    Combination of primitives
+  English - primitive words
+  Python
+    Float, boolean, number, string, simple operation
+  In English - can create sentences
+    "cat dog boy" -> not syntactically valid
+    "cat hugs boy" -> syntactically valid
+  In Python
+    "hi"5 -> not valid
+    3.2 * 5 -> valid
+  "I are hungry" -> valid but static semantic error
+  3 + "hi" -> same thing
+  Create expressions that are syntactically correct
+  And statically semantically correct
+  English can have many meanings
+    "Flying planes can be dangerous"
+      Being in the plane?
+      Or being hit by the plane?
+  In programming languages
+    ONLY one meaning
+    Just sometimes it's not what you intended
+      Debugging later in course
+  Python catches syntax errors easily
+    Static semantic error - if you go down branch
+  The program might still do something different than expected
+  The program might crash
+  The program might not stop
+    There are ways to stop besides restarting
+  Program sequence of definitions and commands
+  Definitions evaluated
+  Commands executed by Python interpreter in the shell
+  Commands tell the interpreter to do something
+  IDE
+    Right hand side - simple commands to test
+    Left hand side more involved code
+  Python time!
+    Everything in python is an object
+    All objects have a type
+    Type tells Python operations it can do
+    If it's a number 5
+      You can do math operations
+  Two types of objects
+    Scalar objects - very basic, not subdivided
+    Non-scalar objects
+      Have internal structure
+    Number 5 is a scalar
+    List [5, 6, 7, 8] is non-scalar - can be subdivided
+    Scalar object list
+      Integers
+      Floats
+      Bools - represent boolean - True and False (caps in Python)
+      NoneType - special and has one value, None
+        Means it has no type
+      You can use type() to see the type of an object
+  >>> type(5)
+  casting
+    float(3) converts integer 3 to float 3.0
+    int(3.9) converts float 3.9 to integer 3
+      Just truncates, does not round!
+    ruby: to_f, to_i
+  printing
+    Very important! How you interact with user
+    If you type 3 + 2 in shell, you do see a value
+      But it's not printing out
+    So type print(3 + 2)
+  Once you have objects
+    Combine objects and operators to form expressions
+    <object> <operator> <object>
+    Sum, difference, product, division (result float)
+    ALWAYS float for division (not true in Ruby!)
+    Otherwise float if one number is float
+    Also remainder (modulo) i % j
+    And power i**j
+  Set precedence with parens just like in math
+  Useful to save values to some name
+    You pick the name, should be descriptive
+    Access later in program
+    Use equals sign (assignment)
+  pi = 3.14159
+  pi_approx = 22/7
+  Assignment binds the name to the value
+  Reuse names instead of values
+  Easier to read, easier to change code later
+  pi = 3.14159
+  radius = 2.3
+  area = pi*(radius**2)
+
+  Programming vs. math
+    You do not "solve for x"
+    Left side is always a variable you're assigning to
+
+  You can always rebind with new assignment statements
+    pi = 3.14
+    radius = 2.2
+    area = pi*(radius**2) (15.9672)
+    radius = radius + 1
+
+  Now radius = 3.2
+    2.2 is still there, floating around, but nothing connected to it
+    May get cleaned up by garbage collection
+    Value of area did NOT change
+      You need to tell the computer to recalculate
+
+    Next lecture, control flow
+
+  Book notes
+    i//j - floor division - ignore remainder, do not convert to float
+    With division, Python 2 behaves like Ruby
+      Floor division is automatic
+      Python 3 converts to float automatically.
+    Python variables can contain
+      uppercase letters
+      lowercase letters
+      digits (but cannot start with them)
+      underscore
+    Python variables are case sensitive
+      Julie != julie
+    Reserved words cannot be set
+      Each version has a different list
+      and, as, assert, break, class, continue, def, del, elif, else,
+      except, False, finally, for, from, global, if, import, in, is,
+      lambda, nonlocal, None, not, or, pass, raise, return, True
+      try, while, with, yield
+    Multiple assignment works as in Ruby
+      x, y = 2, 3
+
+Lecture 1 - PSet 0

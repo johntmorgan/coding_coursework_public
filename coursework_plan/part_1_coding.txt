@@ -1,0 +1,160 @@
+Engineering with Utsav
+https://www.youtube.com/watch?v=7UlslIXHNsw
+
+Mostly geared towards big tech & top tech
+Videos are dense - take notes or revisit
+Beginner 0-2 years of experience - do I fall under this?
+  How inefficient have my years running a startup on my own been?
+  70% of prep time for coding
+
+Midlevel 3-5 years
+  Coding speed, fluency, communication, style, modularity, test-driven
+  Coding interviews the hardest in this group
+  Not enough experience for leadership
+  But your aptitude should be at its peak
+  And also have to prep for system design and leadership
+
+Experienced 5+ years
+  30% prep for coding
+  Minimum requirement filter
+  Focus more on approach and thought process
+  Not your raw horsepower
+
+Plan for 3-6 months of prep
+
+Need
+  Books
+  Courses
+  Online coding platform
+
+Book recommendations
+  Grokking algorithms - will order tomorrow
+    Easy to read, good for visual learner
+
+  Introduction to algorithms
+    Detailed explanations
+
+Courses
+  1 Introduction to Computer Science - Ann Bell of MIT
+  2 Programming Abstractions - Julie Zelenski @Stanford
+  3 Introduction to Algorithms - Erik Demaine @MIT OpenCourseWare - gold standard
+
+Practicing appropriately is up to you
+Paid course?
+  Educative
+    Ace the coding interview
+    Javascript, Python, Java, C++
+
+Online coding platform
+  Leetcode
+  (or AlgoExpert - meh)
+
+Good approach
+  Do not grind out too many problems
+  Quantity does not guarantee results
+
+Step 1
+  Self-assessment
+  Try out a handful of questions - can you solve optimally in under 30-45 minutes
+  Get completely stuck? You may need longer
+  Or set up an interview and just get rejected
+  Or do mock interview
+    Interviewing.io
+
+Step 2
+  Refresh your data structures & algorithms knowledge
+  Do 1-2 questions per topic
+
+Step 3
+  Consistent system for tracking your progress
+    Utsav Notion template: https://www.notion.so/Coding-Problem-d8ad5d8e763345ca99ad7ab3af9ec2ff (now broken :( )
+  Otherwise you will wind up grinding out problems
+  Todo
+  Repeat
+  Done
+  Do around 100-200 practice problems
+  More than 200 = diminishing returns
+  (Well start with Grind/Blind75 eh?)
+  And then goto leetcode > Problems
+    Click on tags and you'll see all the common data structures
+    Click on each data structure
+    Sort by the ones that have solutions
+    Then pick the top 4 easy, top 4 medium, top 2 hard
+  Key data structures to cover
+    Arrays
+    Hash Maps
+    Strings
+    Linked Lists
+    Trees
+    Graphs
+    Stacks
+    Queues
+    Binary Search Trees
+    Heaps
+  How to practice
+    As if you are in the actual interview!
+    No lying on the couch
+    No watching TV
+    Practice on your computer since interviews are often remote now
+    Put on headphones
+    Always time yourself
+      Goal: solve all in under 30 minutes
+      If you are still struggling after 30 minutes, you're done
+      Look at the solution, learn the technique, move on
+    If stuck in the first 5-10 minutes
+      Take a quick peek at solution, treat it as a hint
+      Do not look at full solution until past 30-45 min
+    Emulate asking questions via test cases on Leetcode
+    Do at least 5 questions back to back
+      Because that's how it'll be in a real interview!
+      Build up your endurance, do not get distracted between questions
+    Make sure to assess solution quality afterwards
+      Remember the goal is to understand mindset, not memorize
+    Score yourself 1-5 on each problem
+      Did you need hints?
+      Did you finish on time?
+      Was the solution optimal?
+      Were there any bugs?
+
+Step 4
+  Practice using spaced repetition and pattern recognition
+  Put problems high or low on your repeat list depending on how you scored
+  Then day 2, pick 4 random unsolved and 1 from top of repeat list (i.e. needs more practice)
+  Move to done when totally confident you can solve it
+
+Step 5 - pattern recognition
+  Running pointers
+  Linked list cycle or intersection detection
+  Divide and conquer or decrease and conquer
+  Recursive problems that can be memoized or solved tabularly
+  Using FIFO and LIFO on onion layer problems
+  Binary search variations: left == right, left < right, left < right by 1 or more
+  Counting or bucket sort
+  Using min or max heap to find k items
+  Sliding, tumbling, or fixed window
+  Hashmaps for quick lookups or duplicate detection
+  Greedy algorithms
+  Dealing with intervals
+  Dfs/Bfs serially or in parallel
+  Permutation and combination (repetitions and ordering using backtracking, loops, or the choose vs. not choose strategy)
+  Graph coloring
+  Topological sort
+  Shortest path variations
+  Connected components
+  Ad-hoc: basically everything else, lol
+
+Add another 50 questions from categories you are bad at
+And then do the whole thing again
+  But you'll be much faster this time!
+
+Step 6 - evaluate readiness
+  2 rounds of spaced repetitions, nailing most questions
+    Always some oddballs, almost perfect is good enough
+
+Step 7
+  Reflect what went right and wrong after each interview
+  Did you miss a hint, not ask clarifying questions?
+  Sometimes you just have a bad day, don't be too hard on yourself
+
+
+

@@ -1,0 +1,26 @@
+Variable mutation
+  Reassigning a variable to another value
+  Done with assignment operator =
+    var a = 5000;
+    var a = 1000;
+  JS will destroy values not assigned to any variable automatically
+
+  Can use values through variables and assign to others
+
+  var variable_1 = 100;
+  var variable_2 = 200;
+  var variable_3 = variable_1;
+
+  variable_1 = variable_2
+  variable_2 = 500;
+
+  // variable_1 == 200
+  // variable_2 == 500
+  // variable_3 == 100
+
+  Use a temp variable to rotate
+
+  var temp = var1; // store var1 value temoporary
+  var1= var3; // overwrite var1 with var3
+  var3= var2; // overwrite var3 with var2
+  var2= temp; // overwrite var2 with temp (old var1 value)

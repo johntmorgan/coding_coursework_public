@@ -1,0 +1,223 @@
+Directed graphs & partial orders
+  "Digraphs"
+  Represent how things are connected together, how to get from one to another
+  Pictured as a bunch of dots/circles with arrows between some dots
+  Dots
+    "nodes", "vertices"
+  Lines
+    "directed edges", "arrows"
+  Appear everywhere in CS
+    e.g. communication net (coming up)
+       3 in nodes - packets arrive in
+       3 out nodes - destinations for packets
+       6 switch nodes - circles
+       16 edges indicating paths packets take through router
+    hyperlink structure of WWW
+      two Stanford students became billionaires off it!
+  Definition
+    directed graph G
+    nonempty set V(G) - vertices of G
+    set E(G) - edges of G
+    element of V(G) - vertex
+      "vertex" = "node"
+    element of E(G) - directed edge
+      "arrow" or simply "edge"
+      starts at some vertex u - tail
+      ends at some vertex v - head
+      (u, v)
+      <u -> v>
+    nothing new in this def except a lot of vocab
+    formally digraph G is the same as a binary relation on set V = V(G)
+    digraph is a binary relation whose domain and codomain are same set V
+    (divisibility relation graph)
+  Degrees
+    in-degree - number of arrows coming in
+    out-degree - number of arrows going out
+    if G is a digraph and v in V(G)
+      indeg(v) ::= |{e in E(G) | head(e) = v}|
+      outdeg(v) ::= |{e in E(G) | tail(e) = v}|
+    Lemma
+      sum over v in V(G) indeg(v) = sum over v in V(G) outdeg(v)
+      proof: both sums are equal to |E(G)|
+  Walks and Paths
+    Natural to talk about following edges through graph
+    Sequence of edges = "walk"
+    A "path" is a walk that does not revisit any vertices
+    So in picture:
+      1 -> 2 -> 4 -> 12 is a path
+      1 -> 2 -> 4 -> 12 -> 12 is not
+    Natural to represent a walk with sequence of vertices
+      1 2 4 12 12 12
+    Convention to alternate vertices and edges
+      1 <1 -> 2> 2 <2 -> 4> 4 <4 -> 12> 12 <12 -> 12> 12 <12 -> 12> 12
+        "Cringe" levels of redundancy from a CS point of view (ARM said it, not me! - JM)
+        Does make it easy to talk about # of vertices and edges on walk though
+    Formal definition of walk
+      Alternating sequence of vertices and edges that begins and ends with a vertex
+      And such that for every edge <u -> v> in the walk, vertex u is the element just before the edge
+      and vertex v is the next element after the edge
+    Walk v sequence of form
+      v ::= vo <vo -> v1> v1 <v1 -> v2> v2... <v(k - 1) -> vk> vk
+      where <vi -> v(i + 1) in E(G) for i in [0..k)
+      walk starts at v0, ends at vk
+      length |v| of walk is defined to be k
+      walk is a path if all the vis are different
+      a "closed walk" begins and ends at the same vertex
+      a "cycle" is a positive length closed walk with distinct vertices except for beginning and end
+        (so special case of closed walk with no repeats except beginning and end - JM)
+      a single point?
+        it is a length zero path that begins and ends at itself
+        it is a closed walk
+        it is NOT a cycle - cycles have positive length
+      length one cycle
+        node has arrow back to itself
+        sometimes called "self loop"
+    Although walk is officially a sequence of alternating vertices and edges
+      Completely determined just by sequence of successive vertices or edges
+      Will describe in whatever way is convenient
+        (a, b, d) == abd == (<a -> b>, <b -> d>)
+      Walks cannot follow edges in the wrong direction!
+    Can stop in middle of walk
+      Whole walk is then the "merge" of the first and second part
+      If walk f ends with vertex v and walk r starts at v
+        merge f^r is the walk that starts with f and continues with r
+      Walks can only be merged if one ends at the same vertex as the other starts
+        fv^r - merge at vertex v
+      Lemma
+        |f^r| = |f| + |r|
+    The shortest walk from one vertex to another is a path
+      Yer in trouble if you hit the same vertex twice
+      Proof
+        If there is a walk from u to vertex v != u
+        By well ordering must be a minimum length walk w from u to v
+        We claim w is a path
+        Suppose to the contrary that w is not a path, vertex x occurs twice on walk
+        w = e^xf^xg
+        But then deleting f yields a strictly shorter walk e^xg
+          Contradicting the minimality of w
+    The distance dist(u, v) from vertex u to vertex v in a graph is the shortest path from u to v
+      Satisfies triangle inequality
+      dist(u, v) <= dist (u, x) + dist(x, v)
+        equality holds iff x is on shortest path from u to v
+      Distance has a technical definition
+        dist(u, v) not always == dist(v, u)
+      Proof
+        Suppose f is shortest path u to x
+        and r is shortest path x to v
+        by prior Lemma, f^xr is of length dist(u, x) + dist(x, v)
+        So this sum is an upper bound on the length of the shortest path from u to v
+    The shortest positive length closed walk through a vertex is a cycle through that vertex
+  Adjacency matrices
+    Say graph G has n vertices v0, v1, ... v(n - 1)
+    Represent with an n x n matrix of 0s and 1s called adjacency matrix AG
+      ijth entry (AG)ij is 1 if there is an edge from vi to vj and 0 otherwise
+      Can use matrix powers to count numbers of walks between vertices
+      (AH)^2 can read count of length 2 connections between vertices
+      More generally matrix (AG)^k provides count of number of length k walks between vertices in digraph G
+    The length-k walk counting matrix for an n-vertex graph is an n x n matrix C such that
+      Cuv ::= # of length-k walks from u to v
+    So adjacency matrix is the length-1 walk counting matrix
+      (AG)^0 is the identity matrix - length-0 walk
+    If C is the length-k walk counting matrix for graph G
+      and D is the length-m walk counting matrix
+      then CD is the length k + m walk counting matrix for G
+      AG^2 * AG = AG^3 and is the length-3 walk counting matrix
+      Follows by induction that length-k counting matrix of digraph G is (AG)^k for all k in N
+    Proof
+      Any length (k + m) walk between u and v begin with length k walk u to w and length m walk w to v
+      Number of length (k + m) walks from u to v that go through w at kth step equals number Cuw
+      of length k walks from u to w, times the Dwv number of walks from w to v
+      get the total number of length(k + m) walks u to v by summing over all possible vertices w
+      the number of such walks that go through w at the kth step
+      #length (k + m) walks from u to v = sum w in V(G) Cuw + Dwv
+        Precisely definition of (CD)uv
+    Shortest Paths
+      Cool, but important problem is shortest paths between nodes
+        Shortest drive to vacation
+      One way to do it is to calculate successive powers of AG up to n-1
+      Watch for the first power at which each entry becomes positive
+      Shortest path between u and v = smallest value k for which (AG)^k uv
+        is nonzero and if there is shortest path, length <= n - 1
+        Methods also apply to weighted graphs
+          Covered in intro algorithms (coming soon then - JM)
+      Quick 2d matrix mult review for JM
+        to get r,c value, mult elements of row times elements of column and add
+  Walk Relations
+    Can you get from one vertex to another
+    G* - "walk relation" on V(G)
+    u G* v ::= there is a positive length walk in G from u to v
+      v "reachable" from u
+      u "connected" to v
+    Composition of relations
+      R : B -> C and S : A -> B be binary relations
+        (R dot S) : A -> C
+      a (R dot S) c ::= there exists B.(a S b) AND (b R c)
+    Composing a digraph G with itself
+      G^n composition with itself n times
+      G^n is the length-n walk relation
+      a G^n b iff there is a length n walk in G from a to b
+      even works for n = 0
+      G^0 identity relation IdV(G) on the set of vertices
+      There is a walk iff there is a path
+      Every path of length at most |V(G)| - 1
+      G* = G^0 U G^1 U G^2 U ... U G^(|V(G)| - 1) = (G U G^0)^(|V(G)| - 1)
+        Points to a way to compute G* with log n rather than n - 1 compositions...
+
+Lecture
+  Graph:
+    A set V of vertices
+    A set E of directed edges, E =C V x V
+    (v, w) in E notation: v -> w
+    V = {a, b, c, d}
+    E = {(a, b), (a, c), (c, b)}
+  Formally a digraph with vertices V is the same as a binary relation on V
+  Walk: follow successive edges
+    Length of walk - number of edges
+    Can loop and revisit just fine
+  Path: walk through vertices, no repetition
+  Every graph can be represented as a matrix
+    1 if edge, 0 if not
+    "Adjacency matrix"
+    Uniquely defines graph
+    Any graph can be drawn this way
+  Connected Vertices
+    Lemma: the shortest walk between two vertices is a path
+    Proof (by contradiction)
+      suppose path from u -> v crosses over itself
+      getting rid of loop always shortens path
+  Length n walk relation
+    v G^n w
+    IFF there exists a length n walk from v to w
+    G^n is the length n walk relation for G
+    G itself is the length 1 walk relation
+      G^1 = G
+    Lemma:
+      x (G^m dot G^n) y -> x G^m z G^n y
+      Length m walk from x to z and length n walk from z to y
+      Length m + n walk from x to y
+  Length 0 walk relation
+    Makes each vertex to back to itself
+      G^0 = Idv
+    Lemma still true
+      G^0 dot G^n = G^n
+  Composing matrices
+    AG ::= Adjacency matrix for G
+    Lemma: A(G dot H) = AH X AG
+    Where X is boolean (AND/OR) matrix multiplication
+    So compute AG^n by fast matrix exponentiation
+      ~ log n matrix products
+  Walk relation
+    G* is the walk relation of G
+    u G* v iff there exists walk u to v
+    (u is connected to v)
+    Compute walk relation
+      Add self-loops
+      G^<= ::= G U G^0
+      G^<= has a length n walk iff G has a length <= n walk
+        Can loop a bunch and then do walk if you want
+  Compute Walk Relation
+    G has n vertices
+    Length of paths is < n (<= n - 1)
+    G* = (G^<=)^(n - 1)
+    So find all connected vertex pairs
+      in n^2log AND/OR using adjacency matrix

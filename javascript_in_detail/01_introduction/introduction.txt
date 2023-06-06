@@ -1,0 +1,40 @@
+Introduction
+  JS is a programming language for the web
+  Syntax based on Java and C
+  Used both front end and back end
+  Animated/interactive objects on web, odds are JS involved
+  Current most popular coding language
+
+  Who is JS for?
+    Built as a scripting, language, but now:
+    Interactive web pages
+    Mobile applications
+    Browser extensions
+    Creating back-end for servers
+
+  Many great features
+    Prototype-based OOP system
+    Type coercion
+    Functional programming
+    Asynchronous programming
+    Input validation
+    Event handling
+
+How compilation works
+  Compiled and executed by Javascript Engines
+    Interpretation
+    JIT (just in time compilation)
+  Originally was interpreted language
+  Interpretation is slow
+  Recent JS engines have adopted JIT
+    Chrome V8 famous
+
+JIT compilation
+  Translates source code at run time to machine language before executing
+  Uses profiler to avoid re-translating code segments
+    Faster than interpretation
+  How
+    Source code parsed into AST (abstract syntax tree)
+    AST used to create bytecode - at run-time
+    Bytecode translated into machine code - at run-time
+    Machine code executed

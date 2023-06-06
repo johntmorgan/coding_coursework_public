@@ -1,0 +1,62 @@
+Algorithms in computing
+  What is an algorithm?
+    Takes a value or set of values as input
+    Produces a value or set of values as output
+    Sequence of computational steps that transform input into output
+    Also a tool to solve a computational problem
+      Statement of problem specifies input/output relationship
+  Define sorting problem:
+    Input: sequence of numbers <a1, a2, a3... an>
+    Output permutation(reordering) <a'1, a'2, a'3... a'n>
+      Such that a'1 <= a'2 <= a'3 <=... <= a'n
+    <31, 41, 59, 26, 41, 58> -> "instance" of the sorting problem
+  There are a number of sorting algorithms out there
+    Which is best? Depends on # of items, whether previously somewhat sorted,
+      possible restrictions on item values, computer architecture, storage devices
+  Algorithm is "correct" if for every input it halts with the correct output
+    A correct algorithm "solves" the given problem
+    Incorrect - might not always halt, or might halt with incorrect answer
+      Can actually be useful, if error rate can be controlled
+        Finding large prime numbers, Ch 31
+      But normally we just want correct algorithms
+  Algorithm specification
+    In English, as a computer program, or even a hardware design
+    Must provide a precise description of the procedure to be followed
+  Many interesting problems
+    Have many possible solutions, some of which do not solve the problem
+    Have practical applications
+      E.g. shortest path key for transportation companies, internet routing, GPS
+  Not every problem has easily identified candidate solutions
+    discrete Fourier transform converting time to frequency
+      Core of signal processing
+      FFT (fast Fourier transform - FFT)
+  NP-complete
+    Subset of problems for which no efficient solution is known
+    However, nobody has ever proven one cannot exist
+      But if an efficient algorithm exists for one, it exists for all
+    Also some are very similar to problems that are solved by efficient algorithms
+      Small changes in problem statement can cause huge changes in efficiency
+    If you wind up facing an NP-complete problem
+      Show that it's NP-complete
+      Develop an efficient algorithm that gives a good solution
+        There are good "approximation algorithms" for traveling salesman - ch 35
+  Parallelism
+    For many years, processor clock speeds kept increasing
+      But power density increases superlinearly with clock speed
+      Chips can melt beyond a certain point
+      Now moving into multicore computing
+      Ch 27 multithreaded algorithms
+  What if computers were infinitely fast and memory was free?
+    Should still study algorithms
+      Demonstrate the solution terminates and with the correct answer
+    But of course these things are not the case
+  Efficiency
+    Insertion sort takes c1N^2 time to sort n items
+      c1 is constant that does not depend on n
+    Merge sort takes c2nlgn
+      lgn = log2n
+      c2 is another constant that does not depend on n
+      Typically c1 < c2, actually
+      Insertion sort actually faster for very small input sizes, typically
+      But always a crossover point where merge sort becomes faster
+  Consider algorithms as a form of technology

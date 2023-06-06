@@ -1,0 +1,412 @@
+Dynamic Programming 3 of 4
+  Subproblem constraints and expansion
+  Examples
+    Bellman-Ford SSSP
+      Bellman invented dynamic programming in the 1950s
+        Then applied to solve SSSP
+        Why "dynamic programming"? Sounded cool, government grants
+          But also a reference to local brute force at each stage
+    Floyd-Warshall APSP
+      New algorithm
+        Not any better asymptotically
+        But simple, cool way to see subproblem expansion
+    arithmetic parenthesization
+    piano/guitar fingering
+  Doing it all with SRTBOT paradigm for recursive algorithm design
+    And with memoization -> dynamic programming algorithm design
+  Subproblem definition
+    For seq. S try prefixes S[:i], suffixes S[i:], substrings S[i:j]
+    Prefer prefix/suffix O(n)
+      More than one sequence take produce of spaces
+    But substring O(n^2)
+    Adding subproblems and constraints to "remember state"
+  Relate subproblems recursively
+    Key idea here identify question about subproblem solution
+    If you knew answer, reduces to smaller subproblem
+      Fundamental aspect of solution (And I'm still kinda struggling with it atm argh - JM)
+    When you're dealing with suffixes, ask about first item
+    When dealing with prefixes, ask about last item
+    Substrings, who knows, we'll see example later
+    Once have identified question, don't be smart
+      Locally brute force all answers to question
+        Take best according to max or min
+      Can think of correctly guessing answer to question, then loop
+  Topological order
+    Make sure acyclic, get a subproblem DAG, specify to make sure
+  Base cases of relation
+  Original problem: solve via subproblem(s)
+  Time
+    # subproblems * amt of non-recursive work in each relation + original work
+Problem we saw two lectures ago
+  SSSP in a DAG (DAG relaxation)
+    Many dynamic programs can be reduced to this
+  Subproblems: delta(s, v) for v in V
+  Relate: delta(s, v) = min{ delta(s, u) + w(u, v) | u in Adj(v)}
+    *guessing* last edge (u, v) on shortest s -> v path
+      guessing = local brute force -> | u in Adj(v)
+    Works because G is acyclic, has a topological order
+      But you'll never finish/memoize if there are loops in the graph
+      Don't use unless you have a DAG!
+SSSP in general graphs (Bellman-Ford) rephrased into SRTBOT
+  Subproblems:
+    deltak(s, v) = weight of shortest s -> v path using <= k edges *constraint*
+    for v in V and 0 <= k <= |V|
+      For simple paths, no neg weight cycles, only go to |V| - 1
+        But that's the last thing we want to solve
+  Relate:
+    deltak(s, v) = min { delta(k - 1)(s, u) + w(u, v) | u in Adj(v) } U {delta(k - 1) (s, u)})
+      Intuition - have guessed last segment, now need to look at delta(k - 1)
+      Union is for case using fewer than k edges to reach v
+        If we force k edges, then remove it from the relation (see last problem session)
+    Key observation: this recurrence does not have cycles
+      All references from delta(k) are now in terms of delta(k - 1)
+        And so this is now magically acyclic
+        This is why Bellman-Ford worked
+  Topo order:
+    Increasing k
+  Base cases:
+    delta0(s, s) = 0
+    delta0(s, v) = inf for v != s
+  Original:
+    delta|V| - 1(s, v) for v in V: delta|V|(s, v) for neg. weight cycle detection
+  Time
+    sum k = 0 to |V| of sum v over V theta(|Adj(v)) = theta(|V| * |E|)
+    Inner loop: sum v over V theta(|Adj(v)) = theta(|E|)
+      Multiply by |V| -> |V| * |E|
+  Ok cool - review of old algorithms in new framework
+APSP
+  Subproblems
+    deltaK(u, v) for u, v in V, 0 <= k <= |V|
+    Would work, but would give the same running time as running Bellman-Ford V times
+    O(|V|^2 * |E|) = O(|V|^4) in dense graphs where |E| = O(|V|^2)
+    But different, almost identical way to solve with O(|V|^3)
+      Which for dense graphs is really good
+    Floyd-Warshall
+      Not an obvious algorithm, very cool idea
+Floyd-Warshall
+  Number vertices 1, 2, ..., |V|
+  Subproblems:
+    d(u, v, k) = weight of shortest s to v path
+      constraint: using only vertices in {u, v} U {1, 2, ..., k}
+      What is slow about SSSP Bellman-Ford is need to loop over all incoming vertices
+        This is expensive, convert |E| term into |V| term
+        By just knowing which vertex to come from
+          Which sounds impossible, but
+        Say want to go from u to v
+          Can go from u to 1 to v
+          Or go straight from u to v
+          By label instead of counting them
+    for u, v in V and O <= k <= |V|
+      |V|^3 subproblems
+        v choices for u
+        v choices for v
+        v choices for k
+      Sounds like a lot but relation is now cheaper
+  Relate:
+    d(u, v, k) = min(d(u, v, k - 1), d(u, k, k - 1) + d(k, v, k - 1))
+    So idea:
+      Have vertex u and vertex v
+      Have already found shortest path using vertices up to k - 1
+        Maybe it doesn't use vertex k
+          d(u, v, k - 1)
+        Maybe it does
+          d(u, k, k - 1) + d(k, v, k - 1)
+          u to k, k to v, only using labels k - 1
+      min only has two terms
+        Takes constant time non-recursive work
+  Time:
+    O(|V|^3) subproblems
+    O(1) work/subproblem
+    O(|V|^3 algorithm)
+      Great for dense graphs
+      Not as good as Johnson for sparse graphs
+  Topo order
+    Increasing k order (every reference here is to smaller k)
+  (Code)
+    Triple loop
+      for k = 0, 1,... |V|
+        for u in V
+          for v in V
+  Base case
+    (u, v, 0)
+    when k = 0, 1 through k set is empty
+    delta(u, v, 0) = 0 if u = v
+    delta(u, v, 0) = w(u, v) if edge from u to v
+    delta(u, v, 0) = infinity otherwise
+  Orig
+    delta(u, v, |V|)
+      assuming no negative weight cycles
+        we already know how to detect those
+        this all assumes simple, only use vertex k once
+  What would happen if you ran Dijkstra a lot?
+    theta(|V|^2 * log(|V|) + |V| * |E|)
+    For sparse graphs, superior
+      Run Johnson - Bellman-Ford -> Dijkstra a lot
+    Compare to |V|^3
+    Sparse graph
+      |V| = theta(|E|)
+      Many Dijkstra = V^2 * log |V|
+    Dense graph
+      |V||E| term is |V| * |V|^2 -> |V|^3
+      So it's the same (huh - JM)
+        But you might as well just do it this way if you know a priori very dense
+        Simple and fast
+    If in between
+      Still use Johnson
+  This is an example of subproblem expansion
+    Very non-intuitive one (no kidding - JM)
+    But notice it's prefixes again
+    Numbered the vertices 1 to |V|
+    And solved problem from 1 to k
+  Enough shortest paths
+    Let's solve some more standard problems
+Aritmetic parenthesization
+  Given a formula with say plus and times
+    7 + 4 * 3 + 5
+  When you read this
+    Multiply 4 and 3 first, then add up
+  But what if add parens wherever - if balanced
+    (7 + 4) * (3 + 5) = 88
+    (((7 + 4) * 3) + 5) = 38
+  Goal is to maximize (claim max is 88 in this particular example)
+  Given formula a0 *1 a1 *2 a2 ... *(n - 1) a(n - 1)
+  Where each ai in Z
+    each *i in {+, *}
+  Place parentheses to maximize the result
+  Interesting problem, bit of a toy problem, but motivated by lots of actual problems
+  To apply framework, need to identify subproblems
+  Sequence problem, given sequence of symbols
+  Jump ahead, think about relation reduce to subproblems
+    Tricky, might say take a product in the middle first
+      Messy to think about what the first operation is
+      Can think about as a tree
+        Numbers on leaves, operands on nodes
+      What's the easiest thing to identify?
+        The root
+        That's the last thing you do in the operation
+  Idea
+    Guess "which operation *i is evaluated last/at root"
+      Has n - 1 possible answers
+      So brute force all those choices
+    Now in example, mulitply in middle
+      Might think subproblems are all prefixes and suffixes
+      But that is *wrong*
+      If you have a bunch of operators
+        Wind up with prefix of a suffix
+        Never do that
+        You do that, you need substrings
+  Subproblems
+    Substrings
+    Not going to write just yet
+    What to do with substring?
+      Place parens to maximize result
+      Once guess last operator, enough to max left and right?
+        Yeah, once you think about it
+        Except didn't say integers are positive
+        Allow negative integers here
+        7 + -4 * 3 + -5
+        No longer best to pair same way
+          (7 + -4) * (3 + -5) -> -6
+          (7 + (-4 * (3 + -5))) -> 15
+      Need to solve both max and min parenthesization
+      Solve in all cases min and max, brute force the rest
+    opt = {min or max}
+    x(i, j, opt) = opt value can get for ai *i+1 ai+1 ... *j-1 aj-1
+      0 <= i < j <= n
+      two different subproblems min and max
+  Relation
+    *k last evaluated
+    x(i, j, opt) = opt(x(i, k, optL) *k x(k, j, optR) | i < k < j and optL, optR in {min, max})
+    4 combos for optL, optR - theta(1)
+    big cost is i < k < j, there are j - i choices for k
+  Topo
+    increasing j - i (usual order for substring problems, increasing substring length)
+  Base
+    x(i, i + 1, opt) = ai
+  Orig
+    x(0, n, max) // could also do min
+  Time
+    n^2 subproblems * 2 = O(n^2)
+    theta(j - 1) sloppy -> theta(n)
+    = theta(n^3)
+    Polynomial time
+      Pretty impressive
+      Brute forcing all possible parens
+      There are 4^n, exponentially many, parenthesizations, in theta(n^3)
+  Key here was subproblem expansion
+    Solving max as well as min
+  Question: what if I had minus and divide operators?
+    Minus should be fine
+    Dividing not so good, worry about dividing by zero
+Piano fingering
+  Given sequence of single notes t0, t1, ... t(n - 1)
+  We have fingers on our hands - "5-finger algorithm"
+    1, 2, ..., F (= 5 for most humans, let's solve for arbitrary F)
+  Assign fingers to notes, tell pianist which finger to use for each note
+  Formalize problem pretty abstractly
+  Metric d(t, f, t', f') = difficulty of playing t with then t' with f'
+    Transition difficulty
+    At t with finger f, going to t', f'
+  Goal min sum of d(ti fi, t(i + 1), f(i + 1))
+    Want to compute fi, f(i + 1)
+    Lots of papers about this problem
+    Usually write metric as sum of different penalty terms minimize difficulty
+      Difficulty is high if go from low note to high note
+        And use a lower number finger to go to high number finger
+      Avoid 4th/5th fingers - weak fingers
+      Avoid using the same finger to play two notes right after the other
+        Penalty if fi = f(i + 1) and ti != t(i + 1)
+    Use more extreme fingers going from very low note to very high note
+    Assume d function is given to us
+      Some polynomial size - m notes
+        Some polynomial in size to m
+  How do we solve this problem?
+  Subproblem expansion
+    x(i, f) = minimum total difficulty to play ti... t(n - 1) (suffix)
+    starting with finger f on note ti
+      This is the subproblem constraint
+        Important to know what finger we start with
+      Multiply subproblems by capital F, which is 5
+        Small expansion
+        Try starting with all different fingers
+  Relate
+    What's the next finger for the next note
+      call f'
+    x(i, f) = min over 1 <= f' <= F of {x(i + 1, f') + d(ti, f, t(i + 1), f')}
+    Kind of a lot going on here
+    But think about what want to write recurrence on
+    Start with suffix i, recurse on smaller suffix x(i + 1)
+      Know that parameterizing by finger number for i
+      To even call function need to know what finger using for i + 1
+    Why need to know fingers, not just guess
+      Has to do with difficulty function
+        Know want to measure difficulty for ti -> ti + 1
+        Need to know both finger for ti and the finger for ti + 1
+        If you remove the f
+          You could add a min over one finger
+          But can't really add a min over two fingers
+      Writing down the optimal for each finger f
+        In some sense remember in x(i + 1, f') call what finger started with
+      Know both fingers
+        One (f) is given as parameter
+        The other comes out of the min
+  Orig
+    min over 1 <= f' <= F of x(0, f)
+  Time
+    theta(nF^2) time
+    there are nF subproblems here, and for each one doing optimization over F choices
+    Polynomial, and if F is a constant actually linear time, very fast DP
+  This example is one hand, one note at a time
+    Two hands? Just 10 fingers
+    Could solve separately left and right
+      If you know which notes with left and right
+    What if multiple notes at the same time
+      Up to F (one for each finger)
+      Instead of just finger choice
+      Theta(T^F) states
+      Where T is the max number of notes play at once
+        Usually F one per finger
+      10 fingers, 10 states
+        10 billion states * n
+        Exhaustively enumerate everything with hands
+    Also applies to guitar fingering, rock band
+      Difficulty function might depend on say how big your fingers are!
+  Gives you flavor how
+    With subproblem expansion
+    Capture any problem you want
+      As long as the number of states to keep track of is small
+      Just multiply the number of subproblems by that state
+      Keep track of transition from one state to the other
+      Dynamic programming -> methodical way to think about it
+        State of how fingers applied to instrument, brute forcing the rest
+
+Class notes
+  Guitar fingering
+    S = number of strings different ways to play same note
+    Redefine finger to be tuple (finger playing note, string playin note)
+    Replace F with F * S throughout algorithm
+    theta(n * F^2 * S^2 time)
+
+Recitation
+  Treasureship!
+  Place 2 x 1 ships in 2 x n grid
+  Can be placed either horizontally or vertically, occupying exactly 2 grid squares
+  Each square can only be occupied by one ship
+  Each has a positive or negative integer value
+    = Treasure acquired or lost at square
+  Can place as many ships as you want
+  Score is value of all grid squares covered by ships
+  Design DP algorithm to determine placement of ships that will maximize your total score
+  Subproblems
+    Let v(x, y) denote value at row y column x
+      y in (1, 2)
+      x in (1, n)
+    Guess how to cover right-most squares optimally
+    Can either:
+      - Not cover
+      - Cover vertically
+      - Cover horizontally
+    Right side of board is either even, 1 covered top, 1 covered bottom, 2 covered top, 2 covered bottom
+      In fact can only look like 0, 1, -1 at any time
+      (-2, +2 cases fall off)
+    Let s(i, j) = board game subset containing columns 1 to i of row 1
+                = board game subset containing columsn 1 to i + j of row 2, where j in (0, 1, -1)
+    x(i, j) = maximum score, only placing ships on board subset s(i, j)
+      for i in {0,...,n}, j in {0, 1, -1}
+    if j = +1, cover right most square with horiz ship or leave empty
+    if j = -1, cover right most square with horiz ship or leave empty
+    if j = 0, cover column 1 with vertical ship or not cover one of rightmost squares
+              max{v(i, 1) + v(i - 1, 1) + x(i - 2, +1), x(i - 1, 0)} if j = -1
+    x(i, j) = max{v(i + 1, 2) + v(i, 2) + x(i, -1), x(i, 0)} if j = +1
+              max{v(i, 1) + v(i, 2) + x(i - 1, 0), x(i, -1), x(i - 1, +1)}
+  Topo
+    Subproblems x(i, j) only depend on strictly smaller 2i + j, so acyclic
+  Base
+    s(i, j) contains 2i + j grid squares (contains two squares)
+    x(i, j) = 0 if 2i + j < 2 (fewer than two remaining squares)
+  Original
+    x(n, 0) maximum considering all grid squares
+    Store parent pointers to reconstruct ship locations
+  Time
+    O(n) subproblems
+    O(1) work per subproblem
+    O(n) running time
+
+  Wafer Power
+    Startup working on circuit design for parallel computing
+    Evenly spaced n ports along perimeter of circular wafer
+      Either power source or computing unit
+      Each computing unit needs power from a power source
+      However cannot be too close
+      No two etched wires can cross each other
+      Given arrangement of units and sources, O(n^3) algorithm to match units and sources
+      Maximize number of powered computing units
+    Subproblems
+      a1... an ports cyclically ordered, a1 and an are adjacent
+      ai true if computing, false if power
+      if match across wafer, need to match ports on either side
+      x(i, j) = maximum number of matchings, restricting to ports ak for all k in {i...j}
+      for i in {1...n} j in (i - 1...n)
+      j - i + 1 = number of ports in substring
+        j = i - 1 is an empty substring
+    Relate
+      Guess what port to match with first port in substring
+        First port does not match? try rest
+        First port matches in middle, match each side separtely
+      Non-adjacency condition restricts possible matchings between i and some port t
+        if (i, j) = (1, n) can't match i with last port n or 2
+          Try t in {3...n - 1}
+      Let m(i, j) = 1 if ai != aj and m(i, j) = 0 otherwise (ports of opposite type match)
+      x(1, n) = max{x(2, n)} U {m(1, t) + x(2, t - 1) + x(t + 1, n) | t in {3,..., n - 1}}
+      x(i, j) = max{x(i + 1, j)} U {m(i, t) + x(i + 1, t - 1) + x(t + 1, j) | t in {i + 2... j}}
+    Topo
+      x(i, j) subproblems only depend on strictly smaller j - 1 so acyclic
+    Base
+      x(i, j) = 0 for any j - i + 1 in {0, 1, 2} // no match with in 0, 1, 2 adjacent ports
+    Original
+      x(1, n)
+      recursive top down/bottom up, parent pointers etc
+    Time
+      O(n^2) subproblems
+      O(n) work per subproblem
+      O(n^3) running time

@@ -1,0 +1,182 @@
+Problem session 1
+  Experimental Friday addition
+  Lecture
+    Presents fundamental material
+    Data structures and algorithms that are the base of how to approach problems in class
+  Problem sets - applications of that material
+    Very different feel between problems and foundational material
+    May be tricks to approaching problems (or just "ways" of approaching problems)
+      You kind of have to just figure out
+    Since being recorded by OCW - go through problems on past sets
+      How would we approach working on these problems?
+    Recorded recitation in the past
+      Meant for interaction, 1 on 1 questions, unrecorded "safe space"
+  Problem 1 - very similar to PSet 1
+    Two parts A and D (omitted B and C from last term's PSet)
+    5 functions each
+      Order based on increasing asymptotic behavior
+    Some functions may be asymptotically equivalent
+      Then put them in a set
+    Example
+      n, sqrt(n), n + sqrt(n)
+      (f2, {f1, f3}) - f1 and f3 are both order n
+    a)
+      f1 (logn)^2019
+      f2 n^2log(n^2019)
+      f3 n^3
+      f4 2.019^n
+      f5 nlogn
+    Some of these are in a form where it's hard to tell how they compare to others
+      f5 < f2 < f3
+      (logn)^a = O(n^b), even o (like big O - big O minus theta) a and b are ANY positive numbers
+        strictly grows smaller than any polynomial
+        so then f1 is less than f5 (which is bigger than n^1)
+      f1 < f5 < f2 < f3 < f4
+      How to prove? take a ratio of two functions, take limit as n goes into infinity
+        Does it go to infinity, go to zero, or some constant (asymptotically equivalent)?
+        To make it easier, take limit of logarithm of ratio
+    d)
+      n choose k review = n! / (k! * n - k!)
+      f1 2^n - exponential
+      f2 n^3 - polynomial
+      f3 (n n/2) -> n! / ((n/2)!(n/2)!) -> 2^n / e^n
+      f4 n!
+      f5 (n 3) n! / (3!)(n - 3)! -> n * (n - 1) * (n - 2) / 6 -> n^3
+      Sterling's approximation for handling combinations - asymptotically (much stronger than that actually)
+        n! ~ sqrt(2*pi*n)(n/e)^n - that's "super bad" - exponential or more
+          kinda interesting we have 2 transcendental numbers
+        take logarithm of both sides
+          Inside logarithm
+            Multiplication becomes addition
+            Division becomes subtraction
+        log(n!) = theta(nlogn) - that's fun, this will come up later
+      Let's convert the functions
+      (n n/2) -> n! / ((n/2)!^2) = sqrt(2pi * n)(n / e)^2 / (sqrt(pi * n)* ((n/2 /e)^n/2)^2
+      bottom = pi * n * (n / 2 / e)^n
+      -> sqrt(2) / sqrt(pi n) * 1 (1 / 2^n) -> 2^n
+      So 2^n / sqrt(n) - slower than 2^n because dividing by polynomial factor
+        Or could think of it as multiplying by n^(-1/2) as well
+      {f2, f5}, f3, f1, f4
+  Problem 2
+    Point: think about things we're using in this class as a black box
+      Public interface work with, can't see what's inside of it
+      Use abstracted outer functions, accept as true, use to deal with analysis
+    Have a data structure supporting a sequence interface
+      Sequence is an interface
+        Abstracted from array and linked list - either could implement
+        About data - storing some number of things
+          Maintaining order - depends how YOU put them in order - can find using this
+          "Extrinsic order"
+          Doesn't matter what items are, matters how you put them in order
+      Anyway this structure supports:
+        Insert first, insert last, delete first, delete last all in constant time
+        You don't know a data structure that does that yet
+        Data structure to do that in problem set 1
+          Will talk about another way to do it today
+    But here we don't care how, we're giving you a black box that does this
+      Idea is let's implement things in terms of these simple operations
+    First operation swap_ends(D)
+      D = data structure
+      (could put as method on data structure, but let's do it this way)
+      If array, could just look at ends, but don't have access here
+    Generally in class we give you a running time bound
+      Allocation of space linear with time
+        Amount of space asymptotically upper bounded by algorithm
+      Not going to talk about space complexity much until end of unit
+      If we don't give you any restrictions, go wild
+        But constant time, only constant number of things store
+    Anyway, delete first and last, store in tmp vars
+      Constant number of things, almost takes constant time
+    Then insert last at start, first and end - that's it, very simple
+    Not so interesting from an algorithm standpoint
+    Don't even need to argue correctness here
+      very simple
+    Time analysis
+      4 constant time operations, done
+    Usually when doing something non-trivial, especially recursion
+      Argue correctness
+  Question 2b
+    A bit more to this one
+    shift_left(D, k)
+      Take first k elements and stick at back
+        kth item now last item
+        k + 1th item now first item
+    Not an interesting algorithm, more about how to talk about
+      Happen in O(k) time
+      Delete first element, stick on end, write a for loop to do k times
+        That works
+      Sometimes can choose between for loop and recursion
+    Why do CS people (as opposed to coding engineers lol) talk about recursive algorithm
+      Easy to look at constant amount of information
+      Easier to argue and think about
+    Recursive case
+      if k < 1 OR k > len(D) - 1 # make sure not too long
+        return
+      else
+        otherwise delete at first, insert at last
+        call function again with k - 1
+    Doesn't need to return anything, just doing stuff to the data structure
+  Question 3
+    Dynamic array supports sequence operations at end in amortized constant time
+      But insertion and deletion at front still not efficient - shift everything over
+    Linked lists can support insertion and deletion at both ends in constant time
+      On problem set - make end operations good, support another operation
+      Anyway, problem with linked list is lookups can take linear time
+        Have to traverse pointers rather than doing a quick constant time computation to find location
+    Best of both worlds?
+      Data structure - worst-case constant time lookup like array
+      Value of a data structure
+        Do some work up front to make this thing, to make operations much faster
+      Amortized constant time dynamic operations back and front
+        Amortized says sometimes will be bad - O(n) to add
+        But averaged over lots of operations will be better
+        More formal defintion in 6.046
+    Two ways of doing this
+      Could leave space open on the front end like we do on the back end
+      Rebuild less frequently than if didn't have extra space
+    When you remove stuff
+      Space winds up being taken up by nothing
+      Want to not take more than a linear amount of space wrt amount of stuff stored there
+      In dynamic array, get small enough, resize down
+      When 3/4ths empty, cut in half
+      Can do the same thing with your double-ended open array
+      Would be kinda gnarly in code
+      But what if someone just gave you a Python list - now can't put space in front deliberately
+        Let's have two lists, one pointing forwards, one pointing backwards
+          Have to do some index arithmetic - tedious but can do it
+          But on the single with space on both sides - have to watch index on the front
+          Also something to keep track of here
+        Problem: what if remove from one of two lists down to empty
+          Cut in half and move elements over
+          Ok, have amortized and can move over into data structure
+            Restored invariant where linear # of operations away from having to do an expensive operation all over again
+  Question 4
+    Jen & Barry - selling ice cream
+      Jen's line is full, Barry pulls up his truck
+      Kind of a silly situation, but what we are aiming at is linked list
+    Singly linked list
+      Knows its size, and head that points to first node
+      Node contains child's name ("item key"), next pointer
+      If linked list has 2n nodes
+      Take last n nodes, reverse, reattach
+      What are we limited to?
+        Do not make any new linked list nodes
+        Do not instantiate any new non-constant size data structures (i.e. store in array)
+
+    def reorder_students(L):
+      n = len(L) // 2
+      a = L.head
+      # walk down to split point
+      for _ in range(n - 1):
+        a = a.next
+      b = a.next
+      x_p, x = a, b
+      # loop, can also do recursively
+      for _ in range(n):
+        x_n = x.next
+        x.next = x_p
+        x_p, x = x, x_n
+      c = x_p
+      a.next = c
+      b.next = None
+      return

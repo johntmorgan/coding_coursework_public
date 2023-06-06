@@ -1,0 +1,548 @@
+Concurrency basics
+  Program
+    Set of instructions & assoc data
+    Resides on disk
+    Loaded by OS
+    Exec file, Python script
+    OS kernel creates process
+    Process is env in which program is executed
+
+  Process
+    Program in execution
+    Execution environment
+      Instructions
+      User-data
+      System-data
+    Resources - acquired at runtime
+      CPU
+      memory
+      address-space
+      disk
+      network I/O
+    Program can have several copies running at once
+      Process necessarily belongs to only one program
+
+  Thread
+    Smallest unit of execution in a process
+    Executes instructions serially
+    Process may have multiple threads
+    Usually some state shared among all threads
+      And some state private to each thread
+    Need to be very careful when thread reads/writes global shared state
+      Several constructs in diff programming languages
+      "Guard and discipline access"
+
+  Notes
+    Program and process often used interchangeably
+      Generally talking about a process
+    Multiprocessing
+      Processes on more than one CPU
+      Generally requires hardware support
+        Multicore system
+        Cluster of machines
+      Processes do NOT share resources
+        Threads can share resources
+          Memory address space
+      Languages do provide ways for processes to communicate
+
+Counter Program
+  Synching threads wrong can cause huge problems!
+
+  counter = 0;
+  def increment_counter();
+    counter += 1
+
+  Actually a 3-step process here!
+    Read value of counter from register
+    Add one to value read
+    Store new value back to register
+
+  What if 2 threads try to increment_counter()?
+    T1 enters function, reads 7 from register
+    T2 gets switched in
+    T2 completes all steps, stores 8 in register
+    T1 now adds and writes
+    Final result = 8
+    When it should have been 9
+
+  Important to guard access to mutable variables & data structures
+  Execution of threads can't be predicted, always up to OS
+
+Concurrency vs. parallelism
+  Used to refer to ability of system to run multiple distinct programs at once
+  Mean two very different things
+  Serial execution
+    Run one at a time on the machine
+    Juggler juggles one ball at a time - boring!
+  Concurrency
+    Program decomposed into consituent parts
+    Run each part out of order, partial order - same outcome
+    Concurrent system:
+      System running several programs or 1+ indep units overlapping time
+      Execution of two programs/units may not happen simultaneously
+      Can have two programs in progress at the same time
+        Progress does not imply execution
+        Make progress as execution interleaved
+    Goal maximize throughput and minimize latency
+      Ex. browser on single core
+        Responsive to clicks but also render HTML quickly
+    Lower latency and higher throughput
+      When programs require frequent network or disk I/O
+    OS on single core = concurrent but not parallel
+      Only one task at a time
+      All tasks appear to make progress
+      Each task gets a slice of CPU time
+    Juggler juggles several balls at once
+      Only one ball in hand at a time
+  Parallelism
+    Execute multiple programs at the same time
+    Usually aided by multicore hardware - proc or computing cluster
+    Individual problem must be concurrent in nature
+      Portions worked on independently w/o affecting outcome
+    Emphasis on increasing throughput, optimizing hardware usage
+      Matrix multiplication, 3D rendering, data analysis, particle simulation
+    2+ jugglers juggling one or more balls
+  Comparisons
+    Concurrent system does not need to be parallel
+    Parallel system is indeed concurrent
+    System *can* be both
+      Multitasking OS on multicore machine
+    Concurrency about dealing with lots of things at once
+    Parallelism about doing lots of things at once
+
+Cooperative vs. Preemptive multitasking
+  Pre-emptive multitasking
+    OS pre-empts program, allow another waiting task to run
+    Programs/threads can't decide how long they run
+    Scheduling isn't predictable
+      Bad program infinite loop -> does not affect other programs
+    Programmer doesn't have to think about it
+  Cooperative multitasking
+    Programs give control back to scheduler
+      After period of time, idle, logically blocked
+    Scheduler does not have control
+    Bad program can stop whole system
+      Busy-wait
+      Run infinite loop, not give up control
+    Scheduler = cooperative scheduler
+  Early Windows, Mac = cooperative
+  Windows NT 3.1, Mac OS X = pre-emptive
+  Unix = always pre-emptive
+
+Throughput vs. Latency
+  Throughput = rate of doing work, work/unit time
+  Latency = time required to complete a task "response time"
+  Say add up all digits in many files
+    Can do concurrently
+    Save more time as have more files
+    Some overhead to manage state (including which files processed)
+    Throughput = number of files processed in a minute
+    Latency = time to process all files
+  Generally increased throughput = lower latency
+
+Synch vs. Asynch
+  Synchronous = line by line code execution
+    Blocks at each method call before proceeding
+    Executes in same order as source code
+    aka serial execution
+  Asynchronous
+    Execution that doesn't block when invoking subroutines
+    Doesn't wait for completion before moving on to next task
+    Doesn't necessarily execute line by line
+    Usually return "future" or "promise" which represents in-progress computation
+    Program can query future/promise and receive result once returned
+    Another pattern: pass callback to async call
+      Callback invoked when async done processings
+    Great choice for high network or disk I/O
+    JS enables concurrency via AJAX async method calls
+    Alternative to threads in non-threaded environments
+      Achieve concurrency
+      Fall under cooperative multitasking model
+
+I/O bound vs. CPU bound
+  Write programs to solve problems
+  Programs utilize resources, broadly:
+    CPU time
+    Memory
+    Networking resources
+    Disk storage
+  Some programs may use more of one resource than another
+    Loading GB from storage to main memory hogs main memory
+    Writing several GB to storage requires high I/O
+  CPU-bound
+    Requires close to 100% of CPU
+    Need to improve CPU speed to get faster
+    Ex.
+      Data crunching
+      Image manipulation
+      Matrix multiplication
+    Limits to single CPU power
+      Harness multiple CPUs
+      Structure program code to take advantage
+      E.g. split number sum
+        Theoretically faster - half the time
+        But overhead from creating threads, mergeing results
+    Improve performance where problem leads to being divided
+      But may not always work out
+  I/O bound
+    Opposite of CPU bound
+    Spend most time waiting for in/out, CPU idle
+    Physical distances to move tiny
+      But thousands of CPU cycles still wasted
+  Both types can benefit from concurrent architectures
+    CPU bound: more processors, run threads simultaneously
+    I/O bound: give up control while waiting for I/O
+  Language support for multithreading varies
+    JS single-threaded
+    Java full-blown multithreading
+    Python sort of multithreaded (more soon)
+  All 3 languages support async programming
+  Also memory-bound programs
+    Python manages for user
+
+Thread safety
+  Use multiple threads for performance
+    Throughput, responsiveness, latency
+    But introduces corruption vulnerability
+  Immutable state = thread-safe
+  Shared state where thread mutates via single atomic bytecode instruction = safe
+  Sole writer mutating state via multiple atomic bytecode = not safe
+  Most multi-threaded setups require caution
+
+  count = 0
+  def increment():
+    global count
+    count += 1
+
+  Fine with single thread, tricky with 2+ threads
+    Count += 1 is not atomic!
+    Not a single bytecode instruction to increment
+
+    7 0 LOAD_GLOBAL 0 (count)
+    3 LOAD_CONST 1 (1)
+    6 INPLACE_ADD
+    7 STORE_GLOBAL 0 (count)
+    10 LOAD_CONST 0 (None)
+    13 RETURN_VALUE
+
+  Constructs like mutexes and locks used to guard code
+    If must be executed sequentially by multiple threads
+  Besides guarding shared data, coordination & cooperation key
+    Semaphores, barriers
+
+  Fix thread unsafe with mutex called a Lock in Python
+
+Critical section
+  Any piece of code that may be executed concurrently by >1 thread
+    Exposes any shared data or resources for access
+
+Race condition
+  When threads run through critical section without thread synch
+  Depending on which threads wins "race", output changes
+  Ex.
+    Test-then-act
+    Test for state/condition "predicate"
+    Acts based on condition
+
+Problems while trying to avoid race, guard critical sections
+  Deadlock
+    2+ threads can't progress
+    First requires resource second holds
+    Second requires resource first holds
+
+  Liveness
+    Ability to execute in a timely manner
+    Thread experiencing deadlock = no liveness
+
+  Live-lock
+    Two threads keep reacting to each other without progressing
+    Does not seem to be deadlocked, but still just as bad
+    Ex. moving back and forth trying to get past each other in hallway
+
+  Starvation
+    Thread never gets CPU time or resources
+    "Greedy" threads hog resources
+
+Reentrant Lock
+  Allow relocking of synch lock
+  If you can't reacquire, then lock as soon as try to acquire
+
+  Freeze:
+    lock = Lock()
+    lock.acquire()
+    lock.acquire()
+    lock.release()
+    lock.release()
+
+  Work:
+    lock = RLock()
+    lock.acquire()
+    lock.acquire()
+    lock.release()
+    lock.release()
+
+Mutex vs. Semaphore
+Mutex
+  "Mutual exclusion"
+  Guard shared data
+    Linked list
+    Array
+    Other primitive
+  Only allow single thread to access resource/critical section
+  Once thread acquires, all others blocked
+    Usually which gets it next on release chosen arbitrarily
+
+Semaphore
+  Limit access to collection of resources
+  Like having limited number of permits to give out
+  Ex. pool of database connections
+    Semaphore gives out 10 connections to out of 50 requesting threads
+  Single permit = "binary semaphore"
+    Often thought of as basically a mutex
+      Not entirely right
+  Can also be used for signaling among threads
+    Work cooperatively on task
+    Diff than mutex - which just serializes access
+
+Semaphore vs. mutex
+  Semaphore can act as mutex if permits = 1
+  Difference
+    Mutex: same thread must acquire & release
+      If not, undefined behavior results
+    Semaphore: diff threads may call acquire & release
+  Ownership
+    Mutex owned by thread acquiring until released
+    Semaphore = no ownership
+
+Semaphore signaling
+  Classical producer/consumer problem
+  Producer signals consumer by incrementing semaphore count
+
+Analogies
+  Mutex = single runway at airport
+  Semaphore = car rental agency with certain number of cars to rent
+
+Mutex vs monitor
+  Monitor = concurrency construct in some languages (incl Python)
+  "Mutex and then some"
+    Adds condition variables
+  Language-level construct
+    (Mutex, semaphore = low-level, OS-provided)
+  Consumer waiting on a predicate
+    Could do a while loop to release a mutex
+
+  void busy_wait_function() {
+      // acquire mutex
+      while (predicate is false) {
+        // release mutex
+        // acquire mutex
+      }
+      // do something useful
+      // release mutex
+  }
+
+  Works but consumes CPU cycles
+  Condition variable exposes wait(), signal()
+  wait() causes mutex to be atomically released
+  Caller placed in wait queue
+
+  void efficient_waiting_function() {
+      mutex.acquire()
+      while (predicate == false) {
+        cond_var.wait()
+      }
+      // Do something useful
+      mutex.release()
+  }
+
+  void change_predicate() {
+      mutex.acquire()
+      set predicate = true
+      cond_var.signal()
+      mutex.release()
+  }
+
+  Thread A executes efficient wait
+    Finds loop predicate false
+    Enters loop
+    Executes cond_var.wait()
+    Is placed in wait queue
+    Gives up mutex
+  Thread B executes change_predicate()
+    Changes predicate to true
+    Signals cond_var.signal()
+    Thread A is placed in ready queue but does not execute
+    Thread B releases mutex
+    Thread A executes
+  Usually signal and then release mutex
+    But not always
+    Depends on implementation
+  Why while loop?
+    Could have done:
+
+  void efficient_waiting_function() {
+    mutex.acquire()
+    if (predicate == false) {
+      cond_var.wait()
+    }
+    // Do something useful
+    mutex.release()
+  }
+
+  Problem: another thread could change predicate back to false
+    On POSIX systems, spurious/false wakeups are possible
+
+  A single monitor may have >1 condition variables
+    However each condition variable belongs to only one monitor
+  In Python:
+    Condition == Monitor
+
+Mesa vs Hoare monitors
+  Mesa monitor
+    while( condition == false ) {
+      condVar.wait();
+    }
+    Again, check if condition false again after wakeup
+      But signal should have set to true!
+    In Mesa monitors (Mesa = 1970s Xerox language)
+      In time gap between Thread B notify() and thread A wakes up
+      Predicate may have been changed by Thread C
+
+  Hoare monitors
+    Hoare = one of original inventors
+    Signal thread B yields monitor to woken up thread A
+    Thread A enters monitor while thread B sits out
+      Guarantees predicate will not have changed
+      If clause suffices in loop
+    No other thread gets a chance to change predicate
+  Mesa more efficient than Hoare
+  Java = Mesa monitor semantics
+  Python threading module based on Java threading
+  So devs must always check for predicate in a while loop
+
+Semaphore vs. Monitor
+  Monitor = mutex + condition variable
+  Mutex is subset of monitor
+  Semaphore and monitor are interchangeable
+    Can make out out of the other
+  Monitor takes care of atomically acquiring lock
+    Semaphore places onus on developer
+      Error prone
+  Sempahores are lightweight compared to monitors
+    Monitors are bloated
+    But semaphores are more often misused
+    Using semaphore + mutex pair = lock wrong mutex, or forget to lock
+  Monitors = pre-packaged solution, require less skill
+  Condition = Monitor in Python
+    Enforce correct locking
+    Exception when thread tries to wait() or notify() w/o lock
+  Only a single thread can own monitor at a point
+    Semaphore may allow several access
+  Semaphores can be used to handle missed signals
+  Monitor additional state, predicate, must be maintained
+
+Global Interpreter Lock
+  Python
+    Interpreted language
+    No static time compiling
+      As in Java, C, C++
+    Interpreter interprets user code
+    Source code compiled into byte code
+      Low-level platform-independent
+      Understood by Python virtual machine
+    Route to PVM for execution
+    PVM is not separate component
+      Just loop in interpreter than executes byte code by line
+  Python interpeter
+    Only executes one thread at a time
+    CPython - written in C language
+    Have 2 threads, 2 processors? Nope.
+    CPU-bound programs don't speed up with extra processors
+      Probably slower, because of housekeeping overhead
+  Why?
+    Due to how memory managed in Python - reference counter
+
+    import sys
+
+    # declare a variable
+    some_var = "Educative"
+
+    # check reference count
+    print sys.getrefcount(some_var)
+
+    # create another refrence to someVar
+    another_var = some_var
+
+    # verify the incremented reference count
+    print sys.getrefcount(some_var)
+
+    When you run this, reference count increases
+    When references removed, reference count decremented
+    When reference count zero, deallocated
+    Interpreter on single thread
+      Ensure obj reference count safe from race conditions
+    Reference count assoc with each obj in program
+    Could associate one lock per object
+      Too many locks, deadlock easy
+    Compromise: snigle lock providing Python access
+      Global Interpreter Lock
+  To execute code, must acquire GIL
+    Prevent deadlocks
+    But makes CPU-bound tasks essentially single-threaded
+
+Removing GIL
+  Attempts have been made
+  Breaks C extensions
+  Degrades performance of single & multithread I/O
+  So GIL has not been removed from Python yet
+  So ultimately threads in Python only good for blocking I/O
+  Python 3.7 GIL is boolean variable guarded by mutex
+
+No-GIL implementations
+  Jython
+  IronPython
+  pypy-stm
+
+Amdahl's Law
+  Cap on maximum speedup when parallelizing a program
+  Typically some parts of program must execute serially
+  1 / ((1 - P) + (P / s))
+  P = proportion of execution time benefit
+  1 - P = proportion that must be executed serially
+  s = speedup of benefiting task
+  So say 90% is parallelizable
+  2 processors
+  S(2) = 1 / (0.1 + 0.9 /2) = 1.81
+  S(10) = 1 / (0.1 + 0.9 / 20) = 5.26
+  S(inf) = 1 / 0.1 = 10
+  Cannot go beyond 10x!
+    Need to optimize or parallelize serial section
+  Also utilization declines
+    Say we use 10 processors
+    Program is ~5x as fast
+    10 processors now remain idle for rest of time
+    So all 10 do their work in 1 minute
+    Now wait while 1 does serial section
+    Utilization down 50%
+  Take all these calcs with a grain of salt, many other factors
+    Memory architecture
+    Cache misses
+    Network & disk I/O
+  So actual speedups less
+  As data sets get huge, parallelizable portion grows faster than serial
+    Gustafson's law
+      Beyond scope
+
+Moore's law
+  Every 2 years, # transistors backed into space doubles
+    Processing power doubles
+    Observation, not law
+  Starting to slow down
+    Had been consistent since 70s
+  Clock speeds also increased until mid 00s or so
+    Small transistors = high frequency, low propagation delays
+    Supply voltage cannot be further decreased
+  To continue performance gains, multicore processors
+    But programs must be written multthreaded
+    Single core only use ~1/8th throughput
+  

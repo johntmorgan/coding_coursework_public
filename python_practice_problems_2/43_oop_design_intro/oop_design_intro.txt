@@ -1,0 +1,308 @@
+Object-Oriented Analysis and Design
+  Software development lifecycle (SDLC)
+    Analysis
+    Design
+    Development
+    Testing
+    Verification
+    Deployment
+  OOAD in SDLC
+    Analyze and design system using oo concepts
+    Observe system
+    Determine objects
+    Establish relationships between objects
+    Model and build the design
+
+Object-oriented analysis
+  Identify system requirements
+  Create model based on defining roles of objects
+    Tasks for which system responsible
+  No implementation details yet
+  Just identify use cases
+
+Object-oriented design
+  Implementation begins
+  Models refined
+    More constraints
+    May add new elements to structure
+    Usually building using UML (unified modeling language) diagrams
+      Class sequence diagrams (details upcoming)
+
+Advantages:
+  Extremely easy to understand
+    Good for complex problems
+  Concepts like inheritance -> reusable, scalable
+  Maintainable
+
+Unified Modeling Language (UML)
+  Standard way of visualizing system design
+  Not a programming language
+  Three main building blocks
+    Things
+    Relationships
+    Diagrams
+  Things
+    Structural things
+    Behavioral things
+    Grouping things
+    Annotation things
+  Structural things
+    Represent physical aspects
+      Class
+      Object
+      Interface
+      Use case
+      Actor
+      Component
+      Node
+    Class
+      attributes and methods
+    Object
+      refers to instance of class
+      set variables etc.
+    Interface
+      Functionality without implementation
+    Use case
+      User goals and interactions
+    Actor
+      Entities interacting with system
+    Commponent
+      Section of system
+    Node
+      Similar to compoent, but physical - server etc.
+  Behavioral things
+    Activity diagrams
+      Show interactions of different components in system
+    Interaction diagrams
+      Describe message flow between components
+  Advantages:
+    Flexible and easy to understand, even if no tech knowledge
+    Widely used, large community
+    Abundance of tools to break down into smaller pieces
+
+UML diagrams
+  Two categories
+    Structural
+    Behavioral
+  Structural
+    Static structure
+    Never depict behavior
+    Ex. class diagram
+  Behavioral
+    Use case diagrams
+    Activity diagrams
+    Sequence diagrams
+  These are the most commonly asked in an ood interview
+
+Use case diagram
+  Describes specification of users and interaction with system
+  Components
+    Actor - user
+      Interact with system
+      May be human, machine, or other external
+      Two types
+        Primary
+          Initiate use case
+          Place on left side
+        Secondary
+          Used by system to assist primary actors
+          Passive actors
+          Place on right side
+    Use case
+      Single function performed on system by actor
+      Oval shape
+    Package
+      Group of elements inside folder icon
+    Note
+      Add more info about any component or relationship
+  Relationships
+    Association
+      Actor and use case
+      Solid line without arrows
+      All actors in diagram must have 1+ assoc with use case
+        Can have more than 1 actor
+        Actors can have more than 1 use case
+    Generalization
+      Child has generalization to parent
+      Solid arrow towards parent
+      ex. parent: make payment
+        Children: saving account, checking account
+    Include
+      Show relationship between two use cases
+      Dotted arrow towards included use case
+        Requires included to be completed
+      Write <<include>> above line
+      Ex. Transfer funds -> check if sufficient funds
+    Extend
+      Extends behaviors of use case
+      Does not execute every time
+      Extends functionality of base use case
+      Dashed arrow towards use case
+      Write <<extend>> above line
+  Advantages
+    Explains flow and objective of all use cases
+    Helps in understanding high level functional requirements of system
+    Defines system's context and needs
+    Explains system behavior from a user perspective
+    Explains scope of system
+
+Class Diagram
+  Depict system's static perspective
+  Show shared roles and responsibilities of entities producing system behavior
+  Only UML diagram directly -> OOP languages
+  Used in both forward and reverse engineering
+  Essential notation
+    Class notation
+      Rectangle with 3 sections
+        Class name
+        Class attributes
+        Methods
+    Interface, abstract class, enumeration, annotation
+      Declare class as abstract using abstract keywords
+      Class name printed in italic
+    Access modifiers
+      Specify object visibility
+      Public: +
+      Private: -
+        Only within class
+      Protected: #
+  Association
+    Class association (inheritance)
+    Object association
+  Class association
+    Solid line from child to parent class, hollow arrowhead at parent
+  Object association
+    Simple association
+      Reference, one object can inherit from another
+      Arrow with filled arrowhead
+    Aggregation
+      Describes relationship between container and object it contains
+      Line with unfilled diamond head towards container
+      Weaker relationship
+        Aggregate objects not part of container
+        Aggregate objects can exist independently
+      Ex. objects in a room
+    Composition
+      Object composed of smaller robjects
+        Within class and derived classes
+      Solid arrow with filled diamond head at component class
+      Stronger relationship
+        Composed object part of the composer
+        Composed objects cannot exist independently
+      Ex. parts of a chair - leg, seat, arm
+    More
+      One-way association - single direction navigation
+        Arrow toward server object
+      Two-way association
+        Line between objects
+        Employee works at company, company employs employees
+      Binary association
+        One-way or two-way
+      Ternary associatoin
+        3 classes associated
+        Open diamond with lines to classes
+      n-ary association
+        More than 3
+    Dependency
+      Dashed arrow with filled head from dependent to depended on class
+      Ex. registration manager requires students
+
+Sequence Diagram
+  Illustrates how actors and objects interact with each other or between themselves
+  Interactions as exchange of messages
+  Demonstrate sequence of events
+    Logic behind operations and functions
+  Elements
+    Lifeline
+      Write all entities horizontally
+      Dotted line below entity - when activated/deactivated
+      Activation bar when object sends and receives messages
+    Messages
+      Arrows between objects
+      Drawn horizontally between lifelines
+      Synchronous
+        Wait for receiver to return a response
+        Solid line, filled arrowhead
+      Asynchronous
+        Sender not waiting for receiver
+        Solid line, open arrowhead
+      Synchronous return
+        Response to synch call
+        Dotted line, filled arrowhead
+      Create message
+        New object appears at end of arrowhead
+          Gets its own lifeline
+      Destroy message
+        X where message hits lifeline
+        Lifeline does not extend below
+      Lost message
+        Does not reach endpoint - terminates before
+        Starts with unfilled circle
+      Found message
+        Appears out of lifeline
+        Sender unknown
+        Ends at unfilled circle (at arrowhead)
+  No one correct way to draw
+    Identify use case
+      Ex. customer transaction
+      Extend cash withdrawal
+    List actors and objects involved in sequence
+      Customer
+      ATM
+      Transaction
+      Account
+      Cash dispenser
+    Identify order of actions
+    Draw diagram
+    Keep as simple as possible
+      But sometimes need to show conditional, loop seqeuences
+        Use sequence fragment component
+  Sequence fragment component
+    Alt frame - if/else
+      Divides fragment into parts
+    Option
+      Models if condition
+        Only execute if guard condition met
+    Loop
+      Execute until guard met
+    Reference
+      Assists in managing larger diagrams
+      Reuse parts of another sequence diagram by providing reference
+
+Activity Diagram
+  Communication diagram
+  Series of actions
+    Similar to flowchart
+  Specifically capture message flow for each activity
+  Initial: node in tree structure
+  Action: arrows to and from word bubble between nodes
+  Flow final:
+    x in open circle
+  End of activity
+    Circle with open rim
+  Control flow
+    Straight line
+  Object flow
+    Dotted line
+  Decision
+    Diamond - yes/no
+    Place below decision node with text
+  Merge
+    Diamond with multiple arrows into it
+  Fork and join
+    Two concurrent activities
+    Bold lines top and bottoms
+    Actions in the middle
+
+Sequence vs. activity
+  Sequence
+    Dynamic modeling
+    Visualizes flow of messages between objects
+    Models system workflow
+    Describes behavior of objects for indep. use case
+  Activity
+    Functional modeling
+    Flow of messages from one activity to another
+    Visualizing system sequence of calls for functionality
+    Describes general sequence of actions
+  

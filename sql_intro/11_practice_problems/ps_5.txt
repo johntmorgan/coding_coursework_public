@@ -1,0 +1,75 @@
+1. Calculate the running total of the revenue generated per week for the first 10 weeks
+  for the movie Avengers.
+
+  SELECT T1.Weekend, T1.RevenueInMillions, SUM(T2.RevenueInMillions) AS RunningTotal
+  FROM MovieScreening T1
+  INNER JOIN MovieScreening T2
+  ON T1.MovieId = T2.MovieId
+  AND T1.Weekend >= T2.Weekend
+  WHERE T1.MovieId = 10
+  GROUP BY T1.Weekend
+  ORDER BY T1.Weekend;
+
+// Copied from answer + fixed
+2. Calculate the total revenue of each Genre and find the percentage of revenue of each.
+  CREATE VIEW CollectionPerGenre AS
+  SELECT Genre, SUM(CollectionInMillions) AS TotalRevenueInMillions
+  FROM Movies
+  GROUP BY Genre
+  ORDER BY SUM(CollectionInMillions) DESC;
+
+  SELECT T1.Genre, T1.TotalRevenueInMillions,
+         SUM(T2.TotalRevenueInMillions) AS RunningTotal
+  FROM CollectionPerGenre T1
+  INNER JOIN CollectionPerGenre T2
+  WHERE T1.TotalRevenueInMillions <= T2.TotalRevenueInMillions
+  GROUP BY T1.Genre, T1.TotalRevenueInMillions
+  ORDER BY T1.TotalRevenueInMillions DESC;
+
+  SELECT  d1.Genre AS Genre,
+          d1.TotalRevenueInMillions AS TotalRevenueInMillions,
+          (d1.RunningTotal / d2.TotalSum) * 100 AS PercentageOfTotalRevenues
+  FROM
+    (SELECT T1.Genre as Genre,
+           T1.TotalRevenueInMillions AS TotalRevenueInMillions,
+           SUM(T2.TotalRevenueInMillions) AS RunningTotal
+    FROM CollectionPerGenre T1
+    INNER JOIN CollectionPerGenre T2
+    WHERE T1.TotalRevenueInMillions <= T2.TotalRevenueInMillions
+    GROUP BY T1.Genre, T1.TotalRevenueInMillions
+    ORDER BY T1.TotalRevenueInMillions DESC ) d1,
+  ( SELECT SUM(TotalRevenueInMillions) AS TotalSum
+    FROM CollectionPerGenre) d2;
+
+3. Calculate the moving average of revenue generated in a three week window for the movie Ocean’s 11.
+  SELECT table1.Weekend AS Weekend,
+   table1.RevenueInMillions AS Revenue,
+   SUM(table2.RevenueInMillions) AS 3WeekTotal,
+   AVG(table2.RevenueInMillions) AS 3WeekAverage
+  FROM (
+   SELECT @counter1 := @counter1+ 1 AS RowNum,
+          T1.Weekend, T1.RevenueInMillions
+   FROM MovieScreening T1, (SELECT @counter1 := 0) c1
+   WHERE MovieId=5
+   ORDER BY T1.Weekend ) AS table1
+   JOIN
+   (SELECT @counter2 := @counter2 + 1 AS RowNum,
+           T2.Weekend, T2.RevenueInMillions
+    FROM MovieScreening T2, (SELECT @counter2 := 0) c2
+    WHERE MovieId=5
+    ORDER BY T2.Weekend ) AS table2
+    ON table2.RowNum <= table1.RowNum AND table2.RowNum > table1.RowNum - 3
+  GROUP BY table1.RowNum, table1.Weekend, table1.RevenueInMillions
+  HAVING COUNT(table1.RowNum) > 2;
+
+4. Find the value of RevenueInMillions at the start of each month for the movie Mr. & Mrs. Smith.
+  SELECT Weekend As Date, MONTH(Weekend) As Month,
+    ROUND(RevenueInMillions,2) As RevenueInMillions, FirstValue
+  FROM MovieScreening t1,
+   (SELECT MONTH(Weekend) AS Month,
+      SUBSTRING_INDEX(GROUP_CONCAT(ROUND(RevenueInMillions,2)),  ',' , 1) AS FirstValue
+    FROM MovieScreening
+    WHERE MovieId = 2
+    GROUP BY MONTH(Weekend) ) t2
+  WHERE t1.MovieId = 2 AND MONTH(t1.Weekend) = t2.Month;
+

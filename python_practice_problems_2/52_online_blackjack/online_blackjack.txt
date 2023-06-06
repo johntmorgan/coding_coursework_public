@@ -1,0 +1,236 @@
+Online Blackjack
+  Players play against dealer
+  Get closer to 21 without going over
+  Ace 1 or 11
+  Face cards 10
+  Others face value
+  Start game
+    Player places bet
+    Dealer creates hand
+    Player hits
+    Dealer hits
+    Bet resolves
+
+Questions
+  Players
+    How many players can play?
+    Can players play against each other?
+  Point dynamics
+    Up to when can player hit?
+    What happens if dealer and player tie?
+  Card limit
+    Is there a limit on the number of player cards?
+
+Design
+  Smallest first
+    Card
+    Player
+  Then bigger
+    Deck
+    Controller
+
+Design patterns
+  Iterator
+  State design
+
+Requirements
+  Shoe of cards with 1+ decks
+  Deck = 52 cards in 4 suits
+  Every card has points associated
+  Two user types: dealer and player
+  Player places bet at start of game
+  Dealer deals 2 cards to self, 2 to player
+  Player has both cards exposed
+    Dealer has one card hidden
+  Player can hit if hand value < 21 points
+  Dealer must hit if hand value < 17
+  If value goes over 21, bust and lose game
+  Player can decide not to get a further card by standing pat
+  If points of player more than dealer, win
+  If player gets 21 on deal, 150% profit
+  If player and dealer tie
+    Player money back
+    Or play again
+  If player leaves in middle, dealer wins
+
+Use case
+  System
+    Blackjack game
+  Actors
+    Primary
+      Player
+        Bet
+        Hit
+        Stand
+        Quit
+        Create account
+        Edit account
+        Update account
+    Secondary
+      Dealer
+        Deal cards
+        Complete earning payout
+        Manage accounts
+
+  Player
+    Join game
+    Place bet
+    View open games
+    Resign game
+    Hit
+    Stand
+    Create account
+    Update account
+    Reset password
+    Cancel membership
+    Login/Logout
+
+  Dealer
+    Create game
+    View open games
+    Create hands
+    Draw card
+    Collect or payout
+    Block member
+    Create account
+    Update account
+    Reset password
+    Cancel membership
+    Login/Logout
+
+Relationships
+  Include
+    Create hand and hit include with draw card
+    Stand include with collect or payout
+
+  Extend
+    Cancel membership and block member extends modify member
+    Reset password extends update account
+
+Classes
+  Card
+    suit: Suit (enum)
+    faceValue: int
+    Card(cardSuit, cardFaceValue)
+  Deck
+    cards: Card {list}
+    Deck()
+    getCard(): Card {list}
+  Shoe
+    decks: Deck {list}
+    numberOfDecks: int
+    Shoe(numberOfDecks, decks)
+    createShoe()
+    shuffle()
+    dealCard()
+  Hand
+    cards: Card {list}
+    Hand(card1, card2)
+    getScore()
+    addCard()
+  Player - abstract
+    BJPlayer, Dealer derived from Player
+    id: password
+    balance: double
+    status: AccountStatus
+    person: Person
+    hand: Hand
+    BJPlayer extends Player
+      bet: int
+      totalCash: int
+      BlackJackPlayer(Hand hand)
+      placeBet(int)
+    Dealer
+      hand: Hand
+      getTotalScore()
+  Controller
+    validateAction()
+  BlackJackGameView
+    playAction
+  BlackJackGame
+    player: BJPlayer
+    dealer: Dealer
+    shoe: Shoe
+    maxNumberOfDecks: int
+    BlackJackGame(player, dealer)
+    playAction(string, hand)
+    hit(hand)
+    stand(hand)
+    start()
+
+  Enums
+    Suit
+      Heart
+      Spade
+      Club
+      Diamond
+    AccountStatus
+      Active
+      Closed
+      Canceled
+      Blacklisted
+      None
+
+  Custom Data Types
+    Person
+      name
+      streetAddress
+      city
+      state
+      zipcode
+      country
+
+Relationships
+  Association
+    Shoe one-way with deck
+    BlackjackGame one-way with BlackJackGameView
+    BlackjackController one-way with BlackjackGame
+    Player one-way with BlackjackGame and BlackjackController
+
+  Aggregation
+    BlackjackGame contains Dealer and BJPlayer
+    Deck and Hand contain Card
+
+  Composition
+    BlackjackGame composed of Shoe
+    Player composed of Hand
+
+  Inheritance
+    BJPlayer and Dealer inherit from Player
+
+Design pattern
+  Iterator design - how cards are dealt from deck
+  State
+    Shuffle deck
+    Draw card and give to player
+    Draw card and give to dealer
+    Deal cards
+    Player hit
+    Player stand
+
+Activity
+  States
+    Initial state
+    Final state - 4 options
+      Player wins 3:2
+      Player wins
+      Match tied
+      Player loses
+  Actions
+    Player places bet
+    Dealer deals 2 cards to dealer & player
+    If player total 21:
+      Win 3/2
+    If player total > 21:
+      Lose
+    If less than 21
+      Stand or hit
+    If hit
+      Get another card, update total
+    If stand
+      Dealer's card total checked
+    If less than 17
+      Dealer gets another card until total > 16
+    Then compare totals
+      If dealer busts, player wins
+      Otherwise higher wins

@@ -1,0 +1,86 @@
+INSERT Triggers
+  Fired whenever INSERT occurs
+  Can be executed before or after query executed
+  Can only use NEW to access new column vals
+  OLD keyword cannot be used, no previous values
+  BEFORE INSERT - data validation, summary table of another table
+  AFTER INSERT - activity log, copy values in table to another table
+
+  // Let's try BEFORE INSERT
+  // Store AverageNetWorth of all actors in Actors table
+  // Value wil change every time new row inserted
+  // Let's create a NetWorthStats table
+  // Will auto update when new actor added to Actors
+  CREATE TABLE NetWorthStats (
+  AverageNetWorth DECIMAL(10,4) NOT NULL
+  );
+  INSERT INTO NetWorthStats(AverageNetWorth)
+  VALUES ((SELECT AVG(NetWorthInMillions) FROM Actors));
+
+  SELECT * FROM NetWorthStats;
+    > 346.1818
+
+  // Create trigger BeforeActorsInsert
+  DELIMITER **
+
+  CREATE TRIGGER BeforeActorsInsert
+  BEFORE INSERT ON Actors
+  FOR EACH ROW
+  BEGIN
+  DECLARE TotalWorth, RowsCount INT;
+
+  SELECT SUM(NetWorthInMillions) INTO TotalWorth
+  FROM Actors;
+
+  SELECT COUNT(*) INTO RowsCount
+  FROM Actors;
+
+  UPDATE NetWorthStats
+  SET AverageNetWorth = ((Totalworth + new.NetWorthInMillions) / (RowsCount+1));
+
+  END **
+
+  DELIMITER
+
+  INSERT INTO Actors (FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions)
+  VALUES ('Charlize', 'Theron', '1975-08-07', 'Female', 'Single', 130);
+
+  SELECT * FROM NetWorthStats;
+    > 328.1667
+
+  // Also need triggers for update or delete!
+  // AFTER INSERT
+  // Maintain a log
+  // First make table ActorsLog
+
+  CREATE TABLE ActorsLog (
+   LogId INT AUTO_INCREMENT PRIMARY KEY,
+   ActorId INT NOT NULL,
+   FirstName VARCHAR(20),
+   LastName VARCHAR(20),
+   DateTime DATETIME DEFAULT NULL,
+   Event VARCHAR(50) DEFAULT NULL
+  );
+
+  // Now the trigger
+
+  CREATE TRIGGER AfterActorsInsert
+  AFTER INSERT ON Actors
+  FOR EACH ROW
+  INSERT INTO ActorsLog
+  SET ActorId = NEW.Id,
+   FirstName = New.FirstName,
+   LastName = NEW.SecondName,
+   DateTime = NOW(),
+   Event = 'INSERT';
+
+
+  INSERT INTO Actors (FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions)
+  VALUES ('Matt', 'Damon', '1970-10-08', 'Male', 'Married', 160);
+
+  SELECT * FROM ActorsLog;
+    > +-------+---------+-----------+----------+---------------------+--------+
+      | LogId | ActorId | FirstName | LastName | DateTime            | Event  |
+      +-------+---------+-----------+----------+---------------------+--------+
+      |     1 |      13 | Matt      | Damon    | 2023-05-24 19:56:04 | INSERT |
+      +-------+---------+-----------+----------+---------------------+--------+

@@ -1,0 +1,9 @@
+Author:
+  Zero to Software learning track
+  Software arch, cloud infrastructure, distributed system design
+  Cloud Computing 101
+    Platform-agnostic
+    Understand architecture of distributed applications
+  Design Modern Web-Scale Distributed Applications Like a Pro
+    Different data models
+    Intricacies of scaling databases

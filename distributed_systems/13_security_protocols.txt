@@ -1,0 +1,125 @@
+Security Protocols
+Transport layer security (TLS)
+  Cryptographic protocol
+  Secure comms over insecure network
+  Confidentiality, authentication, and integrity
+  Runs above reliable transport layer like TCP
+    If unreliable (UDP), protocols like DTLS
+  Two sides in comm: client and server
+  Two main parts
+    Handshake: negotiate params for connection
+    Data exchange: secure exchange
+  Modes of operation
+    Depend on whether auth req'd for one/both sides
+      Both auth: "mutual TLS"
+  Steps (server auth mode):
+    Client sends ClientHello to initiate TLS
+      Contains list of cipher suites supported by client
+      Contains client random number "nonce"
+    Server responds ServerHello
+      Random server number "nonce"
+      Selected cipher suite
+        Symmetric encryption algo (e.g. AES)
+        Key exchange algo (e.g. RSA)
+        MAC algorithm (e.g. HMAC)
+    Server sends ServerKeyExchange
+        For specific cipher suites
+    Server sends Certificate message with server public key in certificate
+    Server sends ServerHelloDone
+      Done with handshake negotiation
+    Client verifies server certificate
+    Client extracts public key
+    Client generates pre-master secret (PMS)
+    Client encrypts PMS with server public key
+    Client send to server through ClientKeyExchange
+    Client & server use nonces & PMS to compute common secret
+      "master secret"
+      Through key derivation function
+    Client sends ChangeCipherSpec
+      everything will be encrypted from now on
+    Client sends Finished message
+      Contains hash and MAC over all previously exchanged handshake messages
+    Server mirrors this
+      Ensures no man-in-the-middle tampering of previous messages
+    Handshake completes
+      Sides exchange authenticated, encrypted Application messages
+  TLS used in HTTPS
+    Extension of HTTP with secure echange over TLS
+    Can be used to encrypt comms for any app, email, file transfer, VoIP
+
+Public-Key Infrastructure (PKI)
+  How can client ensure server is who claim to be?
+  Use certificates
+    Digital docs binding a public key to a specific entity
+    X.509 is a common standard for protocols like TLS
+  X.509 Cert
+    Contains public key
+    Identity of public key belongs to it
+    In TLS binds public key to specific domain name
+  Cert issue
+    By specific orgs, certificate authorities
+    Sign certificate to attest ownership of public key to assoc entity
+    Cert org verifies party identity first
+      May ask party to upload specific content to website served by domain
+  Cert chain
+    Cert authorities also generate certs for their own public keys
+      These certs are signed by own private key "self-signed certificates"
+      Act as trusted third parties
+      Trusted by both owner and users of certificate
+      Can get more complicated
+        Authority issue certificate for public key of other authorities
+        Then form chain
+    Certificate at bottom of chain: target certificate
+    Certificate at top of chain: root certificate
+    Chain used to ensure public key and metadata in target belongs to subject
+    For cert chain to be valid
+      Issuer of each cert must match subject of next cert in list
+      Each cert except root must be signed by secret key corresponding to next in chain
+      Root signed by trusted entity "trust anchor"
+      Apps usually given list of trusted root certificates
+        Browsers come with predetermined set
+        TLS certs from major cert authorities work instantly
+        Curated list, some cert authorities have been removed over the years
+  Revoking certificate
+    When private key of assoc entity compromised
+    Certificate revocation list (CRL)
+    Online certificate status protocol (OCSP)
+  Whole system = PKI
+
+Web of Trust (PGP)
+  When using public-key infrastructure, have to trust root cert authorities
+    System is centralized to some degree
+    Web of trust more decentralized
+  No cert authorities trusted by everyone
+    Parties sign each other's public keys
+      "Key signing party"
+      Can build more elaborate voting scheme with moderate trust etc
+        Require sign from multiple parties
+
+OAuth protocol
+  In WWW, client = web browser, server = application server
+  More complex scenarios with more parties
+    Server needs client auth to get data from different server
+    ex. email app wants to retrieve email accts of friends to add to contacts list
+    OAuth allows this to happen
+    Multiple versions of protocol, this is OAuth 2.0
+  Four main entities
+    Resource owner
+    Client: app that wants to access data
+    Resource server: contains data to be accessed
+    Auth server: presents interface where user approves/denies access
+  Workflow of OAuth protocol
+    User visits client site
+    Client redirects user to specific webpage dedicated to OAuth
+    Request to auth server contains more data - redirect URI, category data request, client app ID
+    Auth server returns web page to user presenting details about request
+      May require user to log in as well
+    User approves request
+    Auth server redirects user back to client app (to redirect URI)
+      Adds auth code representing permission
+    Client app makes request providing auth code in exchange for token
+      Also provides client ID, client secret
+    Client uses token to request data from resource server
+    Why do you need both the auth code and the access token?
+      Web browser much less secure than client on backend
+      Require client secret to get token

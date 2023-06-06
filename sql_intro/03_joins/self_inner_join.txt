@@ -1,0 +1,19 @@
+Self inner join
+  Inner join is simplest join
+
+  // Cartesian product
+  // Every row joined with every other row
+  // 11 row table makes 121 rows
+  SELECT * FROM Actors a INNER JOIN Actors b;
+
+  // Now 11 rows, column joined on FirstName
+  SELECT * FROM Actors a INNER JOIN Actors b USING(FirstName);
+
+  // But if pick col with duplicates, see a Cartesian join for dupe rows
+  // Here 2 actors have net worth 240, so brad-brad, brad-jennifer, jennifer-brad, jennifer-jennifer
+  SELECT * FROM Actors a INNER JOIN Actors b USING(NetWorthInMillions);
+
+  // If any rows from tables don't match, not included in inner join
+    Will not happen in case of self-join, obviously
+
+  

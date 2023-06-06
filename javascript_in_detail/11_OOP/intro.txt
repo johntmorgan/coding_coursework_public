@@ -1,0 +1,37 @@
+OOP
+  So far have seen primitive types and objects
+  Every object has unique properties and methods
+    Every array has properties like length
+  For custom classes, need OOP
+  OOP is a style not a tool
+    Break program into segments of objects that can communicate with each other
+    Each object has its own set of properties
+    Properties can be accessed/modified through various operations
+
+OOP in other languages
+  C++, Java, C# etc. use class to define a class
+  Class has properties and methods for every instance of class
+  Remove class keyword, code does not compile, get an error
+  Class acts as a blueprint for the object
+    i.e. object is an instance of the class
+
+OOP in JS
+  Two approaches
+    Protoype-based
+    Class-based
+
+Prototype-based
+  Before ES2015, JS relied on prototype-based
+  Object encapsulates properties, methods & data instead of class
+  Add new properties to object whenever you want
+  Object can be individual instead of class instance
+    Can make without making a class first
+
+Class-based
+  Introduced in ES2015
+  Allows using the class token in implementation
+  Assists in inheritance and implementing OOPs
+    constructor, extend, super, static keywords
+  New, clearer syntax
+  Exact same back-end implementation as prototype-based
+    Only syntax is different

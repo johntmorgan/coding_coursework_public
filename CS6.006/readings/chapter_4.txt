@@ -1,0 +1,288 @@
+Divide and Conquer
+  Merge sort example
+    Divide into subproblems
+    Conquer by solving recursively
+      If subproblems small enough, just solve
+    Combine solutions into original problem solution
+  When subproblems large enough to solve recursively - "recursive case"
+    No longer recurse - "bottoms out" - "base case"
+  This chapter: a bunch more examples with this strategy
+    Maximum subarray
+    Multiplying n x n matrices
+      O(n^3)
+      O(n^2.81) - Strassen's algorithm
+  Recurrence
+    Describe equation in terms of its value on smaller inputs
+    Could divide unevenly
+      T(n) = T(2n/3) + T(n/3) + theta(n)
+    Not always fractions
+      Linear search creates one subproblem with one less element
+      T(n) = T(n - 1) + theta(1)
+    Three methods for solving recurrences
+      Substitution - guess bound, use induction to prove correct
+      Recursion-tree - converts into tree whose nodes represent cost at various levels
+      Master method - bounds for recurrences of the form
+        T(n) = aT(n/b) + f(n)
+        a subproblems each of which is 1/b the size of the original problem
+        divide and combine steps together take theta(n) time
+        Need to memorize three cases
+    Inequalities
+      T(n) <= 2T(n/2) + theta(n)
+        Solution with O notation
+      T(n) >= 2T(n/2) + theta(n)
+        Solution with omega notation
+    Technicalities
+      Going to ignore boundary conditions
+      Assume T(n) constant for small n
+        Don't bother stating n = 1 -> theta(1) most of the time
+        Solution typically doesn't change by more than a constant factor
+          And so the order of growth is unchanged
+  Maximum subarray problem
+    Allowed to buy and sell 1 stock at closing price of day
+    Can see prices in future
+    Goal is to maximize profit - so buy low sell high
+      But in this case highest high comes before low
+    Easy brute force solution:
+      Try every possible pair of buy and sell dates
+      (n 2) pairs of dates
+      (n 2) is theta(n^2)
+      Best can hope to evaluate dates in constant time
+      Approach is omega(n^2)
+      Can we do better?
+    Transformation
+      o(n^2) solution
+      Let's instead consider the change in price in array A
+      Find nonempty, contiguous subarray of A whose values have maximum sum
+      Initially seems to not help
+        Need to check (n-1 choose 2) subarrays for a period of n days
+        Can get subarray sums in O(1) time by using previously computed sums
+    Divide and conquer
+      Find midpoint and divide into subarrays
+      Any subarray must be in low, in high, or crossing midpoint
+      Max subarray must be in one of these 3 places
+      Recursively find max subarray in low, in high
+      But what about mid?
+        Find max subarrays that end at mid and start at mid and combine them
+        Start at middle, if moving left increases best sum, then mark at that point and update best sum
+        Do the same thing moving right
+        Takes theta(n) time
+      The left and right? 2T(n/2)
+      And as we saw with merge sort, T(n) = theta(nlgn)
+      In this specific case, can actually do even better - linear time
+        Move right, tracking the largest subarray seen so far
+
+Matrix review:
+  A matrix is a rectangular array of numbers (aka Stanford Grid)
+    Uppercase letter denotes matrix
+    lowercase letters denote elements
+  Transpose flips rows and columns
+  Vector is a 1-D array of numbers
+    Vector of length n -> n-vector
+    Standard form is a column vector
+    row vector is the transpose
+    Unit vector ei
+      ith element is 1 and all over elements are 0
+    Zero matrix
+      matrix all of whose entries are 0
+  Square matrices
+    Arise frequently
+    Diagonal matrix aij = 0 whenever i != j
+  Identity matrix
+    Diagonal matrix with 1s along diagonal
+  Tridiagonal matrix
+    tij = 0 if |i - j| > 1
+    So entries only on diagonal, immediately above, or immediately below
+  Upper-triangular matrix
+    uij = 0 if i > j
+    All entries below diagonal are 0
+  Lower triangular matrix
+    The reverse, obvs
+  Permuation matrix
+    Exactly on 1 in each row or column
+    0s elsewhere
+  Symmetric matrix
+    A = AT
+    Basically mirrors across diagonal
+      Diagonal itself does whatever
+  Matrix operations
+    Sum is performed component-wise
+    cij = aij + bij
+    A + 0 = A = 0 + A
+    yA is the scalar multiple
+      Multiply each element by y
+    -A is the negative element of each
+    A + -A = 0 = -A + A
+    A - B = A + -B
+  Matrix multiplication
+    Must be compatible - columns of A = rows of B
+    A is m x n and B is n x p
+    C = AB
+    C is m x p
+    Cij = sum (k = 1 to n) aik * bkj
+    To multiply n x n matrices
+      n^3 multiplications and n^2(n-1) additions
+      running time theta(n^3)
+    A * 0 = 0
+    A(BC) = (AB)C
+
+Strassen's algorithm for matrix multiplication
+  Runs in theta(n^3) where n is the size of a square matrix
+  C = A * B
+  Algorithm goes along each row in A
+  And matching column in B
+  And then multiplies and then adds the result
+  But there is actually a way to multiply in o(n^3)
+    Strassen - runs in theta(n^lg7) time
+      lg 7 ~ 2.81
+    Assume n is a power of 2 for simplicity
+    Partition A B and C into n/2 * n/2 matrices
+      Use index calculations, so do not spend n^2 time copying entries
+      Takes theta(1) time
+  T(1) = theta(1) - just do one scalar multiplication
+  T(n)?
+  Each recursive call multiplies 8 n/2 matrices
+  And adds four of them together theta(n^2)
+  T(n) = 8T(n/2) + theta(n^2)
+  Note that if copied matrices, would just add theta(n^2) - running time increases by constant
+  T(n) = theta(1) if n = 1
+  Solution is T(n) = theta(n^3) - see master theorem in a bit
+  Although asymptotic notation subsumes constant factors
+    Recursive notation such as T(n/2) does NOT
+  What does Strassen do?
+    Make the recursion tree less bushy
+    Performs 7 matrix multiplications instead of 8
+      Several new n * 2 matrices to add
+      But that just adds another constant
+    Method is not at all obvious (understatement of the book)
+      Subdivide like normal (theta(1))
+      Create 10 matrices that are n/2 x n/2
+        And sum or difference of 2 matrices created by subdividing
+        Create them in theta(n^2)
+      Recursively compute 7 matrix products
+      Compute desired submatrices by adding and subtracting various Pi combinations theta(n^2)
+    T(n) = 7T(n/2) + theta(n^2)
+    By master method T(n) = theta(n^lg7)
+    The matrices are listed on p. 80-81 (I ain't memorizing that - JM)
+
+How to solve recurrences
+4.3 The substitution method
+  1. Guess the form of the solution
+  2. Use mathematical induction to find the constants and show the solution works
+  Can use to establish upper or lower bounds on recurrence
+  As an example, let's determine an upper bound on:
+  T(n) = 2T(floor(n/2)) + n
+  Guess solution T(n) = O(nlgn)
+  Prove T(n) <= cnlgn for appropriate choice of constant c > 0 (<= because upper bound)
+    Assume bound holds for all positive m < n, particularly m = floor(n/2)
+      So holds from 0 all the way up to n
+    T(floor(n/2)) <= c*floor(n/2)*lg(floor(n/2))
+  Substituting in
+  T(n) <= 2cn/2lg(n/2) + n
+      <= cnlg(n/2) + n
+      = cnlg(n) - cnlg(n) + n
+      = cnlgn - cn + n
+      <= cnlgn // holds as long as c >= 1
+  Then show that solution holds for boundary conditions
+    Actually fails when n = 1
+    T(1) = 1
+    T(1) <= c1lg1 = 0, which does not match
+    So base case does not hold
+    So only prove for n > n0, which we get to choose
+    Replace T(1) with T(2)
+      So the base case of the inductive proof is n = 2 and n = 3, even though NOT base case of recurrence
+      T(2) = 4
+      T(3) = 5
+      choose c large enough that
+      T(2) <= c2lg2
+      T(3) <= c3lg3
+      Any choice c >= 2 works!
+  But how do you guess?
+    Try using recursion trees
+    If similar to one you've seen before
+    T(n) = 2T(n/2 + 17) + n
+    When n is large, n/2 is very close to n/2 + 17 - they both basically cut n in half
+    So again T(n) = O(nlgn)
+    Also can prove loose upper and lower bounds and then reduce uncertainty
+      Start with lower bound omega(n)
+      And upper bound O(n^2)
+  Sometimes you guess an asymptotic bound, but the math does not work out on induction
+    Inductive assumption may not be strong enough to prove the bound
+    Try subtracting a lower-order term
+    Consider again
+    T(n) = T(n/2) + T(n/2) + 1
+    Guess that T(n) = O(n)
+    Try to show that T(n) <= cn for appropriately chosen
+    T(n) < c(n/2) + c(n/2) + 1
+         = cn + 1
+    Does not imply T(n) < cn
+      Could try a larger guess of O(n^2)
+      But O(n) is correct
+      Need a stronger inductive hypothesis
+      Only off by the constant 1, a lower-order term
+      But induction does not work unless we prove the exact form of the inductive hypothesis
+    Now guess
+      T(n) <= cn - d where d >= 0 is a constant
+    So
+      T(n) <= (c*n/2 - d) + (c * n/2 - d) + 1
+           =  cn - 2d + 1
+           <= cn - d, as long as d > 1 and c is great enough to handle boundary conditions
+  Avoid pitfalls
+    Easy to make mistakes with asymptotic notation
+    Can falsely "prove"
+      T(n) = O(n)
+      Guess T(n) <= cn
+      T(n) <= 2(cn/2) + n
+           <= cn + n // and since C is a constant
+           = O(n) // WRONG
+           Have not proven the exact form of the inductive hypothesis
+           Which is that T(n) <= cn
+           Will therefore explicitly prove that T(n) <= cn when want to show T(n) < O(n)
+  Changing variables
+    T(n) = 2T(sqrt(n)) + lgn
+    Looks hard
+    Let's rename m = lgn
+    T(2^m) = 2T(2^(m/2)) + m
+    S(m) = 2S(m/2) + m
+    S(m) = O(mlgm)
+    T(n) = T(2^m) = S(m) = O(mlgm) = O(lgnlglgn)
+
+4.4 Recursion tree method
+  What if you can't come up with a good guess?
+  Draw a recursion tree
+    Each node represents the cost of a single subproblem
+    Sum costs at each level to get a per-level cost
+    Then sum all the per-level costs
+    Can often tolerate a bit of slop since will verify answer later via substitution
+    T(n) = 3T(floor(n/4)) + O(n^2)
+    Let's start with upper bound
+    Floors and ceilings usually do not matter (slop toleration)
+      root: cn^2
+      3 branches
+      to T(n/4)
+      c(n/4)^2 work is done there
+      Each of those branch 3 times
+      to T(n/16)
+    First level:
+      cn^2
+    Second level:
+      3/16cn^2 work
+    Third level
+      3^2/16^2cn^2 work
+    Bottom level
+      theta(n^log4(3))
+    How tall?
+      subproblem size decreases by 4 each level
+      subproblem size at depth i is n/4^i
+      stop when n = 1
+      so when n/4^i = 1
+      or when i = log4(n)
+      so tree is log4(n) + 1 deep
+      cost at each level is 3^ic(n/r^i)^2
+      bottom level has 3^log4(n) = nlog4(3) nodes, each cost T(1)
+        So theta(n^log4(3))
+      Messy sum
+      Take infinite decreasing geometric series as an upper bound (always fun - JM)
+      And it reduces to O(n^2)
+        (Praying I can avoid the harder math here... - JM)
+
+4.5 Master method

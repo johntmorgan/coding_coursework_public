@@ -1,0 +1,5 @@
+Greedy techniques
+  Build up solution piece by piece
+    Locally optimal choice
+    Hope for globally optimal solution
+      Can get stuck in local optima and not return global best

@@ -1,0 +1,65 @@
+Client logic
+  Web app starts to act more like a destkop app
+    JS becomes more and more complex
+    User interactions not effectively modeled as CRUD
+    SPA JS different concerns
+      Structure very different
+      Rise of GraphQL, alternate structure for managing resources
+    Frameworks emphasize having a lot of small constructs
+      Manage data and logic for small part of page
+      Common problem sharing data between components
+        Not a problem server-side
+        Just store global state in database
+        Don't worry about mutability of instances - don't last beyond one request
+  How to structure Rails server-side & lots of JS client-side?
+    Can do as little JS as possible
+      Limit client to manipulating existing DOM, Ajax to server
+      That was Web 2.0
+      Now can manage app with Turbolinks, Stimulus much the same way
+    Can also do single page JS app, max in client
+      Server sends JS, then sends data back and forth, probably via JSON
+      Client converts data to DOM elements using templates, JSX, etc.
+    Benefits and drawbacks to each approach
+      In-between
+        Rich interaction on some pages
+        Server handles transition between pages
+
+Patterns
+  Ex. Slack
+    Real-time collab and chat app
+    Users click sidebar to stay in chat but change channel
+    Useres click to view profile, replace with form
+  Switch channel
+    Could refresh entire page - flicker, poor UX
+      In theory Rails Turbolinks prevents this
+      Least JS, but Turbolinks is a JS library
+    Clicking channel sends request to server
+      Server handles redering logic and returns HTML of part of page that changes
+      Client-side integrates HTML into page
+      UI cleanup, change active status of channels in sidebar
+        Client-side code
+        Or return JS script to update HTML and do UI cleanup
+      This is the JS pattern used by many early Rails apps
+        Still see in HEY, Turbolinks
+    Common modern
+      Clicking channel sends request to server in JSON
+      JS is responsible for using data to update
+        Different frameworks handle differently
+        Data update triggers changes to DOM
+        Specific updated DOM elements redrawn
+      Interaction pattern used by most JS apps now
+  Switching pages
+    Same options
+    One more bit of state to deal with
+      Name of page viewing
+    In older Rails, switching = request to different URL
+      Handled by Rails app routing table
+    SPA: routing happens on client
+      Client routing table determins what components are displayed and what data is retrieved
+        High complexity cost
+        Effective where interaction pattern != CRUD
+      SPA frameworks are working hard to lower cost of duplicating browser functionality
+
+This course (generally)
+  Server determines which page is drawn
+  Each page has its own interactivity managed by smaller page-level set of components in browser

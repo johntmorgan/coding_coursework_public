@@ -1,0 +1,162 @@
+DNS
+Origins
+  Ex. mobile phone
+    Unique number for each user
+    Can memorize some initially
+    Eventually need a phone book
+  Computers unique IP addresses
+    Use to visit website hosted on machine
+    Humans cannot easily remember
+    Need phone book like repository
+    That's DNS
+
+What is DNS
+  Internet naming service
+  Map human-friendly domain names to machine-readable IP addresses
+  Browser translates domain name to IP by asking DNS
+  Very fast, minimal delay
+
+Details
+  Name servers
+    Respond to user queries
+    Not a single server
+    Complete infrastructure
+  Resource records
+    How DNS stores domain to IP mappings
+    Smallest unit of info users request
+    Different types
+    Important info: type, name, value
+  Caching
+    Used at different layers to reduce request latency
+  Hierarchy
+    In hierarchical form
+    Highly scalable which is key
+
+Common types
+  A - hostname to ip address
+  NS - domain name to authoritative host name
+  CNAME - alias to canonical hostname
+  MX - mail server from alias to canonical hostname
+
+How it works
+  Name servers at different hierarchies
+  Four main types of servers
+    DNS resolver
+    Root-level name server
+    Top-level domain (TLD)
+    Authoritative
+  DNS Resolver
+    Initiate query
+    Forward requests to other servers
+    Usually within user's network
+    Can also just respond from cache
+    aka "local" or "default"
+  Root-level name server
+    Receive requests from local servers
+    Maintain list of name servers based on top-level domains
+      .com, .edu, .uk, etc
+  TLD servers
+    Hold addresses of authoritative name servers
+    ex. .io server -> educative.io authoritative server
+  Authoritative servers
+    Organization DNS name servers
+    Provide actual IP address
+  Note
+    DNS names processed right to left
+    First resolve .io, then educative, etc.
+    Visually represented as a tree though
+  Iterative vs. recursive, two ways to do it
+    Iterative
+      Local server requests root, TLD, and authoritative
+    Recursive
+      User requests local server
+      Local server requests root DNS
+      Root forwards to other servers
+    Iterative is typical
+      Less query load on DNS infrastructure
+  Third-party DNS resolvers
+    New-ish development
+    Google, Cloudflare, OpenDNS, etc.
+    Often faster than ISP DNS
+  Caching
+    Temp storage of frequently requested resource records
+    Record = name to value binding
+    Reduce response time to user
+    Decrease network traffic
+    Even if no cache to resolve immediately, still beneficial
+      Local server, ISP DNS resolver can cache IP addresses
+        of TLD, authoritative servers, avoid root-level request
+  Distributed system
+    Avoids becoming a single point of failure (SPOF)
+    Low query latency, get responses nearby
+    High flex during maint, updates
+    13 logical root name servers A-M
+      Instances spread across globe
+      Managed by 12 different orgs
+  Scalable
+    1000 replicated instances of 13 root name servers
+    Labor divied among TLD, root name, auth servers
+  Reliable
+    Caching
+      In:
+        Browser
+        OS
+        Local name server
+        IP DNS resolver
+      Very rich!
+      Even if some servers down, cached records served
+    Server replication
+      Replicated copies all over globe
+      Low latency
+      Redundancy
+    Protocol
+      Many use over unreliable UDP protocol
+      Much faster, improves performance vs. TCP
+      And internet reliability generally much better these days
+      Can resend request if didn't get previous reply
+      Request/repsponse one round-trip
+        (vs. TCP - 3-way handshake before exchange)
+    TCP?
+      When message size > original packet size - 512 Bytes
+      Large-sized packets more likely to be damaged in congested networks
+      Always use TCP for zone transfers
+      Some clients prefer for privacy, too
+  Consistent
+    Various protocols to transfer info, in hierarchy
+    Compromise on strong consistency for high performance
+      Data read very often vs. writing
+    Eventual consistency
+      Updates records lazily
+      Can take seconds to 3 days (!) to update on internet
+        (Usually minutes to an hour or two in my experience - JM)
+      Time depends on infastructure, size of update, level of update
+    Can suffer from caching too
+      Cache at local and ISP may not be updated
+        Each record has TTL (time to live)
+    TTL
+      Should be small for high availability
+      If a server/cluster fails, update right away
+      Non-available until TTL is expired
+      TTL may be as low as 120s for some companies
+
+Example runs
+  nslookup www.google.com
+    Non-authoritative answer = cached
+    Comes from 2nd/3rd/4th-hand name servers
+      ISP nameserver etc.
+      Cached version of Google auth nameserver resposne
+    If try multiple names, usually receive cached response
+    Run same command, different order
+      Load balancing
+      (IP addresses actually diff, probably extensive load balancing - JM)
+  dig www.google.com
+    TTL second row - set to 282 now (from 300 in picture)
+    Query time: 0 msec - time from server
+      0 msec in my case - really? - JM
+
+How do you know DNS resolver IP address?
+  OS has config files with DNS resolver IP addresses
+    From there, get everything
+  Seed each resolver with knowledge of root DNS servers (rarely change)
+    BIND (Berkeley Internet Name Domain)
+    InterNIC maintains updated list of 13 root servers

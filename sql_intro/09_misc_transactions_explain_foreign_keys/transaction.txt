@@ -1,0 +1,73 @@
+Transaction
+  Common def
+    Unit of work performed by DBMS against DB
+    Treated in coherent and reliable way
+    Independent of other transactions
+  Common
+    Think about 2-leg flight
+    If denied second leg, go home rather than sitting at airport
+  Complete all actions or none at all
+
+Why transactions
+  Multiple users interacting with database
+  One user's actions interleave with another's
+  Data can reach inconsistent state
+  Classic example bank account
+    Bank app adding $100
+      Writes $600 now
+    You withdraw $200 during this write
+      Gets missed
+      Bank lost money
+  App layer avoids error by performing read and update atomically
+    i.e. as a transaction
+  Batch together SQL statements as indivisible set
+
+  // MySQL operates in AUTOCOMMIT mode
+  // All commands issued are committed and treated as transaction
+  // Explicitly start and commit transaction
+
+  START TRANSACTION;
+  UPDATE Actors
+  SET Id = 100
+  WHERE FirstName = "Brad";
+  COMMIT;
+
+  // Now let's roll back mid way
+
+  START TRANSACTION;
+
+  UPDATE Actors
+  SET Id = 200
+  WHERE FirstName = "Tom";
+
+  ROLLBACK;
+
+  // Changes do not take place
+
+Locking
+  Transactions key to keep users from stepping on each other's feet
+  Database system must block other transactions from executing
+    If target same tables
+  Some storage engines don't support transactions
+  Either way DB system must have locking to protect tables
+    Don't allow multiple users to modify at same time
+  Various levels of sophistication
+    MyISAM = entire table locked
+    InnoDB = granular locking at row level
+
+  // See available types of storage engines
+
+  SHOW ENGINES;
+
+  // InnoDB is the default
+    Supports fine-grained locking
+    Slower performance
+    Multiple users may modify table at same time
+
+  // MyISAM
+    Whole-table locks, simpler and faster
+    Reduced concurrency
+
+  // Takeaway: lots of consequences from storage engine
+    As user numbers increase, greater sophistication needed for high concurrency
+

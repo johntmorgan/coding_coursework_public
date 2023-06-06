@@ -1,0 +1,37 @@
+Conclusions
+  Congrats on finishing!
+  Learned system design
+    Started with building blocks
+    Then focused on specific business use cases
+  Selected design problems from many domains
+  Unique aspects to each problem
+    YouTube
+      Custom data stores like Vitess, BigTable
+    Quora
+      Vertical sharding of MySQL for scalability
+    Google Maps
+      Map segmentation
+    Yelp  
+      Quadtrees 
+    Uber
+      Payment service for fraud detection, rider/driver matching
+    Twitter
+      Client-side load balancers for multiple services
+    Newsfeed
+      Recommendation system to ensure ranking & feed suggsetions
+    Instagram
+      Combining different building blocks
+    TinyURL
+      Base-58 encoding
+    Web crawler
+      Detection & resolution of web crawler traps
+    WhatsApp
+      Message management for offline users
+    Typeahead
+      Trie data structure to provide suggestions
+    Google Docs
+      Concurrency management for simultaneous writes
+        OT (operational transformation)
+        CRDT (conflict-free replicated data type)
+  Go build great systems!
+  Feel free to drop email, leave comment on forum

@@ -1,0 +1,320 @@
+Think about what you've seen so far in this course
+Seen a range of algorithms
+  Recursion
+  Looping
+  Greedy
+  Bisection
+  Pulling together with classes
+Covered a lot of fundamentals already
+  Getting geared up to tackle a bigger range of problems
+Next 2 lectures
+  Ask 2 important questions
+  How efficient are my algoritms
+  Time and space
+  But mostly time
+  How fast, how do I reason about this?
+But first: why?
+  How can we reason about an algorithm to predict
+  Test code on small scale
+    What happens with large input set
+  Also important to go other direction
+  How do choices in algorithm design influence the time it takes
+  Are there fundamental limits to speed no matter what you do?
+But why should we care?
+  Might be on quiz (or job search, lol)
+  Makes a big difference
+    May not be as obvious now
+    Started coding 45 years ago - punch cards
+  Computers are getting so much faster
+    Data sets are getting massive
+  In 2014, Google served 30 trillion pages, covering 100m GB of data
+  Can you write a simple little search algorithm to do this
+    Google makes $$ off MapReduce algorithm
+  Genomics data set
+  Working for US government, tracking terrorists
+Even when we do that, we've got a choice to make
+  Time or space?
+Often a time/space storage
+  Fibonacci example
+    Use a dictionary - size increases but so does speed
+Going go *focus* on time efficiency
+Lots of options
+  While and for might have different behavior
+Might have different choices
+  Iterative vs recursion
+  Divide and conquer vs straightforward search
+Three ways of measuring efficiency
+  1. Could be scientists, time it
+  2. Could count operations - mathematical operations
+  Those two ways are flawed
+  3. Abstract second approach to order of growth
+    Big-O notation
+Timing
+  Python import time
+  t0 = time.clock()
+  t1 = time.clock() - t0
+  Good news - time changes as algorithm changes
+  Use a loop with a few steps, time changes slightly
+  Timing also varies between computers
+  Can measure on small sizes, does not predict large-scale
+    E.g. things loading slowly out of memory
+Identify a set of primitive operations
+  arithmetic, comparisons, assignments, accessing objects in memory
+  Assume they all take same amount of time
+  Come up with operations executed
+  Simple math, not bad:
+  def c_to_f(c):
+    return c * 9.0/5 + 32 # 3 operatoins
+  BUT
+  def mysum(x):
+    total = 0 # 1 operation
+    for i in range(x + 1): # 1 operation
+      total += i # 2 operations
+    return total # 1 operation
+  # Loop x times
+  3x + 2
+  x = 10, 32 operations
+  x = 100, 302 operations
+  Certainly depends on the algorithm
+  Still depends on implementation
+  What if you change for to while?
+
+  while i < x + 1
+    total += i
+    i += 1
+
+  Need to set and test value of i
+  Now it's 4x + 2
+  Good news - independent of the computer it's running on
+  If I double the size of the input, does it double the time I need?
+  No clear definition of which operations to count
+So: orders of growth
+  Counting operations, don't worry about small variations - 3 vs 4 steps in loop
+  Focus on what happens when problem gets arbitrarily large
+  Counting from x to 10, who cares
+  What about a million, 100 million?
+What are we going to measure?
+How do we count without measuring implementation details?
+If I take one integer as an argument
+  What happens with size of integer
+  Counting over list, length of list
+  If it takes more than one argument
+  Decide which one - usually list > int etc.
+Sometimes the amount of time the code takes depends on input
+  Search for element in list
+
+  def search_for_element(L, e)
+    for i in L:
+      if i == e:
+        return True
+    return False
+
+  At most 3 steps inside loop
+  If e is the first element, done the first time
+  If e is not in the list, will go through entire list
+  Could run a bunch of trials and get average case if scientist
+  Focus on worst-case, upper bound
+  There are times to look at the average case
+  But usually when talking about complexity, wost_case
+
+  Best case, steps independent of L
+  Worst case, linear with the size of the problem
+    Double the list length, takes twice as much time
+
+So this is what orders of growth does for you
+  Not exact runtime, but if double input, what is the growth in time?
+  Description as big as or bigger than amount of time take
+  Not to worried about precise - order
+  Going to grow linearly
+  Or quadratically
+  Or (really lucky) constant growth
+  Looking for tight bound on upper growth
+
+Big O notation
+  I think it's because Omicron as symbol to define it
+  Worst case - bottleneck
+
+  def fact_iter(n):
+    answer = 1 # 1 step
+    while n > 1: # 1 step
+      answer *= n # 2 steps
+      n -= 1 # 2 steps
+    return answer # 1 step
+
+  computes factorial
+  number of steps: 1 + 5n + 1
+    5n + 2
+  what's the asymptotic complexity?
+  in Big O notation - that's order n - grows linearly
+    double the size of n, number of steps double
+    And of course
+      n = 5 -> 52
+      n = 10 -> 102
+    Not exactly double!
+    But when n gets really big, that +2 really really does not matter
+    Ignore both additive and multiplicative constants
+
+  n^2 + 2n + 2 -> n^2
+    O(n^2)
+  n^2 + 100000n + 3^1000
+    O(n^2)
+    For lower values, 100000n would matter a lot
+    But interested in growth, that's what dominates
+  log(n) + n + 4
+    O(n)
+    Because n grows faster than log of n
+  0.0001*n*log(n) + 300n
+    O(n log n)
+  2n^30 + 3^n
+    O(3^n)
+    Exponentials much worse than powers
+    You'll see later there are some problems where all solutions believed exponential
+    Big problem!
+  1. Constant best
+  2. Log(n) better than linear
+  3. Linear
+  4. Nlog(n) - funky but present in a lot of really valuable problems
+  5. Quadratic etc
+  6. Exponential
+  Analyzing program complexity
+    Combine complexity classes
+    Analyze statements inside functions
+    Apply some rules, focus on dominant term
+  Law of addition
+    Used with sequential statements
+    O(f(n)) + O(g(n)) = O(f(n) + g(n))
+  Example:
+    for i in range(n)
+      print('a')
+    for j in range(n*n)
+      print('b')
+  O(n) + O(n^2) -> O(n^2) because dominant term
+  Law of multiplication
+    When nested statements
+  for i in range(n)
+    for j in range(n)
+      print('a')
+  O(n^2)
+
+  Complexity classes
+    O(1) constant - rare, usually trivial but valuable
+    O(log n) logarithmic
+    O(n) linear
+    O(n log n) log-linear
+    O(n^c) polynomial
+    O(c^n) exponential
+
+  Complexity growth
+    Up to log-linear not too bad
+    But polynomial and exponential
+
+  As you design algorithms, get as high in the complexity class listing as possible
+    Or you may be waiting a long time!
+
+  Identifying common algorithms and their complexity
+  Linear search on *unsorted* list
+
+    def linear_search(L, e):
+      found = False
+      for i in range(len(L)):
+        if e == L[i]:
+          found = True
+      return found
+
+    must look through all elements to decide it's not there
+    this is linear - looping n times if n is the input
+    can return true when found
+      but doesn't change order of growth, though does improve average time
+      worst case behavior still the same (element not in list)
+    but how do you know accessing a list element takes constant time?
+      if a byte is 8 bits
+      might reserve 4 bytes or 32 bits to cover any reasonable-sized integer
+      just need to know first part of list
+      to get to ith element - can go straight to point
+    but what if they're not integers, take up a big chunk of space
+      use a technique called indirectoin
+      store a pointer to where it is in memory
+        so again in constant time
+    Python does this... but not every langauge does!
+
+  What if the list is sorted?
+    def search(L, e):
+      for i in range(len(L)):
+        if L[i] == e:
+          return True
+        if L[i] > e:
+          return False
+      return False
+
+    Complexity is again O(n)
+    Average time behavior will be faster than unsorted
+    But doesn't change the worst case!
+      Still need to go through the whole list sometimes
+    Next week: much more efficient ways to do search if sorted
+
+  Give a string of characters, composed of decimal digits
+
+  def addDigits(s):
+    val = 0
+    for c in s:
+      val += int(c)
+    return val
+
+    Linear again, loopin'
+    O(len(s))
+    Pattern again - loop is linear
+
+    fact_iter
+      Looping again, O(n)
+
+  Last example
+    Standard loops typically linear
+    What about nested loops?
+
+    Suppose I gave you 2 lists composed of integers
+    Is first list a subset of second list
+      i.e. does every element of first list appear in second list?
+
+    def isSubset(L1, L2):
+      for e1 in L1:
+        matched = False
+        for e2 in L2:
+          if e1 == e2:
+            matched = True
+            break
+        if not matched:
+          return False
+      return True
+
+    John: O(n^2)
+    Outer loop len(L1) times
+    Inner loop len(L1) * len(L2) times
+    Worst case behavior, both lists same length
+    None of the elements are in L2
+    O(n^2)
+
+  One more example, intersection
+  Find intersection of two lists, return a list with each element appearing only once
+  def intersect(L1, L2):
+    tmp = []
+    for e1 in L1:
+      for e2 in L2:
+        if e1 == e2
+          tmp.append(e1)
+    res = []
+    for e in tmp:
+      if not in res:
+        res.append(e)
+    return res
+
+    John: O(n^2), quadratic - nested loop up top, single (linear) loop at bottom
+    No, the bottom comparison takes len(L) - implicit second loop
+
+  Next time, more interesting classes
+
+Reading
+  Decreasing computational complexity often results in increasing conceptual complexity
+  "Big O" can also be called asymptotic notation
+  Remember constant time may still have loops - if they are independet of inputs
+  Non-loop linear example: recursive factorial
+    Also each call causes a new stack frame to be allocated, so space complexity is O(x)

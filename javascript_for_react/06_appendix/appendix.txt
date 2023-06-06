@@ -1,0 +1,39 @@
+Appendix
+Setting up create-react-app
+  No way around node and npm if developing with JS
+  Install node = install npm (node package manager)
+
+  NPM installs libraries & frameworks
+  Node command itself compiles and runs a JS file in a terminal
+    node example.js
+
+  You can also install and manage node through nvm
+    Install via homebrow
+    Highly recommended - install & manage multiple versions
+
+Starting create-react-app Project
+  Follow setup guide
+  Read the file App.js
+    Contains skeleton code for React App
+
+  import React, { Component } from 'react';
+  import logo from './logo.svg';
+  import './App.css';
+
+  class App extends Component {
+    render() {
+      return (
+        <div className="App">
+          <header className="App-header">
+            <img src={logo} className="App-logo" alt="logo" />
+            <h1 className="App-title">Welcome to React</h1>
+          </header>
+          <p className="App-intro">
+            To get started, edit <code>src/App.js</code> and save to reload.
+          </p>
+        </div>
+      );
+    }
+  }
+
+  export default App;

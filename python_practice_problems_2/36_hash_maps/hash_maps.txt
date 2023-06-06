@@ -1,0 +1,39 @@
+Hash Maps
+  Method to store data
+  Reduce time taken to find and access values
+  Store in form of key-value pairs
+  Arrays
+    Keys known as indexes
+    Cannot pick value of keys
+      Always sequential integers from 0
+    If do not know index, must search entire array
+      O(n)
+  Hash maps
+    Flexible keys
+    Each key unique
+    Look up in O(1) time
+  Storage
+    Arrays
+      Student name:grade
+      Must be at same place in each array
+      O(n) to find
+      Then O(1) to access spot in second array
+    Hash map:
+      Name as key, grade as value
+      One lookup in O(1) time
+
+Pattern match
+  Yes
+    Repeated fast access to data
+    Store relationship between two sets of data
+    (No extrinsic order to track - JM)
+  No
+    No useful relation between two sets of data
+
+Real world
+  Telecoms
+    Phone book, name as key number as value
+  E-commerce
+    Search for product detail using product ID as key
+  File system
+    Store file name : path

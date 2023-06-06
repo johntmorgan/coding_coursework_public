@@ -1,0 +1,21 @@
+Facebook
+  Biggest social media company in world
+  Goal to improve integration among sister platforms
+    Efficient code
+    API rate limiter
+    Eliminate similar requests
+
+Features
+  Find all people in user's friend circle
+  Suggest user's friends on instagram as well
+    Copy to separate database
+  Sync FB stories with Instagram
+  Limit request rate from users
+  Identify morphed versions of abused/profane words
+  Group gibberish posts together, find decoding pattern
+  Mining for patterns in high-performance cluster
+    Suggest optimal assignment of posts to nodes
+  Find smallest sequence of topics mentioned by a user
+  Recommend ads to users
+    Recreate decision tree, serialized in preorder & inorder traversal
+

@@ -1,0 +1,149 @@
+Types definition
+  Group values that have same attributes
+  Split
+    Primitive values
+    Objects and functions
+  Primitive
+    Immutable
+    Primitive cannot be modified
+    However new primitives can be created and assigned
+  Primitives in JS
+    Boolean
+    Number
+    Null
+    Undefined
+    String
+    Symbol
+
+Boolean
+  Only takes true and false
+
+  var bool_true = true;
+  var bool_false = new Boolean(false);
+  console.log('The values are:',bool_true,bool_false);
+    > The values are true [Boolean: false]
+  console.log('The types are:',typeof(bool_true),typeof(bool_false));
+    > boolean object
+
+  We are using typeof
+  Use new keyword initializing objects in JS
+
+  var bool_true = 1 == 1
+  var bool_false = 1 != 1
+  // print values
+  console.log('The values are:',bool_true,bool_false);
+    > The values are: true false
+  // print types
+  console.log('The types are:',typeof(bool_true),typeof(bool_false));
+    > The types are: boolean boolean
+
+Number
+  Consists of all numeric values
+    Include regular numbers and decimals
+    Not all numbers can be perfectly represented in JS
+      Decimal offers more precision near 0, less away
+      "Floating" decimial point
+
+  var num1 = 120; // initialize variable to 120
+  var num2 = new Number(0.002); // initialize variable to 0.002
+  // print values
+  console.log('The values are:',num1,num2);
+    > The values are: 120 [Number: 0.002]
+  // print types
+  console.log('The types are:',typeof(num1),typeof(num2));
+    > The types are: number object
+
+  Can use scientific notation
+  var num1 = 10e5; // initialize variable to 1000000
+  var num2 = new Number(2e-3); // initialize variable to 0.002
+  // print values
+  console.log('The values are:',num1,num2);
+    > The values are: 1000000 [Number: 0.002]
+  // print types
+  console.log('The types are:',typeof(num1),typeof(num2));
+    > The types are: number object
+
+  Special numeric values
+    Infinity
+    -Infinity
+    NaN
+      NaN === NaN is false
+    0 === -0 and -0 === 0 is true, but vals are different (??)
+
+Null
+  Represents nothing
+  null type has only one value, null
+  var num1 = null; // initialize variable to null
+  // print values
+  console.log('The values are:',num1);
+    > The values are: null
+  // print types
+  console.log('The types are:',typeof(num1));
+    > The types are: object // For legacy reasons... but it's not, it's a primitive
+
+Undefined
+  Assigned to variables not assigned a value
+
+  var num1; // initialize variable without assignment
+  var num2 = undefined; // initialize variable to undefined
+
+  // print values
+  console.log('The values are:',num1,num2);
+    > The values are: undefined undefined
+  // print types
+  console.log('The types are:',typeof(num1),typeof(num2));
+    > The types are: undefined undefined
+
+Null vs. undefined
+  Null expresses lack of identification
+  Undefined represents a lack of assignment of the variable
+
+String
+  Series of chars in quotes
+
+  var str1 = "String-1"; // initialize str1 to "String-1"
+  var str2 = new String("String-2"); // initialize str2 to "String-2"
+  var str3 = new String(1234); // initialize str3 to "1234"
+  // print values
+  console.log('The values are:',str1, str2, str3);
+    > The values are: String-1 [String: 'String-2'] [String: '1234']
+  // print types
+  console.log('The types are:',typeof(str1),typeof(str2),typeof(str3));
+    > The types are: string object object
+
+  Single and double quotes are the same
+  Backticks (right below Esc key) allow extra functionality - basically string substitution, inserting expressions
+    'This is ' + variable;
+    `This is ＄{variable}`
+
+    var str1 = "Str1"; // initialize str1 to "String-1"
+    var str2 = new String("Str2"); // initialize str2 to "String-2"
+     // initialize str1_2 to "str1:Str1 and str2:Str2"
+    var str1_2 = `str1:${str1} and str2:${str2}`;
+    // initialize expression to "Total strings:2"
+    var expression = `Total strings:${1+1}`;
+    // print values
+    console.log(str1_2);
+    console.log(expression);
+    // print types
+    console.log('The types are:',typeof(str1),typeof(str2),typeof(str1_2));
+
+Symbol
+  Allows up to include unique identifiers in code
+  Have a value unique to program
+
+  var sym1 = Symbol(); // initialize variable to symbol
+  var sym2 = Symbol(); // initialize variable to symbol
+  // print values
+  console.log('The values are:',sym1, sym2);
+    > The values are: Symbol() Symbol()
+  // print types
+  console.log('The types are:',typeof(sym1),typeof(sym2));
+    > The types are: symbol symbol
+  // print equality
+  console.log('Are they equal?',sym1==sym2 , sym1===sym2);
+    >  Are they equal? false false
+
+Objects and functions
+  The non-primitive types
+  Can be manipulated directly in code

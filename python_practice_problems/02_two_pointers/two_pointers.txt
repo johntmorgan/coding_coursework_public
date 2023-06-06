@@ -1,0 +1,31 @@
+Two Pointers
+  Use two pointers to iterate over array or list
+  Keep track of values at indexes in single iteration
+  Think of it
+    Find two data elements in array that satisfy condition
+  Iterate one or both directions
+  Ex. palindrome
+    Naive O(n^2) nested loops
+    O(n) with single pointers
+  Other examples
+    Reverse array O(n) - swap and move
+    Pair with sum in sorted array
+
+Pattern matching
+  Yes
+    Traverse data linearly - array, linked list, string
+    Input data sorted, or arranged in relevant fashion
+    Only consider two elements in data, not all
+  No
+    Input data not linear traverse
+    Exhaustive search required
+
+Real world
+  Network protocol
+    Response packets take same route in reverse back to source
+    Path may differ due to errors
+    Can tolerate at most one diversion router
+    Path recorded in array
+    Two pointers used to find diversion
+  Product suggestions
+    Pair products for free delivery

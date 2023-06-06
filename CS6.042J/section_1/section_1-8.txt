@@ -1,0 +1,332 @@
+Induction
+Text
+  Powerful way to show property true for all nonnegative integers
+  Two versions: ordinary and strong
+  Invariant principle: version of induction specially adapted for reasoning about step by step processes
+  Example
+    Two rules
+    1. First student gets a candy bar
+    2. If student n gets a candy bar, student n + 1 also gets a candy bar
+    If you are student 17: you get a candy bar
+    And rules guarantee every student gets a bar
+    That is basically all there is to induction!
+    Let P be a predicate on nonnegative integers
+      If P(0) is true
+      And P(n) implies P(n + 1) for all nonnegative integers n
+      Then P(m) is true for all nonnegative integers m
+      "ordinary induction"
+        Several variants coming later
+    P0, for all N in N.P(n) IMPLIES P(n + 1)
+    ---
+    for all m in N.P(m)
+    To prove for all n in N
+      1 + 2 + 3 + ... + n = n(n + 1) / 2
+      P(0) = 0, true
+      Assume P(n)
+      then for ... + n + n + 1 = n(n + 1) / 2 + (n + 1)
+      (n + 1)(n + 2) /2 = n(n + 1) /2 + n + 1 - works out
+      n^2 + 3n + 2 / 2 = n^2 + n / 2 + (2n + 2) / 2
+    5 step template
+      State proof uses induction
+      Define predicate P(n)
+      Prove that P(0) is true
+      Prove that P(n) implies P(n + 1) for non-negative integer n
+        "inductive step"
+        Assume P(n) true
+        Prove P(n + 1) true
+        Bridging gap may require some ingenuity
+      Invoke induction
+    The proof does not provide an intuitive way to understand why this is true
+      Or where formula came from in the first place
+      Both a weakness and a strength
+      Weakness to not provide insight
+      Strength can guarantee corrected without requiring insight
+    Another example
+      For all n >= 0 there exists a tiling of a 2^n * 2^n courtyard with Bill in a central square
+        Doomed proof
+          P(0) is true, Bill fills the whole courtyard
+          Assume tiling of 2^n x 2^m with Bill in center
+          Prove a way to tile 2^(n + 1) * 2^(n + 1)
+          But knowing 2^n doesn't really help!
+    Look for a stronger hypothesis
+      P(0) is true again
+      For every location of bill in 2^n x 2^n, exists a tiling of the remainder
+      Divide courtyard into 4 quadrants, each 2^n * 2^n
+      Replace temporary Bills with a single L-shaped tile
+        So therefore P(n) implies P(n + 1), thus P(m) true for all m in N
+      Not only does argument guarantee tiling exists, gives algorithm for finding it
+        Can put Bill in different positions now true
+      Took almost 20 years trying to prove every planar graph is 5-choosable
+        Induction proof simple enough for napkin
+        Just being clever! (That's my problem - JM)
+    A faulty proof
+      All horses are the same color
+      In every set of n >= 1 horses, all the horses are the same color
+      So prove P(1) and then prove P(n) implies P(n + 1)
+      Base case: just one horse, same color as itself
+      Assume P(n) true for some n >= 1
+      In every set of n horses, all the same color
+        Now have a set of n + 1 horses
+        First n horses are the same color
+        Last n horses are also the same color
+        So h1 is the same color as all but h(n + 1)
+        And h(n + 1) is the same as all but h(1)
+        False! Problem is in statement h1 is the same color
+        But when n = 1, no "remaining" horses to share a color with
+          So no reason h1 and h2 need to be same color
+        Proved P(1) and correctly proved P(2) -> P(3), but failed to prove P(1) -> P(2)
+  Strong Inudction
+    A useful variant
+    Simple proof that predicate holds for n + 1 does not just follow from holding at n
+      Follows from holding for other values <= n
+      1) P(0) is true
+      2) For all n in N, P(0), P(1)... P(n) together imply P(n + 1)
+    What is the difference?
+      Assume P(0), P(1)... P(N) are all true
+        Assume a strong set of hypotheses, make job easier
+    P(0), for all n in N.(P(0) AND P(1) AND...AND P(n)) IMPLIES P(n + 1)
+    --
+    For all m in N.P(m)
+
+    P(0), [for all k <= n in N.P(k)] IMPLIES P(n + 1)
+    --
+    For all m in N.P(m)
+    State that it's "strong induction" up front
+    Example
+      Every integer > 1 is a product of primes
+      Prove by strong induction, letting hypothesis P(n) be that n is product of primes
+      So follow if prove P(n) holds true for all n >= 2
+      Base case: n = 2, P(2) is true because 2 is prime so it is a length one product of primes by convention
+      Inductive:
+        Suppose n >= 2 and every number from 2 to n is a product of primes
+        Show that P(n + 1) holds
+        If n + 1 is itself prime, it is a length one product of primes by convention, P(n + 1 holds)
+        Otherwise, n + 1 is not prime. So n + 1 = k * m for some integers between 2 and n
+        But k and m must be products of primes. So therefore k * m = n + 1 is also a product of primes
+    Making change
+      Imaginary country
+      Coins worth 3Sg and 5sg
+      Can make change for any number that is at least 8Sg
+      Strong induction easy to prove for n + 1 >= 11 (n + 1) - 3 >= 8
+      So by strong induction can make change for (n + 1) - 3
+      P(0) is true, 3 + 5 = 8
+      Assume p(k) holds for all k <= n, prove P(n + 1 holds)
+      n + 1 = 1 -> (n + 1) + 8 = 9 Sg, 3 + 3 + 3
+      n + 1 = 2 -> (n + 1) + 8 = 10 Sg = 5 + 5
+      n + 1 >= 3 -> 0 <= n - 2 <= n
+        I understand exactly why this works, but cannot fully follow the proof language ugh - JM
+    Stacking game
+      Stack of n boxes
+      Divide one stack into two non-empty stacks
+      End when you have n stacks with a single box
+      Score ab points for dividing stack of height a + b into two stacks with heights a and b
+      How do you maximize your score?
+        You can't, score depends entirely on number of boxess
+        Every result gives score of n(n - 1)/2 points
+      Strong induction
+        If n = 1, only one block, no moves, score = 0
+        Assume P(1)... P(n) is true
+        Have a stack with n + 1 blocks
+        Total score is first move + substacks
+        = ab + a(a - 1)/2 + b(b - 1)/2
+        = ((a + b)^2 - (a + b))/2 = (a + b)((a + b) - 1)/ 2 = (n + 1)n/2
+  Strong vs. regular induction vs. Well Ordering
+    Strong is not really any stronger
+      Reformat into ordinary induction by decorating induction hypothesis with a universal quantifier
+      But important to distinguish, does case for n + 1 follow directly for n or require cases smaller than n?
+      Any Well Ordering proof can reformat into induction also
+      Simply different formats for presenting the same mathematical reasoning!
+      Induction may be clearer
+        No proof by contradiction
+        Often provide recursive procedures reducing large to small
+Lecture
+  Now a standard part of the high school curriculum (oh really? - JM)
+  Example
+    Color integers 0, 1, 2, 3, 4, 5, ?, ...
+    I tell you 0 is red
+    Any int next to a red integer is red
+    Then you know that all ints are red
+    Statement of rule of induction
+  Induction rule
+    R(0), R(0) IMPLIES R(1), R(1) IMPLIES R(2),..., R(n) IMPLIES R(n + 1),...
+  R(0), For all n.R(n) IMPLIES R(n + 1)
+  ---
+  For all m.R(M)
+  Sometimes gets explained in terms of dominoes
+  Example induction proof
+    Prove numerical identity
+    1 + r + r^2 + ... + r^n  = (r^(n + 1) - 1) / (r - 1) for r != 1
+    Proof: (by induction on n) // may be multiple variables instead of n
+    The induction hypothesis, P(n), is:
+    Base Case (n = 0):  // n can again equal 1, 2 etc
+      1 = (r - 1) / (r - 1) - proven
+    Inductive Step: Assume P(n) where n >=0 and prove P(n + 1):
+    Now from induction hypothesis P(n) we have
+     1 + r + r^2 + ... + r^n  = (r^(n + 1) - 1) / (r - 1) for r != 1
+     1 + r + r^2 + ... + r^n + r(n + 1) = (r^(n + 1) - 1) / (r - 1) + r^(n + 1)
+    = r^(n + 1) - 1 + r^(n + 1)(r - 1) / r - 1
+    = r^((n + 1) + 1) - 1 / r - 1
+    This proves point P(n + 1) completing the proof by induction
+    QED/Done
+  An aside: ellipsis
+    Used where the writer says you should see a pattern
+    Can lead to confusion (n = 0 -> r^0 -> 1)
+    Can use precise math instead
+      Math for a for/do loop
+        Sum from i=0 to n r^i
+      Is more precise but can be harder to read than the pattern sometimes too!
+  MIT Stata Center
+    Design mockup: Stata Lobby
+    Plaza built out of unit-size squares
+    2^n unit-sized tiles
+    One tile space left blank for statue of donor Bill (Gates)
+    Gehry for aesthetic reasons, square tiled with L-shaped tiles
+    Exact size of square parameterized by n
+    Can you always find the right tiling, leave Bill in the middle
+    2^n x 2^n plaza can make Bill and Frank happy
+      Which square doesn't matter, rotatal
+    Proof: (by induction on n)
+    P(n) ::= can tile 2^n x 2^n with Bill in the middle
+    Base case: (n = 0)
+      Bill only, no tiles needed
+      Assume can tile 2^n x 2^n, prove can tile 2^(n + 1) x 2^(n x 1)
+      Double size square made of 4 half-size squares
+      But now I'm stuck
+      Point of this example is to show you how to get unstuck
+    Get unstuck by proving something stronger
+      Can find a tiling with Bill in any square
+    Revised P(n)
+      P(n) ::= can tile with Bill anywhere
+      Base case: n = 0, same deal
+      Inductive step
+        In any 2^n x 2^n
+        Assume tile with L-shape squares
+        Stick Bill in arbitrary spot
+        Can fill 2^n square no matter what
+        Tile bill in corners meeting in middle, create L shape
+        Easy to make 2^(n+1) from here
+      Note:
+        Induction proof implicitly defines a recursive procedure for tiling with Bill anywhere
+  Bogus induction
+    Theorem: All horses are the same color
+    Proof: by induction on n
+    Induction hypothesis
+      P(n) ::= any set of n horses are the same color
+    Base case (n = 1):
+      Could start at n = 0, empty set same color
+      But let's start an n = 1 - base case
+        Horse same color as itself
+    Inductive case:
+      Assume n horses have the same color
+      Prove that any n + 1 horses have the same color
+        The first n have the same color
+        The second set of n have the same color
+        So first and last horse are same color as the middle
+          So set of n + 1 have the same color
+          QED??
+    What's wrong?
+      Proof that P(n) -> P(n + 1) is wrong
+      Must work for all n greater than the base case
+      But if n = 1 and going to 2
+      The proof breaks down
+      In that case there are no "middle" horses they have a color in common with
+        That's the only place broken
+        Misled by ellipses
+        But proof DOES work for all n != 1
+        But if one domino is missing from the line, the proof breaks down
+  Strong Induction
+    Prove P(0).
+    Then prove P(n + 1) assuming all of P(0), P(1), ..., P(n)
+      Instead of just P(n)
+    Conclude for all m.P(m)
+    Intuitive way to justify this
+      Induction step going from P(0), P(1), P(2), etc.
+      Might as well take advantage you got there when you are at P(n), getting to P(n + 1)
+        Will formally justify in just a bit
+    Postage by Strong Induction
+      Already proved by closely related Well Ordering
+      Available stamps: 3c, 5c
+      Theorem - get any amount > 8c
+      By strong indction with hyp P(n) ::= can form n + 8c
+      Base case P(0)
+        Make 0 + 8 -> 5c and 3c
+      Inductive step:
+        Assume m + 8 for n >= m >= 0
+        Assume all from n to n + 8
+        Prove can get n + 9c
+      Inductive step cases
+        n = 0, n + 9 = 3 x 3
+        n = 1, n + 9 = 2 x 5
+        n >= 2, by hypothesis, can get n - 2 + 8c
+        n - 2 + 8c + 3c = n + 9c
+    Stacking boxes
+      Make a move that splits stack into smaller block
+      a + b, split into a and b stacks
+        score is height of 2 stacks
+        keep moving until stuck
+        overall score: sum of move scores
+      Different strategies
+        take one at a time
+        keep splitting in 2
+          better strategy?
+        guess what, all came in as a tie
+        Every way gives the same score
+        Unstack one at a time
+        (n - 1) + (n - 2) ... + 1 = n(n - 1)/2
+      Proof by strong induction
+        Claim n as hypothesis
+        Base case n = 0:
+          Score = 0
+        Inductive case
+          Assume for stacks <= n and prove C(n + 1)
+          n + 1 stack score = ((n + 1) * n) / 2
+          Case n + 1 = 1
+          Verify for 1 stack
+            score = 0 1(1 - 1)/2
+          C(1) is ok
+          Now if n + 1 is greater than 1
+            Split into a stack and b stack
+            a + b = n + 1
+            (a + b)-score = ab + a-stack score + b-stack score
+            but ab are smaller than n + 1
+            a-stack score = a(a - 1)/2
+            b-stack score = b(b - 1)/2
+            (a + b)-score = ab + a(a - 1)/2 + b(b - 1)/2
+                          = (a + b)((a + b) - 1) / 2 = ((n + 1) * n) /2
+            So C(n + 1) is OK
+              QED
+  Ordinary induction vs. strong induction vs WOP (optional)
+    Hard to tell these approaches apart
+    In an easy technical sense, all equivalent
+    Ordinary is basically a special case of strong, so why bother with it?
+      Expository difference
+      Helps a reader to know that k's < n don't matter for n + 1
+      More intuitive (?) - well it's been claimed
+    Why not always use ordinary induction?
+      Suppose for all m.P(m) proved by strong induction
+      Inductive step assumed for all k <= n.P(k)
+      And proved P(n + 1)
+      Revise induction hypothesis - universal quantifier
+        Q(n) ::= for all k <= n.P(k)
+      Now same proof becomes ordinary induction
+    So strong induction adds no power
+      Just decorate a strong proof with some "for alls" and it becomes Ordinary
+      Just lets you omit a universal quantifiers
+        That would otherwise have to be made explicit
+    Why use strong
+      Cleaner, don't need to write for all k all over
+    WOP:
+      Same deal: easy to rephrase any induction proof into WOP and vice-versa
+      So WOP is not adding any new power or perspective
+      Just a different way to organize and tell the same story
+      Induction & WOP are rephrasing of same logic principle
+    So which one to use?
+      Matter of taste
+      ARM may try a few different versions when writing up
+        What comes out more cleanly?
+      Unless on an exam, told to use a particular method
+    Why WOP first?
+      Exam performance and survey show ~20% of students don't "get" induction
+      But nobody has problems believing and working with WOP
+      So to get going with interesting proofs right away, start with WOP
+      

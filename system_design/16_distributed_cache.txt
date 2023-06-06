@@ -1,0 +1,490 @@
+Distributed Cache
+Problem
+  Typically:
+    Client -> service -> data
+  Works fine normally
+  As number of users increase, database queries increase
+    Slow performance
+  Cache to help with performance deterioration
+
+Cache
+  Temporary data storage
+  Keep data entries in memory
+  Store only most frequently accessed data
+  If data for request in cache "cache hit"
+    Serve user
+  If data not in cache "cache miss"
+    Query from database
+    Store in cache for next time
+  Must serve data from fast storage component
+  Must have enough storage
+  Must be affordable as scaled
+  RAM is the raw building block
+    CPU register/cache - too expensive/small
+    SSD, magnetic disk - too slow
+
+Distributed caches
+  Multiple cache servers coordinating
+  Used when single cache server not enough for all data
+    Scalable
+    Higher availability
+  Locality of reference principle
+    Program will access particular set of data in short period of time
+    Locality can be spatial or temporal
+  Benefits
+    Minimize user-perceived latency
+      Precalculate results
+      Store frequently accessed data
+    Pre-generate expensive queries from database
+    Store user session data temporarily
+    Serve data from temp even if data store down
+    Reduce network costs by serving locally
+  Single systems
+    Single point of failure (SPOF)
+    Do not deal with dist systems designed in layers
+      Each layer should have a cache
+      Decouple sensitive data from different layers
+    Do not cover different locatoins
+  Caching at diff layers
+    Web
+      HTTP cache header
+      Web accelerators
+      Key-value store
+      CDNs
+      Goals
+        Fast retrieval of static content
+        Manage sessions
+    Application
+      Local cache
+      Key-value data store
+      Goals
+        Fast app-level computations
+        Fast data retrieval
+    Database
+      DB cache
+      Buffers
+      Key-value store
+      Goals
+        Reduce data retrieval latency
+        Reduce I/O load from database
+    Also
+      At DNS
+      Client-side, browsers/end devices
+
+Background
+  Key design elements
+    Writing policies
+      Order
+    Eviction policies
+      Which data to dump
+    Cache invalidation
+      How to identify & remove stale/outdated entreis
+    Storage mechanism
+      Which cache entry on which server
+      Which data structure to use
+    Cache client
+      Calls cache server
+      What library should it use?
+
+  Writing policies
+    When storing data
+      Cache first or database first?
+      Implications for consistency?
+    Depends on application requirements
+    Options
+      Write-through cache
+      Write-back cache
+      Write-around cache
+    Write-through
+      Write on cache and DB
+      Writes can happen concurrently or sequentially
+      Write latency up, strong consistency
+    Write-back
+      Cache first
+      Async to database
+      Inconsistency inevitable
+        Client can read stale data from database
+      Low write latency
+    Write-around
+      Database only
+      Write to cache later after cache miss
+      Database will be updated
+      Not good for reading recently updated data
+
+  Eviction policies
+    Least recently used (LRU)
+    Most recently used (MRU)
+    Least frequently used (LFU)
+    Most frequently used (MFU)
+    Other
+      FIFO
+    Choose depending on system
+    Class data depending on access frequency
+      Hot
+      Warm
+      Cold
+    Evict cold data, replace with hot/warm
+
+  Cache invalidation
+    Data stale (vs less-used, above)
+    How to identify stale?
+      Store TTL as metadata with each cache item
+      Active expiration: actively check TTL through daemon/thread
+      Passive expiration: check TTL at time of access
+
+  Storage
+    Not trivial!
+    Multiple servers
+      Which data in which servers
+      Which data structure
+    Data structures
+      Hash function
+        To identify server to store/retrieve
+          Consistent hashing usually performs well
+          Simple hashing not ideal
+            Crashes
+            Scaling
+            (Same reasons as in key-value store, presumably - JM)
+        Locate cache inside server
+          Use to locate to read/write
+          Does not say anything about eviction
+          Does not say anything about data structures
+      Bloom filters
+        Interesting choice
+        Quickly find if cache entry not present
+        May probabilistically be present
+          (Wish I had time to take that next MIT course - JM)
+      Linked list
+        Use a doubly linked list to store
+          Widespread use
+          Simple
+          Add/remove in constant time
+    Sharding
+      Avoid SPOF
+      Avoid high load on single instance
+      Two options
+        Dedicated cache servers
+          Separate from app/web servers
+          Flexible hardware choices
+          Scale independently from web/app
+          Other microservices can use cache as a service
+            Cache must be aware of diff apps, don't collide data
+        Co-located cache
+          Embed cache and servce in same host
+          Reduce costs
+            CAPEX - capital expenditures, long-term investments
+            OPEX - operational expenses day to day
+          If one scales, other scales automatically
+          But if one fails, so does the other
+    Cache client
+      Who does the hash calculations for storage?
+      Cache client resides in hosting serves, does hash calcs
+        Store data
+        Retrieve data
+      May coordinate with monitoring, config services
+      Programmed so put/get from different clients = same results
+      Will known about all cache servers
+      Use protocols like TCP, UDP to talk to cache servers
+
+High-level design
+  Functional reqs
+    Insert data
+    Retrieve data
+      Corresponding to key
+  Non-functional
+    High performance
+      Biggest reason for cache
+      Insert, retrieve both fast
+    Scalability
+      Horizontal
+      No bottlenecks
+    High avail
+      Otherwise load on databaases, which also go down
+      Survive component/network failures, power outages
+    Consistency
+      Different clients should get same data from diff servers primary/secondary
+    Affordability
+      Commodity hardware, ideally
+  API design
+    insert(key, value)
+      ack or error
+    retrieve(key)
+      return data stored against key
+  How is this different from key-value store?
+    Do not durably store data
+    Used to increase reading performance
+    Serve from RAM
+      Key-value writes to non-volatile storage
+    Ok if crashes, repopulated
+      Key-value must survive failure
+  Design
+    Storage hardware
+      Specialized
+        Good performance
+        Large storage
+        Expensive
+      Commodity
+        Build large by wiring together
+          FB 28 TB in 2013
+      Number of shards depends on cache size, access freq
+      Consider storing on secondary storage for persistence
+        Still serve from RAM
+        Use if reboots
+        Not requirement assuming database also in system
+    Data structures
+      Hash tables - constant time on average to store/retrieve
+      Linked lists - for eviction algos (as discussed already)
+      Can store lots of different values
+        Strings to hash maps, arrays, sets, etc.
+    Cache client
+      Uses insert/retrieve
+      Where to place?
+      Can be within serving host if for internal use
+      Dedicated if for external use
+      Should have consistent view of all cache servers
+      Resolve as missed cache if server down
+    Writing policy
+      No optimal choice, depends on app needs, but very important
+    Eviction policies
+      Depends again
+      Ex. social media
+        Least recently used - recent content will get most views
+      Optimizing TTL very important
+    Overall
+      Client -> Load balancer -> Cache client -> Cache servers
+    Cache servers
+      Accessible by all clients
+      Connected to database to store/retrieve data
+      Use TCP/UDP for data transfer
+
+Detailed design
+  Right now:
+    How does cache client know if cache server is down?
+    SPOF as single cache server covers each set of data
+      May be slow if some data very hot - "hotkey problem"
+    Haven't nailed down data structure details, eviction policy details
+  Cache servers list
+    Maintain config file on each host where client resides?
+      Contains health and metadata for clients
+      Update through push service by DevOps tool
+        Not good, has to be manually updated/deployed
+    Store config file in centralized location
+      Cache clients pull
+      Still need to manually update
+        (+ SPOF issue? - JM)
+    Use config server that monitors cache server health
+      Cache clients notified when server added to cluster
+      No human intervention/monitoring
+      Cache clients get cache servers from config service
+      Most expensive
+      Complex
+      But most robust
+  Availability
+    What if cache server fails?
+      Replica nodes
+        Say 1 primary, 2 backup
+        But always inconsistency issues
+        If replicas close, synch write
+        Improved availability if failures
+        Hot shards can have multiple nodes for reads
+    Internals
+      Use hash map to store/locate in RAM of cache
+      DLL - order according to frequency of access
+      Eviction policy - depends, assume LRU (least recently used)
+      Do not need a delete API generally
+        Eviction via algorithm
+        Deletion of expired entries via TTL
+        Done locally
+      May need a delete API
+        Delete items from database, stay consistent
+    Consistent hashing
+      May result in uneven data distribution, what to do?
+        Many algos, look @ Dynamo paper
+        Each cache server may also have virtual servers inside
+          Give finer control
+
+Evaluate design
+  High performance
+    Consistent hashing O(log(N)) time complexity to find
+      N = number of cache shards
+    Inside server, hash table constant time on average
+    LRU eviction constant time in DLL
+    Client/server comm TCP/UDP, fast
+    More replicas
+      Less performance penalties
+    Data in RAM, fast
+  How important is eviction algo?
+    Cache hit service time: 5ms (99.9th percentile)
+    Cache miss time: 30ms (99.9th percentile)
+    10% miss rate with MFU algo
+    5% miss rate with LRU algo
+    MFU = 7.5 ms response
+    LRU = 6.25 ms response
+    Each app should do a study of best eviction algorithm for workload
+  Scalability
+    Create shards as needed
+      Limited rehashing due to consistent hashing
+    Add replicas for load on hot shards
+      Can also shard further in that key range
+      Single hot key rare
+        Dynamic replication
+        Complex soln (out of scope)
+  Availability
+    Have redundant servers
+    Leader-follower algo
+      But can be issue that all in single data center
+    Can split leader/follower between data centers
+      But lose consistency
+        Sync writing has major performance issue across data centers
+        Use Async instead
+      Usual CAP/PACELC tradeoff
+  Consistency
+    Async = better performance
+    Has some consistency
+    Can go sync, but performance hit
+    Issues can also arise from faulty config files
+    If a server goes down, don't allow reads until up to date again
+  Affordable
+    Cheap commodity hardware
+  What if leader node fails?
+    Leader election from followers
+    Use separate management service to monitor, select leaders
+  What if lots of concurrent requests on shard?
+    Locking mechanisms good idea
+      Semaphore
+      Monitors
+      Mutex
+    But beyond a certain point not suitable
+      Can limit locking toto some parts of data structure
+      Offline eviction
+        Desirable and easy if high hit rate
+        Changes only needed if cache miss
+      Lock-free implementation
+        Multiple proposed solutions
+          Read & write over doubly linked list, support large concurrent read/write
+
+Memcached vs. Redis
+  Two well-known open-source frameworks for caching
+  Highly scalable
+  Highly performant
+  Robust
+  Follow client-server
+  Sub-ms latency
+
+  Memcached
+    2003
+    Key-value store
+    Key and value both strings
+      Any data must be serialized
+      Does not support different data structures
+    Client and server both needed
+      Half logic in server
+      Half logic in client
+    But shared-nothing architecture
+      Servers are unaware of each other
+        No synch
+        No data sharing
+        No comms between
+    Almost deterministic query speed (O(1))
+      Millions of key/second
+    High throughput
+    Low latency
+    Scales well horizontally
+    Facebook
+      Requires tons of reads
+      Views presented on fly, not pregenerated
+      Memcached easy choice
+        FB started in 2004 (Redis 2009)
+      FB worked with Memcached on solutions often
+    Commands
+      get (key)
+      set (key, value)
+      delete (key[time])
+    At FB sits between MySQL DB and web layer
+      28 TB ram, 800 servers as of 2013
+      LRU eviction, 95% cache hit rate
+
+  Redis
+    Cache, database, message broker
+    Rich features
+    More complex
+    Understands different data structures stored
+      Don't have to manipulate on storage/retrieval
+    Database
+      Persist in-memory blobs on secondary storage
+    Message broker
+      Translate millions of messages per second within system
+    Built-in replication
+    Automatic failover
+    Different persistence levels
+    Understands Memcached
+      Can translate to Redis
+      Separates data from cluster management
+    Does NOT provide strong consistency
+      Async replication
+    Redis Cluster
+      Support built-in
+      "Redis Sentinel"
+      Databases queried using multithreaded proxies
+      Automatic sharding, primary/secondary nodes
+      Configure number of shards
+      Maintained by cluster manager
+        Detect failures
+        Automatic failovers
+    Pipelining
+      Client blocked until server receives result
+      Client needs to wait for server response
+      Latency higher
+      Pipelining combines multiple client requests to help speed
+        5x increase on local machine
+        But even bigger on distant machines
+
+Memcached vs. Redis
+  Both in NoSQL family
+  Simple:
+    Memcached more simple
+      Most effort for cluster control to developers
+      Allws fine control
+    Redis automates most scaling, data division
+  Persistence:
+    No support in Memcached, but can use third-party tools
+    Redis supports, append only file (AOF), database snapshot
+  Data types
+    Memecached stores objects
+    Redis supports strings, sorted sets, hashmaps, bitmaps, hyper logs
+      Max key or value size configurable
+  Memory usage
+    Both allow max to be set
+    Memcached uses slab allocation
+      Reduce fragmentation
+      May waste memory when sizes update, or small objects stored
+      Config workarounds though
+      Good for file sizes > 100k
+    Redis stores small efficiently
+  Multithreading
+    Redis single process, one core
+    Memcached multicore, multithreading
+    But can execute multiple Redis processes at same time
+    Redis performance improved with tweaking
+  Replication
+    Redis automate via few commands
+      Clustering, complex
+    Memcached use third-party tools
+      Horizontal, simple
+  Overall
+    Memcached for small, simple, read-heavy
+    Redis for complex, read & write-heavy
+  What is more like distributed cache so far?
+    Memcached
+      Client chooses server via hashing algorithm
+      Server stores with internal hash table
+      LRU eviction
+      No comms between cache servers
+  Why are there third-party tools for persisting Memcached data?
+    Lots of data read/written to servers
+    May crash for whatever reason
+    Rebuilding cache from scratch takes hours
+    System performance down
+  Why good to store different data structures?
+    Can modify in place
+    Don't need to serialize/deserialize

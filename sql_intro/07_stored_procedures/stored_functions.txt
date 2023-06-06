@@ -1,0 +1,136 @@
+Stored Functions
+  Stored program
+  Can only return one value
+  Can be used in SQL statements in place of an expression
+  Store common formulas or expressions used over and over
+  May slow down query speed if also queries data from tables
+
+Stored functions != stored procedures
+  Procedures can call functions
+  Functions cannot call procedures
+
+  Functions can be used in SQL statements
+  Procedures can only be called with CALL keyword
+
+  Procedures stored in compiled form
+  Functions parsed and compiled at runtime
+
+  Return value optional in procedures
+  Return value required in functions
+
+  Functions can only return one value
+  Procedures can return many
+
+  Functions only support IN parameter type
+  Procedures support IN, OUT, INOUT
+
+  Error handling not possible in stored functions
+
+Making a function
+  CREATE FUNCTION
+  Param list contains all params of function
+    No need to specify type since only IN allowed
+  RETURN value datatype
+  May be either deterministic or non-deterministic
+    Deterministic - result always same for same input
+    Non-deterministic - result may be different
+    Specify with DETERMINISTIC or NOT DETERMINISTIC
+    NOT DETERMINISTIC by default
+  SHOW FUNCTION STATUS to view all functions
+    Narrow down with LIKE operator or any other condition in WHERE clause
+  DROP FUNCTION to delete (optional IF EXISTS)
+
+  // Let's make a stored function to count actor's # of digital assets and return to caller
+  DELIMITER **
+
+  CREATE FUNCTION DigitalAssetCount(
+   ID INT)
+  RETURNS VARCHAR(50)
+  DETERMINISTIC
+  BEGIN
+   DECLARE ReturnMessage VARCHAR(50);
+   DECLARE Number INT DEFAULT 0;
+   SELECT COUNT(*) INTO Number FROM DigitalAssets WHERE ActorId = ID;
+
+   IF Number = 0 THEN
+       SET ReturnMessage = 'The Actor does not have any digital assets.';
+   ELSE
+       SET ReturnMessage = CONCAT('The Actor has ', Number, ' digital assets');
+   END IF;
+
+   -- return the customer level
+   RETURN (ReturnMessage);
+  END**
+  DELIMITER ;
+
+  SHOW FUNCTION STATUS;
+    > (Wall of text)
+
+  SHOW FUNCTION STATUS
+  WHERE db = 'MovieIndustry';
+
+  SHOW FUNCTION STATUS
+  LIKE '%Count%';
+
+  // Using the function
+  SELECT Id, DigitalAssetCount(Id) AS Count FROM Actors;
+
+  // Calling the function from a stored procedure
+  DELIMITER **
+
+  CREATE PROCEDURE GetDigitalAssetCount(
+   IN  ActorNo INT,
+   OUT Message VARCHAR(50))
+  BEGIN
+   DECLARE Number INT DEFAULT 0;
+   SET Number = ActorNo;
+   SET Message = DigitalAssetCount(Number);
+  END**
+
+  DELIMITER ;
+
+  CALL GetDigitalAssetCount(10,@assetcount);
+  SELECT @assetcount;
+
+Non-deterministic functions
+  // Use RAND(), NOW() etc.
+
+  DELIMITER **
+
+  CREATE FUNCTION TimeSinceLastUpdate(
+               ID INT,
+               Asset VARCHAR(15))
+  RETURNS INT
+  NOT DETERMINISTIC
+  BEGIN
+   DECLARE ElapsedTime INT;
+
+   SELECT TIMESTAMPDIFF(SECOND, LastUpdatedOn, NOW())
+   INTO ElapsedTime
+   FROM DigitalAssets
+   WHERE ActorID = ID AND AssetType = Asset;
+
+   RETURN ElapsedTime;
+  END**
+  DELIMITER ;
+
+  SELECT TimeSinceLastUpdate(1,'Instagram');
+    > 127016263
+  SELECT TimeSinceLastUpdate(1,'Instagram');
+    > 127016278
+
+  // See ROUTINES table in information_schema
+  SELECT routine_name
+  FROM information_schema.routines
+  WHERE routine_type = 'FUNCTION' AND routine_schema = 'MovieIndustry';
+
+Removing
+  DROP FUNCTION DigitalAssetCount;
+  DROP FUNCTION IF EXISTS
+  DigitalAssetCount;
+  SHOW WARNINGS;
+    > +-------+------+---------------------------------------------------------+
+      | Level | Code | Message                                                 |
+      +-------+------+---------------------------------------------------------+
+      | Note  | 1305 | FUNCTION MovieIndustry.DigitalAssetCount does not exist |
+      +-------+------+---------------------------------------------------------+

@@ -1,0 +1,20 @@
+Two Heaps
+  Uses 2 min, 2 max, or min/max to solve problem
+  O(logn) to insert and remove
+  O(1) to peek
+
+Pattern matching
+  Yes
+    Calculate 2 min, 2 max, or min/max
+    Input data unsorted
+  No
+    Don't need to track more than 1 extreme
+    Only need to calc extreme fixed # times
+    Input data already sorted
+
+Real world
+  Video streaming
+    Record median number of buffering events
+  Netflix
+    Median age of viewers
+      Update efficiently on user signup

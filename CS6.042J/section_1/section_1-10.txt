@@ -1,0 +1,525 @@
+Recursive definition
+Text
+  Recursive data types specified by recursive definition
+    How to construct new data types from previous ones
+    Along with each recursive data type
+      Recursive definitions of properties or functions on the data type
+    Based on recursive definition
+      Structural induction method for proving all data of given type has some property
+  Examining a few examples
+    strings of chars
+    "balanced" strings of brackets
+    non-negative integers
+    arithmetic expressions
+  Recursive definitions and structural induction
+    Start with char strings
+    Would take for granted, informate to treat as recursive data type
+  Definitions have 2 parts
+    Base case specifying some known elements in type
+    Constructor case specifying how to construct new data elements
+  Let A be a non-empty set called an alphabet
+    Elements referred to as chars, letters, or symbols
+    Recursive data type A* of strings over alphabet A defined as follows:
+      Base case: empty string lambda is in A*
+      Constructor case: if a in A and s in A*, then pair <a, s> in A*
+        So {0, 1}* are the binary strings
+    Usual to treat binary strings as sequences of 0s and 1s
+      1011 -> tuple (1, 0, 1, 1)
+      But according to definition it's
+      <1, <0, <1, <1, lamb>>>>
+      Nested pairs are cumbersome and may seem bizarre
+        Actually the way such lists of chars represented in Scheme or Python
+        <a, s> corresponds to cons(a, s)
+      Have not said how empty string represented
+        Doesn't matter, just need to recognize and not confuse with non-empty string
+    Define the length of a string
+      Base case: |lamb| ::= 0
+      Constructor case: |<a,s>| ::= 1 + |s|
+        Follows standard pattern
+        Functions on recursive data can be defined recursively
+          Using the same cases as the data type definition
+        To define a function f on a recursive data type
+        Define the value f for the base cases of the data type definition
+        Then define the value of f in each constructor case in terms of values of f
+          On the component data items
+    The concatenation s dot t of the strings s and t
+      Letters of s followed by letters of t
+      In Scheme/Python, s dot t list append(s, t)
+      Base case:
+        lambda dot t ::= t
+      Constructor case:
+        <a, s> dot t ::= <a, s dot t>
+    Structural induction
+      Prove that all the elemnts of a recursively define data type have some property
+      Prove each base case element has the property
+      Prove that each constructor case element has the property
+        When the consructuor is applied to elements that have the property
+      Theorem: for all s, t in A*
+        |s dot t| = |s| + |t|
+      Proof by structural induction on the definition of s in A*
+        P(s) ::= for all t in A*.|s dot t| = |s| + |t|
+        Base case: s = lambda
+          |s dot t| = |lambda dot t|
+                    = |t| (def dot, base case)
+                    = 0 + |t|
+                    = |s| + |t| (def length, base case)
+        Constructor:
+          Suppose s ::= <a, r> and assume induction hypothesis P(r)
+          Show P(s) holds
+          |s dot t| = |<a, r> dot t|
+                    = |<a, r dot t>| // concat def, constructor case
+                    = 1 + |r dot t| // length def, constructor case
+                    = 1 + (|r| + |t|) // since P(r) holds
+                    = (1 + |r|) + |t|
+                    = |<a, r>| + |t|
+                    = |s| + |t|
+          Proves P(s) holds as required, completing constructor case
+          By structural induction, conclude P(s) holds for all strings s in A*
+    Structural induction general principle
+      Let P be a predicate on a recursively defined data type R
+      If P(b) is true for each base case element, b in R
+      And for all 2-argument constructors, c
+        [P(r) and P(s)] IMPLIES P(c(r,s))
+        for all r, s in R
+        and likewise for all constructors taking other numbers of arguments
+        then P(r) is true for all r in R
+    # of occurences of c in A in the string s has a simple recursive def based on s in A*
+      Base case
+        #c(lamb) ::= 0
+      Constructor case
+        #c(<a, s>) ::= #c(s) if a != c
+                       1 + #c(s) if a = c
+      Lemma
+        #c(s dot t) = #c(s) + #c(t)
+  Strings of matched brackets
+    Let {],[}* bet the set of all strings of square brackets
+    A string s in {],[}*  is called a matched string if its brackets "match up"
+    Going to examine several ways to define and prove properties of matched strings
+      Using recursively defined sets and functions
+      Pretty straightforward
+        Not much relevance in CS *any more*
+        Back in 50s/60s, key for creating compilers
+        Floyd discovered simple procedures for inserting correctly
+        Compiler-compiler that automatically generates
+        Disappered from CS curriculum by 1990s
+    Recursively define set RecMatch of strings as follows:
+      Base case: lamb in RecMatch
+      Constructor case: if s, t in RecMatch
+        then [s]t in Rec Match
+        Where s[t] is concatenation of strings written in full as
+          [ dot (s dot(] dot t))
+          From now on we'll omit the dots
+        lamb in RecMatch by the base case
+          so setting s = t = lamb in constructor implies
+          [lamb]lamb = [] in RecMatch
+        Now
+          [lamb][] = [][] in RecMatch
+          [[]]lamb = [[]] in RecMatch
+          [[]][] in Rec Match
+        By repeated applications of constuctor case
+        Obvious that for brackets to match, should be equal number of left and right
+      Let's carefully prove
+      Lemma: every string in RecMatch has equal number of left and right brackets
+      Proof by structural induction with induction hypothesis
+        P(s) ::= #[(s) = #](s)
+        Base case: P(lamb) holds because
+          #[(lamb) = 0 = #](lamb)
+        Constructor case:
+          By structural induction we assume P(s) and P(t)
+          Must show P([s]t)
+          #[([s]t) = #[([) + #[(s) + #[(]) + #[(t)
+                   = 1 + #[(s) + 0 + #[(t)
+                   = 1 + #](s) + 0 + #](t)
+                   = 0 + #](s) + 1 + #](t)
+                   = #]([) + #](s) +#](]) + #](t)
+                   = #]([s]t)
+          This completes the proof. We conclude by structural induction that P(s)
+            holds for all s in RecMatch
+    Warning: Ambiguity
+      When a recursive definition allows the same element to be constructed more than one way
+        The definition is said to be ambiguous
+        We were careful to choose an unambiguous definition
+      To illustrate problem
+      Define set AmbRecMatch =C {],[}* recursively as follows
+        Base case: lamb in AmbRecMatch
+        Const case: if s,t in AmbRecMatch, then the strings [s] and st are also in AmbRecMatch
+      Just another way to define RecMatch
+        Easier to understand but ambiguous
+        f(lamb) ::= 0
+        f([s]) = 1 + f(s)
+        f(st) = 1 + f(s) + f(t)
+        0 = f(lamb)
+          = f(lamb dot lamb)
+          = 1 + f(lamb) + f(lamb)
+          = 1 + 0 + 0 + 1
+  Recursive functions on nonnegative ints
+    nn ints can be understood as recursive data type
+    set N is a data type defined recursively as
+      0 in N
+      if n in N, then n + 1 of n is in N
+    Standard recursive functions on N
+      Factorial function "n!"
+        fac(n)
+        fac(0) ::= 1
+        fac(n + 1) = (n + 1) * fac(n) for n >=0
+      Fibonacci
+        F(0) ::= 0
+        F(1) ::= 1
+        F(n) ::= F(n - 1) + F(n - 2) for n >= 2
+        Here recursive step starts at n = 2 with base cases 0 and 1
+        Needed since recursion relies on 2 prior values
+      Summation notation
+        S(n) abbrevs sum from i = 1 to n of f(i)
+        S(0) ::= 0
+        S(n + 1) = f(n + 1) + S(n) for n >= 0
+    Ill-formed function defs
+      Watch out for recursive defs that don't follow the recursive def of underlying data type
+      f1(n) = 2 + f1(n - 1)
+        Where is the base case?
+      f2(n) = 0 if n = 0
+            = f2(n + 1) otherwise
+        Has a base case, but still doesn't uniquely determine f2
+        Any function 0 and 0 and constant anywhere else will satisfy
+      f3(n) = 0 if n is divisible by 2
+            = 1 if n is divisible by 3
+            = 2 otherwise
+        what is f3(6)? Inconsistent.
+      Collatz conjecture
+        f4(n) = 1 if n <= 1
+              = f4(n/2) if n > 1 is even
+              = f4(3n + 1) if n > 1 is odd
+        f4(3) = 1 (3 -> 10 -> 5 -> 16 -> 8 -> 4 -> 2 -> 1)
+          Any f4 satisfying this = 1 for all n up to over 10^18
+          But third case specifies f4(n) in terms of f4 at arguments > n
+            Can't be justified by induction on N
+          Mathematicians still wondering about it...
+      Ackermann function
+        Fast growing function, inverse grows slower than logn, loglogn, logloglogn
+          But it IS unbounded
+        Comes up analyzing Union-Find algorithm
+          Conjectured to be linear
+          Turns out to be "linear"
+            But with slow-growing coefficient equal to inverse Ackermann
+            Means that U-F is pragmatically linear
+              Coefficient <5 for any input that conceivably comes up
+          A(m, n) = 2n if m = 0 or n <= 1
+          A(m, n) = A(m - 1, A(m, n - 1))
+            Definition of A(m, n) involves eval of A at arguments >> m and n
+            Definition is ok but proving takes "ingenuity"
+  Arithmetic expressions
+    Key to programming languages
+    Let's use a toy example: 3x^2 + 2x + 1
+      Only one variable x
+    Data type: Aexp
+      Base cases:
+        Variable x is in Aexp
+        Arabic numeral k for any nonneg int k, is in Aexp
+      Constructor
+        [e + f] in Aexp. The expression [e + f] is called a sum
+        the Aexp's e and f are components of the sum, "summands"
+        [e * f] in Aexp. Called a product. Aexps e and f are components
+          "multiplier" and multiplicand
+        -[e] in Aexp. The expression is called negative
+      Notice that Aexps are fully bracketed, exponents aren't allowed
+        So Aexp of 3x^2 + 2x + 1
+        Written as:
+        [[3 * [x * x]] + [[2 * x] + 1]]
+        Cluttered, so we write 3x^2 + 2x + 1
+          But this is an *abbreviation*
+    Evaluation and substitution with Aexp's
+      The only variable in Aexp is x
+        So value of Aexp is determined by value of x
+        If x = 3
+        3x^2 + 2x + 1 = 34
+      Given any Aexp e and integer value n for the variable x
+        Evaluate to find its value, eval(e, n)
+      Specify with recursive definition
+      Definition eval: Aexp x Z -> Z
+      Defined recursively on expressions, e in Aexp as follows
+        Let n be any integer
+        Base cases:
+          eval(x, n) ::= n (value of variable x is n)
+          eval(k, n) ::= k (value of numeral k is k, regardless of x)
+        Constructor cases
+          eval([e1 + e2], n) ::= eval(e1, n) + eval(e2, n)
+          eval([e1 * e2], n) ::= eval(e1, n) * eval(e2, n)
+          eval(-[e1], n) ::= -eval(e1, n)
+      How to get value of 3 + x^2 when x = 2s
+      eval([3 + [x * x]], 2) = eval(3, 2) + eval([x * x], 2)
+                             = 3 + eval([x * x], 2)
+                             = 3 + (eval(x, 2) * eval(x, 2))
+                             = 3 + 2 * 2
+                             = 3 + 4 = 7
+      Substituting into Aexps
+        Standard operation used by compilers, algebra systems
+        Substituting 3x for x in x(x - 1) -> 3x(3x - 1)
+        Use notation subst(f, e) for subbing Aexp f for each x in Aexp e
+          subst(3x, x(x - 1)) = 3x(3x - 1)
+        Recursive definition
+          On expressions e in Aexp, let f be any Aexp
+          Base:
+            subst(f, x) ::= f (subbing f for variable x just gives f)
+            subst(f, k) ::= k (subbing into a numeral does nothing)
+          Constructor:
+            subst(f,[e1 + e2]) ::= [subst(f, e1) + subst(f, e2)]
+            subst(f,[e1 * e2]) ::= [subst(f, e1) * subst(f, e2)]
+            subst(f, -[e1]) ::= -[subst(f, e1)]
+        subst(3x, x(x - 1))
+          Not copying this, p. 186
+        Suppose to find value of subst(3x, x(x - 1)) when x = 2
+        Can do substitution, then eval
+          eval(subst(3x, x(x - 1)), 2)
+          "Substitution Model"
+            3 * 2 gets performed twice
+          eval(x(x -1), eval(3x, 2))
+            "Environment model"
+            3 * 2 only performed once
+  Prove substitution model, environment model get same results
+    For all expressions e, f in Aexp and n in Z
+      eval(subst(f, e) n) = eval(e, eval(f, n))
+    Proof by structural induction on e
+    Base cases
+      Case[x]
+        left hand side equals eval(f, n) by base case in sub function def
+        and right hand side equals eval(f, n) by base case in eval function def
+      Case[k]
+        left hand side equals k by base case in sub and eval functions
+        and right hand side equals k by base case in 2x eval function
+    Constructor cases
+      Case[[e1 + e2]]
+        By the structural induction hypothesis, we may assume that for all
+        f in Aexp and n in Z
+          eval(subst(f, ei), n) = eval(e1, eval(f, n))
+        for i = i, 2
+        Prove that
+          eval(subst(f, [e1 + e2]), n) = eval([e1 + e2], eval(f, n))
+        left side:
+          eval([subst(f, e1) + subst(f, e2)], n)
+          eval(subst(f, e1), n) + eval(subst(f, e2), n)
+          eval(e1, eval(f, n)) + eval(e2, eval(f, n))
+      Case[[e1 * e2]] Similar.
+      Case[-[e1]] Even easier.
+  Induction in CS
+    Powerful, widely applicable proof technique
+    Strong induction and special case of ordinary induction
+      Applicable to anything with nonnegative integer sizes
+      Awful lot of things, all step-by-step CS processes
+    Structural induction
+      Beyond number counting
+      Offers a simple, natural appraoch to proving things
+        About recursive data types
+        And about recursive computation
+      In many cases a nonneg int size can be defined for a recursively defined datum
+        Such as length of a string
+        Or number of operations in Aexp
+      It is then possible to prove properties of data by induction on size
+        But approach can produce more cumbersome proofs than structural induction
+      Structural induction theoretically more powerful than ordinary induction
+        But only more powerful when reasoning about infinite data types
+          Say infinite trees
+        So greater power doesn't matter in practice
+        But for recursively defined data types, simple and natural approach
+Lecture
+  Key role in programming
+  Let's look at the math
+  Define something in terms of a simpler version of the same thing
+  Base case(s) that don't depend on anything else
+  Constructor case(s) that depend on simpler cases
+  Nothing circular about it
+    Building up new stuff from stuff you already have
+  Example definition: set E
+    E =( Z
+      Base case: 0 in E
+      Constructor cases:
+        If n in E then
+          1. n + 2 in E, if n >= 0
+          2. -n in E, if n > 0
+    What does this tell us?
+    Constructor 1
+      0, 0 + 2, (0 + 2) + 2, ((0 + 2) + 2) + 2 etc.
+      0, 2, 4, 6...
+    Constructor 2
+      -2, -4, -6, -8
+    So E contains all the even integers
+    Anything else? No!
+      The ONLY way things can get into E: base case, or being constructed
+      Implicit clause: *that's all*!
+      "Extremal clause"
+      Rarely mentioned, but always understood
+    So E is exactly the even integers
+  Example: matched paren strings
+    set of strings, M =( { ], [ }*
+    Plan to give definition, all strings where brackets match up appropriately
+    Base: lamb in M
+      (the empty string)
+    Constructor:
+      If s, t in M then [s]t in M
+      (May be other ways to do it - how to do with 1 rule)
+    Let's see how it works!
+      s = lamb, t = lamb -> []
+      s = [], t = lamb -> [[]]
+      s = lamb, t = [] -> [][]
+      s = [], t = [] -> [[]][]
+      s = [[]], t = lamb -> [[[]]]
+      etc.
+    Let's prove some things about M
+      strings starting with ] are NOT in M
+        because lamb does not start with ]
+        [s]t does not start with ]
+        everything in M arises in one of these two ways
+        (appealing to extremal clause)
+  Set F18 functions on R
+    From first term calculus - functions of a single real variable
+    Base:
+      IdR, constant, functions, and sinx are in F18
+    Constructor:
+      if f, g in F18
+      f + g, f * g, 2^f are in F18
+        Building up polynomials, and exponentials
+      inverse f(-1) of f
+      f dot g (the composition of f and g)
+    Some functions in F18
+      -x = -1 * x // constant * identity
+      sqrt(x) = x * x = x^2, f-1(x^2)
+      cos(x) = sin(x + pi) x is identity, pi is constant
+                compose with sin(x)
+      ln(x) = (2^(xloge))^-1
+  Structural Induction
+    So whenever you define a recursive data type
+    Implicit in the defintion is a method for proving things about it:
+      Structural induction
+    To prove P(x) holds for all x in recursively defined set R, prove
+    P(b) for each base case b in R
+    P(c(x)) for each constructor c assuming ind. hyp. P(x)
+    E =( Even
+    by structural induction on x in E with ind. hyp.
+    "x is even"
+    0 is even - base case
+    if n is even, then so is n + 2, -n - there you go
+    Matched paren strings
+      Lemma: every s in M has the same number of ]'s and ['s
+        Let EQ ::= { strings with same number of ] and [ }\
+      Lemma restated: M =C EQ
+      Proof:
+        Ind. Hyp. P(s) ::= s in EQ
+        Base case (s = lamb):
+          yes, has 0 [ and ], so P(lamb) is true
+        Constructor case
+          s = [r]t
+          Can assume P(r) and P(t)
+          #] in s = #] in r + #] in t + 1
+          and (same reasoning)
+          #[ in s = #[ in r + #[ in t + 1
+          Because of P(r) left and right in r are equal
+          Because of P(t) left and right are equal
+          So P(s) is true
+          So by structural induction
+          for all s in M.s in EQ
+          M =C EQ
+          QED
+    Those were pretty easy structural inductions
+      But we'll work on an interesting example with F18
+      Lemma.
+        F18 is closed under taking derivatives
+        if f in F18, then f' in F18
+      Class problem (gee would be nice to see it done - JM)
+  Question 1
+    To prove P(x) holds for all x in recursively defined set R
+    Prove P(b) for each base case b, in R
+    Prove P(c(x)) for each constructor c, assuming induction hypothesis P(x)
+  Question 2
+    3 base cases
+    4 constructors
+    How many proofs?
+    3 base cases
+    4 constructors
+    ???
+  Recursive functions
+    What you do with a recursive data type in programming
+    Define recursive procedures
+    Define a function f on a recursively defined set R
+      Define f(b) explicitly for each base case b in R
+      Define f(c(x)) for each constructor c in terms of x and f(x)
+    Example
+      Recursive function on M
+      def. depth(s) for s in M
+      How deeply nested are brackets
+      depth(lamb) = 0
+      depth([s]t) ::= max{1 + d(s), d(t)}
+      that's it!
+    Example
+      k^n - recursive function on N
+      expt(k, 0) ::= 1
+      expt(k, n + 1) ::= k * expt(k, n)
+      uses recursive def on N
+      0 in N
+      if n in N than n + 1 in N
+    summary
+      f: Data -> values
+      f(b) defined directly for base b
+      f(cnstr(x)) defined using f(x), x
+    Once function defined
+    Can start proving things about it by structural induction on its own definition
+    Lemma
+      |r| + 2 <= 2^(d(r) + 1) for all r in M
+      Length of string in M + 2 <= 2^(depth + 1)
+      Proof by structural induction
+      Base case: [r = lamb]
+        |lamb| + 2 = 2 = 2^(0+1) = 2^(d(lamb) + 1)
+      Constructor case:
+        [r = [s]t]
+        by induction, assume s and t satisfy inequality
+        |s| + 2 <= 2^(d(s) + 1)
+        |t| + 2 <= 2^(d(t) + 1)
+        |r| + 2 = |[s]t| + 2 - from definition of r
+                = (|s| + |t| + 2) + 2 - from defintion of length
+                = (|s| + 2) + (|t| + 2)
+                <= 2^(d(s) + 1) + 2^(d(t) + 1)
+                <= 2^(max(d(s), d(t)) + 1) + 2^(max(d(s), d(t)) + 1)
+                = 2*2^(max(d(s), d(t)) + 1)
+                = 2 * 2^d(r) def of d(r)
+                = 2^(d(r) + 1)
+    Positive powers of 2
+      Base 2 in PP2
+      if x, y in PP2, the x * y in PP2
+      2, 2 * 2, 4 * 2, 4 * 4, 4 * 8,
+      2, 4, 8, 16, 32 in PP2
+      Lets define
+        Base
+          log2(2) ::= 1
+        Constructor
+          logx(x * y) ::= log2(x) + log2(y) for x, y in PP2
+        Let's check it out
+          log2(4) = log2(2 * 2) = 1 + 1 = 2
+          log2(8) = log2(2 * 4) = log2(2) + log2(4) = 1 + 2 = 3
+      define loggy function on PP2
+        loggy(2) ::= 1
+        loggy(x * y) ::= x + loggy(y)
+                        for x, y in PP2
+        let's try again
+          loggy(4) = loggy(2 * 2) = 2 + 1 = 3
+          loggy(8) = loggy(2 * 4) = 2 + loggy(4) = 2 + 3 = 5
+          loggy(16) = loggy(8 * 2) = 8 + loggy(2) = 8 + 1 = 9
+          BUT WAIT!
+          loggy(16) = loggy(2 * 8) = 2 + loggy(8) = 2 + 5 = 7
+          oh no
+          now there's an inconsistency
+          have used this recursive defintion to conclude both 7 and 9
+      What is the problem?
+        Ambiguity
+        There's more than one way to construct PP2 elems from cnstrct(x, y) = x * y
+        16 = cstrct(8, 2)
+        16 = cstrct(2, 8)
+        16 = cstrct(4, 4)
+          that is ambiguously defined recursive data structure
+          F18 is very ambiguous
+          be very careful defining recusrive functions on that definition
+          log2 does work - but requires careful proof
+        On the other hand
+          why chose [s]t constructor for brackets
+            unambiguous
+        problem to watch out for:
+          recursive function on datum e
+          is defined according to what constructor created e
+          if 2 or more ways to construct e, then which definition to use?
+          

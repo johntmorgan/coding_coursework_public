@@ -1,0 +1,183 @@
+Bellman-Ford
+  Second weighted shortest paths algorithms lecture
+  Last time, shortest path in DAG linear time via DAG relaxation
+    Can construct a tree from those weights in linear time
+    Not going to talk about parent pointers the next couple of lectures
+  Most general algorithm
+    Graphs can have cycles, can have negative weights
+    Of course if negative weight cycle reachable from source
+      Vertices in cycle unbounded number of edges to go through
+      Keep going around cycle over and over
+    Want to get shortest path (or inf if unreachable)
+      Return if negative cycle
+  But first two warmup exercises
+  1. Given an undirected graph G, return whether G contains a negative weight cycle
+    Do this in linear, order(E) time
+    Detect a negative weight edge - undirected graph, just move back and forth over and over
+    So not a particularly interesting case
+    If connected component in graph containing source s has a negative weight edge, there you go
+    So we're going to focus on directed graphs today
+  2. Alg A solves SSSP in O(|V| * (|V| + |E|))
+    Not going to show you an algorithm that meets |V| * |E| limit
+    But if we had such an algorithm, how could we solve SSSP in just O(|V| * |E|) time
+    Tricky, kind of related to difference between reachability and SSSP last lecture
+    These two are different when V is asymptotically larger than E
+    Connected component containing S can have at most E + 1 vertices
+    So if we had such an algorithm, explore via BFS/DFS, find everything reachable from S
+      Throw away everything else
+      Now have a graph where V is asymptotically no bigger than E
+      So algorithm solves in O(|V| * |E|) time
+  General discussion before we get to this algorithm
+  Simple shortest paths
+    Claim 1: If delta(s, v) is finite (not inf or -inf)
+      There exists a shortest s-v path that is simple (not going through vertex more than once)
+      Proof: Consider if claim was not true
+        Every shortest path contains a cycle
+        Path distance is not -inf, so the cycle must be positive or 0
+        But if that's true, then could remove cycle to create simple path
+      Now if it's simple, what do we know about the number of edges in the path
+        Can't repeat vertices
+        Can have at most V vertices
+        Can have at most V - 1 edges
+        Simple paths have <= |V| - 1 edges - really nice property
+        So *only need to check paths up to |V| - 1 edges in length*
+          Finitely bounded, potentially exponential, but at least finite
+            With cycles could be infinite
+        Let's limit the number of edges I can go through
+      k-Edge distance delta-k (how many edges I'm limited by)
+        delta-k(s,v): weight of a shortest s-v path using at most k edges
+        So will have gotten the real shortest path, again assuming distance is finite
+          If distance is -inf, doesn't say anything about what shortest path is
+    Claim 2:
+      If delta-|V|(s, v) < delta(|V| - 1)(s, v)
+        If there's a shorter path to vertex that goes through more than |V| - 1, the path can't be simple
+        Therefore that path must contain a negative weight cycle
+        Therefore delta(s, v) = -infinity
+        If you find a vertex v that has this property, it's a "witness"
+          Certifies negative weight cycle in the graph
+    Claim 3:
+      If delta(s, v) = -infinity, then v is reachable from a witness
+      Proof (stronger statement):
+        Suffices: every negative weight cycle contains a witness
+        Consider a directed negative weight cycle C in G
+          vertex v, with predecessor v'
+        delta-|V|(s, v) <= delta|V| - 1(s, v) + w(v', v) // triangle inequality, again
+          sum of delta|V|(s, v) <= sum of v in C delta(|V| - 1)(s, v) + sum of v in C of w(v', v)
+            w(c) is less than 0
+            so must be strictly less
+            so must be witness
+  Algorithm: Bellman-Ford
+    This is a little different than normal Bellman-Ford
+      Which does something a little different (at end) - hairier to analyze
+    This will also give us a negative weight cycle if it exists
+    Make many versions of a vertex
+      Depending on whether came via 0, 1, 2, 3 edges
+        "Graph duplication" (which was in the last homework already, ahem -JM)
+      Different versions of a vertex correspond to reaching vertex in a different state
+    Make |V| + 1 levels, where vk in level k represents reaching vertex v using <= k edges
+      If we connect edges from one level to only higher levels then this graph is a DAG
+        That's cool - can solve DAG in linear time
+      Now, graph explodes V times
+        Graph has something like size |V| * (|V| + |E|)
+    How do we get it down to |V| * |E|?
+      Example graph, negative cycle bcd
+        Going from a, then a needs to be 0, and bcd -inf at the end
+      No edges within a level
+        Connect into next level with weights
+        And self-connect with 0 weight edge across level (stay at vertex)
+      Any path using at most k edges corresponds to vertex in that level
+        a to b in 3 edges (4 vertices in graph)
+          a to b, stay at b
+          stay at a, go to b
+          a -> c -> d -> b
+  Bellman-Ford
+    Construct G' as described above
+      It has |V| * (|V| + 1) vertices
+      It has |V| * |V| + |V||E| = |V|(|V| + |E|) edges
+         |V| * |V| - edges from staying in same place
+         |V| * |E| - edges from actual graph (note none within layers, so none purely at first/last layer)
+    This graph G' is a DAG
+      Created in time |V|(|V| + |E|) asymptotically
+    Run DAG relaxation from s0 (a0 in example)
+      Compute delta(s0, vk) for all k in {0,...,|V|}
+    For each vertex v, set d(s0, v) = delta(s0, v(|V| - 1))
+    Claim:
+      delta(s0, vk) = deltak(s, v)
+    For each witness u in V delta(s0 u|V|) < delta(s0, u|V| - 1)
+      Then for each vertex V reachable from u, set d(s, v) = -inf
+    Prove claim delta(s0, vk) = deltak(s, v)
+      Induct on k
+      Base case: k = 0, works
+      Inductive step
+        delta(s0, vk') = min{delta(s0, u(k' - 1))} + w(u(k' - 1), vk) | uk' - 1 in Adj- (vk')
+        In graph G' a shortest path to vertex vk' must go through vertex in previous layer
+                       = min {{delta(s0, u(k' - 1))} + w(u, v) | u in Adj-(v)}} U {delta(s0, vk' - 1)}
+                       = deltak'(s, v) same, works
+      Trivial leap
+        At end of Bellman-Ford, return shortest path distances - set finite
+    What's running time
+      Construct graph O(|V|(|V| + |E|))
+      DAG relaxation O(|V|(|V| + |E|))
+        For each witness at most O(|V|)
+        Check reachability from witness at most O(|E|)
+      Upper bounded by time taken to construct original graph
+  See notes - optimization to construct on the fly, only use O(|V|) space
+
+Recitation
+  Original Bellman-Ford easier to state but less powerful
+    Solves SSSPs in same O(|V||E|) time using only O(|V|) space
+    However it only detects whether a cycle exists, it does not return the cycle
+  Based on relaxation from last lecture
+    Initialize distance estimates, relax every edge in |V| - 1 rounds
+      If the graph does not contain negative weight cycles, d(s, v) = delta(s, v) for all v in V
+  (code)
+  Same structure as general relaxation paradigm, but limits the order in which edges can be processed
+    Relaxes every edge of graph in a series of |V| - 1 rounds
+    Lemma
+      At the end of relaxation round i of Bellman-Ford, d(s, v) = delta(s, v)
+        For any vertex v that has shortest pat from s to v that traverses at most i edges
+      Proof by induction on round i
+        Base case round 0
+          Correctly sets d(s,s) = 0 = delta(s, s)
+        Suppose claim true round i - 1
+          Let v be a vertex containing a shortest path from s traversing at most i edges
+          If v has a shortest path from s traversing at most i - 1 edges,
+            d(s, v) = delta(s, v) prior to round i
+            Will continue to hold after round i by the upper bound property
+          Alternatively if d(s, v) != delta(s, v) prior to round i
+            Let u be the second to last verex visited along shortest path from s to v which traverses exactly i edges
+            Some shortest path from s to u traverses at most i - 1 edges
+              d(s, u) = delta(s, u) prior to round i
+              Then after edge from u to v relaxed during round i, d(s, v) = delta(s, v)
+    If the graph does not contain negative weight cycles, some shortest path is simple
+      Comtains at most |V| - 1 edges as it traverses any vertex of the graph at most once
+      Thus after |V| - 1 rounds, d(s, v) = delta(s, v) for every vertex with a simple shortest path from s to v
+      However if after |V| - 1 rounds of relaxation, some edge (u, v) still violates the triangle inequality
+        There exists a path from s to v using |V| edges which has lower weight
+          Cannot be simple
+          Must contain negative weight cycle
+  Algorithm analysis
+    Runs |V| rounds, each round performs a constant amount of work for each edge in the graph
+    Runs in O(|V||E|) time
+    Note that it actually takes O(|V| + |E|) time to loop over entire adjacency list structure
+      Even for vertices adjacent to no edge
+      Can remove isolated vertices to ensure that |V| = O(|E|)
+    Note that if edges are processed in a topological sort order with respect to a shortest path tree from s
+      Then Bellman-Ford correctly computes shortest paths from s after its first round
+      However it is not easy tofind such an order
+    Significant savings are possible in many graphs by stopping Bellman-Ford after any round where no edge relaxation is modifying
+    Differs from lecture algorithm in two key ways
+      1. Only keeps track of one "layer" of d(s, v) estimates in each round
+        The lecture version keeps track of dk(s, v) for k in {0,...,|V|} which can then be used to construct negative-weight cycles
+      2. Distance estimate d(s, v) in round k of original Bellman-Ford does not necessarily equal dk(s, v)
+        Where dk is the k-edge distance to v computed in lecture
+        Because this version may relax multiple edges along path to v in a single round
+        Meanwhile lecture version relaxes at most one in each level
+        So d(s, v) in round k of original B-F never larger than dk(s, v) but may be much smaller and converge to solution much faster
+  Exercise
+    Biking from 3 houses to intersection
+      Reverse fun value (so positive fun -> negative weights)
+      Run Bellman-Ford from one point
+        If negative weight loop found - edge (u,v) can be relaxed in round V - bike all day
+      Otherwise run from other starting points and find the vertex with the lowest weight-path
+        when all 3 runs are summed

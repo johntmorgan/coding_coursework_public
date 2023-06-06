@@ -1,0 +1,3 @@
+heapq.heappush(h, item)
+heapq.heappop(h)
+list.sort(key=lambda x: x.attribute)

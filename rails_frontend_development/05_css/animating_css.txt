@@ -1,0 +1,122 @@
+Animating CSS
+  Three main concepts
+    transform - instantly changes values of other CSS properties
+      Changes size, position, orientation of element being drawn
+    transition - specifies a CSS property and duration
+      Change happens during specified duration
+    animation - more general transition
+      May specify multiple stopping points
+      More complex timing and repeating behavior
+  Let's put a raw image in
+    app/javascript/images/arrow.svg
+  Then adjust view to display image instead of Show/Hide
+    <span
+      data-action="click->day-toggle#toggle">
+      <span data-day-toggle-target="buttonText"
+           >
+      </span>
+    </span>
+
+    .background-arrow {
+      background-image: url("../images/arrow.svg");
+      width: 25px;
+      height: 25px;
+    }
+
+  Using CSS background-image instead of img tag
+    Used for decorative elements, those that should not print, not show up in indexing/SEO
+    img tags have titles and alt-text, indexed for search
+  Now let's make it rotate
+
+  @import '~bulma';
+
+  .background-arrow {
+    background-image: url("../images/arrow.svg");
+    width: 25px;
+    height: 25px;
+
+    &.is-open {
+      transform: rotate(90deg);
+    }
+
+    &.is-closed {
+      transform: rotate(-90deg);
+    }
+  }
+
+  SCSS ampersands make styles apply on element that has background-arrow and is-open
+    Without, would need to be nested
+  Common transform functions
+    rotate
+    scale - change size of element - one arg = both dimensions, otherwise (x, y)
+    skew - one arg = shear in x dimension, second arg = angle in y dimension
+    translate - moves element - first element amount to move in x
+      Optional second to move in y
+  So is-open rotates 90 deg, arrow points down
+  is-closed rotates 90 deg cc, arrow points up
+  Now we change CSS class instead of element
+
+  Let's register the classes with the controller - Stimulus
+
+  <section
+    id="day-body-<%= schedule_day.day.by_example("2006-01-02") %>"
+    data-controller="day-toggle"
+    data-day-toggle-hidden-class="is-hidden"
+    data-day-toggle-is-closed-class="is-closed"
+    data-day-toggle-is-open-class="is-open"
+    data-day-toggle-hide-class="hide"
+    data-day-toggle-visible-value="true">
+
+  Update controller
+
+  import { Controller } from "stimulus"
+
+  export default class DayToggleController extends Controller {
+    static classes = ["hidden", "isClosed", "isOpen"]
+    static targets = ["buttonText", "thingToHide"]
+    static values = { visible: Boolean }
+
+    hiddenClass: string
+    isClosedClass: string
+    isOpenClass: string
+    buttonTextTarget: HTMLElement
+    thingToHideTarget: HTMLElement
+    visibleValue: boolean
+
+    connect() {
+      this.adjustTarget()
+      this.adjustImage()
+    }
+
+    toggle() {
+      this.flipState()
+    }
+
+    flipState() {
+      this.visibleValue = !this.visibleValue
+    }
+
+    visibleValueChanged() {
+      this.adjustTarget()
+      this.adjustImage()
+    }
+
+    adjustTarget() {
+      this.thingToHideTarget.classList.toggle(
+        this.hiddenClass,
+        !this.visibleValue
+      )
+    }
+
+    newText(): string {
+      return this.visibleValue ? "Hide" : "Show"
+    }
+
+    adjustImage() {
+      this.buttonTextTarget.classList.toggle(this.isOpenClass, this.visibleValue)
+      this.buttonTextTarget.classList.toggle(
+        this.isClosedClass,
+        !this.visibleValue
+      )
+    }
+  }

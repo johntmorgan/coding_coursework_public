@@ -1,0 +1,338 @@
+Distributed messaging queue
+What is it?
+  Intermediate between producers and consumer
+  Producer produces messages and puts in queue
+  Consumer retrieves from queue and processes
+  May be multiple producers & consumers on queue at once
+
+Why?
+  Improve performance
+    Enable async comms between entities
+    Eliminate speed differences
+      Separate out slower ops from critical path
+      Reduce client-perceived latency
+  Reliability
+    Separate entities, more fault tolerant
+    If producer/consumer fails, restart later
+    Replicate MQ to ensure availability
+  Granular scalability
+    Asynch makes system more scalable
+    Easy to scale producers/consumers separately as needed
+  Decouple
+    Decouple dependencies in system
+    Prod/con unaware of internal workings of other
+  Rate limiting
+    Absorb load spikes
+    Rudimentary rate limiting when key to not drop any requests
+  Priority queue
+    Can be used to implement priorities
+      Say one queue per priority
+    More service time on higher priorities
+
+Use cases
+  Many!
+  Interprocess within single operating system
+  Sending many emails
+    Don't need immediate processing
+    Coordinate emails between senders and receivers
+  Data post-processing
+    Do offline work later, perhaps at night when excess compute capacity
+  Recommender systems
+    Process historical user data
+    Time-consuming
+    Queue between recommender and requesting processes
+
+Requirements
+  Data resides on several machines
+  Functional reqs
+    Queue creation & set params
+      Queue nam
+      Queue size
+      Message size
+        Amazon simple queue (SQS)
+          256 KB
+        Microsoft messaging (MSMQ)
+          4 MB
+        How to send larger?
+          Divide into chunks - but more complex
+          Queues provide APIs
+        Let's assume our queue has implemented one of the APIs
+    Send message
+      Producer send to queue
+    Receive message
+      Consumer from queue
+    Delete message
+      Consumer from queue after process
+    Delete queue
+  Non-functional reqs
+    Durability - don't lose data on fail!
+      Producers/consumers can fail
+      Queue critical, others rely on it
+    Scalability
+      Handle increasing load, queues, producers, consumers, messages
+      Be able to shrink when needed
+    Availability
+      High
+      Keep working if component failure
+    Performance
+      High throughput
+      Low latency
+
+Single-server
+  Everything on same node
+  Producer/consumer acquires lock
+    Only producer OR consumer can access at once
+  Not good for modern needs
+    Unavail to cooperating processes if hardware/network failure
+    Performance hit under lock contention
+    Not scalable
+    Not durable
+  Can you extend design to distributed? No, bad idea
+    High latency due to lock - bottleneck
+    Low availability - no replication
+    Lack of durability - no replication
+    Scalability - can only handle limited number of messages
+
+Design
+  Ordering
+    Some apps require
+      Chatting over messenger app
+    Some do not
+      Email, meh
+    How?
+      Implicitly associated
+      Order of queue is order of consumption
+      Concurrent producers?
+        Timestamps, sequence numbers
+        Without info, just put in order of arrival
+      Consumers
+        Can just take in order
+        But may need in some app-specific order
+          Queue tags message ordering info, sequence #, timestamp
+    Best-effort ordering
+      Put messages in queue in order received
+        May not be order produced on client side
+    Strict
+      Preserves ordering more rigorously
+        Unique identifier or timestamp
+      How?
+        System provides libraries or APIs to client to give seq numbers
+    Ordering approaches
+      Monotonically increasing numbers
+        First message = 1
+        Second message = 2
+        etc.
+        Simple
+        But system ID assignment can bottleneck
+        Message order may not reflect client side
+      Causality-based sorting on server side
+        Messages sorted based on time stamp on client side
+        But for many sessions can't determine order in wall-clock time
+      Timestamps based on synch clocks - best
+        Basically what it says on tin
+        Unique and in correct sequence
+        Unique process identifier tag
+          Handle when concurrent sessions ask for time stamp at same time
+        Identify delayed messages and wait for them
+        Sequence numbers double as seq numbers and time stamps
+          See sequencer chapter
+    Sorting
+      Based on timestamps
+    What if message arrive late?
+      Reorder queue
+        Puts in correct order
+        But may have already handed out to consumers
+          Strict ordering
+            Put in special queue
+            Client must handle that situation
+          Best-effort
+            Just stick at front of queue
+  Performance
+    Designed for FIFO
+    FIFO not always easy to maintain in distributed
+    Message A produced before B
+    But A may not be consumed before B
+    Using monotonically increasing or causality-bearing = high throughput
+    Online sorting will take time
+      Time-window approach to minimize latency
+        Sort messages received within time frame
+    Serialize to give out messages one by one
+      Better throughput if not required
+    Overall many MQs either do not guarantee strict order
+      OR have limitation around throughput
+        Many additional validations and coordination ops required
+  Concurrency
+    Multiple messages arrive at once
+    Multiple consumers request at once
+    Can use a locking mechanism
+      Acquire lock for placing/consuming
+      Not scalable, performant
+    Serialize requests using system buffer
+      Place incoming in order
+      Conusmer receive in arrival performance
+      Avoid race conditions
+    Apps may use multiple queues to keep ordering cost per queue down
+      Application logic more complex
+
+High-level design: front-end
+  Assume
+    Queue data replicated with primary/secondary or quorum system in cluster
+    Use data partitioning if queue too long for server
+      Consistent hashing or key-value store
+      Each shard appropriately replicated
+    System can auto-expand/shrink resources as needed
+  Load balancer
+    Receives producer, consumer requests
+    Forward to front-end servers
+    Many load balancers
+    Minimal latency, high availability
+  Front-end service
+    Stateless machines across data centers
+    Request validation
+    Authentication and authorization for requesters
+    Caching
+      Store metadata about frequently used queues
+      Cache user-related data
+        Reduce time to authent/author
+    Request dispatch
+      Call backend and metadata store
+        Differentiates two
+    Request deduplication
+      Prevent identical requests
+        May search hash key in store
+    Collects usage data for audit purproses
+  Metadata service
+    Store, retrieve, update queue metadata
+      In metadata store and cache
+    Update whenever queue created/deleted
+    Acts as middleware between front-end and data layer
+    Front-end server checks cache for info
+    If cache miss, retrieve from metadata, update accordingly
+    If metadata small
+      Replicate on all cluster servers
+      Serve requests from any server
+      Introduce load balancer between frontend and metadata
+    If metadata large
+      Shard data
+        Partition key, hashing
+        Replicate shards for availability
+
+High level design: back-end
+  Core, where major activities take place
+  Frontend receives message
+  Frontend refers to metadata service to find destination
+  Frontend forwards message to host
+    Replicates on relevant hosts to overcome availability
+      Primary-secondary
+      Cluster of hosts
+  Two types of cluster managers
+    Internal
+    External
+  Internal
+    Manages queue assignments within cluster
+    Knows about every node in cluster
+    Listens to heartbeat from each node
+    Manages host failure, instance addition, removals
+    Partitions queue into parts, which get primary servers
+  External
+    Managues queue assigns across clusters
+    Knows about each cluster
+      Does NOT know about every host inside cluster
+    Monitors health of clusters
+    Manages and utilizes clusters
+    May split queue across clusters
+      Messages for queue distributed across clusters
+  Managers need to be reliable, scalable, performant
+  Primary-secondary model
+    Each node primary host for collection of queues
+    Recieves requests, fully responsible for data replication
+    Ex.
+      Queue 101 and 102
+      Host A, B, C, D
+      B is 101 primary
+      101 replicated A, C
+  Cluster of hosts
+    Frontend determines cluster from external manager
+    Forwarded to random host in cluster
+    Host replicates to other hosts where queue stored
+  How does host replicate within cluster?
+    Each host has a mapping between hosts and queues
+    When receives a message for a queue, replicates on other hosts for queue
+    Anomalies possible
+      Synch replication, always consistent
+        Delay in comms
+        Partial to no availability if new primary being promoted
+      Async
+        Ack client as soon as received by host
+        Replication lag, consistency issues
+      Both approaches have issues, pick depending on app
+  How about consumer message requests?
+    Same process
+    Randomly selected host responsible for delivery, cleanup after processing
+  External cluster manager responsible for queue management, cluster assignment to queue
+  What if customer doesn't consume messages?
+    Dead-letter queue
+    DLQ also holds
+      Messages intended for deleted queue
+      Messages over queue length limit (unlikely with design)
+      Message expired due to TTL
+    Examine DLQ to determine cause of failure, faults in system
+
+How design fulfills reqs
+  Functional
+    Queue creation
+      Received at frontend
+      Cluster manager assigns servers
+      Cluster manager updates data in metadata stores
+    Queue deletion
+      Cluster manager deallocates space
+      Cluster manager deletes data from metadata
+    Send messages
+      Producers deliver to queues once created
+      Received messages sorted based on time stamps
+      Consumer retrieve from specified queue
+    Delete messages - two options
+      Don't delete after consumed
+        Consumer must track what is consumed
+        Maintain order of messages in queue
+        Track messages in queue
+        Job deletes message when expiration conditions met
+          Apache Kafka
+            Allows multiple processes to consume
+      Also don't delete after consumed
+        Make invisible - visibility_timeout
+        Other consumers unable to consume
+        Consumer deletes via API call
+        Can be issue if timeout expires and consumer hasn't deleted
+          Can duplicate on another consumer
+          Set visibility timeout carefully!
+      In both cases, only delete by consumer
+        High durability if consume can't process due to failure
+      At-least-once delivery semantic
+  Non-functional
+    Durability
+      Queue metadata replicated on diff nodes
+      When messages received, replicated
+    Scalability
+      All components horiz scalable
+        Front-end servers
+        Metadata servers
+        Caches
+        Back-end clusters
+        etc.
+      Two dimensions
+        Number of messages hits limit - say 80% queue capacity
+        Increase in number of queues
+          Add more servers
+          Setup nodes for performanc eisolation
+    Availability
+      Everything replicated
+      Load balancer routes around failed nodes
+    Performance
+      Caches
+      Replication
+      Partitioning
+      Best effort ordering strategy
+        High throughput, low latency
+      Strict ordering
+        Slower but time-window based sorting helps

@@ -1,0 +1,65 @@
+DELETE Triggers
+  Fired when a DELETE statement is executed
+  Columns do not have a NEW value, only OLD value, and it cannot be updated
+  Uses
+    Archive deleted records
+    BEFORE DELETE to stop invalid delete
+    Update summary table
+    Maintain change log
+  Not available for views
+
+  // Let's create a table ActorsArchive to store deleted rows for reference
+  // One simple way to make a copy (adding primary key and DeletedAt col)
+  // WHERE clause used to prevent copying rows (without it you'd copy everything)
+  CREATE TABLE ActorsArchive (
+    RowId INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    DeletedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP)
+  AS (SELECT * FROM Actors WHERE 1=2);
+
+  // BeforeActorsDelete trigger on Actors table
+
+  DELIMITER **
+
+  CREATE TRIGGER BeforeActorsDelete
+  BEFORE DELETE
+  ON Actors
+  FOR EACH ROW
+  BEGIN
+   INSERT INTO ActorsArchive
+        (Id, Firstname, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions)
+  VALUES (OLD.Id, OLD.Firstname, OLD.SecondName, OLD.DoB, OLD.Gender, OLD.MaritalStatus, OLD.NetWorthInMillions);
+  END **
+
+  DELIMITER ;
+
+  // AFTER DELETE example
+  // Note the use of OLD
+
+  DELIMITER **
+
+  CREATE TRIGGER AfterActorsDelete
+  AFTER DELETE ON Actors
+  FOR EACH ROW
+  BEGIN
+  DECLARE TotalWorth, RowsCount INT;
+
+  INSERT INTO ActorsLog
+  SET ActorId = OLD.Id, FirstName = OLD.FirstName, LastName =  OLD.SecondName, DateTime = NOW(), Event = 'DELETE';
+
+  SELECT SUM(NetWorthInMillions) INTO TotalWorth
+  FROM Actors;
+
+  SELECT COUNT(*) INTO RowsCount
+  FROM Actors;
+
+  UPDATE NetWorthStats
+  SET AverageNetWorth = ((Totalworth) / (RowsCount));
+  END **
+
+  DELIMITER ;
+
+  DELETE FROM Actors
+  WHERE Id = 13;
+
+  SELECT * FROM NetWorthStats;
+  SELECT * FROM ActorsLog;

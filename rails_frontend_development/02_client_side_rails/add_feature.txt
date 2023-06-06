@@ -1,0 +1,76 @@
+Now JS to hide events in application.ts
+No framework here, just TS and DOM library
+
+  // new-ish Rails library that handles file uploads - not in course
+  import * as ActiveStorage from "@rails/activestorage"
+  // UJS = Unobtrusive Javascript
+  // Unobtrusive = put event handlers in JS files, not HTML markup - chg ~2007
+  // Normal rails behavior - Ajax when data-remote true, alert boxes when data-confirm value
+  // Has a couple utilities we'll use but not much
+  import Rails from "@rails/ujs"
+  // Client-side portion of ActionCable web sockets framework - later
+  import * as Channels from "channels"
+  // Default part of rails, improve responsiveness
+  // Intercepts new page links, replace existing body
+  // Controversial with JS devs, can change expected behavior of page loading
+  import Turbolinks from "turbolinks"
+
+  Rails.start()
+  Turbolinks.start()
+  ActiveStorage.start()
+
+  // Could of course do a nested function, but let's use a class
+  class DayToggle {
+    // Typescript declarations - properties of class and type they are
+    day: HTMLElement
+    dayButton: HTMLElement
+    dayText: HTMLElement
+    buttonText: HTMLElement
+
+    // : TYPE after every function argument, part of definition
+    constructor(day: HTMLElement) {
+      this.day = day
+      this.dayButton = this.day.querySelector(".js--day-button")
+      this.dayText = this.day.querySelector(".js--day-text")
+      this.buttonText = this.day.querySelector(".js--button-text")
+    }
+
+    initHandlers(): void {
+      this.onFilterButtonClick()
+    }
+
+    isHidden(): boolean {
+      return this.dayText.classList.contains("is-hidden")
+    }
+
+    onFilterButtonClick(): void {
+      this.dayButton.addEventListener("click", () => {
+        this.dayText.classList.toggle("is-hidden")
+        this.setText()
+      })
+    }
+
+    setText(): void {
+      this.buttonText.innerText = this.isHidden() ? "Show" : "Hide"
+    }
+    //
+  }
+
+  // When Turbolinks has loaded, can run
+  // In non-Turbolinks app, listen for DOMContentLoaded event
+  // Note Turbolinks handling is such will not fire again if navigate away & back to page
+  document.addEventListener("turbolinks:load", () => {
+    document.querySelectorAll(".js--day").forEach((element) => {
+      new DayToggle(element as HTMLElement).initHandlers()
+    })
+  })
+
+Full sequence of events
+  Webpacker compiles TS into JS
+    Happens on page load in dev
+    Pre-compiled at deploy in prod
+  JS sent to browser on page load, creating class and event handler for turbolinks:load event
+  When page finishes loading, turbolinks:load is fired
+    Instantiate class
+    Attach click event handler to button
+  

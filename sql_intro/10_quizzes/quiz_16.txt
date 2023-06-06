@@ -1,0 +1,23 @@
+1.
+  CREATE TABLE Name (
+    LastName VARCHAR(5)
+  );
+
+  INSERT INTO Name VALUES('Smith');
+  INSERT IGNORE INTO Name VALUES('Edward');
+
+  // Both names inserted successfully
+
+2. Which queries return same date and time?
+  SELECT SYSDATE(), NOW();
+  SELECT NOW(), SLEEP(10), NOW();
+
+3. Display yesterday's date
+
+  DELIMITER **
+  CREATE FUNCTION function1()
+  RETURNS DATE
+  BEGIN
+  RETURN CURDATE()- interval 1 day;
+  END**
+  DELIMITER ;

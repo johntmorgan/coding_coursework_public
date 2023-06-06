@@ -1,0 +1,59 @@
+Graph Algorithms
+
+Graphs
+  Abstraction connecting pairs of objects
+    Systems of roads
+    Airline flights
+    Internet connections
+    Social connectivity
+  Two basic components
+    Nodes
+    Edges
+  Representing
+    Adjacency Matrix
+    Adjacency List
+      Will use this for rest of chapter
+      More efficient for algos
+        Matrix - must iterate through all possible neighbors
+  Types
+    Directed
+    Undirected
+  Notation
+    V(G) -> set of vertices of graph G
+    Edge between vertices u and v -> u, v
+    E(G) -> set of edges of graph G
+  Path
+    Sequence of vertices v1, v2, ..., vk,
+      Property edges between vi and vi + 1
+    Simple path:
+      All vertices are different
+  Cycle
+    A path v1, v2, ..., vk where
+      k > 2
+      The first k - 1 vertices are different
+      v1 = vk
+  Connected
+    If for every pair of vertices, there is a path from u to v
+
+Greedy
+  Solution built piece by piece
+  Max profit, miniize cost at every point
+  Fractional knapsack problem
+    Choose highest value vs. weight ratio
+    Leads to globally optimal solution because can also take fractions of item
+  Greedy algorithm never goes back and reversed decision
+  Sometimes fails to find globally-optimal solution because does not consider all data
+    But many implementations of approach later in chapter
+      Dijkstra
+      Kruskal
+  Advantages
+    Easy to devise vs. binary search, dynamic programming, functional programming
+    Easy to compute running time
+      Divide & conquer: size of problem shrinks but number of subproblems increase
+  Disadvantages
+    Unoptimized solution
+      Small step first may lead to large step later
+    Proof of correctness
+      Hard to understand
+      Hard to prove correct
+        Use contradiction often

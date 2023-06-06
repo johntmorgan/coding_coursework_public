@@ -1,0 +1,214 @@
+Weighted Shortest Paths Pt 1
+  Until now only talking about graphs where measure distance in terms of # of edges
+  Today generalize that notion
+  Before BFS and DFS solve a range of problems
+    Single source shortest paths - BFS - solve in O(|V| + |E|)
+    Single source reachability - DFS - O(|E|)
+    Connected components
+      Didn't just reduce to BFS/DFS, put a whole for loop around that
+      O(|V| + |E|) - still traversing each point on graph once
+      Can use either BFS or DFS
+    Topological Sort in DAG
+      Used full DFS to give an ordering of vertices in a DAG
+      Ordering all edges go forward in that order - O(|V| + |E|) again
+  This + next 4 lectures
+    Now counting integer associated with that edge
+    It's called a weight
+    (Example displayed)
+    Directed graph on 8 vertices
+    Integer associated with each edge
+      Can be positive, negative, 0 as well
+  G, w: E -> Z
+  e = (u, v) edge
+  w(e) = w(u, v)
+  Adding weights to graph comes up in many applications
+    Distances in a road network
+    Negative weight?
+      Frenemies in a social network?
+  How do a give the user or the algorithm these weights?
+    Store weights in graph
+    Basic graph was set data structure on the vertices mapping to adjacencies of vertex
+      Could be set or basic array
+    1) To store weights, store with adjacency, maybe in a tuple
+    2) Separate set data structure mapping edges mapping to weights
+    Doesn't really matter how we do it
+    Assumption is that given edge, can query weight in constant time
+      Hash table mapping vertices to adjacencies
+  What does giving these edges weights imply for problems we already defined for unweighted graphs
+    Starting with a focus on single source shortest paths
+      Generalize that even more 3 lectures from now
+    Before distance was number of edges in path
+Weighted paths
+  Weight w(pi) of a path pi = sum e in pi of w(e)
+    Weight of a path is the sum of all weights in path
+  A shortest path (weighted) is a minimum weight path (from s to t)
+    delta(s, t) = min { w(pi) | path pi from s to t}
+      If no path delta(s, t) = infinity
+    Problem
+      But also possible a finite length shortest path does not exist
+      Can keep going through edges and get a shorter path
+    delta(s, t) = inf { w(pi) | path pi from s to t}
+      inf -> "infinum" - when negative loop - call weight = -infinity
+    Example
+      Negative cycle from b -> f -> g -> c, cycle weight of -2
+      Can just go around the cycle over and over and over
+        No finite length minimum weight path
+        Just say delta = -infinity
+    If there exists path from s to v that goes through a vertex on a negative weight cycle
+      then delta(s, v) = -infinity
+      There is no finite length shortest path
+      Might want to return negative weight cycle
+        Talk about more next lecture
+      Most of the rest of this unit is on weighted shortest paths
+Weighted shortest paths
+  BFS can solve this problem
+  There's a couple of cases where reduce to shortest paths with BFS
+    If have a weight of 1 to every weight in graph
+    Or (generalizing) in fact all weights positive but same value
+    Or (generalizing more) tricky graph transformation
+      Can get linear time algorithm in contexts where the weights aren't that large
+      Say there's a positive edge weight 4
+        Put 4 edges of weight one in series
+      But not such a good idea if weights are very big
+        Ok if weights are asymptotically less than |V| + |E| get a linear time algo via BFS
+    So that gives us a linear time algorithm in these very special cases
+      We don't know how to do it in linear time more generally
+      But there are some algorithms that do pretty well
+  One more special case
+    If have a DAG
+    For any set of edge weights, can solve in |V| + |E|
+  (Next lecture - |V| * |E| for any graph via Bellman-Ford, in context of DAG algorithm today)
+  Most problems have non-negative edge weights
+    No negative-weight cycle problems
+    Dijkstra - two lectures from now - |V|log|V| + |E|
+  Before we get into DAG solve via "DAG relaxation"
+    Returned parent pointers last time - shortest path tree
+Shortest-path Trees
+  If I give you the shortest path distances, for subset reachable from S not thru neg weight cycles
+  Can reconstruct parent pointers in linear time
+  Algorithm
+    (for weighted, only need P(v) for v with finite delta(s, v))
+    Initialize parent pointer data structure P to be empty
+    P(s) = None // just like in BFS
+    For each vertex u in V where delta(s, u) is finite
+      For each v in Adj+(u):
+      If there is no parent pointer assigned to v, u may be parent of v
+        if v not in P and dist s to u + edge u to v = shortest path s to v // can be ties ofc
+        delta(s, v) = delta(s, u) + w(u, v)
+        there exists shortest path that uses (u, v)
+        so set P(v) to u
+    Not going to prove correct
+      But inutitively makes sense, right?
+      Takes linear time by same logic as BFS/DFS
+    Going to ignore computing parent pointers from now on
+      Have to take at least linear time anyway
+        Compute distances in more time, compute parents after
+DAG shortest path in linear time
+  DAGs are just nice things, kind of already ordered in a way
+    Topological sort order we already talked about
+    No negative weight cycle problem, can only go in one direction
+  DAG relaxation
+    Maintain distance estimates d(s, v) (note d = distance estimate, delta = shortest path)
+      Init as infinite
+        Shortest path needs to be shorter than infinite or else I don't care
+    Estimates upper bound delta(s, v) gradually lower until equal
+    When do we lower?
+      Whenever distance estimates violate the triangle inequality
+  Triangle inequality
+    Pretty intuitive notion
+    Have 3 points - vertex u, vertex v, vertex x
+    Shortest path u straight to v can't be shorter than u to v through x
+    delta(u, v) <= delta(u, x) + delta(x, v) for any x in graph
+  How to use
+    If (u,v) in E such that condition is violated for estimates
+      d(s, v) > d(s, u) + w(u, v)
+    I have some edge (u, v) in graph
+      Going through u is better
+    Lower d(s, v) to equal d(s, u) + w(u, v)
+    "Relaxing" constraint // relax a little weird, used for historical reasons
+    Relaxation is "safe" - maintain property that estimates are infinite or weight of some path to v
+    Each d(s, v) is weight of some path s -> v (or infinite)
+    Easy to prove
+      Relax(u, v), assign d(s, v) to weight of some path
+    So set d(s, v) = inf and d(s, s) = 0
+      Anything not reachable from s set correctly
+      S itself set correctly too
+    Process each vertex u in a topological sort order
+    For each v in Adj+(u):
+      if d(s, v) > d(s, u) + w(u, v):
+        relax(u, v) i.e. set d(s, v) = d(s, u) + w(u, v)
+  Example
+    Setting vertices before source in topological order to infinite
+  Claim:
+    At end, d(s, v) = delta(s, v) // estimates equal all shortest path distances
+    Prove by induction
+      Consider shortest path from s to v
+      Look at vertex u preceding in topological order
+        Would have already found shortest path distance
+
+Recitation 11
+  Weighted graph G = (V, E) with weight function w : E -> R mapping edges to real-valued weights
+    Edge weights often not represeted as function though
+    Store weights as value in adjacency matrix
+      Or inside edge stored in adjacency list or set
+    def w(u, v): return W[u][v]
+
+    W1 = {0: {1: -2},
+          1: {2: 0},
+          2: {0: 1},
+          3: {4: 3}}
+
+    W2 = {0: {1: 1, 3: 2, 4: -1},
+          1: {0: 1},
+          2: {3: 0},
+          3: {0: 2, 2: 0},
+          4: {0: -1}}
+
+    Store weight function using O(|E|) space
+      Can return the weight of an edge in constant time
+        Hash tables work well in practice, so use them (only picky worst-case/expected on ds questions)
+    Solve with equal weights: run breadth-first search
+      But when weights are uneven, BFS cannot be applied directly
+      Negative-weight cycle, shortest path does not exist
+        Can always find a shorter path by looping around the cycle
+        Path is undefined and has weight -infinity
+  DAG relaxation, another view
+    Generally "relaxation" = algorithm that optimizes by starting non-optimal and iterating
+    When d(s, v) = delta(s, v) it's "fully relaxed"
+    (code)
+    How do we relax, and when do we stop relaxing? (code)
+    Safety lemma
+      Relaxing an edge maintains d(s, v) >= delta(s, v) for all v in V
+      Prove a stronger statement, for all v in V, d(s, v) is either inf or weight of path from s to v
+        True at init, each d(s,v) is +inf except for d(s) = 0
+        Now suppose at some other time claim is true and relax edge (u, v)
+        Relaxing the edge decreases d(s, v) to a finite value d(s, u) + w(u, v)
+        By induction this is a length of a path from s to v: a path from s to u and the edge (u, v)
+    Termination Lemma
+      If no edge can be relaxed, then d(s, v) <= delta(s, v) for all v in V
+      Suppose contradiction delta(s, v) < d(s, v) so there is a shorter path pi from s to v
+      Let (a, b) be the first edge of pi such that d(b) > delta(s, b)
+        Then edge (a, b) can be relaxed, a contradiction
+  How many modifying edge relaxations can occur in an acyclic graph?
+    Can do it very wrong and get exponential
+      Say v0 -> v1 -> v2 and v0 -> v2
+      Shortest to v2 is v0 -> v2
+      Go through the v1 path and then relax everything after v2 first, then come back to v0
+    Recurrence T(n) = 3 + 2T(n - 2)
+      Solves to T(n) = O(2^(n/2)) // exponential in size of graph
+    Order to ensure polynomial?
+  DAG Relaxation
+    No negative weight cycles, relaxation must terminate
+    Relax every outgoing edge from each vertex exactly once in a topological sort order
+      "DAG Relaxation"
+    (code)
+    Computes shortest paths in directed acyclic path
+    Prove that at termination d(s, v) = delta(s, v) for all v in V
+      Safety Lemma -> vertex not reachable from s will retain d(s, v) = +inf
+      Topological sort order ensures edges of the path are relaxed in the order in which they appear in path
+      Assume for induction that before edge (vi, v(i + 1)) in pi is relaxed, d(s, vi) = delta(s, vi)
+      Setting d(s, s) = 0 at the start provides a base case
+      Relaxing edge (vi, v(i + 1)) sets d(s, v(i + 1)) = delta(s, vi) + w(vi, v(i + 1)) = delta(s, v(i + 1)))
+    DFS runs in linear time
+    The loops relax each edge exactly once, algorithm takes O(|V| + |E|) time
+    

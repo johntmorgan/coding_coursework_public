@@ -1,0 +1,50 @@
+1. Write a query to display all those movie titles whose budget is
+  greater than the average budget of all the movies.
+  SELECT Name
+  FROM Movies
+  WHERE BudgetInMillions > (SELECT AVG(BudgetInMillions) FROM Movies);
+
+2. Find all those actors who don’t have any digital media presence using a right join statement.
+  SELECT CONCAT(FirstName, " ", SecondName)
+  AS Actors_With_No_Online_Presence
+  FROM DigitalAssets
+  RIGHT JOIN Actors
+  ON Id = ActorId
+  WHERE URL IS NULL;
+
+3. Rewrite query with no JOIN and EXISTS operator
+  SELECT CONCAT(FirstName, " ", SecondName)
+  FROM Actors
+  WHERE NOT EXISTS (SELECT ActorId
+    FROM DigitalAssets
+    WHERE ActorId = Id);
+
+4. Write a query to print the name of the fifth highest grossing movie at the box office.
+  SELECT Name, CollectionInMillions AS Collection_In_Millions
+  FROM Movies
+  ORDER BY CollectionInMillions DESC
+  LIMIT 1
+  OFFSET 4;
+
+  (Or from solution)
+  SELECT Name,
+  CollectionInMillions AS Collection_In_Millions
+  FROM Movies
+  ORDER BY CollectionInMillions DESC
+  LIMIT 4, 1;
+
+5. Find movies whose cast posted on social media within 5 days of release date - pulled from solution
+
+  SELECT DISTINCT Name
+  AS Actors_Posting_Online_Within_Five_Days
+  FROM Movies
+  INNER JOIN (SELECT *
+           FROM Cast
+           INNER JOIN (SELECT LastUpdatedOn, Id
+                       FROM Actors
+                       INNER JOIN DigitalAssets
+                       ON ActorId = Id) AS tbl1
+           ON tbl1.Id = ActorId) AS tbl2
+  ON tbl2.MovieId = Movies.Id
+  WHERE ADDDATE(ReleaseDate, INTERVAL -5 Day) <= LastUpdatedOn
+  AND ADDDATE(ReleaseDate, INTERVAL +5 Day) >= LastUpdatedOn;

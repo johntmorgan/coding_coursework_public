@@ -1,0 +1,172 @@
+Arrays
+  Homogenous elements
+  Only hold elements of one type
+  Basically just a wrapper for a C array
+  Type constrained at time of creation
+
+Initializing
+  import array
+  new_array = array.array('type', [list])
+  Ex.
+    new_array = array.array('f', [1, 2, 3])
+    print(new_array[0])
+  Type codes
+    'c' char
+    'b' signed char
+    'B' unsigned char
+    'u' Python unicode
+    'h' signed short
+    'i' signed int
+    'I' unsigned int
+    'l' signed long
+    'L' unsigned long
+    'f' float
+    'd' double
+
+Array slicing
+  Just like list slicing
+  import array
+  initializer_list = [2, 5, 43, 5, 10, 52, 29, 5]
+  number_array = array.array('i', initializer_list)
+
+  print(number_array[1:5])
+  > array('i', [5, 43, 5, 10])
+
+Change or add array elements
+  Arrays are mutable
+  Change like list elements
+
+  integers = array.array('i', [1, 2, 3, 5, 7, 10])
+  integers[0] = 0
+  print(integers)
+
+  Add item to end with append()
+  Add several items with extend()
+    numbers.extend([5, 6, 7])
+  Concatenate with "+"
+
+  del to remove
+  del integer_array[2]
+  OR
+  remove(val)
+  OR
+  pop(index)
+
+  Throws error if elem not in array, index out of bounds
+
+Lists vs. arrays
+  Lists 
+    Flexible
+    Heterogenous data
+    Use more space
+    Pointer to a block of pointers, each pointing to full Python object
+  Arrays
+    Not flexible
+    Much more efficient for storing, manipulating data
+    Pointer to C-type array
+
+  Similarities
+    Usage, functionality
+    Both store data
+    Mutable
+    Index
+    Interate
+    Slice
+
+  When to use
+    Lists are fast for appending
+      Manage lots of different data types
+    Arrays are good for storing lots of data
+      Perform lots of computationally intense math
+      NumPy library better for math use cases
+
+      import numpy as np
+      numpy_array = np.array([1, 2, 3])
+      print(numpy_array)
+
+Challenge 1: Remove even integers from list
+  How these challenges work
+    Function definition given in problem statement
+      Always keep name and args
+    Skeleton has pass keyword in body
+    Compile-time erros may refer to evaluation code
+      Refer to solution if necessary
+    Return function in proper format
+      List vs. tuple
+  Problem that removes all even elements from list
+    remove_even(list)
+
+  Doing it by hand
+    Append to new list if odd
+
+    def remove_even(lst):
+      odd_list = []
+      for i in lst:
+          if i % 2 != 0:
+              odd_list.append(i)
+      return odd_list
+
+    Not wrong, but not very Pythonic
+    O(n) time complexity - iterate over list
+
+  Better:
+  List comprehension
+    return [item for item in lst if item % 2 != 0]
+
+    new_list = [expression(i) for i in oldList if filter(i)]
+    Still O(n) time complexity
+    Still must iterate over all elements in list
+
+Merge two sorted lists
+
+def merge_lists(lst1, lst2):
+    merge = []
+    while len(lst1) > 0 or len(lst2) > 0:
+        if len(lst1) == 0:
+            merge.append(lst2.pop(0))
+        elif len(lst2) == 0:
+            merge.append(lst1.pop(0))
+        else:
+            if lst1[0] < lst2[0]:
+                merge.append(lst1.pop(0))
+            else:
+                merge.append(lst2.pop(0))
+    return merge
+
+  # Nobody said not to destroy the input lists - JM
+    Shorter code, and the tests pass too...
+  # But if not, then move through them with pointers - see code
+
+  Time complexity O(n + m)
+
+  Can also merge in place
+    Have to call insert each time
+    O(m(n + m))
+    Time complexity O(mn)
+    Could simplify to O(m^2) or O(n^2), whichever is worse
+    However space reduced to O(m)
+
+Find two numbers that add up to k
+  Time-intensive but intuitive: two for loops
+    O(n^2)
+
+  Better
+    Sort list O(nlogn)
+    Binary search for complement O(nlogn)
+
+  Better
+    Sort list O(nlogn)
+    Two-finger algo towards middle O(n)
+
+  Best
+    Use dicts (but we haven't learned that yet)
+
+List of products of all elements
+  Modify list so each index has product of all numbers in list except number at index
+
+  Time-intensive 
+    Looping over list twice - O(n^2)
+    Coded this - JM
+
+  Better
+    

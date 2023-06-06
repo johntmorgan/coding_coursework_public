@@ -1,0 +1,62 @@
+Scope
+  The extent to which a variable is accessible
+  Scope partitions availability throughout program
+  JS has 2 scopes
+    Global
+    Local
+
+Global
+  Outermost scope
+  All variables accessibly by any other scope
+
+  Both a and func are globally accessible here:
+
+    var a = 10; // variable a assigned to 10
+
+    var func = function (){
+        var innerFunc= function (){
+            console.log("a is accessible:", a);
+        }
+        innerFunc();
+        return;
+    }
+    func(); // invoke function func
+
+Local scope
+  Limited
+  2 types
+    Function scope
+    Block scope
+
+  Function scope
+    Scope inside function declaration
+    Any variable declared inside not accessible outside
+    Variables declared with let or const cannot be redeclared in the same local scope
+      const prevents reassignment
+      let does not
+
+  Block scope
+    Local scope bounded by curly brackets
+    Uses let or const token
+    However vars declared by var token available outside
+
+Lexical scope
+  Ability for a function scope to access variables from parent scope
+    Functions may access all variables from their parent scopes up to global scope
+  JS uses a scope chain to find variables accessible in a given scope
+    When a variable is referred to, JS looks at local scope then continues up parents to global scope
+
+Module scope
+  Modules are files of JS code
+  Usually contain a class or library of functions for a task
+  A variable may be in global scope in one module, not accessible in other
+    Need to explicitly write in both
+      import and export keywords
+
+  import {variable_names} from "./module_name";
+
+  For import to succeed, corresponding module must export
+
+  export {variable_names};
+
+  In Node, use require instead - imports the *entire* module

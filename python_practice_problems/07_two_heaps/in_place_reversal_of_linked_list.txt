@@ -1,0 +1,12 @@
+In place reversal of linked list
+  Use only given nodes, no extra space
+  Track prev, curr, next
+  Problems:
+    Remove nth node from list
+    Reverse alternate nodes and append to end of list
+    Reverse second half of list
+
+Pattern match
+  Reverse linked list
+  No extra space allowed
+

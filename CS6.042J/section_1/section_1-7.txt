@@ -1,0 +1,328 @@
+Binary Relations
+Text
+  A function assigns one element of one set "domain"
+    To an element of another set "codomain"
+  f: A -> B
+  f is the function, domain A, codomain B
+  f(a) = b
+  b value of f at argument a
+  A function with a finaite domain could be specified by a truth table
+    Say f(P, Q) where P and Q are propositional variabless
+    f(P, Q) ::= [P IMPLIES Q]
+  A function can also be defined by a procedure for computing its value
+    At any element of its domain
+    E.g. left to right search binary string until hit 1
+    Note will be undefined for 0000
+      Functions do NOT need to assign a value to every element in domain
+      "Partial functions" - domain elements where not defined
+      "Total function" - defined on every element of its domain
+    Often useful to find set of values a function takes
+      When applied to the elements in a set of arguments
+      So if f : A -> B
+      And S is a subset of A
+      Define f(S) to be the set of all the values f takes when applied to elements of S
+      f(S) ::= {b EE B | f(s) = b for some s EE S}
+      f = 1/x^2
+      f([1, 2]) = [1/4, 1]
+    Applying f to a set S of arguments ->
+      "Appling f pointwise to S"
+      f(S) is the "image" of S under f
+      Set of values from applying f to all possible elements -> "range" of f
+        range(f) ::= f(domain(f))
+        Do NOT refer to codomain as range of function
+          Important when relating sizes of sets to properties of functions between them
+  Going step by step is a straightforward idea
+    Taking a step ~= applying a function
+    Going step by step -> applying functions one after the other
+      Composing functions
+      Composing functions f and g
+        First f is applied to some argument to produce f(x)
+        Then g is applied to that result g(f(x))
+        f : A -> B, g : B -> C
+        g dot f(x) ::= g(f(x))
+          for all x EE A
+  Binary relations
+    Definte relations beween to objects
+      a < b
+      A =C B
+    f : A -> B is a special case of binary relation
+      in which element a EE A related to element b EE B
+        precisely when b = f(a)
+    Binary relation R consists of a set A called the domain of R
+    A set B called the codomain of R
+    And a subset of A x B called the graph of R
+    A relation with domain A and codomain B
+      "Between A and B" or "from A to B"
+    R : A -> B
+    domain and codomain same set? "on A"
+    a R b -> pair(a, b) is in the graph of R
+    Same as the definition of a function
+      BUT function requires at most one pair in graph with first coordinate a
+      A function is a special case of a binary relation
+    Relation diagrams
+      Diagram R
+        Points correspond to elements of domain in one column
+          Would be very long if domain(R) is infinite!
+        Codomain typically pictured to the right
+        Arrows point from domain points to codomain points
+        Being a function means that at most 1 arrow comes out of domain points
+          "<= 1 arrow out property"
+      So when binary relation
+        function: "<= 1 arrow out property"
+        surjective ">= 1 arrows in property"
+        total when ">= 1 arrows out property"
+        injective "<= 1 arrow in"
+        bijective "exactly 1 arrow out, 1 arrow in"
+      Graph above, total, surjective function
+    Relational images
+      Image of a set Y under relation R, written R(Y)
+        Set of elemetns in the codomain B of R that are related to some element in Y
+        R(Y) is the set of points with an arrow coming in that starts from some point in Y
+      Inverse R(-1) of R : A -> B
+        Is relation of B to A defined by rule
+        b R-1 A IFF a R b
+        So in other words, reverse direction of arrows in diagram R
+      Image of a R-1 is the inverse image of a set
+
+  Finite Cardinality
+    A finite set has a finite number of elements
+      "size" -> "cardinality"
+      A is a finite set, cardinality is |A|
+      A finite set may have no elements, or one, or two...
+        Cardinality of finite sets is always a nonnegative integer
+      Suppose R : A-> B is a function
+        Every element of A contributes at most one arraow
+        |A| >= #arrows
+      If R is also surjective
+        Every element of B has an arrow in
+        #arrows >= B
+      So if R is surjective
+        |A| >= |B|
+      A surj B
+        lemma: |A| >= |B|
+      A surj B
+        surjective function from A to B
+      A inj B
+        injective total relation from A to B
+      A bij B
+        iff bijection from A to B
+      For finite sets A, B:
+        If A surj B, then |A| >= |B|
+        If A inj B then |A| <= |B|
+        If A bij B then |A| = |B|
+      If size of A is bigger than size B
+        Can always define a surjective function from A to B
+        |A| >= |B| iff A surj B
+        |A| <= |B| iff A inj B
+        |A| = |B| iff A bij B
+    How many subsets of a finite set
+      There are 2^n subsets of an n-element set
+      |A| = n implies |pow(A)| = 2^n
+      Follows from fact that simple bijectsion from subsets of a to {0, 1}^n
+      |pow(A)| = |{0, 1}^n|
+Lecture
+  We've seen a lot of functions in introductory calculus
+  But maybe not a more general discussion of functions - not in old-school classes anyway
+  Interpreting functions as a special case of binary relations
+  Binary relation
+    Associates elements of one set called the domain with elements of another, the codomain
+    May be familiar to you in CS
+      Worked with relational databases like MySQL?
+      Even more fundamental
+        One of the most basic math abstractions right after sets
+        Play a role everywhere
+    Later will look at special versions
+      Equivalence relations, partial orders, numerical congruences
+  But today: machinery using binary relations for counting
+    "Registered for" relation R
+    stuDent - four set members
+    subJect - four set members
+    relation R is arrows showing which students, which subjects
+    Jason registered for 6.042
+      Tells us he's registered for 6.042
+    Lots of different notations used
+      Jason R 6.042 "infix notation"
+      R(Jason, 6.042) "prefix notation"
+      (Jason, 6.042) EE R - more formal
+      (Jason, 6.042) EE graph(R) - if being really precise
+        Will elaboration on the graph thing later
+    Images under R
+      R(Jason) = subjects Jason is registered for
+      Look at picture - R is not a function, more than one arrow
+        Also registered for 6.012
+      R(Jason) = {6.042, 6.012}
+        Have applied R to one domain element so far
+      R(X) ::= all subjects being taken by students in set X
+      R(X) ::= everything in R that relates to things in X
+      R({Jason, Yihui}) = {6.042, 6.012, 6.004}
+      R(X) ::= endpoints of arrows from points in X
+        { j EE J | there exists d in X. dRj } - logic notation
+        An arrow from a student d in X goes to j
+    "Registers" relation R^-1 - R-inverse
+      Class that registers student "is registered for"
+        dRj IFF jR^-1d
+      R^-1(6.012) = all students taking 6.012
+                  = {Jason, Yihui}
+      R^-1({6.012, 6.003}) = {Jason, Joan, Yihui}
+      R^-1(Y) aka the inverse image of Y under R
+      R^-1(J)?
+        All the stuDents registered for some subJect
+        D =C R^-1(J)
+        "Every student is registered for some subject"
+          May or may not be true - we're just expressing the idea
+  "adVises" relation V
+    Professor and stuDent
+      advises relation indicated by arrows
+      Can have two advisors - double major
+      V({FTL, TLP}) = {Joan, Yihui, Adam}
+      R(V({FTL, TLP})) = R({Joan, Yihui, Adam}) = {6.003, 6.012, 6.004} = subjects registered for
+        "Composing R and V"
+      R(V(X)) = subJects that advisees of profs in X are registered for
+      (R dot V)(X) ::= R(V(X))
+        The "composition of R and V"
+        R dot V = "prof has advisee registered for"
+        p(R dot V)k ::= prof p has an advisee registered in subject j
+        ARM(R dot V)6.012 because ARM V Yihui AND Yihui R 6.012
+        p(R dot V)j IFF there exists d in D.[pVd AND dRj]
+          * note V, R in reverse order here
+          * follow the way the picture works
+  "teaches relation T"
+    Professor, subJect
+    Tell us who's teaching what
+    Say Profs should not teach their advisees
+      "Too much power over student" - does not work that way, but anyway
+      for all P for all J.NOT(p(R dot V)j AND pTj)
+      T intersect (R dot V) = empty set
+      R dot V =C bar T
+        Subset of not T - so does not intersect
+  Getting more formal
+    A binary relation R from a set A to a set B
+      associates elements of A to set B
+    What are "arrows"?
+      Set of them is the graph(R)
+    So relation has domain, codomain, and graph
+    All that matters about arrow is beginning and end - ordered pairs
+    graph(R) = {(a1, b2), (a1, b4), (a3, b4)}
+    range(R)
+      range(R) ::= elements with arrows coming in
+                = R(A)
+                Typically NOT equal to whole codomain
+                  Some elements in B are not receiving arrows
+  Functions
+    special case of relations
+    function F from A to B associates element a of A with *at most* one element of B
+      Element - if exists - called F(a)
+  Function archery
+    Look at points on left - no more than 1 arrow coming out
+      Some points have no arrow coming out - not defined
+  Formally
+    relation F: A-> B is a function
+    IFF |F(a)| <= 1 for all elements a
+    IFF
+      [a F b and a F b'] IMPLIES b = b'
+  Relational Mapping Property
+    (Archery)
+    Mostly vocab you need to know
+      Applications coming up
+    Binary relation - 3 parts - domain, codomain
+    Function
+      <= 1 arrow out of each point
+      But not every point has an arrow out, typically
+    Classify relations by
+      Arrows out
+        <= 1
+        = 1
+        >= 1
+      Arrows in
+        <= 1
+        = 1
+        >= 1
+      Total relation: >= 1 arrow out
+        R is total iff A = R^-1(B)
+          Turn arrows around, cover entire domain
+      Total & function
+        Exactly one arrow out
+        In many fields, functions assumed to be total
+          But not always true
+        Example
+          G: R x R -> R
+          g(x, y) ::= 1/(x - y)
+          domain(g) = all pairs of reals
+          codomain(g) = all reals
+          but g is *not total*
+            g(r, r) is not defined
+          g0: D -> R
+          g0(x, y) ::= 1/(x - y)
+          where D ::= R^2 - {(x, y) | x = y}
+            So all reals but 45 degree line - get rid of bad points
+            Same graph but different domains, so g0 is total
+      Surjection
+        >=1 arrow into every point in codomain
+        R is a surject iff
+          R(A) = B
+          (range of function is entire codomain)
+      Injection
+        <= 1 arrow into every point in codomain
+      Bijection
+        Exactly 1 arrow out, exactly 1 arrow in
+        Total function that is an injection and a surjection
+        Why useful in counting theory?
+          Exactly one arrow out of every element in A
+            Number of arrows = size of A = size of B
+            |A| = |B|
+            for finite A, B
+  Finite Cardinality
+    From mapping to counting
+    Bijection from finite A to finite B
+      |A| = |B|
+    # subsets of a finite set A?
+      |pow(A)|?
+      for {a, b, c}, pow(A) = {0, {a}, {b}, {c}, {a,b}, {a,c}, {b,c}, {a,b,c}}
+    pow(A) bijection to bit-strings
+      A: {a0, a1, a2, a3, a4,... a(n-1)}
+      subset: {a0, , a2, a3, ,... a(n - 1)}
+      Can correspond to a bit string
+               1  0   1  1  0 ...  1
+        kth bit in string if and only if ak in set
+        this defines a bijection
+        so number of n-bit strings = |pow(A)|
+        so |pow(A)| = 2^|A|
+    More counting rules like bijection
+      Relate sets by inequalities - surjective, injective
+      Surjective function A to B
+        <= 1 arrow out every element of A (function)
+          implies |A| >= # arrows
+        >= 1 arrow into every element of B (surjective)
+          implies |B| <= # arrows
+          implies |A| > |B|
+          for finite A, B
+      Total injective relation A to B (relation implies function btw - left to class exercise)
+        >= 1 arrow out every element of A (total)
+          implies |A| <= # arrows
+        <= 1 arrow into every element of B (injective)
+          implies |B| >= # arrows
+          implies |B| > |A|
+          for finite A, B
+    "jection relations" - mapping lemma
+      A bij B ::= there exists bijection: A-> B
+        IFF |A| = |B|
+        Also if size same, easy to find bijection
+      A surj B ::= there exists surj funct: A-> B
+        IFF |A| >= |B|
+      A inj B ::= there exists total injection: A-> B
+        IFF |A| <= |B|
+      Existence of these relations between sets is handle on sizes
+    |A| = |B| = |C| IMPLIES |A| = |C|
+    A bij B bij C IMPLIES A bij C
+    |A| >= |B| >= |C|
+    A surj B surj C IMPLIES A surj C
+    |A| >= |B| >= |A| implies |A| = |B|
+    A surj B surj A IMPLIES A bij B
+    for finite A, B, C
+      immediate from the Mapping Lemma
+    But are these true for infinite sets?
+      First two claims are easy
+        First claim? Compose the bijections
+        Second? Compose the surjections
+        Third? Not obvious, Schroder-Bernstein theorem, comes up in a few lectures
+      

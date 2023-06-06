@@ -1,0 +1,167 @@
+Distributed File Systems
+Hadoop DFS
+Google File System
+
+Google File System (GFS)
+  Propriety distributed file system by Google
+  Inspiration for HDFS, developed as Apache project
+  HDFS/GFS Similar design principles, small differences
+
+Core requirements
+  Fault tolerance
+    Function despite any node failures
+  Scalability
+    Hold huge volumes of stored info
+  Optimized for batch operations
+    Processing and analysis of huge datasets
+    Throughput > latency
+    Most files will be mutated by appending data, not overwriting existing data
+
+GFS architecture
+  Single master node
+  Multiple chunk server nodes
+  Master node
+    Maintain file syste metadata
+    Inform clients about whcih chunk servers store specific part of file
+    Perform admin tasks - garbage collect orphaned chunks, data migration during failure
+    (HDFS: master = Namenode, chunkserver nodes = Datanodes)
+  Partitioning and replication
+    Each file divided into fixed-sized chunks
+    Each chunk identified by immutable, unique 64-bit chunk handle
+      Assigned by master during chunk creation
+    Chunk servers store chunks on local disks as regular file
+    System partitions files across different chunk survers
+      Good for performance
+    System replicates each chunk on multiple chunk servers
+      Good for availability, data reliability
+    Master node does NOT transfer file data - ensure good performance and scalability
+  Network topology
+    System takes account of data center topology
+      Consists of multiple racks of servers
+      Bandwidth into or out of rack may be less than aggregate bandwidth of all machines in rack
+      Failure of single shared resource in rack may bring all machines in rack down
+  Balancing disk and network bandwidth
+    When new chunk created, master tries to use chunk servers with below-average space utilization
+    Master tries to use chunk servers with low numbers of recent creations
+      (which predictes imminent heavy write traffic)
+  Placing replicas
+    Master follows configurable chunk replica placement
+    But default will store two replicas at two different nodes in same rack
+      Then third replica in node in separate rack
+      Tradeoff between bandwidth and data reliability
+
+Creating and Reading Files
+  Clients use a client library that abstracts implementation details
+  Apps operate based on byte offsets of files
+    Library translates to assoc chunk index
+    Communicate with master to retrieve chunk handle for provided chunk index
+      And location of assoc chunk server
+      Contact appropriate chunkserver (closest) to retrieve data
+  Create
+    Master node maintains metadata about filesystem
+    Operation creates file only needs to contact master node
+    Master node uses locking while creating new files to handle concurrent requests safely
+      Read lock on directory name
+      Write lock on file name
+  Clients
+    Cache metadata for chunk locations locally
+      Only contact master for new chunks or when cache expires
+    Organically request fresh data from master when realize chunk servers cannot serve anymore
+    Clients do NOT cache actual chunk data - stream through huge files
+      Working sets too large to benefit from caching
+  Master
+    Stores file and chunk namespaces
+    Mapping from files to chunks
+    Chunk locations
+    All meta data stored in memory
+    Logs mutating operations (file creation, renaming)
+      Operation log stored locally, replicated on remote machines
+    Checkpoins memory state to disk when log grows signficantly
+      Filesystem image reconstructed by loading last checkpoint in memory
+      Replay operation log from this point forward
+
+Writing and deleting files
+  Clients can write and delete via GFS client library
+    Details abstracted again
+    Operate based on byte offsets of files
+    Client library translates to chunk index
+    Communicate with master to retrieve chunk handle for provided index
+    And location of assoc chunk servers
+    Contacts appropriate (closest) chunk server to retrieve data
+  Write operations
+    Atomic and linearizable file namespace mutations
+      Execute in single master node
+      Operation log defines total global order
+      Master node uses read-write locks to perform proper serialization on any concurrent writes
+    Concurrency support
+      Multiple concurrent writers per file supported
+    Client communicaates with master node to id chunk servers
+      Client pushes data to all replicas using chain replication
+      Chunk servers put in chain depending on topology, data pushed linearly
+      Client pushes data to first chunk server
+      First chunk server pushes to second
+      Fully utilizes each machine's bandwidth
+      Avoids bottlenecks in single node
+    Master grants lease for each chunk to one server - nominated as primary replica
+      Responsible for serializing all mutations on chunk
+      After all data pushed, client sends write request to primary replica
+      Primary assigns consec serial numbers to all mutations
+        Applies locally
+        Forwards write request to all secondary replicas
+        Secondary replicas apply mutations within same serial number
+      Primary replica acknowledges write to client once secondary replicas have ack
+  Delete ops
+    Initially execute at master node
+    File moved into hidden namespace
+      Can be undeleted for a time
+    If file remains there for a period of time, permanently removed
+      All references to chunks etc removed
+      Actual chunk content removed by servers lazily later through garbage collection
+  Partial failures in write workflow
+    Vulnerable!
+    Imagine primary replica crashes in middle of write
+    After lease expires, secondary replica requests and starts imposing new serial number
+      Might disagree with writes of other replicas
+    Write might be persisted only in some replicas, or in different orders
+GFS write consistency
+  State of file after mutation depends on type, succeed/fail, and concurrent mutations
+  File region is consistent if all clients see same data regardless of replica
+  Region within a file
+    Defined if consistent and clients see what mutation writes in entirety
+    Can be defined and consistent - succeeds without interference from concurrent writes
+    Undefined but consistent - concurrent successful mutations leave region undefined but consistent
+      Clients see same data, may not reflect any one mutation written
+        Fragments from multiple mutations usually
+    Inconsistent, undefined - failed mutation makes inconsistent
+
+GFS extra mutation operation
+  Besides regular writes, provides record appends
+  Record appens caus data to appended atomically at least once even in the presence
+    of concurrent mutations but at offset of GFS choosing
+      Returned to client
+  Clients retry failed record appends
+  GFS guarantees each replica will contain data as atomic unit at least once in same offset
+  GFS may insert padding or record duplicates in between
+  Successful record appends create defined regions interspersed with inconsistent regions
+  Apps accommodate relaxed GFS consistency by:
+    Using appends not overwrites
+    Checkpointing
+    Writing self-validating and self-identifying records
+  Appending far more efficient and resilient to app failures than random writes
+  Each record prep can contains checksums to verify validity
+    Reader can identify and discard extra padding and record fragments
+  If duplicates bad
+    Filter using unique record identifiers
+
+HDFS mutation
+  One writer at a time allowed
+  Only append, not overwrite supported
+  Does not allow record append, no concurrent writes
+  Handles partial failures differently, failed nodes removed from replica set entirely
+
+GFS & HDFS
+  Provide apps with info where region of file stored
+  Apps schedule processing jobs to run in nodes storing assoc data
+    Minimize network congestion
+    Maximize system throughput
+  "Moving computation to the data"

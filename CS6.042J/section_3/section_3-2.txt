@@ -1,0 +1,309 @@
+Asymptotic Notation
+Reading
+  Shorthand to give quick measure of behavior of f(n) as n grows large
+    Binary relation indicating functions grow at the same rate
+    Binary relation "little oh" indicating one function grows at a slower rate
+    And another "Big Oh" indicating one function grows not much more rapidly than another
+  Little O
+    Defintion for functions f, g : R -> R with g nonnegative
+    f is asymptotically smaller than g
+      f(x) = o(g(x)) IFF
+      lim x -> inf f(x)/g(x) = 0
+    1000x^1.9 = o(x^2)
+    Lemma
+      x^a = o(x^b) for all nonnegative constants a < b
+    Since logx < x for all x > 1
+      log x = o(x^eps) for all eps > 0
+      Proof
+        Choose eps > delta > 0 and let x = z^delta in the inequality log x < x
+        log z < z^delta/ delta = o(z^eps)
+    Corollar
+      x^b = o(a^x) for any a, b in R with a > 1
+  Big O
+    Most frequently used asymptotic notation
+    Upper bound on the growth of a function, such as running time of algorithm
+    Alternative defintion (shows key properties)
+    Given f, g -> R, R with g nonnegative, we say that
+    f = O(g)
+    iff
+    lim sup x -> inf |f(x)|/g(x) < inf
+    Technical notion of "limit superior"
+    Lemma
+      if a function f : R -> R has a finite or infinite limit as arg approaches infinity
+      then its limit and limit superior are the same
+    Lemma
+      if f = o(g) or f ~ g, then f = O(g)
+      Proof
+        lim f?g = 0 or lim f(g) = 1 implies lim f/g < inf, so lim sup f/g < inf
+      Note converse is not true
+        2x = O(x)
+      But
+        2x !~ x and 2x != o(x)
+    Lemma
+    If f = o(g) then it is NOT true that g = O(f)
+    Proof
+      lim x -> inf g(x)/f(x) = 1/(lim x->inf f(x)/g(x)) = 1/0 = inf
+    Why lim sup?
+      Cases where limits don't exist
+        What if f(x)/g(x) oscillates between 3 and 5 as x grows?
+        lim x -> inf does not exists
+        But f = O(g) because lim sup x -> inf f(x)/g(x) = 5
+    More usual definition
+      Given funct f, g : R -> R with g nonnegative we say
+      f = O(g)
+      iff there exists a constant c >= 0 and an x0 such that for all x >= x0
+      |f(x)| <= cg(x)
+      Complicated defintion, but idea is simple. f(x) = O(g(x)) means
+      f(x) <= g(x) means f(x) is less than or equal to g(x)
+      except that we're willing to ignore a constant factor c
+      and willing to allow exceptions for small x, namely x < x0
+      So when f(x)/g(x) oscillages between 3 and 5, f = O(g) because f <= 5g
+    Prop
+      100x^2 = O(x^2)
+        Choose c = 100 and x0 = 1 Prop holds, for all x >= 1
+        |100x^2| < 100x^2
+    Prop
+      x^2 + 100x + 10 = O(x^2)
+        x^2 + 100x + 10 / x^2  = 1 + 100/x + 10/x^2 and so its limit as x approaches inf
+        = 1 + 0 + 0 = 1
+        So in fact x^2 + 100x + 10 ~ x^2 and therefore x^2 + 100x + 10 = O(x^2)
+        And also x^2 = O(x^2 + 100x + 10)
+    Prop (generalized)
+      akx^k + a(k - 1) * x^(k - 1) + ... + a1x + 0 = O(x^k)
+    Big O is especially useful when describing the running time of an algorithm
+      For example, multiplying n x n matrices uses operations prop to n^3 worst case
+      Can just say running time O(n^3)
+      Allows algorithm to be discussed without reference to constant factors
+      Or lower-order terms that might be machine specific
+      Another matrix mult procedure uses O(n^2.55) operations
+        Asymptotically faster -> new ideas that go beyond O(n^3) method
+      Does not mean always better choice
+        O(n^2.55) method only more efficient on matrices of impractical size
+    Theta
+      Want to specify running time T(n) is precisely quadratic up to constant factors
+      (Both upper AND lower bound)
+      T(n) = O(n^2) and n^2 = O(T(n))
+      But let's use theta instead
+      f = theta(g) iff f = O(g) and g = O(f)
+      "f and g are equal to within a constant factor."
+      Theta notation allows highlight of growth rates, suppression of distracting factors and low-order terms
+      Running time of algorithm is:
+        T(n) = 10n^3 + 20n^2 + 1
+      Can write:
+        T(n) = delta(n^3)
+      Can say T is order of n^3 or T(n) grows cubically
+  Pitfalls of asymptotic notation
+    Exponential
+      4^x != O(2^x) because 4^x grows as the square of 2^x
+    Constants
+      Every constant is O(1), e.g. 17 = O(1)
+      If we let f(x) = 17 and g(x) = 1, then there exists a c > 0 and x0 such that
+      |f(x)| <= cg(x) - choose c = 17 and x0 = 1, since |17| <= 17 for all x >= 1
+    Now let's exploit this with a:
+    False Theorem
+      sum of i = 1 to n i = O(n)
+      Bogus proof
+        Define f(n) = 1 + 2 + 3 + ... + n
+        Since every constant i is O(1)
+        f(n) = O(1) + O(1) + ... + O(1) = O(n)
+    But of course
+      sum of i = 1 to n i = n(n + 1) / 2 != O(n)
+      Error from confusion over what is meant by i = O(1)
+      For any constant i in N it is true that i = O(1)
+      More precisely if f is any constant function, then f = O(1)
+      But i is not constant - it ranges over a set of values that depends on n
+      Anyway should never add O(1)s as if numbers
+      We never defined what O(g) means by itself, only in the context f = O(g)
+      Which describes a relation between f and g
+    Equality Blunder
+      f = O(g) is entrenched but "=" is regrettable
+        If f = O(g), seems reasonable to write O(g) = f
+        2n = O(n)... so O(n) = 2n? But n = O(n) so n = O(n) = 2n, so n = 2n
+      If you write
+        Hn = ln(n) + y + O(1 / n)
+        know you mean
+        Hn = ln(n) + y + f(n) for some f(n) where f(n) = O(1/n)
+    Operator application
+      Do not assume familar operations preserve asymptotic relations
+      f ~ g does not even imply that 3^f = theta(3^g)
+      But some operatoins preserve and even strengthen asymptotic relations
+      f = theta(g) IMPLIES ln(f) ~ ln(g)
+  Omega
+    Sometimes people use Big Oh in the context of a lower bound
+    "T(n) is at least O(n^2)" - no, big Oh can only be used for upper bounds
+    How to express?
+    n^2 = O(T(n))
+  Can also describe lower bound with "big Omega"
+    Given functions f, g -> R, R with f nonnegative define
+    f = omega(g)
+    to mean
+    g = O(f)
+    Examples
+      x^2 = omega(x)
+      2^x = omega(x^2)
+      x/100 = omega(100x + sqrt(x))
+    Say running time on inputs of size n is T(n)
+    And you want to say at least quadratic
+    T(n) = omega(n^2)
+  Little Omega
+    corresponds to little o
+    for functions(f, g): R -> r with f nonnegative define
+    f = lomega(g) to mean
+    g = o(f)
+    for example
+      x^1.5 = lomega(x)
+      sqrt(x) = lomega(ln^2(x))
+    Not as widely used as the others tho
+
+Lecture
+  Issue of approximate rate at which things happen
+    Falling, chemical reactions
+  CS - look at algorithm efficiency and whether grow linearly, quadratically, or more
+  Looking today at 4 notations that describe growth rates between functions
+  1. Asymptotic equivalence/equality
+    f(n) ~ g(n)
+    iff
+    lim n -> inf f(n)/g(n) = 1
+    Examples
+      n^2 ~ n^2 + n
+      why?
+      lim n -> inf (n^2 + n) / n^2 = lim n->inf 1 + 1/n = 1
+    Lemma
+      ~ is symmetric
+      Proof: say f ~ g
+      Now lim g/f = lim 1 / (f / g) = 1/1 = 1
+      So if f ~ g, then g ~ f
+    Lemma
+      ~ is transitive
+      suppose f ~ g and g ~ h, prove f ~ h
+      1 = lim(f / g) = lim (f / h) / lim(g / h) = lim(f / h) / 1 = lim(f / h)
+    Not really very interesting stuff
+    Top-level message
+      Many properties follow by this elementary algebra
+    Corollary
+      ~ is an equivalence relation
+    ~ is a relation of functions of one variable
+      Does not mean f(n) = g(n) at a specific number of n
+      Should really write f ~ g rather than f(n) ~ g(n)
+  2. Little Oh o(dot)
+    Asymptotically smaller
+    f(n) = o(g(n))
+    iff
+    lim n -> inf f(n)/g(n) = 0
+    Example
+      n^2 = o(n^3)
+      lim n->inf n^2 / n^3 = lim n->inf = 1/n = 0
+    Lemma
+      o() is a strict partial order on functions
+  3. Big Oh O()
+    Most complicated of the three
+    Arguably most important in computer science
+    f = O(g)
+    limsup n-> inf (f(n)/g(n)) < inf
+    Ignore the "sup" technicality for now
+    3n^2 = O(n^2)
+    lim n -> inf 3n^2 / n^2 = 3 < inf
+    What big Oh is doing is kind of saying constant factors don't matter
+    Important for CS, can't talk about time directly, depends on hardware
+  4. Theta
+    Same order of growth
+    f = theta(g)
+    f = O(g) and g = O(f)
+    theta is an equivalence relation
+  Summary of 4 relations
+    f ~ g  f & g nearly equal, informally
+    f = o(g) f is much less than g
+    f = O(g) f roughly <= g ("roughly" meaning not concerned about constant factors)
+    f = theta(g) f roughly equal to g
+  Asymptotic properties
+    The Oh's
+    Lemma
+      If f = o(g) or f ~ g, then f = O(g)
+      Informal
+        f is much less than g
+        f is about the same as g
+        f is roughly less than g
+      More formal
+        lim = 0 or lim = 1 IMPLIES lim < inf
+    Another
+      if f = o(g), then g != O(f)
+      lim f/g = 0 IMPLIES lim (g/f) = inf
+  Big Oh limsup?
+    The way it is talked about usually doesn't mention limits at all
+    The definition isn't really a limit, it's a limsup
+    Real definition
+    there exists c, n0 for all n >= n0 . f(n) <= c*g(n)
+    So there exists some factor c you can amplify g by
+      Such that once g is amplified by this factor
+      That in fact f(n) < c * g(n)
+      May not hold right at beginning, only from n0 on
+    f(x) = O(g(x))
+    Example
+      g(x) is actually <= f(x)
+      Because, if you multiply g by a constant
+      it gets above from a certain point on
+    No ofc mulitiplying g(x) by a constant alters
+    But if we imagine our curve was a log scale then in fact mult is the same as adding log(c)
+    So why limsup?
+      Suppose function f <= 2g
+      Then f = O(g)
+      BUT f(n) / g(n) has no limit
+      Example:
+        f(n) = (1 + sin^2(npi/2)) * g(n)
+        the sin part varies between -1 and 1
+        square it, either 0 or 1
+        add 1, varies between 1 and 2
+        Limit does not exist, alternating
+      However the limsup of f/g is 2 - so it's < infinity
+      Technical defintion of limsup - largest limit point of f/g
+      In most cases the limit does exist, can use simpler definition
+  Little Oh o()
+    Lemma
+      x^a = o(x^b) for a < b
+      Proof
+        x^a / x^b = 1 / x^(b - a) and b - a > 0
+        so as x -> inf, then 1 / x^(b - a) -> 0
+    Lemma
+      lnx = o(x^eps)
+      where epsilon is a root - say 1/2 or 1/3
+      so logs grow more slowly than roots
+      Proof
+        1/y <= y for y >= 1
+        now integrate both sides starting at 1
+        int 1 to z 1 / y * dy <= int 1 to z y * dy
+        lnz <= z^2/2 for z >= 1
+        let z = sqrt(x^delta)
+        delta * ln(x) / 2 < x^delta /2
+        ln x < x^delta / delta = o(x^episilon) for epsilon < delta
+    Lemma
+      x^c < o(a^x) for a > 1
+      polynomials grow slower than exponentials
+      closely related to logs growing slower than roots
+      Proof - L'Hopital's Rule, McLaurin Series (see prereq calculus text)
+  Asymptotic blunders
+    Particularly Big Oh
+    Big Oh mistakes
+    " = O()"
+      defines a binary relation between two functions
+      O(f) is not a quantity, do not treat as such
+      And it's not equality
+        Once tried to replace "=" with eps
+    Do not write O(g) = f
+      x = O(x), so O(x) = x?
+      But 2x = O(x)
+      So 2x = O(x) = x, therefore 2x = x - nonsense!
+    Lower bound blunder
+      Think that O is a lower bound
+      "f is at least O(n^2)"
+        Starting to treat like a quantity
+      If you want to say lower bound
+        n^2 = O(f)
+    False lemma
+      sum of i = 1 to n of i = O(n)
+      Of course really sum of i = 1 to n of i = theta(n^2)
+      But here's the false proof
+      0 = O(1), 1 = O(1), 2 = O(2) (true!)
+      So each i = O(1)
+      So sum = O(1) * O(1) * O(1) * O(1)...
+             = n * O(1) = O(n)
+             Nope! O of something is not a quantity, it's the name of a relation

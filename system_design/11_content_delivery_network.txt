@@ -1,0 +1,425 @@
+Content Delivery Network (CDN)
+Problem: what if service in single data center?
+  High latency
+    Propagation delays (physical distance)
+    Transmission delays (bandwidth)
+    Queuing delays (network congestions)
+    Node processing delays
+    Real-time apps require latency < 200ms generally
+      VoIP - 150ms
+      Video streaming - a few seconds
+    Real world numbers
+      US East to US West = 62.9 ms
+      US East to Africa (Cape Town) = 225.63 ms
+      Two-way/round-trip latency
+  Data-intensive applications
+    Require transferring large traffic
+    Network path stretching through various ISPs
+      Smaller Path message transmission unit (MTU) links
+      Throughput reduced
+    Diff portions may have different congestion
+    More users = more problems
+      Send a lot of redundant data
+    Streaming services are again data-intensive
+      Also dynamic
+      As of 2021, 78% of US consumer use streaming
+        Increased 25% in 5 years
+  Scarcity of data center resources
+    Hard to keep scaling single center CPU/bandwidth
+    Single point of failure even if scaled
+  Top services
+    YouTube + Netflix + Amazon Prime = 80% of 2020 traffic
+    CDN Akamai = 15-30% of traffic 2016
+      30 TB/s
+      Just one hop away for 90% of users
+
+CDN intro
+  Solves all problems previously mentioned
+  Geographically distributed proxy servers
+  Proxy server
+    Intermediate between client and origin server
+    Placed on network edge
+      Close to end users
+    Quickly deliver content to end user
+    Reduce latency and save bandwidth
+  Has added intelligence on top of being proxy
+  Place small data center near user, store data copies there
+  Two main types of data
+    Static
+    Dynamic
+  Target propagation delay by bringing data closer
+    CDN providers make effort to have sufficient bandwidth
+    May be even within user ISP
+    Reduce transmission & queuing delays
+  Solving problems from before
+    High latency
+      Bring content closer to end user
+    Data-intensive apps
+      Path = ISP & nearby CDN components
+      No issue serving large number of users locally
+      Origin data center provides data to local just once
+      Local CDN provides data to diff users individually
+      How does CDN deliver dynamic content? Streaming protocols
+        Ex. CDNsun
+          Real-time messaging protocol (RTMP)
+          HTTP Live Streaming (HLS)
+          Real-time streaming protocol (RTSP)
+          etc
+    Scarcity of resources
+      Most traffic handled at CDN
+      Local/distributed components share load
+  CDN providers
+    Akamai
+    Stackpath
+    Cloudflare
+    Rackspace
+    Amazon CloudFront
+    Google Cloud CDN
+  Does CDN cache all content?
+    No, mostly static content
+    Also depends on size
+      Netflix could probably store most movies in CDN
+      YouTube cannot - way too much content
+  Functional requirements
+    Retrieve - from origin servers, depending on model
+    Request - handle requests from all users
+    Deliver - in push model, origin servers send to proxy
+    Search - execute against user qeury for cached/stored content in CDN
+    Update - Most content from origin
+      But if script in CDN, update within peer CDN proxy servers in PoP
+    Delete - Need to be able to delete after a certain period
+  Non-functional reqs
+    Performance - minimize latency - core mission
+    Availability - at all times, and protect against DDoS attacks
+    Scalability - must be able to scale horizontally as reqs increase
+    Reliability, security - no single point of failure
+      Handle massive traffic loads
+      Protect hosted content from attacks
+  Building blocks
+    DNS
+    Load balancer
+
+CDN Design
+  Two phases
+    Components
+    Workflow
+  Components
+    Clients - end users
+      Browsers
+      Smartphones
+      etc
+      Request content from CDN
+    Routing system
+      Directs clients to nearest CDN facility
+      Receives input to understand
+        Content location
+        Number of requests for content
+        Server load
+        URI namespace
+    Scrubber servers
+      Separate good from malicious traffic
+      Protect against DDoS
+      Only used when attack detected (usually)
+    Proxy servers
+      Serve content from RAM to users
+      Store hot data in RAM
+      Can store cold data in SSD/hard drive
+      Provide accounting info
+      Receive content from dist system
+    Distribution system
+      Distributes content to all edge proxy servers
+      Uses intelligent broadcast-like approraches
+    Origin servers
+      Serve data unavailable at CDN to clients
+      Won't be discussing arch here - other blocks
+    Management system
+      Measures important metrics
+        Latency
+        Downtime
+        Packet loss
+        Server load
+      Key for business, management
+  Workflow
+    Origin servers provide URI namespace delegation to request routing
+    Origin servers publish content to distribution system
+    Distribution system moves content among proxy servers
+      Provides feedback to request routing
+        Which content is where
+    Client requests routing for suitable proxy server
+    Routing system returns IP of proxy server
+    Client request routes through scrubber for security
+    Scrubber forwards good traffic to edge proxy
+    Edge proxy serves client request
+      Periodically forwards accounting to management
+    Management updates origin servers
+      Sends feedback to routing system about content
+    Request is routed to origin servers if content not in proxy
+    May also have hierarchy of proxy servers
+      If not in edge, go up the ladder to parents
+  API Design
+    Functionalties
+      Retrieve
+      Deliver
+      Request
+      Search
+      Update
+      Delete
+    Content: anything
+      file, video, audio, other web object
+      Will not discuss privacy/encryption etc. for clarity
+    Retrieve
+      Proxy to origin
+      GET method
+      /retrieveContent API
+      retrieveContent(proxyserver_id, content_type, content_version, description)
+        proxyserver_id: ID of requesting proxy server
+        content_type: category of content
+          clients requested for
+          requested quality
+        content_version: current version at proxy server
+          NULL if no version available
+        description: detail
+          video extension, resolution detail, etc. for video
+      response in JSON file
+        text, content types, links to images/videos
+    Deliver
+      Origin to proxy
+      deliverContent(origin_id, server_list, content_type, content_version, description)
+      Pushes from origin server (origin_id) to server_list
+    Request
+      Client to proxy
+      requestContent(user_id, content_type, description)
+    Search
+      Proxy to peers
+      Proxy is searched first
+      But can also probe peers
+      searchContent(proxyserver_id, content_type, description)
+    Update
+      Proxy to peers
+      Used when scripts run for e.g. image resizing, video res change, etc.
+      "Serverless scripting"
+      updateContent(proxyserver_id, content_type, description)
+    Delete
+      See caching chapter
+
+Let's go in depth
+Content Caching in CDN
+  Proper ID of what to cache very important
+  Two classes of CDN getting content from origin servers
+  Push CDN
+    Gets sent automatically to proxy servers from origin
+    Content provider's responsibility
+    Appropriate for static content
+    Content pushed to proxies according to popularity
+    If content rapidly changing, may struggle to keep up
+      Redundant content pushes
+    Retains more replicas, higher availability
+  Pull CDN
+    CDN pulls from origin servers when user requests
+    Proxies keep for specified amount of time
+      Remove if no longer needed
+    CDN itself responsible for content
+      More suited for dynamic content
+      More suited for high traffic loads
+      Low-storage consumption
+  Most content providers use both pull and push
+  Dynamic content caching
+    Changes often
+    May require execution of scripts at proxy servers
+      e.g. based on user location, time of day, etc.
+    Compression is key
+      Reduce comms between origin, proxy
+      Reduce storage at proxy
+      Cloudflare uses Railgun
+      Edge Side Includes (ESI) markup is popular
+        Specifies where content was changed
+          Rest of web page can be cached
+        Assembled dynamic content at CDN edge server or client browser
+        Not standardized yet by W3C
+      Dynamic Adaptive Streaming one HTTP (DASH)
+        Uses manifest file with URIs of video with diff resolutions
+        Client fetch appropriate depending on network & end node conditions
+        Netflix uses proprietary DASH with byte-range in URL
+  Multi-tier CDN
+    CDNs follow a tree-like structure to distribute data from origin to proxies
+      Easy scaling
+      Typically 1-2 tiers of servers - child, parent
+        Parent distributes from origin to child
+    New proxy server handling
+      Enter tree
+      Request control core
+        Info on all proxies on CDN
+        Initial content with config data
+    Much content has long-tail distribution
+      Only small subset of content popular at point
+      Multi-layer cache used to handle long-tail
+    When server fails?
+      Child proxy -> DNS route to different child-level proxy
+      Parent proxy -> Child proxy knows & goes to other parents
+      Origin server -> Actually set of servers with hot backup(s), replicated content
+        Other servers take over
+  How does user use proxies?
+    Find the nearest server, reducing latency
+      Network distance
+        Length of network path
+        Capacity limits along path
+      Request load
+        Forward to location if closes overloaded
+    DNS redirection
+      Typical DNS resolution: DNS gives IP against human-readable name
+        DNS can also return another URI to client = "DNS redirect"
+      Content providers can use DNS redirect to sent client to specific CDN
+      ex. client tries to resolve name with "video"
+        Authoritative DNS server provides another URL
+        Client does another DNS resolution
+        CDN authoritative DNS provides IP for appropriate proxy
+      Two steps
+        Map to appropriate network location
+        Distribute load over proxy servers
+      DNS replies given with short TTL
+        Client will repeat soon, move to different machine if necessary
+          Hardware failure
+          Network congestion
+      DNS:
+        Load balances traffic
+        Uses intelligent failover
+        Maintains servers across many data centers
+          -> Good reliability and performance
+      Anycast
+        Routing methodology where all edge servers in multiple locations share IP address
+        Use border gateway protocol (BGP)
+          Route clients based on internet network flow
+      Client multiplexing - generally not good (old approach? - JM)
+        Can send client a list of candidate servers
+        Client then chooses
+        Inefficient, client does not know which server is best typically
+      HTTP redirection
+        Simplest approach
+        Client requests from origin
+        Origin responds with HTTP to redirect
+        Ex. Facebook response - link to image on CDN included
+
+CDN Content Consistency
+  Proxy data should be consistent with origin server data
+    Otherwise users may access stale data
+  Consistency mechanisms depend on push/pull model
+  Periodic polling
+    Under pull model
+    Proxy servers request updated data periodically from origin
+    Change cache appropriately
+    Uses a lot of bandwidth with infrequent content changes
+    Uses TTL to adjust time for requests
+  TTL
+    Assign each object a TTL
+    This way updates requested less for less updated objects (JM)
+    If object has not changed, update expiration time only
+  Leases
+    Origin server grants to proxy server
+    Time interval during which origin will notify if change
+    Proxy must request lease renewal after expiration
+    Reduce number of messages between proxy and origin
+    Optimize dynamically based on load on proxy servers
+      "Adaptive lease"
+
+CDN Deployment
+  Place at network locations with good connectivity
+    On-premises: smaller data center near major IXPs (internet exchange points)
+    Off-premises: in ISP networks
+  May be feasiable to keep much of a movie's data in a CDN infra inside ISP
+  However for e.g. YouTube
+    Challenging to determine what to put near user
+    Google uses split TCP, reduce user-perceived delays
+      Persistent connections with huge TCP windows from IXP-level infra to primary data centers
+      Client TCP requests terminate at IXP, forwarded on established low latency TCP connections
+        Reduce client-perceived latency
+        Avoid initial three-way TCP handshake
+        Avoid slow-start stages to far away host
+        Round-trip delay to IXP often very low
+    Predictive push
+      Significant research field to predict what to push near customers
+  Measurements to facilitate proxy server placement
+    ProxyTeller, uses
+      Hit ratio
+      Network bandwidth
+      Client-response time (latency)
+    Other algos
+      Greedy
+      Random
+      Hotspot
+  Akamai & Netflix
+    Keep CDN proxy servers inside client ISPs
+  Google
+    Relies more on servers near IXPs
+      Probably because of sheer amount of data, increased number of changes
+  Why would ISPs agree to internal ISP placement?
+    Reduce external bandwidth paid for
+    Improve responsiveness, competitive advantage
+    Reduce data on internet core
+  CDN as a service
+    Most companies don't build their own CDN
+    Buy from provider
+      Akamai
+      Cloudflare
+      Fastly
+      etc
+      AWS offers global CDN facility
+    Issues with public CDN:
+      Lack control if it goes down
+      If does not cover region/country, those customers out of luck
+        May need to buy from other providers, or use private CDN
+      May be restricted in some countries
+        Other content may be banned in the country
+  Building own Specialized CDN
+    Netflix: Open Connect, Open Connect Alliance
+    Only serves content for your company
+    High costs to set up
+    Costs decrease in time
+      Buy vs. build decision
+    Can be used in coexistence with public CDN
+      Use public as backup if private fails
+    Netflix OCA don't store user data
+      Report status to OC control plane in AWS
+      Server cached content requested by user
+      All deployed OCAs monitored by OC team
+    Why did Netflix build CDN?
+      CDN service providers struggling to keep up with rapid demand growth
+      Costs were increasing
+      Protecting data of vidoes important
+      Maximize control over video player, network, servers for best playback
+      Use custom HTTP modules & TCP connection algorithms
+        Detect network problems
+        Troubleshoot issues in CDN network
+      Keep popular content for a long time
+        Expensive with trad CDN
+    OCA hit ratio near 95%
+      (I wonder what the 5% miss is... - JM)
+
+CDNs Meet Goals
+  Performance, minimize latency
+    Serve content from RAM
+    Placed near users
+    Locate in ISP or near IXP
+    Request routing to direct to nearest proxy
+    Long-tail in nonvolatile storage (SSD, HDD)
+      Still better latency than origin servers
+    Implement in layers
+      Edge proxy request parent if needed
+  Availability
+    Distributed
+    Handles massive traffic
+    Cached content backs up origin servers
+    Other proxies step in if one fails
+    Edge proxies made redundant, replicate as much as needed
+    Load balancer to distribute requests
+  Scalability
+    Reduces need for high bandwidth by bringing close to user
+    Horizontal scalability adding edge proxy servers
+    Limitations of individual server dealt with through layering
+  Reliability & security
+    No single failure point
+    Careful maintenance cycles
+    Add hardware & software when needed
+    Handle massive traffic loads
+    Evenly distribute load to edge proxy servers
+    Scrubber servers for DDoS protection
+    Heartbeat protocol to monitor health of servers

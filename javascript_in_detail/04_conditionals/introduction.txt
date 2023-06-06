@@ -1,0 +1,29 @@
+Conditionals
+  Programming instructions, execute particular instructions dependent on condition
+  Have
+    Condition which can be true or false
+    Block executed when condition is true
+    Block executed when condition is false
+
+  if(<condition>) {
+    // Execute these
+  }
+
+  if(variable === 0) {
+    // Execute
+  }
+
+  Chain if with else if and else
+
+  if(<condition1>) {
+
+  } else if(<condition2>){
+
+  } else{
+
+  }
+
+  Can be any number of else if statements
+  Do NOT need curly braces
+    However without them only the first line immediately after is executed
+    Curly braces allow multiple lines of code

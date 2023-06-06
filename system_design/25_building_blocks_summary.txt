@@ -1,0 +1,75 @@
+Building Blocks Wrap-Up
+
+Have covered a good number of building blocks
+  Can now solve bigger design problems
+  Will assume you know building blocks from now on
+
+Now 13 design problems
+  Each independent
+  Recommend you go through in order
+  Background material is helpful in future problems
+    e.g. Google Maps -> Uber
+
+Then spectacular failures chapter
+  Minor bug or mistake blew up very successful system
+
+The RESHADED approach
+  System design not straightforward
+  Don't have a univeral formula
+  RESHADED = high-level common strategy
+    Set tone for good solution
+
+  Requirements
+  Estimation
+  Storage schema (optional)
+  High-level design
+  API design
+  Detailed design
+  Evaluation
+  Distinctive component/feature
+
+Advantages of RESHADED
+  Remember key steps for resolution of every design problem
+    Always a next step
+  Solution will have all basic ingredients
+    Solution will be systematic and thoughtful
+
+Exploring RESHADED
+  Requirements
+    Gather all reqs, understand scope
+    Understand what service is
+      How it works
+      Main features
+    Functional and non-functional requirements
+  Estimation
+    Estimate resources to defined number of users
+    Hardware/infrastructure resources
+      How many servers for 500m DAU?
+      How much storage 125m Tweets/day, 20% media?
+    Understand scale
+    Make key decisions based on
+      Type of database
+      Data structure for optimal performance
+  Storage schema (optional)
+    Which tables we need
+    Which fields are part of each table
+  High-level design
+    Main components and building blocks
+    Draw from functional and non-functional requirements
+  API design
+    Build interfaces for service
+    Translation of functional requirements
+  Detailed design
+    Recognize limitations of high-level design
+    Finalize design
+      All components and building blocks to use
+    Workflow of design, usage of different technology
+      Fulfill functional, non-functional
+  Evaluation
+    Measure effectiveness of solution
+    Discuss tradeoffs and room for improvement
+  Distinctive component/feature
+    No one-size-fits-all solution exists
+      Identify unique aspect for each design problem and discuss it
+        ex. Uber payment & fraud detection
+        ex. Google Docs concurrency control

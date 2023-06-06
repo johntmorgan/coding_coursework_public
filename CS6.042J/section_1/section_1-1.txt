@@ -1,0 +1,284 @@
+Summary
+  Fundamental concepts of discrete mathematics
+    Sets, relations, proof methods
+    Math CS folks need regularly and NOT in regular calculus classes
+      (Which I barely remember now, eep - JM)
+    In calculus
+      Functions on real and complex numbers
+    In CS
+      Much more abstract data types
+      Even functions on functions
+    Talk about standard discrete structures
+      Starting with numbers
+        Which we think of as a structure
+        The numbers with operations packaged on them
+      Graphs
+      Trees
+      Methods for counting the numbers of these data structures
+        How big is the search space
+          If you're hashing a password, it better be large or it's getting cracked quickly
+    Discrete probability theory
+      A version of probability theory
+      Where we get by with sums, not complications of integrals
+    What does discrete mean?
+      Study of "discrete" structures
+        Integers, graphs, logical statements
+      Vs. continuous
+        Real numbers, calculus, Euclidean geometry
+      Discrete objects can often be enumerated by integers
+        More formally - branch of math dealing with countable sets
+        Finite sets, sets with same cardinality as the natural numbers
+        However there is no exact definiton of the term
+          (So thanks for telling me to look it up, lol - JM)
+
+Textbook
+  What is a proof?
+  A proposition
+    A statement that is either true or false
+  Not always easy to check
+    Is n^2 + n + 41 prime for all non-negative integers?
+    Works all the way up to n = 39
+    But p(40) = 41 * 41 which is not prime
+    In fact NO polynomial with integer coefficients can map all non-negative into prime numbers
+      (Unless it's a constant)
+  You can't check a claima about an infinite set
+    By checking a finite set of its elements
+      No matter how large the set!
+  Upside-down A
+    "for all"
+    n
+    EE in
+    N non-negative integers
+  Euler's conjecture
+    a^4 + b^4 + c^4 = d^4 always false?
+      Disproven by Noam Elkies with some big numbers
+    Z+ positive integers
+  313(x^3 + y^3) = z^3
+    has no solution when xyz EE Z+
+    False, but smallest counterexample has 1k+ digits!
+  Four color theorem
+    Every map can be colored with four colors such that adjacent regions have different colors
+    True
+    But laboriously proved, need special checking of hundreds of maps
+      First by hand in the 70s, then later by computer
+  Fermat's last theorem
+    There are no positive integers such that
+    x^2 + y^2 = z^2 for some integer n > 2
+    Proved to hold for up to 4m
+      But that should not inspire confidence given the 313 example above
+    Proven in 1994 by Andrew Wiles after 7 years of isolated work (oh boy)
+  Goldbach's conjecture
+    Every even integer > 2 is sum of 2 primes
+    Has been around since 1742
+    Known to hold for all numbers up to 10^18
+    Truth still unknown
+
+  Anyway, for CS folks
+    Important to prove correctness of programs and systems
+    Programs are notoriously buggy
+    CPU chips are now proven correct
+      Notorious Intel division bug of the 1990s
+    We'll illustrate how to do that in chapter 5
+
+  Predicate
+    A proposition whose truth depends on value of 1+ variables
+    "N is a perfect square"
+      But what is the value of n?
+    P is predicate
+    P(n) ::== "n is a perfect square"
+    but if p(n) = n^2 + 1 then p(n) is a numerical quantity
+
+  The axiomatic method
+    Euclid, Egypt 300 BC
+    Start with 5 assumptions about geometry
+      Seem undeniable
+      "There is a straight line segment between every pair of points"
+    Propositions accepted as true = "axioms"
+    Starting from axioms, establish many more propositions with proofs
+    Important true propositions = theorem
+    Lemma = preliminary proposition useful for proving later propositions
+    Corollary = proposition that follows in a few steps from a theorem
+    These definitions are not precise!
+      Sometimes a lemma turns out to be more important than the main theorem!
+    Axioms today?
+      Zermelo-Frankel with Choice axioms
+      + a few logical deduction rules
+      Sufficient to derive basically all of mathematics (Chapter 7)
+
+  Our axioms
+    ZFC important to study and justify foundations of mathematics
+      However too primitive for practical purposes
+      Kind of like writing programs in byte code instead of a real language
+      2 + 2 = 4... 20k steps
+        (What the heck - JM)
+    So instead we take a huge set of axioms: all of basic high school math
+      Can be a little fuzzy
+      Just be up front about what you assume
+
+  Logical deductions "inference rules"
+    Used to prove new propositions from previously proved ones
+
+  Modus ponens
+    Prove P
+    Prove P implies Q
+    You have proved Q
+
+    P, P implies Q
+    ---------------
+          Q
+
+    "Antecedents" above line
+    "Conclusion" or "consequent" below line
+    Must be "sound"
+      Assignment of truth values to P, Q
+      That makes all antecedents true
+      Also makes consequent true
+
+    P implies Q, Q implies R
+    -> P implies R
+
+    Not(P) implies Not(Q)
+    -> Q implies P
+
+    BUT
+    Not(P) implies Not(Q)
+    -> P implies Q
+      NOT sound
+      P is true, Q is false
+      Antecedent true
+      Consequent not
+  How do you even start a proof?
+    Many follow a handful of standard templates
+
+  1. Prove an implication
+    If P, then Q (P implies Q)
+    "Assume P"
+    Show that Q logically follows
+
+  Theorem
+    If 0 <= x <= 2, then -x^3 + 4x + 1 > 0
+    Can see why - 4x > x^3 until x > 2
+    Factor this
+      -x^3 + 4x = x(2 - x)(2 + x)
+      Ah, everything on right side is non-negative
+      As long as 0 <= x <= 2
+
+    Assume 0 <= x <= 2
+    Then x, 2 - x, and 2 + x are all non-negative
+    Therefore product of terms is also non-negative
+    Adding 1 gives a positive number so
+    x(2 - x)(2 + x) + 1 > 0
+    Muliplying the left side proves that
+    -x^3 + 4x + 1 > 0
+
+  Often need to do some scratchwork while figuring out a proof
+    Keep it separate! Keep proof concise!
+  Start with "Proof"
+  End with "QED" or a square
+    Just conventions like writing begin/rescue in rails
+
+  Prove contrapositive
+    Not Q implies Not P is as good as P implies Q
+
+  We prove the contrapositive:
+  Theorem:
+    If r is irrational, than sqrt(r) is also irrational
+    Rational when it equals a quotient of integers
+      m/n for some integers m and n
+    So if r is not a ratio of integers, sqrt(r) also not a ratio
+    Contrapositive:
+      If sqrt(r) is a ratio, r is also a ratio
+
+    Assume sqrt(r) is rational
+      So there exist integers m and n where sqrt(r) = m/n
+      Square both sides:
+        r = m^2 / n^2
+        Since m^2 and n^2 are integers, r is also rational
+
+  Prove if and only if
+    Two triangles have the same side lengths if and only if two side lengths and angle are same
+    "iff"
+    P iff Q ->
+      P implies Q
+      Q implies P
+    - Show both directions
+    - Chain of iffs
+
+Lecture continues
+  Proofs
+  How to do proofs and not be afraid of them
+  Distinguish very plausible argument from totally right
+  Physicists do a lot of math
+    Don't worry about proofs much
+  Theorists & mathematicians
+    Need to know how to prove basic facts
+  Pragmatically
+    Lots of content in this subject
+    And if the only way to figure out details is memorization, get lost
+  Let's look at examples of proofs
+  Pythagorean theorem
+    a^2 + b^2 = c^2
+    Very familiar? Yes
+    Obvious? No
+      People keep proving it over millenia
+  A cool proof of pythagorean theorem
+    4 copies of ABC triangle
+    And a square of unknown size
+    Rearrange shapes to form a C x C square
+    Rearrange fo form a x a and b x b
+    Square is b-a based on cxc square
+    And then in different config square + a x a + b x b
+  What about this proof?
+    Elegant and correct
+    Proof by picture
+    But worrisome in general
+      Lots of hidden assumptions
+        Right angles
+          Triangle angles sum to 180 degrees
+        Things are rectangles
+        Straight lines along side
+  Bogus proof - by picture
+    Getting rich by diagram
+      Imagine 10x11 rectangular gold foil
+      Mark off the corners
+        Mark off length of one
+        Expand out beyond square
+        Now have 11 x 10
+        Remove triangles!
+        Rotate 90 degrees and repeat!
+      But triangles are not right triangles
+        Lying against diagonal not 90 degres
+        So top and bottom of rectangle are not straight
+        But 10 and 11 are close enough it's not visually obvious
+  Another bogus proof - by calculation
+    Every polynomial
+      ax^2 + bx + c
+      has two roots over C (complex numbers)
+    r1 ::= (-b + sqrt(b^2 - 4ac)) / 2
+    r2 ::= (-b - sqrt(b^2 - 4ac)) / 2
+    Plug these formulas in and ax^2 + bx + c simplifies to 0
+    So every polynomial has two roots! No.
+    Counter-examples:
+      0x^2 + 0x + 1 has 0 roots = never crosses origin
+             1x + 1 has 1 root - 45 degree, y = x line, crosses origin once
+    Bug: divide by 0 error
+      Quotient of a in quadratic formula
+      So you much require a != 0
+    But then:
+      1x^2 + 0x + 0 has 1 root (just 0)
+      Bug: r1 = r2
+      Fix: require  D != 0
+      where D ::= b^2 - 4ac
+    But what if D < 0?
+      x^2 + 1 has roots i, -i
+        Both behave the same way
+        Ambiguous which is r1 and r2
+        Can cause problems
+        1 = sqrt(1) = sqrt(-1 * -1) = sqrt(-1)*sqrt(-1) = -1
+    Moral
+      Be sure rules are properly applied
+      Thoughtless calculation is risky when you don't understand it
+        Hence why I'm doing this - JM
+    Consequences of 1 = -1
+      1/2 = -1/2
+      2 = 1

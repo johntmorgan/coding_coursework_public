@@ -1,0 +1,8 @@
+Two Heaps
+  2x min, 2x max, max and min
+  O(logn) insert, remove
+
+Pattern matching
+  Repeatedly calculate local min/max
+  Input not sorted (no benefit if sorted)
+

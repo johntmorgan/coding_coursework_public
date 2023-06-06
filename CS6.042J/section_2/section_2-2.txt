@@ -1,0 +1,329 @@
+Modular Arithmetic
+Text
+  Congruence - idea from Gauss
+    a is congruent to b (a === b)
+    a is congruent to b modulo n if n | (a - b)
+    29 === 15 (mod 7) because 29 - 15 = 14, divisible by 7
+      7 | 29 - 15
+    Assume moduli are > 1 from now on
+    a === b mod(n) iff rem(a, n) = rem(b, n)
+    Proof
+      There exists unique pairs of ints q1, r1 and q2, r2 such that
+        a = q1n + r1
+        b = q2n + r2
+      Where r1, r2 in [0..n)
+      Subtracting equations gives
+        a - b = (q1 - q2)n + (r1 - r2)
+      Where r1 - r2 in interval (-n, n)
+      a === b mod n iff n divides a - b
+      so r1 - r2 must be a multiple of n
+      But the only multiple of n in (-n, n) is 0
+      So r1 - r2 = 0
+      r1 ::= rem(a, n) = r2 ::= rem(b, n)
+      29 === 15 mod 7 because rem(29, 7) = 1 = rem(15, 7)
+    Remainder Lemma
+      Congruence has properties like equality relation
+      a === a (mod n)
+      a === b IFF b === a (mod n)
+      a === b and b === c IMPLIES a === c (mod n)
+    Corollary
+      a === rem(a, n) (mod n)
+  Another way to think about congruence mod n
+    Defines a partition of the integers into n sets so that congruent nums all in same sets
+    Suppose working mod 3
+      { -6, -3, 0, 3, 6, 9 }
+      { -5, -2, 1, 4, 7, 10 }
+      { -4, 1, 2, 5, 8, 11 }
+    According to whether remainders on division by 3 are 0, 1, or 2
+    When arithmetic done modulo n, only n different kinds of numbers to worry about
+      Only n possible remainders
+    So you could say modular arithmetic is a simplification (in a way... - JM)
+  Congruences are preserved by addition and multiplication
+    If a === b (mod n) and c === d (mod n)
+    a + c === b + d (mod n)
+    ac === bd (mod n)
+    Proof
+      Since a === b (mod n)
+      n | (b - a) = (b + c) - (a + c)
+      So a + c === b + c (mod n)
+      Since c === d (mod n)
+      b + c === b + d (mod n)
+      Transitivity gives
+      a + c === b + d (mod n)
+    ~identical proof for ac === bd
+      if n | b - a, then n | bc - ac
+  Remainder arithmetic
+    Congruence Lemma says two numbers are congruent iff their remainders are equal
+    General principle
+      To find remainder on division by n of the result of a series of additions and mults
+      Replace each integer operand by its remainder on division by n
+      Keep each result of add/mult in range [0..n) by replacing result outside range
+        By remainder on division by n
+      rem((44426^3456789 + 15555858^5555)403^6666666, 36)
+      rem(44427, 36) = 3, rem(15555858, 36) = 6, rem (403, 36) = 7
+      (3^3456789 + 6^5555)7^6666666
+      Still a million digits in the first value but
+      rem(3, 36) = 3
+      rem(3^2, 36) = 9
+      rem(3^3, 36) = 27
+      rem(3^4, 36) = 9
+      rem 9 every 2 steps
+      rem(3^3456789, 36) = rem(3^3, 36) = 27
+      Powers of 6 even easier
+        6^2, 36 = 0, repeating after second step
+      Powers of 7 repeat after 6 steps, but on 5th step get a 1
+        rem(7^6, 36) = 1
+      (3^3456789 + 6^5555)7^6666666
+      (3^3 + 6^2 * 6^6553)(7^6)^1111111
+      (3^3 + 0 * 6^5553)1^1111111
+      (27 + 0) * 1
+      27
+      Would be a disastrous blunder to replace an exponent by its remainder
+        Principle applies to operands of plus and times
+        Exponent controls how many multiplications to perform
+    The ring Zn
+      Let's be more precise about general principle and why it works
+      Notation: +n for doing an addition and then taking a remainder on division by n
+        i+n j ::= rem(i + j, n)
+        i*n j ::= rem(ij, n)
+
+      General principle repeated application of following lemma
+        rem(i + j, n) = rem(i, n)+n (rem j, n)
+          rem(i + j, n) = rem(rem(i, n) + r(j, n), n) - JM
+        rem(ij, n) = rem(i, n)*n rem(j, n)
+          rem(ij, n) = rem(rem(i, n) * r(j, n), n) - JM
+      Proof
+        i === rem(i, n) and j === rem(j, n)
+        i + j = rem(i, n) + rem(j, n) (mod n)
+        remainders on each side are equal, so
+        rem(i + j, n) = rem(i, n)+n (rem j, n)
+      The set of integers in the range [0, n) together with +n and *n
+        Referred to as Zn, the ring of integers modulo n
+        So familiar rules of arithmetic hold in Zn
+          (in * j)*nk = i*n(j*nk)
+          (i * j) * k = i * (j * k) (Zn) // rewrite to clean up
+           // so we're taking the remainder of division by n after each function
+        All following equalities are true in Zn
+          (i * j) * k = i * (j * k)
+          (i + j) + k = i + (j + k)
+          1 * k = k
+          0 + k = k
+          k + (-k) = 0
+          i + j = j + i
+          i * (j + k) = (i * j) + (i * k)
+          i * j = j * i
+        Note that sets with addition and multiplication ops that satisfy equalities
+          Known as a commutative ring
+          In addition to Zn, the integers, rationals, reals, and polynomials with integer coeffs all work
+          But { T, F } does not
+          Nor do n x n matrices - fail to satisfy one equality
+        Overall remainder arithmetic a lot like ordinary arithmetic
+        But there are a few key exceptions...
+  Turing's Code, v2
+    Germany lost because Enigma was broken by Polish Cipher Bureau in 1939
+    Turing joined UK codebreaking at Bletchley Park in 1939
+      Lead developer of methods for rapid bulk decryption
+    Let's go back to his last idea
+      Basic right idea - multiply message by key
+      But it was a mistake to do conventional math instead of modular math
+    Before:
+      Sender and receiver agree on large number n, which may be public
+        This will be the modulus for all our arithmetic
+      Some prime number k < n is the secret key
+    Encryption
+      Message m is a prime in [0..n)
+      m-hat = m * k (Zn)
+        So m-hat = rem(m * k, n) - JM
+    Decryption
+      Uh-oh
+      Might want to decrypt by dividing m-hat by key k
+      But m-hat is the *remainder* when mk is divided by n
+        So dividing m-hat by k might not even give us an integer
+      Can be overcome with a better understanding of when to divide by k in modular arithmetic
+  Multiplicative inverses and Cancelling
+    Multiplicative inverse of a number x is a number x^-1 such that
+      x^-1 * x = 1
+      1/3 is the inverse of 3
+      every rational number other than 1 has an inverse
+        inverse of n/m is m/n
+      but out of integers, only -1 and 1
+      over the ring Zn?
+      in Z15, 2 is an inverse of 8
+        2 * 8 = 1 (Z15)
+      but 3 does not have an inverse
+        Prove by contradiction
+          1 = 3 * j (Z15)
+          5 = 5 * 3 * j
+            = (5 * 3) * j
+            = 0 * j = 0 (Z15)
+        So no inverse j
+      So some numbers have inverses mod 15 and some do not
+    Relative Primality
+      Integers with no prime factor in common = relatively prime
+        Same as having no common divisor > 1, so gcd(a, b) = 1
+      8 and 15 are relatively prime
+        gcd(8, 15) = 1
+      3 and 15 are not relatively prime
+        gcd(3, 15) = 3 != 1
+      Lemma: if k in [0..n) is relatively prime to n, then k has an inverse in Zn
+      Proof: if k is relatively prime to n, then gcd(n, k) = 1
+        Can use pulverizer to find sn + tk = 1
+        (rem(s, n) * rem(n, ns) + rem(t, n) * rem(k, n)) = 1 (Zn)
+        But rem(n, n) = 0 and rem(k, n) = k since k in [0..n)
+        rem(t, n) * k = 1(Zn)
+        Therefore rem(t, n) is a multiplicative inverse of k
+      Lemma: if i and j are both inverses of k in Zn, then i = j
+      Proof:
+        i = i * 1 = i * (k * j) = (i * k) * j = 1 * j = j (Zn)
+      So for any k relatively prime to n, the inverse of k in Zn
+        Is the remainder of a coefficient we can find using the pulverizer
+      Cancellation
+        Real numbers are nice - ok to cancel common factors
+        If we know tr = ts for real numbers r, s, t
+          Then as long as t != 0 we can conclude r = s
+        Cancellation is NOT valid in Zn
+          3 * 10 = 3 * 5 (Z15)
+          But cancelling the 3s leads to 10 = 5 (Z15) - no
+          This is the most significant way Zn arithmetic differs for ordinary integer math
+        A number is cancellable in Zn iff
+          k * a = k * b implies a = b (Zn)
+            for all (a, b) in [0..n)
+        If a number is relatively prime in 15, can be cancelled by multiplying by inverse
+          If k has an inverse in Zn, then it is cancellable
+          3 is not relatively prime to 15, it is not cancellable in Z15
+        Thm the following are equivalent for k in [0..n)
+          gcd(k, n) = 1
+          k has an inverse in Zn
+          k is cancellable in Zn
+      Decrypting
+        Multiplicative inverses are key to decryption
+          Recover original message by multiplying the encoded message by teh Zn inverse j of the key
+          m-hat * j = (m * k) *j = m * (k * j) = m * 1 = m (Zn)
+        So to decrypt just find in inverse of the secret k key, easy using pulverizer
+          If k has an inverse
+          But k is positive and < n
+          So an easy way to ensure k is relatively prime is to make n a prime number
+      Breaking Turing's code
+        Germans transmitted both encoded and unencoded weather reports
+          Figured out which key using on a given day
+          Known-plaintext attack
+        Suppose you know both m-hat and m
+          m-hat = m * k (Zn)
+          m is positive and less than prime n
+          Use pulverizer to find Zn inverse j of m
+          j * m-hat = j * (m * k) = (j * m) * k = 1 * k = k (Zn)
+          So by computing j * m^hat = k (Zn) you get the key and can decrypt all
+
+Lecture
+  Idea created by Gauss in 18th century
+  Remains an active field of application and research
+  In computer science, used mostly in crypto
+  Also plays a role in hashing - key for managing data in memory
+    Will not go into that application in this course
+  def: a === b mod (n)
+    iff n | (a - b)
+  example 30 === 12 (mod 9)
+    9 | 30 - 12, i.e. 9 | 18
+  example 66666663 === 788253 (mod 10)
+    immediate application - subtract
+    just do lowest order digits - xxxxxxx0
+    So is divisible by 10
+    Any numbers congruent mod 10 have same low order digit
+  Remainder Lemma
+    a === b (mod n) iff
+    rem(a, n) = rem(b, n) (abbr. ran = rbn)
+    30 === 12 (mod 9)
+    rem(30, 9) = 3 = rem(12, 9)
+  "Equivalent" same as "congruent"
+  Proof of if
+    a = qan + ran
+    b = qbn + rbn
+    if remainders are equal
+    a - b = (qa - qb)n so n | (a - b)
+  Proof of only if
+    Assume n divides (a - b)
+    n | ((qa - qb)n + (ran - rbn))
+      n auto-divides (qa - qb)n
+      so *must* divide (ran - rbn)
+      but these remainders < 1, and distance between them 0 to -1
+      well the only way that works is ran = rbn
+      IMPLIES ran = rbn
+      QED - Remainder Lemma proved
+  Consequences of Remainder Lemma
+    inherits a lot of properties
+      symmetric
+        a === b (mod n) implies b === a (mod n)
+      transitive
+        a === b and b ===c (mod n) IMPLIES a === c (mod n)
+    corollary
+      a === rem(a, n) (mod n)
+      take remainder of both sides
+      left is now rem(a, n)
+      pf: 0 < ran < n so rem(rem(a, n)) = rem(a, n)
+      allows us to basically replace numbers with their remainders whenever we want
+        therefore keeping numbers small
+  Congruence mod n
+    if a === b (mod n)
+      a + c === b + c (mod n)
+    pf: n | (a - b)
+        n | ((a + c) - (b + c))
+    if a === b (mod n)
+      ac = bc (mod n)
+    pf: n | (a - b) implies
+      n | (a - b) * c and so
+      n | ((a * c) - (b * c))
+    Corollary
+      if a === b and c === d (mod n)
+      a + c === b + d (mod n)
+      a * c === b * d (mod n)
+    Cor
+      if a === a' (mod n)
+      then replacing a by a' in any formula gives an === mod n formula
+        final congruence result remains unchanged
+    So a lot like ordinary arithmetic
+    Important: congruence and a === rem(a, n) (mod n)
+    keeps (mod n) arithmetic in the remainder range
+      from 0 to n - 1 - [0, n)
+    Apply
+      287^9 = ? (mod 4)
+      r(287, 4) = 3
+      287^9 === 3^9
+      = ((3^2)^2)^2 * 3
+      but since r(9, 4) = 1
+      = (1^2)^2 * 3
+      = 3 (mod 4)
+  Inverses mod n
+    Where stuff is different: inverses, cancelling
+    8 * 2 === 3 * 2 (mod 10)
+    Cancel 2s?
+      8 === 3 (mod 10) NOPE
+    Can't cancel arbitrarily
+    When can you cancel?
+      When k has no common factors with n
+      If gcd(k, n) = 1 then have k' - inverse of k
+        k' * k = 1 (mod n)
+      k' is an inverse mod n of k
+    Proof: sk + tn = 1 so
+      Just let k' be s - apply pulverizer to find
+      sk + tn = 1
+      sk + tn = 1 (mod n)
+      sk + t0 = 1 (mod n)
+      sk = 1 (mod n)
+      So s is an inverse of k
+    Can also cancel if relatively prime to n
+      If a * k === b * k (mod n)
+        and gcd(k, n) = 1 then
+        multiply by k'
+        (a * k)k' = (b * k)k' (mod n)
+        a * 1 = b * 1
+        a === b (mod n)
+    Summary
+      k is cancellable (mod n) iff
+      k has an inverse (mod n) iff
+      gcd(k, n) = 1 (k is relatively prime to n)
+  Problem
+    Inverse (mod 25) of 32
+    s32 + t25 = 1
+    Found answer 18 through brute force
+    But how do I reverse to derive from pulverizer?
+    Not sure from notes, wish I could ask more in section...

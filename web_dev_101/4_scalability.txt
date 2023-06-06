@@ -1,0 +1,187 @@
+Scalability
+  Ability to handle and withstand increased workload without losing performance
+  If it takes x seconds to respond to 1 user request
+  Should take same x seconds to million concurrent requests
+  Latency
+    Time to respond to a user request
+    Aim for minimum latency
+    Should not increase with rising traffic load
+    Big-O
+      Should be O(1)
+        Constant time like in a map or a key-value database
+      Complexity of O(n^2) where n is size of dataset:
+        Not scalable
+        As size of data set increases, needs more computational power and resources to process
+
+  Measuring latency
+    Network latency
+      Time the network takes to send a data packet from point A to point B
+      Network should be efficient enough to handle
+      Use a CDN (content delivery network)
+        Deploy servers across the globe as close to end-users as possible
+        "Edge locations"
+
+  Application latency
+    Time application takes to process a user request
+    How to cut down?
+      Stress and load tests
+      Scan for bottlenecks that slow down system as a whole
+
+  Why latency matters
+    Key role in determine customer win/loss
+    Nobody likes waiting around
+    Zero latency is always the goal
+    Lag ruins e.g. MMO games
+    Algorithmic trading with in milliseconds
+      Fintech have dedicated networks to run low-latency trading
+        Regular network does not cut it
+      $300m spent on special fiber-optic London to NYC for 6ms latency savings
+        Huawei, Hibernia Atlantic 2011
+        (And Starlink now? - JM)
+
+  Vertical Scaling - "scaling up"
+    Adding more power to server
+      16 gigs of RAM -> 32 gigs of RAM
+    Should be first step when traffic starts to build on the app
+    Simplest way to scale
+      No code refactoring
+      No complex configurations
+    There is a limit to compute power for a single server
+      Can't scale a building to the moon, time to build more buildings
+
+  Horizontal scaling - "scaling out"
+    Bring in more servers to work together
+    No limit to how much you scale horizontally
+      Keep adding servers and data centers
+    Allows dynamic scaling in real time as traffic climbs and drops
+      Not possible when scaling vertically
+
+  Cloud elasticity
+    Ability of cloud to scale dynamically
+      Can add and remove servers according to needs
+      Popular with businesses for obvious economic reasons
+    Having multiple server nodes on the backend - website stays up even if one or two crash
+      "High availability"
+
+  Horizontal vs. vertical
+    Vertical is simpler, no code changes, no complex system configs
+      Less admin, monitoring, management
+      BUT
+        Availability risk
+        Strong but few servers
+        Entire website can go offline
+    Horizontal
+      Distributed environment -> code must be stateless
+        No static instances in the class
+      Static instances
+        Hold application data
+          If server goes down, all static data/state is lost
+            App is left in inconsistent state
+      In OOP, instance variables hold object state in them
+        Static variables hold state across multiple objects
+        Hold state per classloader
+        If server instance running classloader goes odown, all data is lost
+      Whatever data static variables hold is not application wide
+        Distributed memory like Redis, Memcache etc. used to maintain consistent state application-wide
+      When writing applications for distributed systems
+        Avoid using static instances in the class
+        The state is typically persisted in a distributed memory stor
+          Facilitates components to be stateless
+      Functional programming popular in distributed
+        Functions don't retain any state
+        Can also be achieved with OOP languages however
+    Always have a ballpark traffic estimate in mind when designing app
+      These days distributed microservices architecture right from the start
+        Workloads (apps) means to be deployed on cloud
+        Workloads inherently horizontal, scaled out on the flys
+    No limit to scaling horizontally
+      Replicate data across diferent regions as nodes and data centers set up across the globe
+    When to not do distributed?
+      Minimal, predictable traffic
+        Internal tool of organization, something not mission-critical
+    But public-facing apps?
+      Have horizontal scalability in mind right from the start
+
+  Primary bottlenecks that hurt scalability
+    Database
+      Use database partitioning, sharding with multiple database servers to make system efficient
+    Application design
+      Not using asynchronous processes, everything done sequentially
+        Send confirmation emails, sending notification to all users on upload: async
+          Forward to messaging server or task queue for asynchronous processing
+    Not using caching wisely
+      Use caching exhaustively throughout application to speed things up
+        If lots of static data, deployment costs way down
+          Polyhaven: 3D asset library with 5m page views, 80TB traffic: $400/month
+    Load balancer configuration
+      Gateway to application - don't use too many or too few
+      More ahead!
+    Business logic
+      Do not add to database
+      Difficult to migrate databases
+      Testing more complex
+    Wrong database type
+      Transactions, strong consistency: relational database
+      Horizontal scalability: NoSQL database
+    Code level
+      Unnecessary/nested loops
+      Tightly coupled code
+      Not thinking about Big-O complexity while writing code
+      DENTTAL check for deployment
+        Documentation
+        Exception handling
+        Null pointers
+        Time complexity
+        Test coverage
+        Analysis of code complexity
+        Logging
+
+  Improve scalability
+    Optimize even before pre-production testing
+    Profiling
+      Run application profiler and code profiler
+      See what processes are taking too long, eating too many resources
+      Helps measure space and time complexity
+      Figure out concurrency errors, memory errors, robustness and safety
+    Caching
+      Cache wisely and everywhere
+      Cache all static content
+      Hit database only when really required
+        Serve read requests from the cache
+        Use a write-through cache
+    CDN
+      Use one
+    Data compression
+      Compress data, limiting bandwidth use
+    Avoid unnecessary request response cycles
+      Club multiple requests into one
+
+  Test scalability
+    Provision proper compute and storage power
+    Simulated traffic routed to system see how behaves and scales under heavy load
+      CPU usage
+      Network bandwidth consumption
+      Throughput
+      Number of requests processed in stipulated time (throughput? - JM)
+      Latency
+      Memory usage
+      End-user experience under heavy load
+
+  Stress tests
+    JMeter - Java ecosystem
+    Lots of cloud-based testing tools
+    Sports website, prepare for sports event day
+    E-commerce website, prepare for festival season sale
+
+  Tracking system profile - web-based dashboards
+    Cadvisor, Prometheus, Grafana
+
+JM - Sparkmesh design
+  Poor horizontal scalability -
+    No microservices, postgres vs noSQL
+      It was move fast, figure it out later when I started working
+    Little caching
+      Need to add more
+    Data compression
+      Didn't speed much up in my experience...
+        Not extensive enough transfer to matter? Meh Rails tools?

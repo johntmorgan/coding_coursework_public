@@ -1,0 +1,169 @@
+Hashing
+
+What is it
+  Up to now, time complexity for insert/delete/search
+    O(logn), O(n), O(nlogn)
+    Pretty good!
+    But for large amounts of data, still not amazing
+  Hashing O(1) for all three operations
+  Store object by unique key
+    Always creates key-value pair
+  Collection of pairs "dictionary"
+
+Hash table
+  Best data structure if prioritizing search
+  In Python usually implemented with lists
+  Built-in types: set, dict
+
+The hash function
+  Key used to map value on list
+  Hash efficiency depends on how key computed
+  Can directly use indices as key, each index is unique
+  Problem: key eventually exceeds size of list
+    List needs to be resized at every insertion
+      Easy syntactically, but O(n) on back end
+  Need function that converts large key to small key
+    Hash function
+  Index calculation can be simple arithmetic or complex encryption
+    Efficiency very important
+
+Common hash functions
+  Arithmetic modular
+    Take mod of key with list size
+    Index always between 0 and table_size - 1
+  Truncation
+    Select part of key as index instead of whole key
+    (Ex.: return key % 1000)
+  Folding
+    Divide key into small chunks
+    Apply different arithmetic strategy at each chunk
+    Ex. chunk = 2
+      456789 -> 45 + 67 + 89 = 177
+
+Collisions
+  Mapping large to small range
+  Two keys may return same index -> collision
+  How to handle collisions
+    Linear probing
+      Move to index if already filled, keep moving
+        Can move by fixed offset
+      Need to pick offset wisely!
+        Otherwise wind up back where you started
+      (Form of "open addressing" from MIT algo course - JM)
+    Chaining
+      Each slot holds pointer to linked list
+      Insert multiple pairs at same index in O(1)
+        Insert new value at head
+      Greatly increases performance
+      Costly in terms of space
+    Resize list
+      Reduce collisions at least
+      Double size at threshold
+      Helps, but resizing is costly
+      Threshold convention = 0.6 (I learned 0.7 before, hmm - JM)
+        Resize when 60-70% of table filled
+      Keep content in mind
+        Sotred records may be stored all in one region
+    More
+      Quadratic probing
+      Bucket method
+      Random probing
+      Key rehashing
+
+Build from Scratch
+  Use chaining & resize
+  All elements with same hash key stored in linked list
+    "Bucket"
+  Size of table = n * m 
+    n is the number of keys hold
+    m is the number of slots/bucket
+  Resizing
+    Double capacity at threshold 0.6
+    Rehash everything
+  Inserting
+    Check if entry already at index
+    If not, create entry, if so, traverse through bucket
+    If key exists, just update value
+    Average cost is O(1)
+    Worst case is O(n), traverse whole bucket
+    Calculate load factor, resize if needed
+  Search
+    Take a key, send through hash function
+    If key/value pair at index, return value
+    Can take up to O(n) time if all entries in single bucket
+    O(1) expected though
+  Deletion
+    O(1) expected
+    O(n) average
+    Go to bucket
+    If at head, delete head and set to next node
+    Otherwise traverse linked list and delete
+      Drag prev pointer along with you
+        Prev = none
+        then prev = head, head = head.nxt
+
+Overview
+  Set and dict in Python work just like this implementation!
+    Have basically understood backend
+    (Doesn't Python use open addressing for collisions though? - JM)
+  Hash tables ideal when have lots of data, need basic ops in constant time
+  Challenge is deciding optimized hash function
+    Sizable memory cost too
+    Worst-case O(n) for all operations, even if average O(1)
+
+Trees vs. Hash Tables
+  Can use both for same job
+  Basic ops
+    Hash tables search/insert/delete in O(1)
+      Worst case O(n)
+    Trees search/insert/delete in O(logn)
+      Worst case O(logn) still
+  Hash function
+    Required for hash table, even distribution important
+    Tree is simpler
+      Accesses extra space only when needed
+      No hash function to optimize
+  Order of data
+    Trees useful if data ordered in sequence
+    Hash better if data can be stored randomly
+
+Dictionary vs. Set
+  Not the same structure! Common misconception.
+
+Dictionary
+  Mapping Type object
+  Maps hashable values to arbitrary objects
+  Stores elem as key-value pair
+  Provides basic hashing functionality
+    Plus helpers for insert, delete, search
+  Cannot contain duplicate keys
+  Can have duplicate values
+  Does not store in any order by key or value
+    Insert order maintained Python 3.7+
+  Uses hash table
+    Takes key and maps into range of hash table
+  Time complexity average O(1), worst case O(n)
+
+Set
+  Container in Python with no duplicates
+  Consists of elements in no specific order
+  Build the same way as dict, via hash table
+  Only stores values, not a key-value pair
+  Value of element is also its key
+  Does not allow storing duplicate elements
+  Time complexity average O(1), worst case O(n)
+
+Functions
+  Set
+    set.add(element)
+    set.remove(element)
+    set1 - set2 (return difference)
+    set1 | set2 (return union)
+    set1 & set2 (return intersection)
+    key in container - returns True if present
+
+  Dict
+    dict[key] = value
+    del dict[key]
+    key in dict
+  

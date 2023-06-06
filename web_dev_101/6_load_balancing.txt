@@ -1,0 +1,154 @@
+Load Balancing
+  Enables service to scale well and stay highly available when load increases
+  Facilitated by load balancers
+    Key component in web app architecture
+    Distribute traffic based on several different algorithms
+      Prevent converging on one/few machines in cluster
+  If traffic converges
+    Overload, latency spikes, application performance down
+      Nodes can even go offline
+  If server goes down
+    Load balancer routes new requests to other nodes
+  LBs serve as single point of contact for all client requests
+    May also be set up at application component level
+      Manage traffic directed towards any application component
+        Backend application server, database component, message queue etc.
+    Regularly perform health checks on all servers in cluster
+      Maintain real-time list of machines up and running
+        "In-service" machines
+        "Out-of-service" machines
+      Machine = node, server, server node, instance
+        Use interchangeably
+
+  DNS
+    Domain name system
+    Every machine online and part of www has unique IP address
+      Can be contacted on other machines on web using this address
+    IP = "internet protocol"
+      Facilitates delivery of data packets from one machine to another using IP address
+      ex.
+        2001:db8:0:1234:0:567:8:1
+      But of course that's not easy to remember
+    DNS averts need to remember IP addresses
+      Maps domain names to ip addresses
+    How does DNS work
+      User types URL in browser and hits enter
+        "DNS querying"
+      Four key components
+        DNS recursive nameserver = DNS resolver
+        Root nameserver
+        Top-Level Domain nameserver
+        Authoritative nameserver
+    Request
+      Goes to DNS recursive nameserver
+      Forwards requests to Root nameserver
+      Gets address of Top-level domain nameserver
+    DNS Recursive nameserver managed by your ISP
+    Whole DNS system distributed system set up in large datacenters maintained by ISPs
+      Clusters of servers process DNS queries in milliseconds
+    Top level domain ex.
+      amazon.com -> .com
+    Once DNS resolver receives TLD nameserver address
+      Sends request to fetch details of domain name
+      So .com TLD has information on .com domains
+    TLD nameserver returns IP address of amazon.com domain name server
+      "Authoritative nameserver"
+      Owner of domain name owns this nameserver
+    DNS resolver fires a query to authoritative nameserver
+      Returns IP address of amazon.com to DNS resolver
+    DNS resolver caches data and forwards to client
+    Browser then sends request with IP address
+      Often all DNS info is cached
+      DNS servers don't have to do much rerouting
+    DNS info now is cahched locally with a TTL
+      Modern browsers do this automatically
+
+  DNS load balancing
+    Set up at the DNS level on the authoritative server
+      Return different IP addresses of a domain to clients
+      Returns a list with every query
+    With every request, authoritative server changes order of IP addresses in round-robin fashion
+      As client receives a list, sends request to first IP address on list
+        Get a list so can use others if first one does not work
+
+  Limitations
+    DNS load balancing does not take into account current load on servers
+    IP addresses cached by client machine and DNS resolver
+      Request may go to machine that is out of service
+
+  DNS load balancing preferred by companies
+    Easy and less expensive way to load balance
+
+  Three primary modes of load balancing
+    DNS load balancing
+      Already discussed
+    Hardware-based load balancing
+    Software-based load balancing
+
+  Hardware & software load-balancing both common
+
+  Hardware load balancing
+    Physical hardware
+    Sits in front of application servers
+    Distributes load based on
+      Number of currently open connections to server
+      Compute utilization
+      Other params
+    Require maintenance and regular updates, like any server hardware
+    Expensive to set up
+    Upkeep may require specific skill set
+    Have to be overprovisioned up front to deal with peak traffic
+    Great performance
+    If business has network specialists & IT team in-house, can manage load balancers
+    Otherwise devs have to wrap minds around setting up with some assist from vendors
+
+  Software load balancers
+    Installed on commodity hardware and VMs
+    Cost effective
+    Flexible
+    Easy to provision
+    Easy to upgrade
+    Load balancers as a service (LBaaS)
+    Pretty advanced compared to DNS load balancing, consider
+      data hosted by servers
+      cookies
+      HTTP headers
+      CPU and memory utilization
+      Load on the network
+    Perform regular health checks on servers
+    Dev teams prefer to use
+      Hardware load balancers require specialists
+    Ex
+      HAProxy
+        used by Reddit, Github, Insta, AWS, Tumblr, StackOverflow
+    Use several algos besides round-robin
+
+  Load balancing algorithms
+    Round robin - already discussed
+      Server load, CPU consumption etc. not considered
+    Weighted round robin
+      Based on server compute and traffic capacity, given weights
+      More traffic to machines with higher load handling
+      Useful across multiple data centers with different compute capacities
+        More traffic to larger data centers, more machines
+    Least connections
+      Route to machine with least open connections
+      Assume all requests consume equal server resources
+      But possible machine with least open connections might already be heavily loaded
+        Consuming most CPU power
+      Can also consider CPU utilization
+        Shortest request processing time, etc.
+      Good approach when server has long opened connections e.g. in persistent gaming app
+    Random
+      What it says in the name
+      May also find low load/fast request tier and pick randomly between those
+    Hash
+      Source IP and request URL hashed to route traffic
+      Request with certain IP will always go to same server
+        Server has already processed initial requests
+          Holds client data in local memory
+        Does not need to fetch client session data from session memory of cluster and process
+        Reduces latency
+      Allow client to re-establish connection with same server if it drops
+      URL always hits cache, no cache miss
+      Averts need for duplicating data in every cache, more efficient

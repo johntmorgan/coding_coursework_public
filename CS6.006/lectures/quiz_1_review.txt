@@ -1,0 +1,288 @@
+Quiz 1 prep
+What is quiz about?
+  Class about algorithms and data structures
+  Solve computational problems
+  Be able to argue to someone else that solve it/correct
+  Communicate to other people that solution is efficient
+  This is what quizzes evaluate on
+  Besides nitty gritty-early stuff
+    Word-RAM model
+    Asymptotics
+    Recurrences
+    These are almost definitions
+      The math we use to talk about these things
+  Delve straight into algorithms - main focus
+    Two main ways to solve computational problem
+    Hard to make your own algorithm - that's an 046 kind of thing
+      Design from scratch, reduce to some algorithmic design paradigm
+      We've been showing you algorithms
+      Expect you to reduce something to a problem you know how to solve
+    Shown many ways to sort things, implement sequence and set interfaces
+    Problems
+      Use as a black box, use these things - when use what
+      Black box - import library into code - API
+        Don't know what's inside library
+  Testing strategies
+    Read every problem first, rank them in order of confidence
+    For most problems, can get >= 50% of points in 2 sentences or less
+    Better to do half problems well than all problems poorly
+    The average tends to be around 60-80, it's not 100
+  Types of problems
+    Mechanical - test understanding of how core material works
+      Given a node in an AVL tree, how do I do a rotation, or an insert
+      Where are the top k things in a binary heap
+      Not black box, white box, need to know internals
+    Reduction - how to apply core material
+      Just operate with knowledge of the API
+      Reduce to problem or interface rather than an algorithm or a data structure
+        If can solve by reducing to sorting, argue to correct, use as black box
+          Of course choice of sort matters for efficiency, but not correctness
+          Don't have to make choice until get to running time
+    Modification - hardest
+      How to adapt core material
+        Augmentation, divide and conquer, amortization
+    Can't give full points without correct, efficient, well argued algorithm
+    Questions to ask
+      Is this a mechanical, reduction, or modification type problem?
+      Different than problem sets: what did we talk about in lecture that week?
+        Harder to do - which of 8 lecture material applies to problem, could be combo
+      Is this about data structures? Sorting? Both?
+        Sequence operations, extrinsic order
+        Or am I looking up by what they are?
+        Both, some combo?
+        Might have to use 2 data structures
+        Need to do this kind of operation on these names
+          First think about abstract level of "need a set here"
+          Compartmentalize correctness vs. efficiency
+        If you are stuck, write down a correct algorithm that is inefficient
+          At least it is correct
+          If it's exponential time, might be 10-20% of points
+          But a log or linear factor worse
+            On a data structures problem, O(n) won't give much, whole point is to make fast
+            Data structures questions, usually a tradeoff in terms of running times
+            Algorithms problem, do one thing as fast as possible
+              Try to do linear time, can't do better if have to read
+      Question yourself (probably doing something wrong)
+        Trying to compute decimals, rationals, or real numbers to arbitrary precision
+          Only have taught you how to deal with integers in this class
+          Haven't shown how to efficiently compute rationals or real numbers
+          Have shown compare fractions in constant time via cross-multiplication
+        Using Radix sort for every answer (or even 4-5 times)
+          Not giving a bunch of problems randomly
+          Probably want to cover material in some way
+          People love Radix because linear time
+            Write merge sort where Radix apply, get some points, works but inefficient by log factor
+            Use Radix where no bound on integers or only comparisons, might be fully wrong
+        Augmenting a binary tree with something other than a subtree property
+          Every exam 30% of students, augment by index in entire tree
+            Or augment by the size of my left subtree
+              Augment by subtree size and look at in constant time instead
+            Doing augmentation - will talk about standard things in a second
+              Say doing sequence AVL tree modified to support priority queue in binary heap running time
+                Different augmentation
+              What are sequence AVL augmentations
+                Size, height
+              If augmenting by max, not part of standard interface, tell me
+                Augmenting by max, max computed as max between me and left and right subtree
+                Takes constant time, maintained in constant time
+      Data structures problems
+        First solve using sorting or set/sequence interfaces, choose algorithm/data structure after
+          Decoupling often helps in solving
+        Describe all data structure(s) used including what data they store and their invariants
+          If using a set, tell me what keyed on
+          Usually solution, set up a state store key k, extrinsic order blah blah
+            Invariant they maintain
+            Based on assumption that invariants held before operation
+            Prove that operation correct if invariants maintained before/after
+          Implement every solution asked for in terms of data structures
+            Insert into data structure
+          Separate and label parts of your solution
+          If standard, don't need to reargue or restate invariant
+            You're trying to convince us you know why it's correct
+          Mention that you thought about correctness
+Core Material in this class
+  Mostly about solving problems with data structures
+  Sorted array pretty useful
+                 Time O(), in-place, stable  commnets
+  Insertion sort   n^2         Y       Y      O(nk) for k-proximate
+  Selection sort   n^2         Y       N      O(n) swaps
+  Merge sort      nlogn        N       Y      stable, optimal comparison
+  AVL sort        nlogn        N       Y      good if also need dynamic
+  Heap sort       nlogn        Y       N      low space, optimal comparison
+  Counting sort   n + u        N       Y      O(n) when u = O(n)
+  Radix sort    n + nlogn(u)   N       Y      O(n) when u = O(n^c)
+
+  Every sort does some things better than others
+  Generally want to get lower in chart if you can
+  Merge sort, AVL sort same in terms of asymptotic complexity
+  Are special cases where you might use selection or insertion sort
+    Not sure about insertion sort - k-proximate array in recitation
+      Of course now could maintain a k-sized heap...
+    Selection sort only does a linear number of swaps
+      Better than other many other algorithms
+    Heap sort
+      Doing a bunch amortization worst-case nlogn
+    Radix sort
+      Are there times when want to use Radix sort when not polynomially bounded?
+      Will still be better than nlogn when u is n^(c * logn) for some c
+
+  Sequence data structure
+                           get_at(i)   ins_first(x) ins_last(x) ins_at(i, x)
+                  build(X) set_at(i,x) del_first()  del_last(x) del_at(x)
+    Array            n         1           n            n          n
+    Linked List      n         n           1            n          n
+    Dynamic Array    n         1           n            1(a)       n
+    Sequence AVL     n        logn        logn         logn       logn
+
+    Sequence AVL are great, why don't more teach?
+      Well not THAT useful, you actually don't use the insert in the middle a lot in coding
+        Can usually get around with shifting to end and doing dynamic operations there
+          Just use native Python list
+      But has theoretical interest because gets bounds if you do need to insert in middle of sequence
+    Note linked_list ins_last etc. linear time
+      Because only singly linked list presented in lecture
+      Maintain tail, still linear time, don't know what came before
+      Expanding this table out
+        Can reference doubly linked list and get last as constant time
+        get_at, set_at, ins_at, del_at still linear time
+    Also showed how to get dynamic array ins_first, del_first in O(1) amortized - via hash table
+      Can think of that as standard material you can reduce to
+
+  Set data structure
+                                       insert(x)    find_min() find_prev()
+                  build(X)   find(k)   delete(x)    find_max() find_next()
+    Array            n         n           n            n          n
+    Sorted Array   nlogn      logn         n            1         logn
+    Direct Access    u         1           1            u          u
+    Hash Table       n(e)      1(e)        1(a)(e)      n          n
+    Set AVL        nlogn      logn        logn         logn       logn
+
+  Sorted array
+    Good find, not dynamic
+  Set AVL
+    Pretty good find, dynamic
+    nlogn overhead to build
+  Looking on theory question
+    If not asking about sorted array what do you choose
+    Set AVL better at almost anything than sorted array
+      And can get find_min/find_max constant via augmentation
+    So in theory problem, probably want to use set AVL
+  Hash table, direct access
+    Great for find/insert/delete
+    But suck at find_min/max/prev/next don't use for those
+  In actual coding
+    Esp in not Python, no hash table, in C, microcontroller lab, doing assembly
+      Usually direct access stuff
+        That's giving you the jumps you need in machine language in constant time
+        Control keys in data structure
+          Don't want overhead of maintaining Set AVL
+  Use hash when you don't control the keys yourself
+    Usually hash table just as good except when asking worst-case
+    In situation where we don't care worst-case/expected - will say make sure you state what you achieve
+    If you say better do worst-case - then don't use hash table, get those bounds
+
+  Priority queue (Pqueue) data structure
+
+                    build(X)  insert(x)  del_max()   find_max
+    Dynmamic Array     n         1(a)       n           n
+    Sorted Dy Array  nlogn        n        1(a)         1
+    Set AVL          nlogn       logn      logn        logn
+    Binary Heap        n         logn(a)   logn(a)      1
+
+  Can get bin heap bounds, set AVL tree with max/min augmentation
+  That's basically everything in the class so far
+
+Let's work some problems
+  There's a number of different types of questions on last term's quiz - spring 2019
+  P1 popular restaurant
+    No reservations, waitlist
+    Ordering at which people get on waitlist
+    Sometimes need to be removed
+    Each customer has a different name, no added at same time
+    Worst case, amortized, expected - so can use anything
+    All O(1)
+      build() - empty
+      add_name(x)
+      remove_name(x)
+      seat()
+    Names are unique, can be a key
+    Fit in a constant number of words
+      Can compare, hash in constant number of time
+        Probably not to worry about unless mentioned
+    Remove name
+      Need to be able to find things by their name
+    Seat next person in line
+      People, have names and places, time they came in
+        Not given time
+        Can't key on times
+        Just have order
+    Trying to maintain a sequence on these guys
+      Extrinsic order
+    Need dynamic array or hash table
+    Maintain sequence data structure on customers
+    Maintain set mapping a names to pointer to place in sequence
+    Linked data structure
+      Doubly linked list
+      Set has a pointer to node in DLL
+        Backed by hash
+    Consider naming sequence and set - C and M
+    Basically enough to say this is data structure
+      Invariants - DLL storing all customers
+    build()
+    add_name()
+      stick on end of list C O(1)
+      add x to set, map to new node (stored in temp variable)
+    remove(x)
+      look up in set, remove in set
+      look at what it points to remove from sequence
+    seat()
+      take front of sequence, remove it
+      use name stored in sequence, look in hash set, remove
+        could also not update, running time still O(1) no bound on space
+        but then if customer comes back, things to consider
+  P2 rainy research
+    People had nightmares about this one
+    Studying global rainfall
+    Measurement triple (r, l, t)
+    r positive amount of rainfall
+    l integer again
+    t time
+    3 things to deal with, yuck
+    worst_case O(logn)
+    build()
+    record_data(r, l, t) - just need to maintain information
+    peak_rainfall(l, t) - gives at a particular latitude since t
+    need to be able to add things
+    query and return peak rainfall at l since t
+    care about everything at latitude l per query
+    many data structures one associated with each l
+    dictionary
+      worst_case logn
+      set AVL L mapping latitudes to rainfall/time data structure T(l)
+    T(l) set AVL mapping time to rainfall measurement
+      If query was return rainfall at time T, you'd basically be done already
+    Complication
+      Maximum rainfall up to this time
+      Max-heap good if global max - but here you want a range bound
+      Augment by max r in subtree, figure out query
+        Everything to the right of a certain time is also in node
+      Augmented by subtree max r - let's call it v_max
+      How do I compute this from its children? Think recursively
+      At v?
+      peak(v, t) - if t is too low, call function on later node
+        limit to one recursive call down tree, going to take log(n)
+      in range
+        could recursively call both sides, but if go whole way, linear time
+          would have to call both sides of tree
+          do constant work looking right
+          one recursive call moving down tree to left
+          if don't have node - take max of subtree myself and recursive return value
+          Compare 3 values, return max
+          "one-sided range query"
+            Pro Sess 4 has a two-sided range query but we didn't get to it
+              (sigh - JM)
+
+  Need to review one/two-sided Set AVL range queries?
+
+
+

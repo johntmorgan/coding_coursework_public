@@ -1,0 +1,161 @@
+Meeting Scheduler
+  Allow orgs to schedule and book meetings
+  Scheduler determines meeting time & location
+  Ensures most participants can meet on date & interval
+  Book and cancel meetings
+  Invited participants receive notifications
+  Add new participants after meeting scheduled
+
+Questions
+  How does system determine available rooms
+  How important is room capacity
+  How does system check attendee availability
+  How does system access meeting info of all attendees
+
+Design
+  Smallest:
+    Interval
+    Meeting Room
+  Bigger:
+    Meeting
+    Calendar
+  Finally
+    Scheduler
+
+Singleton design pattern
+
+Requirements
+  n number of meeting rooms
+  Each room has capacity for k people
+  If not reserved, should be able to be booked
+    Set start and end time
+  Send notification to all invited
+  Users respond by accepting/rejecting
+  User accesses calendar tracking date and time
+    Schedule or cancel meetings
+
+Use Case
+  System
+    Meeting Scheduler
+  Actors
+    Primary
+      Scheduler
+        Schedule and cancel meetings
+        Book and release rooms
+      User
+        Accept and reject invitations
+        Decide presence for meetings (? - JM)
+    Secondary
+      System
+        Sends notifications
+          New meetings
+          Cancellations
+  Use cases
+    Scheduler
+      Schedule meeting
+      Cancel meeting
+      Book room
+      Release room
+    User
+      Attend meeting
+      Accept meeting
+      Reject meeting
+    System
+      Send invite notification
+      Send cancellation notifications
+
+  Relationships
+    Include
+      Schedule meeting include with Book room
+      Schedule meeting with Send invite notification
+      Cancel meeting with release room
+      Cancel meeting with cancel notificatoin
+      Cancel meeting with remove from calendar
+
+  Classes
+    User
+      name
+      email
+      respondInvitation()
+    Interval
+      startTime
+      endTime
+    Room
+      id
+      capacity
+      bookedIntervals: Interval {list}
+      isAvailable
+    Meeting
+      id:
+      participants: User {list}
+      participantsCount: int
+      interval: Interval
+      room: MeetingRoom
+      subject: string
+      addParticipants()
+      removeParticipants() - JM
+    Calendar
+      meetings: Meeting
+    MeetingScheduler
+      organizer: User
+      calendar: Calendar
+      rooms: Room
+      scheduleMeeting(user {list}, interval)
+      cancelMeeting(user {list}, interval)
+      bookRoom(numberOfPersons, interval)
+      releaseRoom(room, interval)
+      checkRoomsAvailability(numberOfPersons, interval)
+    Notification
+      notificationId
+      content
+      creationDate
+      sendInvite(user)
+      cancelNotification(user)
+
+  Relations
+    User one-way Notificaion
+    User two-way Meeting
+    MeetingScheduler one-way Meeting, Notification
+
+  Composition
+    MeetingScheduler composed of Calendar class
+    Calendar composed of Meeting class
+
+  Aggregation
+    MeetingScheduler aggregated from User and MeetingRoom class
+    MeetingRoom aggregated from interval class
+
+  Design pattern
+    Singleton scheduler
+
+Sequence diagram
+  Schedule a meeting
+  Actor: Organizer
+  Objects: Scheduler, calendar, meeting room, meeting
+  Organizer schedules meeting at given interval
+  Scheduler checks for room availability
+  If available
+    Book room
+    Create meeting
+    Update calendar
+    Notify organizer
+    Invite attendees
+  If not:
+    Ask organizer for another time
+
+Activity diagram
+  Initial state
+    User opens the calendar
+  Final state
+    Notification and meeting details sent to all participants
+  Actions
+    User selects date and interval
+    Scheduler checks calendar
+    Add number of participants for the meeting
+    Scheduler selects a room
+    Room status?
+      Blocked, out of order, insufficient capacity -> select room
+        (What if all blocked? - JM)
+    Room booked
+    Calendar updated
+    Notification sent

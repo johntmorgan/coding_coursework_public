@@ -1,0 +1,171 @@
+Book
+  Efficient algorithms are hard to invent
+  Might invent one during your whole career if lucky
+  Most efficient is NOT always the algorithm of choice
+    Often best to start by solving as straightforwardly as possible
+    Instrument to find any computational bottlenecks
+    Then look for ways to reduce complexity at the bottlenecks
+
+Lecture: searching and sorting
+  Last 2 lectures - analyzing algorithms
+  How do we use thoughts in terms of implications on cost
+  We saw last time a set of examples
+    Constant, linear, log, quadratic, exponential
+  One last piece: log-linear
+  Searching and sorting
+  Search algorithm
+    Just a way to find an item or group of items from collection
+    Could be implicit or explicit
+  Saw: looking for square roots
+    Bisection
+    Newton-Raphson
+  More common is search with explicit collection
+  Focus on doing search explicitly
+  Search over list focus
+  Lists of numbers - but could be other elements
+
+  Could do linear search
+    brute force, exhaustive enumeration, british museum search (??)
+    list does not have to be sorted
+  Bisection search
+    list MUST be sorted
+    use upper, lower part of the list
+    reducing size in half at each step
+  When does it make sense to sort the list?
+    Need to do it cheaply
+    SORT + O(log n) < O(n)
+    SORT < O(n) - O(log n)
+    Sorting needs to be less than O(n)
+    NEVER TRUE!
+  The reason it can't be true
+    Have to look at each element at least once
+    Not stuck
+      May only need to sort once
+      And do a lot of searches
+      Amortize sort cost
+
+      SORT + K*O(log n) < K*O(n)
+      for large K, SORT becomes irrelevant, if small enough
+  So, how can we do sort reasonably?
+  Let's go through options
+  Start with a humorous version
+  Monkey sort, bogosort, shotgun sort
+    Random order... are they all sorted?
+    Permutation sort - sort through all permutations
+    The complexity of that is n!
+    For large n, n^n
+
+  def bogo_sort(L):
+    while not is_sorted(L):
+      random.shuffle(L)
+
+  best case O(n) where n is len(L) to check if sorted
+  worst case O(?) unbounded if really unlucky
+
+  Bubble sort
+    Start at the front of the list
+    Compare pairs, swap each time until all in order
+    It's pretty simple
+    Largest unsorted element always at end after the pass
+    Will take no more than n times through the list
+
+  def bubble_sort(L):
+    swap = False
+    while not swap:
+      swap = True
+      for j in range(1, len(L))
+        if L[j-1] > L[j]:
+          swap = False
+          temp = L[j]
+          L[j] = L[j-1]
+          L[j-1] = temp
+
+  Inner for loop n passes
+  Outer while loop n passes
+  Example: list len 9 took 4 passes
+  But O(n^2) complexity - quadratic
+  Could be less than that on average
+
+  Selection sort
+    extract minimum element
+    swap it with element at index 0
+    in remaining sublist extract minmum element
+    swapt it with index 1
+
+  # Naive attempt to code it
+    def selection_sort(L):
+      for j in range(len(L)):
+        temp = L[j]
+        lowest = min(L)
+        L[L.index(lowest)] = temp
+        L[j] = lowest
+
+      Outer loop n passes
+      Min function - n I think
+      So O(n^2) again
+
+  Can guarantee so far n elements in that each is sorted, rest is all bigger
+
+  def selection_sort(L):
+    suffixSt = 0
+    while suffixSt != len(L):
+      for in range(suffixSt, len(L)):
+        if L[i] < L[suffixSt]:
+          L[suffixSt], L[i] = L[i], L[suffixSt]
+      suffixSt += 1
+
+    As opposed to bubble sort, takes n times around loop
+    But do more flips (could have also found smallest element as in my code)
+    While loop = n times
+    Inner loop = n times - gets shorter but complexity still quadratic
+
+  Now the last one, one of the prettiest algorithms around
+
+  Merge Sort - divide and conquer
+  If I've got a list of 0 or 1 elements, it's sorted
+  Split lists, sort, merge into list
+  Only look at each element of each sublist once as merge
+
+  def merge(left, right):
+    result = []
+    i,j = 0,0
+    while i < len(left) and j < len(right):
+      if left[i] < right[j]:
+        result.append(left[i])
+        i += 1
+      else:
+        result.append[j]
+        j += 1
+    while i < len(left):
+      result.append(left[i])
+      i += 1
+    while j < len(right)
+      result.append(right[j])
+      j += 1
+    return result
+
+  # Complexity O(n) - only go through two lists once
+
+  def merge_sort(L)
+    if len(L) < 2:
+      return L[:]
+    else:
+      middle = len[L]//2
+      left = merge_sort(L[:middle])
+      right = merge_sort(L[middle:])
+      return merge(left, right)
+
+  # Depth-first such that conquer smallest pieces down one branch
+  # first before getting to larger pieces
+
+  # Cutting the problem in half at each step
+  # O(log(n))
+
+  # So O(nlog(n)) log-linear algorithm
+  # So you wind up
+    Easy ways to sort but are quadratic
+    And then an elegant way to sort
+  # That's the best we can do
+    # Best worst case, anyway
+    # Nobody has found better
+    

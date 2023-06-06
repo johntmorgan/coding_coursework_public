@@ -1,0 +1,159 @@
+Programming
+  Linguistics
+      A value represents information
+      An expression produces a value
+      A statement uses a value to give an instruction to a computer
+    Values
+      Kind of information varies by language
+      Very simple languages - may be just integers, floating points
+      Then characters, and later strings
+      C is still very low level
+        Can define a structure define values composed of groups of other values
+      Values are a programming language's "first-class citizens"
+        Create at runtime, pass to functions, return
+    Expressions
+      Create values by writing literals or calling expressions
+      To write a literal, just write it - 3, "hello world"
+      Functions generate value using method that's somewhere else
+      Operators are another basic element of every programming language
+      Even the most complex expression must always compute to a single value
+      Parentheses control operator precedence
+    Statements
+      Instruct the computer to do something, like print hello world
+      if, while, for etc.
+      Varies between languages
+    Definitions
+      Some languages
+      Add an entity that didn't exist, like new value or function
+      getPacificTime() is bound to a function defintion somewhere
+  Variables
+    Most important name binding - name and value
+      Associates name to address where value stored "alias"
+      Most assignments are written with "="
+      Why did the book do it like this? "<-" no explanation.
+    Some languages require variable to be defined before assignment
+    Most languages require explicit type declaration
+      C, C++ - static type checking
+        Can apply extra optimizations during compiling
+        Helps avoid bugs
+        But typing it out over and over is boring
+          (literally the main minus in the book, lol - JM)
+      Others check dynamically, as the code executes
+    Variable scope
+      If every variable was always available it would be a problem
+        What if "length" was needed in multiple spots?
+      Variable's scope defines where it is valid and can be used
+        Usually within function where defined (a bit of language variance here)
+      "Context"/"environment" - set of all bindings available at a given point
+      Usually variables freed once execution flow leaves that context
+      You can of course make global variables
+        Generally not recommended, of course
+      Collection of all names globally available "namespace"
+        Should be kept as small as possible to avoid conflicts
+      Good modules should add very little
+        Avoid "namespace pollution"!
+  Paradigms
+    Specific collection of concepts and practices that define a field of science
+      Newtownian, relativistic two paradigms in physics
+    Programming paradigm - point of view in coding realm
+      Directs your style and technique
+      Best to base it on the language you are using
+    3 main paradigms: imperative, declarative, logic
+    Most programmers only know imperative
+      Shame, limits effectiveness
+    Imperative
+      Instruct the computer exactly what to do at each step using specific commands
+      Machine code programming
+        Early days: explicit 1s and 0s
+        Then CP for Copy, MOV for move, CMP for compare
+        Wrote a program to covert between the two
+        Birth of: Assembly
+        ASM is still used to program e.g. microwave, car computer system (Tesla?? - JM)
+          Also used where extreme performance is still needed
+            High-performance server bottleneck
+          Gives you absolute control
+      Structured programming
+        GOTO (and JUMP) to control execution flow
+        Really hard to follow as programs got more complex
+          Very, very spaghetti code
+        Dijkstra 1968 manifesto against this "GOTO statement considered harmful"
+          if, else, while, for started being used
+      Procedural programming
+        Organize code into procedures
+        Avoid replication, improve reusability
+    Declarative
+        State desired result without dealing with every step that gets you there
+        Can result in shorter, simpler, easier to read programs
+      Functional programming
+        Functions are used to declare the relationship between two items
+        Functions are first class citizens, just like strings and ints
+        Can receive functions as arguments, return functions as outputs
+          "High-order functions" due to high expressive power
+        Many languages incorporating now
+          E.g. sort may take an argument telling how to do the sort
+            sort(coordinates, closer_to_home)
+          Great for filtering
+            odd_numbers = filter(numbers, number_is_odd) // number_is_odd returns bool
+          Mapping - apply operation to all numbers in list
+            squared_numbers = map(numbers, square)
+            Python:
+            squared_numbers = [x**2 for x in numbers]
+            "Syntactic sugar" - added syntax lets you write shorter, simpler
+            Use and abuse where available in your language of choice
+          Reducing - reduce list of numbers to single output
+            summed_numbers = reduce(numbers, 0, sum)
+            number_of_words = reduce(numbers, 0, wsum)
+        Can also produce functions as outputs
+          Can even enclose a value with the function "closures"
+          Can therefore split multi-arg function into multiple steps "currying"
+          sum = function(a, b): a + b
+          sum(3) is a curried function
+          when called, it has 3 as the first parameter
+            The value 3 is enclosed in the curried function
+            sum_three = sum(3)
+            print sum_three(1) -> 4
+            special_sum = sum(get_number())
+            print special_sum(1) prints "get_number() + 1"
+            Note get_number is NOT called here
+            Reference to get_number is enclosed to special_sum
+            Only called when evaluated - "lazy evaluation"
+              Important characteristic of functional programming languages
+          Closures can also generate set of functions following template
+            function power_generator(base)
+              function power(x)
+                return power(x, base)
+              return power
+            square = power_generator(2)
+            print square(2) -> 4
+            cube = power_generator(3)
+            print cube(2) -> 8
+          Accumulate sum of all variables fed in... without global variable
+            function make_adder()
+              n = 0
+              function adder(x)
+                n = x + n
+                return n
+              return adder
+            my_adder = make_adder()
+            print my_adder(2) -> 2
+            print my_adder(5) -> 7
+          For factorial
+            factorial(0): 1
+            factorial(n): n * factorial(n - 1)
+            Cleaner than imperative!
+        Strictly functional
+          All code is equivalent to functions
+          Atemporal - order of statements does not affect code behavior
+            All values assigned to variables are non-mutant
+            "Single assignment"
+            No program state, no point in time where variable can change
+    Logic
+      Programmer expresses logical assertions about a situation
+        "If the pool is warm, I'll swim" (ch 1.2)
+      Computer is in charge of interpretation
+        Builds a solution space, searches for query solutions that satisfy all
+      Advantage
+        Minimal programming
+      Not heavily used in mainstream
+        But look into if you get into AI, natural language processing
+    

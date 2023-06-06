@@ -1,0 +1,240 @@
+WhatsApp
+  Messaging application connecting billions all over the globe
+  2B active users mid-2021
+  19.4 hours/user/month
+
+Requirements
+  Functional
+    Conversations
+      One on one
+      Group
+    Acknowledgment
+      Sent
+      Delivered
+      Read
+    Sharing
+      Share images, videos, audio
+    Chat storage
+      Store chat when user offline
+    Push notifications
+      Notify offline users when they come online
+  Non-functional
+    Low latency
+    Consistency
+      Messages in order sent
+      See same history on all devices
+    Availability
+      Can be compromised for consistency
+    Security
+      End to end encryption
+        Not even WhatsApp should have access
+
+Resources
+  Public numbers
+    Most used messaging app around world
+    2B users
+    100B messages/day
+  Storage
+    100B messages
+    100 Bytes/message
+    Keep messages for 30 days
+      (I feel Google messaging keeps much longer - JM)
+    100B * 100 = 10 TB/day
+    30 * 10 TB/day = 300 TB/month
+    Also
+      Media files
+        Way more than 100 bytes/message
+      User info
+      Message metadata
+        Time stamp, ID, etc.
+      Encryption & decryption
+        Store keys & metadata
+    Need more than 300 TB/month, but let's keep it simple
+  Bandwidth
+    10 TB/day -> 926 Mb/s
+      Low because ignoring images, docs, etc.
+    Outgoing = incoming
+    1.852 Gbps overall
+  Number of servers
+    10m chat connections/server
+      Seems really high!
+      But is real world number  
+        Extensive performance engineering on general-purpose server
+    2B / 10M = 200 servers
+
+Building blocks
+  Databases
+    User & group metadata
+  Blob storage
+    Multimedia content
+  CDN
+    Deliver frequent multimedia content
+  Load balancer
+  Caches
+  Messaging queue
+    Hold messages while user offline
+
+High-level design
+  Chat server comms between sender receiver
+  When user wants to send message, both connect
+  Both send messages to chat server
+  Chat server sends message to intended user
+  Chat server acknowledges back to sender
+  Chat server stores in database
+  Recipient acknowledges to server
+  Server notifies sender that message is delivered
+  When recipient reads message, ack to server
+  Server notifies sender that message is read
+  Web socket protocol used for connections
+
+API design
+  sendMessage(sender_ID, receiver_ID, type, text=none, media_object=none, document=none)
+    POST to /messages API endpoint
+    sender_ID, receiver_ID = phone numbers, usually
+  getMessage(user_ID)
+    User fetches unread when comes online
+  uploadFile(file_type, file)
+    POST to /v1/media
+    Returns ID that is forewarded to receiver
+    16 MB media file size limit
+    100 MB document size limit
+  downloadFile(user_id, file_id)
+    file_id generated while uploading file
+
+Detailed design
+  Websocket server
+    Keeps connection open with all online users
+    Provide a port to each one
+    Mapping of servers, users, ports stored in WebSocket manager
+    Manager sits on top of data store
+      Redis
+    Why Websocket over HTTP(S)?
+      HTTP(S) doesn't keep connection open for frequent data
+      Polling is resource intensive, causes latency
+      Websockets common solution for async updates from server to client
+  Send or receive messages
+    Websocket manager maintains mapping between an active user and an assigned port
+    Whenever new user connects, update in data store
+    Websocket manager communicates with message service
+    Message service repository of messages
+      On top of Mnesia database cluster
+      Exposes APIs to receive messages by user ID, message ID, etc.
+    Say A sends message to B
+    Both connected to different WebSocket servers
+    A communicates with their WS server
+    A's WSS finds B's WSS via WS manager
+    If B is online, WS manager lets A WSS know
+    WSS sends message to message service
+      Stored in Mnesia database
+        Processed FIFO
+        Deleted when delivered to receiver
+    A WSS has info that B connected with own WSS
+    If B is offline, messages kept in Mnesia
+    When B comes online, all messages delivered via push
+      (Wouldn't B WSS pull from DB when they are online? - JM)
+    If ongoing conversation
+      A and B WSS cache info about each other's servers, avoid manager
+    If user goes offline
+      Server keeps cache until manager flushes
+  Send or receive media files
+    WSS servers are lightweight, don't handle
+    Separate asset service
+    Compress and encrypt on device side
+    Send to asset service
+    Asset service stores on blob storage
+    Asset service assigns ID and comms to sender
+    Asset service maintains hash to prevent duplicates
+      Forward existing ID if duplicate
+    Asset service sends ID to receiver, who downloads from blob store
+    Content loaded to CDN if heavily requested
+  Group messages
+    WSS don't track groups, only active users
+      But some could be online, some offline
+    Three new components
+      Group message handler
+      Group message service
+      Kafka
+    User A sends to group G
+    A sends message to G service via A WSS
+    G service sends message to Kafka with group info
+      Message saved there for processing
+      Group is topic
+      Senders & receivers are producers & consumers
+    G service keeps all info about users in each group
+      user IDs, group ID, status, group icon, number of users, etc
+      Sits on top of MySQL database cluster
+        Multiple geodistributed secondary replicas
+        Redis cache to reduce latency
+    G message handler comms with G service to retrieve member data
+    G handler delivers message to each user
+  End to end encryption
+    Another service "user service"
+      Tracks each user & data
+        Name, profile picture, status etc
+      Sits on top of MySQL database
+      Cache for frequent data
+    At registration, client generates public-private key pairs
+      For identity
+      Signed prekey
+      A batch of one-time keys
+    Public keys stored in database with user service along with user ID
+      Sender also requests server for keys with receiver's ID
+    Private keys only stored on end devices
+      (I assume new ones generated when logging on new device? - JM)
+    One to one comms
+      Pairwise encrypted session
+      Sender requests public key, signed prekey, and single public one-time prekey of receiver
+      Sender generates ephemeral Curve25519 key pair
+      Sender creates master secret key
+        Own identity key, ephemeral pair, receiver public keys
+      Sender uses HMAC-based key-derivation function (HKDF)
+        Create two other keys from secret master key
+          Root key
+          Chain key
+      Sender starts sending messages after receiving encryped session
+      Receiver creates same session
+      80-byte message key generated based on root & chain keys
+    Group comms
+      Same process
+      Sender key generated and shared using pairwise encrypted session
+      Communication directed by Kafka
+        User in group subscribes to relevant topic
+        Messagtes delivered in fanout messaging pattern
+    Multiple devices
+      Each device ID key stored with user account
+      When message received, transmitted multiple times to each device
+      Each device has own encryption keys
+        Attacker who compromises one device can't see others
+    These are just the basics
+      Security is a deep topic
+      Read WhatsApp whitepaper for more
+
+Evaluation
+  Low latency
+    Geographically distributed WebSocket servers
+      Associated cache
+    Redis cache clusters on top of MySQL database clusters
+    CDNs for frequently shared docs, media content
+  Consistency
+    High consistency
+    FIFO queue, strict ordering
+      Sequencer must provide ID with appropriate causality inference mechs
+    For offline users, Mnesia database stores messages in a queue
+      Send later in sequence when user back online
+  Availability
+    Good if enough WS servers, replicate data across servers
+    Disconnected user sent to different server by load balancer
+    Message storage uses primary-secondary replication
+      High availability & durability
+  Security
+    End-to-end encryption mechanism
+  What to compromise in case of a network partition
+    Availability
+      Ordering of messages is critical
+  Trade-offs
+    Consistency/availability
+    Latency/security
+  Latency vs. security
+    Low latency key for real-time experience
+    But security essential
+    Encrypting in near real-time on sender and decrypting on receiver side taxing for devices

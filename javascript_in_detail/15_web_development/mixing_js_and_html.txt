@@ -1,0 +1,170 @@
+JS & HTML
+
+HTML
+  Standard markup language for web pages
+  Tell browser how to make element work
+  No interactivity
+
+JS brings interactivity
+  Add code inline
+  Include JS code file with HTML
+
+Code inline
+  Use script tag
+
+  <html>
+    <head>
+    </head>
+    <body>
+      <h1> Test Page </h1>
+      <p> Can this page be any more interactive?</p>
+      <script>
+        // add 'Yes' to string
+        document.getElementsByTagName('p')[0].innerHTML += ' Yes!'
+      </script>
+    </body>
+  </html>
+
+Use external file
+  document
+    .getElementsByTagName('p')[0]
+    .innerHTML += ' Yes!';
+
+  <html>
+    <head>
+    </head>
+    <body>
+      <h1> Test Page </h1>
+      <p>
+        Can this page be any more interactive?
+      </p>
+      <script src="index.js"></script>
+    </body>
+  </html>
+
+DOM manipulation
+  DOM is tree-like, 5 steps
+    Querying and selecting element
+    Traversing elements
+    Creating element
+    Updating element
+    Removing element
+
+Query element
+  getElementsByTagName(x)
+    Get object (NodeList) with all elements with tag name same as string x
+  getElementsByClassName(x)
+  getElementById(x)
+
+  Can access elements without traversing DOM this way
+
+    <html>
+      <head>
+      </head>
+      <body>
+        <h1 class="title"> Test Page </h1>
+        <p id="question">
+          Can this page be any more interactive?
+        </p>
+        <script src="index.js"></script>
+      </body>
+    </html>
+
+    var p_tag = document.getElementsByTagName('p');
+    var title_class = document.getElementsByClassName('title');
+    var question_id = document.getElementById('question');
+
+    for(var i = 0; i < p_tag.length; i++)
+        console.log(`p tag element: ${p_tag[i].nodeName}`);
+        > p tag element: P
+
+    for(var i = 0; i < title_class.length; i++)
+        console.log(`title class element: ${title_class[i].nodeName}`);
+        > title class element: H1
+
+    console.log(`question id element: ${question_id.nodeName}`);
+      > question id element: P
+
+Traversing elements
+  Access nodes around node with methods and properties
+    Parent node: immediately precedes in DOM
+    Child node: immediately succeeds in DOM
+    Sibling node: shares same parent in DOM
+
+  To reach nodes
+    x.firstChild
+    x.lastChild
+    x.childNodes
+    x.parentNode
+    x.previousSibling
+    x.nextSibling
+
+    // get body node
+    var body = document.getElementsByTagName('body')[0];
+    console.log(body.nodeName);
+    // h1 node
+    var first_child = body.firstChild;
+    // script node
+    var last_child = body.lastChild;
+    // get html node
+    var parent = body.parentNode;
+    // get head
+    var sibling = body.previousSibling;
+
+Creating elements
+  document.createElement(x);
+    Creates element node with tag name x
+  document.createTextNode(text);
+    Node with content text created
+
+  var body = document.getElementsByTagName('body')[0];
+
+  // create node h2
+  var h2 = document.createElement('h2');
+
+  // create text node
+  var content = document.createTextNode('New Node Created!');
+
+  // content.nodeValue = 'New Node Created!'; // Content can be updated using this too
+  // make content node child of h2 node
+  h2.appendChild(content);
+
+  // add h2 to body by appending it
+  body.appendChild(h2);
+
+  To update the content of a text node, update its nodeValue property
+  Use x.insertBefore to add element before any of the x node's child
+
+Removing elements
+  Do from parent using
+  node.removeChild(targetChild)
+
+  var question_node = document.getElementById('question');
+  var parent = question_node.parentNode;
+  parent.removeChild(question_node);
+
+DOM manipulation example
+
+  var bad_text = document.getElementsByTagName('p')[0];
+  var bad_parent = bad_text.parentNode;
+  bad_parent.removeChild(bad_text);
+
+  var target = document.getElementById('target');
+  var bad_h2 = document.getElementsByTagName('h2')[0];
+  target.removeChild(bad_h2);
+
+  var browser_info = document.getElementById('browserName');
+  browser_info.firstChild.nodeValue = "Browser Name: " + window.navigator.appName;
+
+  var window_area = document.getElementById('windowSize');
+  window_area.firstChild.nodeValue = "Area of the window: " + window.outerHeight * window.outerWidth;
+
+  var hostinfo = document.createElement('p');
+  var host_content = document.createTextNode("HostName: " + window.location.origin);
+  hostinfo.appendChild(host_content);
+  target.appendChild(hostinfo);
+
+  var urlinfo = document.createElement('p');
+  var url_content = document.createTextNode("URL: " + window.location.href);
+  urlinfo.appendChild(url_content);
+  target.appendChild(urlinfo);

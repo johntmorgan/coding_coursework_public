@@ -1,0 +1,228 @@
+Forests & Trees
+Reading
+  Simple graphs without cycles = most important for CS
+  An acyclic graph is called a forest
+  A connected acyclic graph is called a tree
+  One-degree node: leaf
+  Trees are a fundamental data structure in CS
+    Information is often stored in tree-like data structures
+    Execution of many recursive programs = tree traversal
+    Often useful to arrange nodes in levels
+    Node at top is identified as root and every edge joins a parent to a child
+  Tree properties
+    Every connected subgraph is a tree
+    There is a unique path between every pair of vertices
+    Adding an edge between non-adjacent nodes creates a cycle
+    Removing any edge disconnects the graph - every edge is a cut edge
+    Tree with at least two vertices has at least two leaves
+    Number of vertices in a tree is one larger than the number of edges
+  Proving tree properties
+    Connected subgraph is a tree
+      A cycle in a subgraph is a cycle in the whole graph
+      So any subgraph of an acyclic graph must also be acyclic
+      If the subgraph is also connected, by definition it is a tree
+    There is a unique path between every pair of vertices
+      Connected -> at least one path between every pair of vertices
+      Suppose there are two different paths p & q between a pair
+        Combined minimum total length |p| + |q|
+      If these paths share a vertex w not start/end
+        Then the parts of p and q from start to w
+        Or parts of p and q from w to end
+          Must be distinct paths with total length < |p| + |q|
+          But that contradicts the minimality of the sum above
+          Therefore p and q have no vertices in common besides endpoints
+          so p^reverse q is a cycle
+    Adding an edge between non-adjacent nodes creates a cycle
+      An additional edge <u-v> along with unique path between u and v forms a cycle
+    Removing any edge disconnects the graph - every edge is a cut edge
+      Suppose we remove edge <u-v>
+      There was a unique path between u and v
+      That path must have been <u-v>
+      Therefore no path remains and the graph is no longer connected
+    Tree with at least two vertices has at least two leaves
+      Has at least two vertices, longest path in the tree has different endpoints
+      We claim u is a leaf - endpoint, incident to at most one edge
+      Also if u was incident to an edge not on path, then path could be lengthened by adding that edge
+        So u is incident to only one edge, and the same holds for v
+    Number of vertices in a tree is one larger than the number of edges
+      Induction on P(n) ::= there are n - 1 edges in any n-vertex tree
+      Base case (n = 1) tree with 1 node has 0 edges and 1 - 1 = 0
+      Inductive step
+        Suppose P(n) is true, consider an (n + 1)-vertex tree T
+        Let v be a leaf of the tree
+        Deleting a vertex of degree 1 from any connected graph leaves a connected subgraph
+        deleting v and its incident edge gives a smaller tree with n - 1 edges
+        If we reattach the vertex we find T has n = (n + 1) - 1 edges.
+        Therefore P(n + 1) is true, induction proof is complete
+    Lemma
+      A graph G is a tree iff G is a forest and |V(G)| = |E(G)| + 1
+  Spanning Trees
+    Every connected graph contains a subgraph that is a tree with the same vertices
+      "Spanning tree" for the graph
+    Proof
+      Suppose G is a connected graph, so G itself is a connected, spanning subgraph
+      By WOP, G must have a minimum-edge connected, spanning subgraph T
+      We claim T is a spanning tree
+      Since T is connected, spanning by definition, just need to show acyclic
+      Suppose to contrary T contained a cycle C
+      Removing an edge e from C would not be a cut edge
+      So removing it leaves a connected, spaning subgraph smaller than T, contradicting minimality of T
+    Minimum Weight Spanning Trees
+      Spanning Trees connect all the nodes of a graph using the smallest possible number of edges
+      In many applications, edges have costs/weights
+        Say connections between buildings
+        Or distances between cities
+      The "weight of a graph" = sum of weights of edges
+      A minimum-weight spanning tree
+        is a spanning tree of G with the smallest possible sum of edge weights
+      How do we determine whether something is an MST?
+        Could enumerate all subtrees - hopeless for large graphs
+      Actually many good ways based on property of "pre-MST" subgraphs
+      A pre-MST will necessarily be a forest
+        Empty graph with vertice of G guaranteed to be a pre-MST
+          So is any actual MST
+      If e is an edge of G and S is a spanning subgraph
+        Write S + e for the spanning subgraph with edges E(S) U {e}
+      If F is a pre-MST and ed is a new edge, that is e in E(G) - E(F)
+        Then e extends F when F + e is also a pre-MST
+      So being a pre-MST is contrived to be invariant under addition of extending edges
+      Standard methods
+        Start with empty spanning forest, build up MST by adding one extending edge after another
+        Empty spanning forest is a pre-MST, every forest built this way is a pre-MST
+          But no spanning tree can be a subgraph of a different spanning tree
+        So when pre-MST finally becomes a tree, it will be an MST
+          After exactly |V(G)| - 1 edge extensions
+        So now problem is how to tell if extending edge
+          Let F be a pre-MST, color vertices in each connected component of F either all black or all white
+            At least one component of each color is required
+            Call this a "solid coloring" of F
+            A "gray edge" of a solid coloring is an edge of G with different colored endpoints
+            Any path in G from a white vertex to a black vertex must include a gray edge
+              So for any solid coloring, guaranteed to be at least one gray edge
+              In fact have to be at least as many gray edges as components with same color
+          Lemma
+            An edge extends a pre-MST F if it is a minimum weight gray edge in some solid coloring of F
+        So to extend a pre-MST
+          Choose any solid coloring, find the gray edges, and among them choose one with minimum weight
+        Algorithm 1 (Prim)
+          Grow a tree one edge at a time by adding a min weight edge among edges that have exactly 1 endpoint in tree
+          Color growing tree white, vertices not in tree black
+        Algorithm 2 (Kruskal)
+          Grow a forest one edge at a time by adding a mimimum weight edge among edges with endpoints in diff connected components
+        Algorithm 3 (flexible, alg 1 as special case)
+          Grow a forest one edge at a time by picking any component and adding a min weight edge among edges leaving that component
+        These are all greedy approaches to optimization
+          Sometimes it works, sometimes it doesn't
+          Good news is it does work to find the MST
+      One more proof: minimal gray edges are extending edges
+        Let F be a pre-MST that is a subgraph of some MST M of G and suppose e is a min weight gray edge under some solid coloring of F
+        We want to show that F + e is also a pre-MST
+        If e happens to be an edge of M, then F + e remains a subgraph of M, and so is a pre-MST
+        But if e is not an edge of M, then M + e will be a connected, spanning subgraph
+          Also M has path p between the different colored endpoints of e
+          So M + e has a cycle consisting of e toegher with p
+          Now p has both a black endpoint and a white one
+          So it must contain some gray edge g != e
+          The trick is to remove g from M + e to obtain a subgraph M + e - g
+          Since gray edges by defintion are not edges of F, the graph M + e - g contains F + e
+          We claim that M + e - g is an MST, which proves the claim that e extends F
+          To prove this claim, note that M + e is a connected, spanning subgraph
+            And g is on a cycle of M + e, so removing g won't disconnect anything
+          Therefore, M + e - g is still a connected, spanning subgraph
+          Moreover, M + e - g has the same number of edges as M
+            So it must be a spanning tree
+          Finally, since e is minimum weight among gray edges
+          w(M + e - g) = w(M) + w(e) - w(g) <= w(M)
+          This mean that M + e - g is a spanning tree whose weight is at most that of an MST
+            Which implies M + e - g is also an MST
+        Corollary
+          If all edges in a weighted graph have distinct weights, then the graph has a unique MST
+
+Lecture
+  About the most basic data structure you'll ever come across
+  Pervade CS and many other subjects
+  A tree is a connected graph with no cycles
+  What's a cycle in a simple graph?
+    Closed walk of length > 2 that doesn't cross itself
+    Basically the definition we were using in a directed graph
+    The difference is the length > 2 requirement
+      Can have a self-loop of length 1 in a directed graph
+      But forbid in simple graph - no way to avoid having a cycle of length 2
+      Also rules out cycle of length 0, taking vertex all by itself
+  (More tree examples)
+  Come up all the time
+    Family trees
+    Search trees - CS
+    Game trees - define games and strategies
+    Parse trees - compilers, language theories
+    Spanning trees
+  Lots of kinds of trees
+    Rooted - some designated vertex the root - get to other vertices from the root
+    Ordered - distinct order in which you choose to leave a vertext
+    Binary - exactly two ways out from vertex
+    Complete - not going to consider
+    Directed - edges have a direction
+  But let's focus on "pure" trees
+    Unordered, unrooted, undirected
+  Cut edges
+    An edge is a cut edge if removing it from the graph disconnects two vertices
+    Lemma: an edge is not a cut edge iff it is on a cycle
+  Alternative tree def
+    - A connected graph where every edge is a cut edge
+    - A connected graph that is "edge-minimal"
+      A big reason why trees are so important
+      Wanna connect a bunch of vertices? Tree will do so with as few edges as possible
+        Say nodes in a network that need to communicate
+        Most efficient is tree - n vertices, n - 1 edges
+    - A connected graph with n vertices and n - 1 edges
+    - An edge-maximal acyclic graph
+      Has as many edges as possible without cycles
+    - A graph with a unique path between any 2 vertices
+    (And there's more too!)
+  Coloring trees
+    Use unique path characterization to figure out every tree is 2-colorable
+    A tree is a graph with unique paths between every pair of vertices
+    Lemma:
+      Chromatic number chi(tree) = 2
+      Choose an arbitrary vertex as the root
+      If unique path from root to every vertex
+      Color by whether odd or even length
+    General way to test
+      Pick a vertex, color it, then color everything connected to it the opposite
+        Keep going until you get stuck (or not)
+    A graph is 2-colorable if all the cycles it has - if any - are of even lengths
+    Of course a tree has no cycles - so 2-colorable for sure
+  Spanning Trees
+    Tree = mimimum edge simple graph that connects up a bunch of vertices
+    Finding a spanning tree within a simple graph
+    A spanning subgraph of a graph G is subgraph that has all the vertices of G
+    A spanning tree is a spanning subgraph that is a tree
+      Not all graphs are going to have a spanning tree
+      If the original is not connected, no way to find a spanning tree
+      But if connected, guaranteed to have a spanning tree
+        Can have many
+    Lemma
+      G connected implies G has a spanning tree
+      Pf: namely, any minimum edge connected spanning graph
+  Minimum Weight Spanning Trees
+    Now we have a more interesting problem
+    Not just minimum number of edges
+    Very typical edges have weights
+      Think of cost/distance of transport, time of signal transmission
+    What is the minimum cost overall tree structure?
+    Fairly simple way to construct - build using "gray edges"
+      Start with vertices
+      At any point, will have edges with no cycles
+      Look at connected components, color black or white
+      gray edge ::= white-black connection
+      add min weight gray edge
+    Example
+      Color arbitrarily - must have at least 1 point white and 1 point black
+        Pick min weight of gray edges
+        Choose that to start building tree
+      Recolor
+        Connected components get the same color
+    Ways to grow an MST
+      Start at any vertex, keep building one tree (Prim's algorithm)
+      Keep choosing min weight between different components (Kruskal)
+      Grow trees in parallel (Meyer - joke name)

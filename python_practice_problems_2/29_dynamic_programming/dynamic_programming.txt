@@ -1,0 +1,38 @@
+Dynamic programming
+  Recursive divide and conquer approach
+  See an optimal substructure
+    Solve smaller problems to solve big one
+  Many overlapping subproblems
+    ex. Fibonacci
+  How to save and use?
+    Top-down memoization
+    Bottom-up tabulation
+  Top-down
+    Store results in array or hash map
+    Use whenever encounter overlapping subproblem during recursion
+  Bottom-up
+    Use n-dimensional array to store results
+    Use whenever encounter overlapping
+    Fib example:
+      Array of size n + 1
+      ith value holds ith Fibonacci
+    Often requires 2-d arrays
+      Can sometimes optimize space complexity with a 1D array
+        Use same array for previous and next iteration
+        Trickky and not applicable to all problems
+
+Pattern matching
+  Yes
+    Overlapping subproblems
+      Use results of one when solving another
+    Optimal substructure
+      Solution can be constructed from optimal subproblem solutions
+  No
+    Non-overlapping subproblems
+    Optimal substructure property violated
+
+Real world
+  Load balancer
+    Optimal way to handle workload - servers with different capacities
+  Search engine
+    Check if white spaces add to query to creat valid words

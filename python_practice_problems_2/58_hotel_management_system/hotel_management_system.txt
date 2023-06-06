@@ -1,0 +1,390 @@
+Hotel Management System
+  Online system
+    Book rooms
+    Manage staff
+    Perfom other management features
+  Notifications, payments
+  Fixed number of rooms
+    Info about availability
+  Manager tracks
+    Rooms
+    Customers
+    Workers
+  Manager posts available rooms
+    Generates bills
+  Customers search for rooms and book
+    Cost range
+    Choose room
+    System provides info
+  Guest charged based on duration in room
+
+Questions
+  Room booking
+    How to prevent duplicate booking
+    What users can book a room?
+    Can users book in advance?
+  Payment handling
+    Credit card, cash? (Check? - JM)
+    Does customer pay online or at receptionist?
+    Pay in advance, or JIT payment system?
+  Price variance
+    How will it be calculated
+    Which factors affect price of room?
+    How does location and size of room affect price
+    How does booking duration affect payment
+  Canceling
+    Can you?
+    Which kinds of users?
+    (Is there a fee? - JM)
+
+Bottom up design
+  Start with room
+  Then hotel etc.
+
+Design patterns
+  Strategy design pattern
+  Singleton design pattern
+  Factory design pattern
+
+Requirements
+  Account types
+    Housekeeper
+    Receptionist
+    Guest
+    Server
+  Room types
+    Standard
+    Deluxe
+    Family Suite
+    Business Suite
+  Allow guests to search any room
+  Book any available room
+  During booking, enter check-in date and duration
+    Pay some in advance
+  Cancel booking and full refund if > 24h before check-in
+  Send notification to customers about booking status
+  All housekeeping tasks logged in and managed
+  Allow customer to add services
+    Room service
+    Food
+    Kitchen service
+    Amenity
+  Each room has a specific key
+  Master key to open all
+  Hotel has multple branches
+
+Use cases
+  System
+    Hotel
+  Actors
+    Primary
+      Guest
+      Receptionist
+      Manager
+      Housekeeper
+    Secondary
+      System - booking notifications
+      Server - add or update room status
+
+  Guest
+    Book room
+    Update booking
+    Login/Logout
+    Cancel booking
+    View booking
+    Print booking
+    Search room/bookings
+    Payment
+    View account
+    Register account
+    Return room key
+
+  Receptionist
+    Add room
+    Update room
+    Remove room
+    Book room
+    Update booking
+    Login/Logout
+    Cancel booking
+    View booking
+    Print booking
+    Search room/booking
+    View account
+    Register new account
+    Check in guest
+    Check out guest
+    Issue room key
+
+  Manager
+    Issue employee card
+    Add/modify employee
+    Add room
+    Update room
+    Remove room
+    Book room
+    Update booking
+    Login/Logout
+    Cancel booking
+    View booking
+    Print booking
+    Search room/booking
+    View account
+    Register new account
+    Check in guest
+    Check out guest
+    Issue room key
+
+  System
+    Add/update room change
+    Send booking notif
+
+  Housekeeper
+    Add/update room housekeeping
+
+Relationships
+  Generalization
+    Manager has generalization with receptionist
+      Can do everything and more
+    Cash and Credit card have generalization with pay ticket
+
+  Include
+    Book room include with Payment
+    Check in guest include with Issue room key
+    Check out guest include with Return room key
+    Cancel booking include with refund payment
+
+Classes
+  Address
+    streetAddress
+    city
+    state
+    zipcode
+    country
+
+  Account
+    id
+    password
+    status
+    resetPassword()
+    (email? username? - JM)
+
+  Person
+    name
+    address: Address
+    email
+    phoneNumber
+    accountType: AccountType
+    Server extends
+      addRoomCharge()
+    Receptionist extends
+      createBooking()
+    Housekeeper extends
+      assignToRoom()
+    Guest extends
+      totalRoomsCheckedIn
+
+  Service - abstract
+    issuedAt
+    addInvoiceItem
+    Amenity extends
+      name
+      description
+    RoomService extends
+      isChargeable
+      requestTime
+    KitchenService
+      description
+
+  Invoice
+    amount
+    createBill()
+
+  RoomBooking
+    reservationNumber
+    startDate
+    durationInDays
+    status
+    checkout
+    advancePayment
+    fetchDetails()
+
+  Notification - abstract
+    notificationId
+    createdOn
+    content
+    send(person)
+    SMSNotification extends
+      send(person)
+    EmailNotification extends
+      send(person)
+
+  Room
+    roomNumber
+    style: RoomStyle
+    status: RoomStatus
+    bookingPrice
+    isSmoking
+    isRoomAvailable()
+    checkIn()
+    checkOut()
+
+  RoomKey
+    keyId
+    barcode
+    issuedAt
+    active
+    isMaster bool (seems dangerous - JM)
+    assignRoom()
+    isActive()
+
+  RoomHousekeeping
+    description
+    startDateTime
+    int
+    addHouseKeeping()
+
+  Search - interface
+    searchRoom(roomStyle, startDate, duration): Room {list}
+    implements Catalog
+      rooms: Map<string, Room{list}>
+
+  BillTransaction - abstract
+    creationDate
+    amount
+    status
+    initiateTransaction()
+    CheckTransaction extends
+      bankName
+      checkNumber
+      (routing number? - JM)
+    CreditCardTransaction
+      nameOnCard
+      zipCode
+    CashTransaction
+      cashTendered
+
+  HotelBranch
+    name
+    address
+    getRooms(): ListofRoom
+
+  Hotel
+    name
+    addlocation()
+    (branches: HotelBranch {list} ? - JM)
+
+  Enums
+    BookingStatus
+      Requested
+      Pending
+      Confirmed
+      Canceled
+      Abandoned
+
+    AccountType
+      Member
+      Guest
+      Manger
+      Receptionist
+
+    PaymentStatus
+      Unpaid
+      Pending
+      Completed
+      Failed
+      Declined
+      Canceled
+      Abandoned
+      Settling
+      Settled
+      Refunded
+
+    AccountStatus
+      Active
+      Closed
+      Canceled
+      Blacklist
+
+    RoomStatus
+      Available
+      Reserved
+      Occupied
+      NotAvailable
+      BeingServiced
+      Other
+
+    RoomStyle
+      Standard
+      Deluxe
+      FamilySuite
+      BusinessSuite
+
+Relationship
+  Association
+    Housekeeper one-way with RoomHousekeeping
+    Receptionist one-way RoomBooking
+    Guest one-way RoomBooking
+    RoomBooking one-way Room
+
+    RoomBooking two-way Notification
+
+  Aggregation
+    RoomBooking is aggregate of Service
+
+  Composition
+    RoomBooking composed of Invoice
+    Invoice composed of BillTransaction
+    Person composed of Account
+    Room composed of RoomHousekeeping and RoomKey
+    HotelBranch composed of Room
+    Hotel composed of HotelBranch
+
+  Inheritance
+    Receptionist, Guest, Housekeeper, Server extend Person
+    Amenity, RoomService, KitchenService extend Service
+    PostalNotification, EmailNotification extend Notification
+    Catalog implements Search interface
+
+Design Patterns
+  Strategy to calculate cost of each room
+  Hotel follows Singleton
+  Room follows Factory - many instances, each with own booking cost formula
+
+Additional reqs
+  Discount special events
+  Discount applied to BillTransaction
+    couponCode
+    discountAmount
+    expiryDate
+
+Sequence Diagram: book room online
+  Guest searches for rooms based on style and price
+  Catalog returns list of rooms
+  Guest selects room
+  If available (really should only return avail - JM)
+    Guest creates booking
+    Booking fetches price (really should show up front)
+    Guest informed ready for payment
+    Guest initiates payment
+    If payment processed
+      Inform guest
+      System informed that payment complete
+      System updates room status to reserved
+    If not
+      Guest informed payment failed
+  Else
+    Guest informed room unavailable
+
+Activity: hotel check in
+  Initial state: guest arrives at front desk
+  Final state: guest is checked in
+  Guest arrives at counter
+  Receptionist looks for booking
+  Booking valid?
+    No: terminate (allow guest to book? - JM)
+  See if room ready
+    No: request wait, then
+  Issue room key
+  Update room booking status
+

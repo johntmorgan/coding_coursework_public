@@ -1,0 +1,15 @@
+Merge intervals
+  Overlapping intervals
+  Scheduling problems, typically
+  Six ways to overlap
+    Do not overlap - one before two
+    Do not overlap - one after two
+    One starts before two, ends in two
+    One starts before two, ends after two
+    One starts in two, ends in two
+    One starts in two, ends after two
+
+Real world problems
+  Schedule meeting
+  Display busy schedule
+  OS task scheduling

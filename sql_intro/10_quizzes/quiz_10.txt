@@ -1,0 +1,25 @@
+1. Return alternate rows from a table
+
+Select customerId from (Select rowId, customerId from customer) where mod(rowId,2)=1
+Select customerId from (Select rowId, customerId from customer) where mod(rowId,2)=0
+
+2. What does this query do
+
+  SELECT email, COUNT(email)
+  FROM users
+  GROUP BY email
+  HAVING COUNT(email) > 1
+
+  // It finds all duplicate emails in users table
+
+3. INSERT triggers
+  Have access to NEW values only
+  BEFORE INSERT can access and change NEW
+  AFTER INSERT can access but not change NEW
+
+4. UPDATE triggers
+  Can view and update NEW
+  Cannot update OLD values
+
+5. DELETE triggers
+  No associated NEW value, OLD only

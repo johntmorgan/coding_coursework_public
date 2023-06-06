@@ -1,0 +1,53 @@
+Object destructuring and spread operators
+  Need to access lots of properties from state or props in component
+
+  const student = {
+    ID: '21',
+    name: 'Jhon',
+    GPA: '3.0',
+  };
+
+  const {ID, name, GPA} = student;
+  // can also rename them
+  const {name:n} = student;
+
+  // another example
+  const { users, counter } = this.state;
+
+Functional stateless components always receive the props object in function signature
+  
+  function Greeting(props) {
+    return <h1>{props.greeting}</h1>;
+  }
+
+  // destructuring
+  function Greeting({ greeting }) {
+    return <h1>{greeting}</h1>;
+  }
+
+  // rest destructuring
+  const { users, ...rest } = this.state;
+
+Spread Operator
+  Literally spreads contents of array into elements making concatenation easier
+
+  // before
+  a = [1,2,3];
+  b = [4,5,6];
+  c = a.concat(b);
+  console.log("c: " + c);
+
+  // spread
+  c = [...a, ...b]
+
+  // handy:
+  c = [...a, "added", ...b]
+
+  // clone array
+  clone = [...a];
+
+  const person = { name: "Jhon"};
+  const student = { ID: "21", GPA: "3.0"};
+
+  const new_object = { ...person, ...student, semester: '3'};
+  console.log(new_object);

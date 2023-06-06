@@ -1,0 +1,113 @@
+Going generic
+  Execute callback on each click where can add arbitrary behavior
+
+  // Module that can be loaded into other code using import
+  // Only default class visible when imported using import <NAME> from <file>
+    // Import with any arbitrary name, that will be name in another file
+  // Explicitly import other items with import { <NAME> } from <file>
+  export default class GenericToggle {
+    // querySelectorAll return type is NodeListOf<HTMLElement>
+    // TS wrapper around the NodeList, provides type safety
+    toggleButtons: NodeListOf<HTMLElement>
+    targets: NodeListOf<HTMLElement>
+    // The class is storing its own internal state
+    // This version uses state of toggle to manage presence of class
+    // Prior version used is-hidden presence or absence to infer toggle state
+    hidden: boolean
+
+    // Element is generic parent class of all things in DOM
+    // NodeList is a linked list returned by several DOM method calls
+    constructor(
+      // Pass either HTML element or document itself
+      private parent: Element | Document,
+      // private declaration gives access within class to this.buttonSelector,
+      // this.targetSelector, this.onToggle
+      private buttonSelector: string,
+      private targetSelector: string,
+      // Callback function invoked when button is pressed
+      // ?: is operator indicating argument is optional
+      // Body is void
+
+      private onToggle?: (
+        button: HTMLElement,
+        target: HTMLElement,
+        state: boolean
+      ) => void
+    ) {
+      this.toggleButtons = parent.querySelectorAll(this.buttonSelector)
+      this.targets = parent.querySelectorAll(this.targetSelector)
+      this.hidden = this.targets[0].classList.contains("is-hidden")
+    }
+
+    initHandlers(): void {
+      this.onFilterButtonClick()
+    }
+
+    onFilterButtonClick(): void {
+      this.toggleButtons.forEach((toggleElement) => {
+        toggleElement.addEventListener("click", () => {
+          // Flip toggle state
+          this.hidden = !this.hidden
+          // Get list of each target
+          this.targets.forEach((target) => {
+            // Add or remove is-hidden to match toggle state
+            target.classList.toggle("is-hidden", this.hidden)
+            // If onToggle callback passed, call with button elem, target, state as args
+            if (this.onToggle) {
+              this.onToggle(toggleElement, target, this.hidden)
+            }
+          })
+        })
+      })
+    }
+  }
+
+How applications.ts calls the toggle
+
+  import GenericToggle from "src/generic_toggle"
+
+  document.addEventListener("turbolinks:load", () => {
+    document.querySelectorAll(".day-body").forEach((day) => {
+      // Button is element inside parent day with class js--day-button
+      // Taret is element with class js--day-class
+      new GenericToggle(
+        day,
+        ".js--day-button",
+        ".js--day-text",
+        (element, _, hidden) => {
+          // Change text of button depending on hidden state passed in
+          const buttonText: HTMLElement = day.querySelector(".js--button-text")
+          buttonText.innerText = hidden ? "Show" : "Hide"
+        }
+      ).initHandlers()
+    })
+
+    // Then day toggles from calendar at atop
+    document.querySelectorAll(".js--schedule-day").forEach((button) => {
+      // Create individual selector using DOM id
+      const buttonSelector = `#${button.id}`
+      // Create target selector via text manipulatoin
+      const targetSelector = buttonSelector.replace("toggle", "body")
+      new GenericToggle(
+        document,
+        buttonSelector,
+        targetSelector,
+        (element, _, hidden) => {
+          // add has-text-danger class - defined by Bulma framework giving red color
+          element.classList.toggle("has-text-danger", hidden)
+        }
+      ).initHandlers()
+    })
+  })
+
+// This code works, but
+  Looking at markup, no way to tell which JS events are handled and how, if any
+    Stimulus puts more info in the markup
+    React replaces HTML markup with a more info-rich version
+  Have to manage connection between DOM selectors and events ourselves
+    Stimulus and React both have ways to automatically attach
+  Must change state of DOM and state of data in unison
+    Big potential source of bugs if change one without changing the other
+    Stimulus does not address
+    React designed to automatically redraw components when internal state changes
+    

@@ -1,0 +1,116 @@
+Webpacker
+  Typically installed as part of default Rails 6 app creation
+  gem "webpacker"
+  Package manager = Yarn
+    Designed many bundler builders, similar structure
+    Created to respond to limitations in NPM, since fixed
+    Default in Rails
+  Manifest file for JS packages is package.json
+  "*" - replaced by version reference
+    {
+      "name": "nxns",
+      "private": true,
+      "dependencies": {
+        "@babel/preset-typescript": "*",
+        "@rails/actioncable": "*",
+        "@rails/activestorage": "*",
+        "@rails/ujs": "*",
+        "@rails/webpacker": "*",
+        "turbolinks": "*",
+        "typescript": "*"
+      },
+      "version": "*",
+      "devDependencies": {
+        "webpack-dev-server": "*"
+      }
+    }
+  Have a bunch of Rails-specific packages
+    ActionCable
+    ActiveStorage
+    Webpacker
+    @rails/ujs - classic Rails interactive behavior
+    typescript - TypeScript compiler itself
+  devDependencies
+    Use in development, not runtime
+  Also creates yarn.lock
+    Equivalent of Gemfile.lock but wayyy more verbose
+      Has all versions of dependencies, dependencies dependencies, etc.
+    Complex - if two separate dependencies depend on two diff versions of the same library
+      Yarn allows both libraries modules to depend on own required version
+  Actual packages in node_modules
+    769 modules for basic installation!
+    JS packages stored with each project, unlike gems
+  .gitignore updated - ignore node_modules
+  About those 769 modules
+    Why we need a JS build tool!
+  config/webpacker.yml
+    General webpacker options - where to look for input, where to put output
+  Introduces a Rails-like concept of environemnt
+    config/webpack/environment.js
+    Separate additional files for different environments (dev vs. production)
+    Also tracks loaders, bits of code that attach particular file types w/webpack extension
+      Don't have any installed, but behind the scenes WP adds one for PostCSS processing
+  Configuration tools
+    babel.config.js
+    Babel converts code with newer JS features to code safe for older browsers
+    Babel compiles TypeScript code
+  .browserslistrc file
+    What browsers are you targeting?
+
+  Anyway, have webpacker installed
+    Start server with rails s
+    Hit web page in browser at port 3000
+
+    [Webpacker] Compiling…
+    [Webpacker] Compiled all packs
+      in /Users/noel/code/github/noelrappin/nxns/public/packs
+
+    Has converted application.js file and hello_typescript.ts file to new files in public/packs
+    Also a public/packs/manifest.json file
+      Webpack uses to track different packs
+      .js.map files, which are source maps
+      Allow browser debugger to to TS file, even though converted to WP JS file
+      Used by Babel, PostCSS conversions
+  .tsconfig.json
+    Configures how TypeScript converted to browser-friendly JS
+  postcss.config.js
+    Manages PostCSS tool for processing CSS
+  webpack and webpack-dev-server added to bin
+    Invoke either to build code
+  Code files
+    Put file in app/javascript/packs directory
+    Compile that file into what Webpacker calls a pack
+      Place pack in public/packs directory
+      Access in view files using javascript_pack_tag
+    Webpacker has generated two packs
+      In application.js, generic starting point for Rails application
+
+To connect webpacker build to app, add two javascript_pack_tag calls in application.html.erb
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <title>North By North South</title>
+      <%= csrf_meta_tags %>
+      <%= csp_meta_tag %>
+      <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.7.4/css/bulma.css">
+      <script defer="true"
+              src="https://use.fontawesome.com/releases/v5.7.2/js/all.js"></script>
+      <%= javascript_pack_tag("application") %>
+      <%= javascript_pack_tag("hello_typescript") %>
+    </head>
+
+    <body>
+      <section class="section">
+        <div class="container">
+          <p class="notice"><%= notice %></p>
+          <p class="alert"><%= alert %></p>
+          <%= yield %>
+        </div>
+      </section>
+    </body>
+</html>
+
+When starting server with rails s
+  See webpacker is compiling all packs
+  Convert to files that live in public/packs

@@ -1,0 +1,57 @@
+Time
+Main use case: to determine order of different events
+  Can mean very different things in practice
+Examples
+  Impose order to requests received concurrently by clients to determine order
+  Sysadmin investigate incident looking at system logs, order by timestamp
+Dist systems
+  Centralized systems have a single clock
+    Maintain illusion of universal time dimension
+  Dist system
+    Each node has clock
+    Clocks may run at diff rate or granularity
+      Clocks will drift apart
+    No global clock
+Practical
+  Clocks in real systems physical clocks
+Physical clock
+  Physical process coupled with measuring method to record passage of time
+  Usually based on cyclic processes
+    Sundial
+    Hourglass
+    Pendulum
+    Quartz clock
+      Uses crystal that vibrates/ticks with frequency when electricity applied
+    Atomic clock
+      Among most accurate
+      Uses frequency of electronic transitions in certain atoms
+  May have errors in both measurement and physical processes
+    Will always be a skew no matter how often synchronized
+Global clock, distributed systems
+  Must take diffs between clocks into account
+    Do not assume all same, operate as global clock
+    Node with slow clock -> looks like event happened earlier
+  Best we can do is accept clocks will not always agree between nodes
+    Expose uncertainty
+      Spanner - TrueTime API - uses intervals instead of timestamps
+Theoretical perspective
+  So far dealing with practical, simplified notion of time
+  There is an absolute notion of time
+    Impossible to measure it completely precisely, does not hold in reality
+  Physics
+    Special theory of relativity
+      Impossible to absolutely state two events happen at same time if separated in space
+        Events in London, NYC, will appear to happen diff time if traveling London -> NYC
+    Train experiment
+      Observer in middle of train, observer of platform
+      Flash of light in middle of train
+        Observer in train: reach both ends at same time
+        Observer outside: reach rear faster as rear is traveling towards it
+  Information in universe generally travels via light - limited by speed of light
+    In distributed system, depends on underlying infrastructure of network
+      Might not be able to flow at all due to network partition
+Logical clocks
+  Non-physical category of clocks
+    Use messages exchanged between nodes of a system
+    Can return events by counter rather than precise timestamp
+      More details next

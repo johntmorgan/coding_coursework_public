@@ -1,0 +1,97 @@
+Inheritance in JS
+  A class that another class inherits = superclass, base class
+  Inheriting class = subclass or derived class
+  in JS extends used to inherit from another
+
+  class Developer {
+    constructor(firstname, lastname) {
+      this.firstname = firstname;
+      this.lastname = lastname;
+    }
+
+    getName() {
+      return this.firstname + ' ' + this.lastname;
+    }
+  }
+
+  class ReactDeveloper extends Developer {
+    getJob() {
+      return 'React Developer';
+    }
+  }
+
+However inheritance is limited
+React favors composition over inheritance
+
+  class Character {
+    constructor(name){
+      this.name = name;
+      this.health = 100;
+    }
+  }
+
+  class Shooter extends Character{
+    constructor(name){
+      super(name);
+    }
+
+    shoot(){
+      console.log(`${this.name}: prepare to die!`);
+      this.health--;
+    }
+
+     getHealth(){
+       console.log(this.health);
+     }
+
+  }
+
+
+  class Caster extends Character{
+    constructor(name){
+      super(name);
+    }
+
+    cast(){
+      console.log(`${this.name}: Avada Kedavra!`);
+      this.health--;
+    }
+
+     getHealth(){
+       console.log(this.health);
+     }
+
+  }
+
+  Dumbledore = new Caster("Albus Percival Wulfric Brian Dumbledore")
+  Dumbledore.cast();
+
+  DarthVader = new Shooter("Anakin Skywalker");
+  DarthVader.shoot();
+
+
+  But what if want to put cast and shoot in one class?
+    Then shooter and caster inherit both cast and shoot
+      "Gorilla/Banana problem"
+        Want a banana, get Gorilla and entire forest
+    Or duplicate shoot and cast and make then local to "ShooterFighter" class
+      Copying code, defeats point of classes
+      Duplication by necessity
+
+  Object Composition
+    Classes containing other instances of classes as attributes to implement desired functionality
+      Advanced, beyond scope of course
+      Check The Road to Learn React
+    Inheritance follows is-a principle
+      Child classes are parent classes
+    Composition uses has-a
+      Class has-a certain attribut or functionality
+      ShooterFigher has shoot() and cast() functions
+    Advantages
+      Class taxonomy does not have to be defined in advance
+        Code dynamic, adaptable to change
+        Less changes to code = fewer bugs
+        Code more resuable
+    Facebook devs who made React have 0 situations where would recommend inheritance hierarchies!
+    Road To Learn React course
+

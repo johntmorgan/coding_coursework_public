@@ -1,0 +1,10 @@
+Distinct
+  Output unique rows in a data set
+  Post processing filter
+  Applied to resulting rows of query
+
+  SELECT DISTINCT MaritalStatus from Actors;
+    > Single, Married, Divorced
+
+  SELECT DISTINCT MaritalStatus, FirstName from Actors;
+    > Shows all rows, because everyone has a different first name

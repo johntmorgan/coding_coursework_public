@@ -1,0 +1,43 @@
+Intro
+  React is most popular of current JS frameworks
+  Huge user base, large ecosystem
+  Structurally the polar opposite of Stimulus
+  More complex
+  Different assumptions about how to manage state and logic in JS
+  We're only going to use a fraction of React's capabilities in this course
+  Focus on supporting interactivity on a single page in Rails
+    Not using for a SPA
+      Of course reasonable but more complex, less likely to benefit from Rails
+      Let's show simpler use cases
+
+What is React?
+  JS client-side framework
+  Enhance HTML markup with custom JS for complex user interactions
+  Uses a mini-language called JSX
+    Write HTML-style markup inside JS or TS code
+  Stimulus is designed to add interactivity to already written HTML
+  With React the markup is written using JSX
+    React completely controls what is written to DOM within boundaries
+  Internal state diff
+    Stimulus keep state in DOM or server
+      Update page when state changes
+    React keeps state within React system
+      When state changes, React runtime loop updates DOM automatically
+  Displaying values
+    "Declarative" or "Reactive"
+    Dev job is to declare what output should look like
+    System job is to react to changes in values by redrawing page
+  React maintains its own virtual DOM
+    Uses virtual DOM to update only the parts of the actual DOM changed when value changes
+    React needs to be aware when you change a value relevant to the display
+    Only change values in React using specific functions provided by the framework
+  React allows you to declare a specific value as part of the changeable state
+    Then provides a custom setter function that changes that value
+    When you use these setter functions, React notices the state change
+      Updates parts of the DOM that are affected by the change in values
+  Most code written in React is in a component
+    A React component is a function that behaves something like a template
+      Combines data with markup written using JSX
+      Results in HTML sent to DOM
+      JSX allows you to mix JS logic with HTML tags and calls to other React components
+      

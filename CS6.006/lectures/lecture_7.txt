@@ -1,0 +1,260 @@
+Binary Trees Pt 2
+Last time
+  Binary trees in general
+    Node stores item, left/right/parent pointers
+    Tree example
+    Defined the height of a node
+      Length of the longest downward path
+    All operations ran in O(h) time
+      Insert, delete, subtree first/last, pred/successor
+    So as long as h small, we're happy
+    And remember pred/successor -> traversal order
+      Traverse left subtree
+      Root
+      Traverse right subtree
+    Implicit linear order in tree
+      Update tree faster than can explicitly write down order in array
+But are they fast?
+  O(h) time
+  Worst case tree is linear - basically just a linked list
+  Today, guarantee h is logn
+  AVL trees - height balancing
+    But before we get there, how do you back set/sequence with this?
+Set binary tree
+  Traversal order = increasing key
+    Effectively maintaining the items in order
+  subtree_find(node, k)
+    if node is None: return
+    if k < node.item.key:
+      recurse on node.left
+    if =: return node
+    if >:
+      recurse on node right
+    Exactly binary search on an array, just happens to be on a tree instead
+      But the tree we can maintain dynamically, unlike array
+  Set binary trees are called binary search trees
+    All keys in left tree node are less than root which is less than right tree
+  How do you maintain order?
+    Do search to find where it would belong
+      If it's there, replace key value
+      If not, search will fall off tree at some point
+        Insert new node at this location
+Sequence binary tree
+  A bigger challenge
+  Traversal order of tree is the sequence order
+    Changed by operations like insert_at
+  How I would like it to work:
+    give you a subtree specified by a node
+      I'd like to know what is in the traversal order of subtree
+        Give me the ith node
+      Seems like size matters
+      Index of last node is size of subtree - 1
+    subtree_at(node, i):
+      nl = size(node.left)
+  Let's define size(node) = number of nodes in subtree(node)
+    Suppose we knew size of subtree on left - nL
+      Can do equivalent of binary search
+      If I is less than nL, must be in left subtree
+      If I equals nL, then index of root node is nL - return node, done
+      If I is greater than nL, must be in right subtree
+        When recurse, numbering system changes
+        i - nL - 1
+  Algorithm is same as for set
+    But instead of dealing with keys, don't touch item at all
+    Gives you the same information in O(h) time
+    Can use subtree_at to implement get_at, set_at, insert_at, delete_at
+    But there's a problem
+      Have to update the sizes when insert/delete
+  Subtree augmentation
+    Talk generally first, then apply to size
+    Each node in binary tree can store O(1) extra fields/properties - why not
+    Subtree property of a node can be computed from the properties of the node's children (and node)
+    Suppose we already know property for left and right node
+      Compute in constant time
+      Size is a subtree property - precomputed and stored on every node, return O(1)
+        Can write recurrence
+          node.size = node.left.size + node.right.size + 1
+          Can maintain dynamically as changing tree
+            Only did changes during insert and delete
+            Add or remove a leaf of the tree
+              Its ancestors change - only - so that's all you need to update - O(h)
+                And update can happen in constant time
+Subtree property examples
+  Sum, product, min, max, of some feature of every node in subtree
+  Size is also a subtree property, sum over all nodes of value 1 - another way to say count nodes
+  But could also say sum of keys in nodes, or maximum value in nodes
+  Cannot maintain:
+    Node's index
+      Can't maintain efficiently - insert at beginning of traversal order ALL indices change
+      Index is NOT a subtree property
+      Depends on *all* nodes in tree
+    Need to be careful!
+      Don't use global properties, only subtree properties
+    Another example: depth
+      Annoying to maintain, but not obvious why, we'll see in a moment
+  Can you compute from node's children in O(1) time?
+    That's the requirement
+Now, O(h) -> O(logn)
+  Should believe we can do all of our core sequence operations in O(h) time
+    Except for build and iterate, which take linear time
+  Set operations
+    All in O(h) time, except for build and iterate which take nlogn and n respectively
+  Goal is to bound h by logn
+  We know it's possible, perfect trees with logn height exist
+    But bad trees like chain are also possible
+  If h = O(lgn): balanced binary tree
+    There are many in the world, maybe one or two dozen
+  We need a new tool for manipulating a tree
+    A rotation
+      This is *just* a tool for rebalancing tree
+      Does not change data represented by tree - traversal order
+      Right rotate(y) / Left rotate(x) (reverse)
+            y             x
+          /  \           / \
+         x    C   ->    A   y
+        / \                / \
+       A   B              B   C
+
+      x and y are switching places, parent changes
+      x was in the left subtree of y
+      now y is in the right subtree of x
+      Consistent traversal order
+        A, x, B, y, C
+      Notice that depth in tree changes, A moves up and C moves down
+    Sounds tough
+      But fairly simple way - AVL trees - height balance
+AVL trees
+  Height balance:
+    height(node.right - node.left)
+      "skew" of node, need to always be in {-1, 0, 1}
+      Ideally equal, but let differ by 1
+  First claim
+    Height balanced -> Balanced
+    Height balance implies h = O(logn)
+    Think about least balanced height balanced tree
+      Every node has a skew of 1
+      Arrow pointing to right, which is taller
+      Fewest nodes for maximum depth
+      Let's count nodes in tree - write recurrence
+        Minimum number of nodes in height-balanced tree
+    Nh = N(h - 1) + N(h - 2) + 1
+      Looks like fibonacci numbers
+      If Nh exponential in h, h is logarithmic in n
+      But another proof
+    Nh = N(h - 1) + N(h - 2) + 1
+    Nh > N(h - 2) + N(h - 2)
+       = 2N(h - 2)
+       = 2^(h / 2)
+    So
+      h <= 2lg(n)
+  How do we maintain height balance using rotation
+    Subtree augmentation lets you store height
+    node.height = 1 + max{node.left.height, node.right.height}
+    Need to update subtree properties on rotation btw
+      In picture above - update x and y and ancestors of x
+        Don't need to update A/B/C subtrees
+      Takes constant time locally
+        But will need to update h ancestors to keep augmentations up to date
+    Now from height, compute skew
+    Only way we change is when insert/delete node
+      Check up ancestor path once again - logn of them
+      Find any that are out of balance
+    Consider lowest unbalanced node x
+      Only out of balance by one, because only inserted or deleted a single node
+        skew in {+2, -2}, say 2
+        rotate
+          works most of the time
+
+          x
+         / \
+        A   y
+           / \
+          B   C
+
+      x = 2 and
+      Case 1 (easy):
+        skew(y) = 1
+        A = k - 1
+        B = k - 1
+        C = k
+        rotate left:
+        A = k - 1
+        B = k - 1
+        C = k
+        x = k
+        y = k + 1
+        everything perfectly balanced
+      Case 2 (easy):
+        skew(y) = 0
+        A = k - 1
+        B = k
+        C = k
+        rotate left:
+        x = k + 1
+        y = k + 2
+      Case 3 (harder):
+        skew(y) = -1
+          x
+         / \
+        A   z
+           / \
+          y   D
+         / \
+        B   C
+
+        A = k - 1
+        B = k - 1 or k - 2
+        C = k - 1 or k - 2
+        D = k - 1
+        y = k
+        x = k + 1
+        z = k + 2
+      In this case a left rotation makes things worse
+      But what you need to do is right_rotate(Z), left_rotate(X)
+           y
+         /   \
+        x     z
+       / \   / \
+      A   B C   D
+
+      Now need to check the parent - maybe the parent is out of balance
+      Keep walking up
+      After order h operations, have restored height balanced property
+      So all operations O(logn)
+
+Recitation
+  Many ways to keep a tree balanced under insertions and deletions
+    Red-Black Trees, B-Trees, 2-3 Trees, Splay Trees
+  Oldest & probably simplest - AVL tree
+    Every node is height-balanced  - left and right subtrees of a node differ in height by 1 at most
+    "Skew"
+      height of right subtree - height of left subtree
+    Node height balanced: skew in {-1, 0, 1}
+    A tree is height balanced if every node is height-balanced
+  Implications of balance
+    h = O(logn)
+      logn lower bounded by omega(h)
+      so that n = 2^omega(h)
+    Let F(h) denote fewest nodes in any height-balanced tree of height h
+    F(h) = 1 + F(h - 1) + F(h - 2) >= 2F(h - 2)
+    Base case
+      Height 0  F(0) = 1
+      Height 1  F(1) = 2
+      Recurrence lower bounded by F(h) >= 2^(h / 2) = 2^omega(h)
+  Rotations
+    As we add or remove nodes, tree may become imbalanced
+  To rebalance tree
+    Walk from add/removed node leaf to root rebalancing along the way
+    At most O(logn) rotations in total
+  Unfortunately, not clear how to efficiently evaluate skew of node
+    Computing height naively takes time linear in the size of the subtree
+    Each node stores and maitains the value of its own subtree height
+  (Added balancing code)
+  Application: Set
+    build(X) = O(nlogn) time
+    iter() = O(n)
+    Normally called "AVL tree", we will call it "Set AVL"
+  Application Sequence
+    Use the traversal order of the tree to store items in sequence order
+    Augment each node in the tree with the size of its subtree
+      Node size computed in constant time given sizes of children by summing and adding 1

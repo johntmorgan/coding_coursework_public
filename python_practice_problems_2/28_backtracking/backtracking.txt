@@ -1,0 +1,27 @@
+Backtracking
+  Explore multiple paths to find solution
+  Different from recursion
+    Tries to explore all possible paths
+    If criteria are met, keep going
+    If not, backtrack and explore another path
+  Better than brute force
+    Don't have to generate all possible solutions
+
+Pattern
+  Yes
+    All paths must be explored constructing solution
+    Consider all feasible solutions, cannot ignore one
+    Compile list of all feasible solutions
+  No
+    Don't need to check some remaining possibilities
+      Can eliminate some early
+
+Real world
+  Constraint satisfaction
+    Sudoku
+  Recursive descent parsers - compilers
+    Take path through grammar
+    Reach point where tokens do not match grammar
+    Backtrack to point where another path through grammar
+    Accept construct when find grammar path
+    If no path found, show syntax error

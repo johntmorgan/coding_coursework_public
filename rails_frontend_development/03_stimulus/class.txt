@@ -1,0 +1,40 @@
+Stimulus has class
+  So far have been hard-coding is-hidden inside controller
+    Fine for a single short class name
+    Better practice to not couple class name to controller
+      Specify exact CSS class only in the view
+      Stimulus 2.0 does this
+  Store class name as special data attribute
+    data-<controllerName>-<descriptor>-class
+
+  <section
+       id="day-body-<%= schedule_day.day.by_example("2006-01-02") %>"
+       data-controller="day-toggle"
+       data-day-toggle-hidden-class="is-hidden">
+
+  import { Controller } from "stimulus"
+
+  export default class DayToggleController extends Controller {
+    static classes = ["hidden"]
+    static targets = ["thingToHide"]
+
+    hiddenClass: string
+    thingToHideTarget: HTMLElement
+
+    toggle() {
+      this.thingToHideTarget.classList.toggle(this.hiddenClass)
+    }
+  }
+
+  // Class attributes are usually declared with their associated controller
+  // Classes need to be declared in a static variable array of strings classes
+    Creates classNameClass and hasClassNameClass properties
+  Why do this? Code is a bit more complex
+    Decoupled from CSS name
+      Don't have to change code with CSS name
+      Harder to have a bug
+    CSS name now in view
+      Designers don't have to look at JS
+      Controlled by Rails
+      Easier to have a dynamic name
+        Say for internationalization

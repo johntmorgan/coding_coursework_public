@@ -1,0 +1,139 @@
+SIGNAL and RESIGNAL
+  How to return an error to a handler or a client app
+  Chose which attributes - error number, message text - to return
+  Provides a way to handle unexpected events that lead to app termination
+  SIGNAL followed by SQLSTATE val or named condition defined with SQLSTATE val
+    Cannot be associated with a MySQL error code
+    SQLSTATE 45000 is generic - catch any unhandled user defined exceptions
+  SET clause to return info about error
+    Lots of diagnostic information (copy paste)
+      MYSQL_ERRNO, MESSAGE_TEXT, CLASS_ORIGIN, SUBCLASS_ORIGIN,
+      CONSTRAINT_CATALOG, CONSTRAINT_SCHEMA, CONSTRAINT_NAME,
+      CATALOG_NAME, SCHEMA_NAME, TABLE_NAME, COLUMN_NAME, and CURSOR_NAME
+
+RESIGNAL
+  Similar to SIGNAL
+  Raise errors and warnings
+  Passes on info about error to handler
+  SQLSTATE value and SET clause are optional
+  RESIGNAL can be used alone
+    Just passes error withot modifying error info
+  When SET clause used, modifies error attrbiutes
+  Can only be used within scope of condition handler
+    SIGNAL can be used anywhere
+
+Example
+  // AddActor procedure adds actor while checking if data valid
+  // SIGNAL used to raise error if age or net worth invalid
+
+  DELIMITER **
+
+  CREATE PROCEDURE AddActor(
+                IN Name1 VARCHAR(20),
+                IN Name2 VARCHAR(20),
+                IN Birthday DATE,
+                IN networth INT )
+  BEGIN
+   DECLARE age INT DEFAULT 0;
+   SELECT TIMESTAMPDIFF (YEAR, Birthday, CURDATE())
+   INTO age;
+
+   IF(age < 1) THEN
+       SIGNAL SQLSTATE '45000'
+       SET MESSAGE_TEXT = 'Incorrect DoB value. Age cannot be zero or less than zero';
+   END IF;
+
+   IF(networth < 1) THEN
+       SIGNAL SQLSTATE '45000'
+           SET MESSAGE_TEXT = 'Incorrect NetWorth value. Net worth cannot be zero or less than zero';
+   END IF;
+
+   -- If all ok then INSERT a row in the Actors table
+   INSERT INTO Actors (FirstName, SecondName, Dob, NetWorthInMillions)
+   VALUES(Name1, Name2, Birthday, networth);
+
+  END **
+  DELIMITER ;
+
+  CALL AddActor('Jackson','Samuel','2020-12-21', 250);
+  CALL AddActor('Jackson','Samuel','1948-12-21', 0);
+    > ERROR 1644 (45000): Incorrect NetWorth value. Net worth cannot be zero or less than zero
+  CALL AddActor('Jackson','Samuel','2024-12-21', 250);
+    > ERROR 1644 (45000): Incorrect DoB value. Age cannot be zero or less than zero
+
+  // Now let's see RESIGNAL, with an error handler
+  // Just passes along error as-is
+  DROP PROCEDURE AddActor;
+
+  DELIMITER **
+  CREATE PROCEDURE AddActor(
+             IN Name1 VARCHAR(20),
+             IN Name2 VARCHAR(20),
+             IN Birthday DATE,
+             IN networth INT)
+  BEGIN
+   DECLARE age INT DEFAULT 0;
+   DECLARE InvalidValue CONDITION FOR SQLSTATE '45000';
+
+   DECLARE CONTINUE HANDLER FOR InvalidValue
+   IF age < 1 THEN
+       RESIGNAL;
+   ELSEIF networth < 1 THEN
+       RESIGNAL;
+   END IF;
+
+   SELECT TIMESTAMPDIFF (YEAR, Birthday, CURDATE())
+   INTO age;
+
+   IF age < 1 THEN
+       SIGNAL InvalidValue;
+   ELSEIF networth < 1 THEN
+       SIGNAL InvalidValue;
+   ELSE
+       INSERT INTO Actors (FirstName, SecondName, Dob, NetWorthInMillions)
+       VALUES(Name1, Name2, Birthday, networth);
+   END IF;
+  END **
+
+  DELIMITER ;
+
+  CALL AddActor('Jackson','Samuel','1948-12-21',0);
+  > ERROR 1644 (45000): Unhandled user-defined exception condition
+
+  // Now let's modify to set message text
+  DROP PROCEDURE AddActor;
+
+  DELIMITER **
+  CREATE PROCEDURE AddActor(
+           IN Name1 varchar(20),
+           IN Name2 varchar(20),
+           IN Birthday date,
+           IN networth int )
+  BEGIN
+   DECLARE age INT DEFAULT 0;
+   DECLARE InvalidValue CONDITION FOR SQLSTATE '45000';
+
+   DECLARE CONTINUE HANDLER FOR InvalidValue
+       IF age < 1 THEN
+           RESIGNAL SET MESSAGE_TEXT = 'Incorrect DoB value. Age cannot be zero or less than zero';
+       ELSEIF networth < 1 THEN
+           RESIGNAL SET MESSAGE_TEXT = 'Incorrect NetWorth value. Net worth cannot be zero or less than zero';
+       END IF;
+
+   SELECT TIMESTAMPDIFF (YEAR, Birthday, CURDATE())
+   INTO age;
+
+   IF age < 1 THEN
+       SIGNAL InvalidValue;
+   ELSEIF networth < 1 THEN
+       SIGNAL InvalidValue;
+   ELSE
+       INSERT INTO Actors (FirstName, SecondName, Dob, NetWorthInMillions)
+       VALUES(Name1, Name2, Birthday, networth);
+   END IF;
+
+  END **
+  DELIMITER ;
+
+  CALL AddActor('Jackson','Samuel','1948-12-21', 0);
+  > ERROR 1644 (45000): Incorrect NetWorth value. Net worth cannot be zero or less than zero

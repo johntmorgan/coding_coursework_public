@@ -1,0 +1,12 @@
+Updating data
+
+  // Set for ALL actors
+  UPDATE Actors SET NetWorthInMillions=1;
+
+  // Mix with ORDER BY, LIMIT
+  UPDATE Actors SET NetWorthInMillions=5 ORDER BY FirstName LIMIT 3;
+  // Run it again - 0 rows changed
+
+  // Update multiple columns
+
+  UPDATE Actors SET NetWorthInMillions=50, MaritalStatus="Single";

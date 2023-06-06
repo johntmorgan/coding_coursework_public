@@ -1,0 +1,188 @@
+Systems Design Interviews
+  Rarely any coding
+  Much higher level of abstraction
+    Figure out requirements
+      Map them onto computational components
+      High-level communication protocols to connect systems
+    Final answer doesn't matter
+      About the process and journey you take the interviewer through
+  More aligned with tasks on your job than coding problems
+  How to tackle question?
+    Open ended, intentionally vague to start with
+      Reality of modern day business
+    Often ask about well-known problem
+      Say design WhatsApp
+    Real WhatsApp has numerous features
+      But limited time during interview
+        Work with core functionalities to show problem-solving skills
+    Tell interviewer many things a real WhatsApp does we don't intend to include
+      Add if objections
+  Framework
+    Solidify requirements
+      Ask questions!
+    Scope problem
+      Need to make a good attempt at solving within time frame
+      Interviews usually 35-40 minutes long
+    Engage interviewer
+      Do not work on design silently
+      Make sure they understand thought process
+  High-level design
+    Components could be
+      Frontend, load balancers, caches, data processing etc.
+      System design tells how components fit together
+    Arch design often represents components as boxes
+      Arrows reflect who talks to whom
+      Draw diagram and present to interviewer
+  Often questions how to evolve design over time as some aspect increases by order of magnitude
+    # of users
+    # queries per second
+    etc.
+    Design often needs to change with 10x or more change in system aspect
+      Designs often don't linearly scale
+    Also: why not design a system already capable of handling more work than predicted
+      (Usually because it costs too much money)
+  Design evolution of Google
+    Early may seem simple today
+    But was quite sophisticated for time
+      Kept costs down, Google afloat
+    Whatever do as designers has big business & customer implications
+  Design challenges
+    Things change, things break over time
+    No single correct approach or solution
+    A lot is predicated on assumptions
+  Designer responsibility
+    Fault tolerance
+      Almost all modern systems use off the shelf components
+        Millions of components
+        Something will always be breaking, hide from customers
+  Who gets a system design interview?
+    Mid-to-senior candidates with 2+ YOE
+      Senior 2-3 interviews
+    Recently more to junior candidates
+  Theory
+    From domain of distributed systems
+  Distributed systems
+    Guideposts for mature software principles
+      Robustness - maintain ops during crisis
+      Scalability
+      Availability
+      Performance
+      Extensibility
+      Resiliency
+    Lingua franca between interviewer and candidate
+      e.g. tradeoff between availability and consistency when components fail
+        CAP theorem indicates can't have both under network partitions
+        Such common language shows well versed in both theory and practice
+
+  Preparing for success
+    Substantial preparation necessary
+    For an average candidate might need 3-4 months to prepare
+    This course
+      Learn or brush up on system design skills
+      Traditional problems
+      Fresh design problems
+    Technical blogs - keep up with them
+      Excite community about hard problems being solved
+      Motivate people to join company
+      Advertise products to B2B consumers
+      Train potential workers on their own time
+      Fine line between what is held back for competitive edge and what is public
+    Keep up with technical blogs
+      (Copied over to to_learn.txt - JM)
+      Always take non-peer reviewed material with a grain of salt
+        Think critically, discuss with peers
+    Ask why a system works
+      Learn how popular apps work at a high level
+        Insta
+        Twitter
+        etc
+      Start to understand and ask why some component was used instead of another
+        Firebase vs SQL
+      Build serious side projects
+        Start with simple product, improve and refine
+        Build system from scratch, get familiar with all processes and details of construction
+        Clone popular application without tutorials
+    Right direction
+      Do not go too deep into the trenches
+      Focus less on mechanics, more on tradeoffs
+        Discussing Room library instead of raw SQLite not helpful
+          Room is a mere wrapper around SQLite
+        Instead MySQL etc. vs NoSQL stores like MongoDB
+          Pinpoint tradeoffs
+    Start high level
+      Low-level details automatically come up
+    Mock interviews
+      Pair up with a friend and allow them to ask questions
+      If not possible to use friend, record yourself, both interview and interviewee
+    Take interviews
+      Can evaluate quickly after an interview or two
+      What went right, what didn't
+
+  Performing well
+    Make an effort to avoid looking unoriginal
+      Interviewer has asked same question to many candidates
+      Reproducing run-of-the-mill design might not be impressive
+    Have a plan to attack the problem
+      Strategize, then divide and conquer
+      Ask refining questions
+      Handle the data
+      Discuss the components
+      Discuss the tradeoffs
+    Refining questions
+      Understand design problem and requirements
+      Put on product manager hat and prioritize main features
+        Ask refining questions
+        Go on a journey with interviewer about why design is good
+        Can you logically derive a system out of vague requirements?
+      Ensure solving right problem
+        Divide requirements into two groups
+          Client needs directly - send messages in real-time to friends
+          Indirect requirements - message service performance shouldn't degrade with increased load
+          "Functional and non-functional requirements"
+    Handle data
+      What's the size of the data right now?
+      At what rate will it grow over time?
+      How will it be consumed by other subsystems or end users?
+      Is it read-heavy or write-heavy?
+      Do we need strict data consistency, or will eventual consistency work?
+      What's the durability target of the data?
+      What privacy and regulatory requirements are there for storing/transmitting
+      At some level job perceived as figuring out which components to use
+        Where placed, and how will interact with each other
+    Discuss components
+      At some level - which components to use, where placed, how interact
+      Ex. database - conventional work, or NoSQL?
+      Might have a strong argument for NoSQL, but what if interviewer requires MySQL?
+        Harder job, do extra work to alleviate shortcomings
+          May wind up inventing new component
+          Good chance to show design skills
+      Often abstract away components as boxes
+      May need to design user-facing APIs at high level to understand data and interaction reqs
+        Not just boxes and arrows abstraction
+      Ex.
+        Front-end components
+        Load balancers
+        Caches
+        Databases
+        Firewalls
+        CDNs
+    Discuss trade-offs
+      Remember no one correct answer
+      Different pros and cons, weigh what works for us
+      Different costs in terms of money and technical complexity
+      Every design has weaknesses
+      Point out weaknesses, explain why haven't tackled yet
+        Say can't handle 10x load, but don't expect to get there soon
+          Monitoring system to keep eye on load growth
+          Intentional weakness to reduce system cost
+      Something is always failing in a big system
+        Integrate fault tolerance and security into design
+    Do not:
+      Write code
+      Start building without a plan
+      Work in silence
+      Describe numbers without reason - frame the problem
+      Don't paper over something you don't know
+        Don't pretend to know it
+        If asked to design a system you haven't heard of, just be honest and tell them
+          Will likely either explain or change the question

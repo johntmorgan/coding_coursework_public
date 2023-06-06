@@ -1,0 +1,113 @@
+Proof by cases
+  Break into cases, prove each separately
+  People have met or not
+    If every pair has met: club
+    If every pair has not met: strangers
+  Theorem:
+    Every collection of 6 people includes a club of 3 or group of 3 strangers
+    Let x denote one of the six people
+      Either at least 3/5 others have met or 3/5 have not
+    Suppose 3/5 did meet
+      None of those 3 have met? All stranger
+      At least one pair has met? Club with x
+    Suppose 3/5 did not meet
+      Every pair met - they are a club
+      Some pair did not meet - Stranger collection with x
+
+Proof by contradiction
+  Always viable, but slightly convoluted
+  If false, then some false fact true
+  Let's prove sqrt(2) is irrational
+  Suppose claim is false, and sqrt(2) is rational
+    Then sqrt2 = n/d fraction
+             2 = n^2 / d^2
+             2d^2 = n^2
+             Implies n is a multiple of 2
+             Therefore n^2 is a multiple of 4
+             But since 2d^2 = n^2
+             We know 2d^2 is a multiple of 4
+             So d^2 is a multiple of 2
+             n and d have 2 as a common factor
+             n/d is not in lowest terms
+             sqrt(2) must be irrational
+
+Good proofs in practice
+  Notion of proof is a moving target
+  Proofs in pro research are unintelligible to all but a few experts
+    Who know all terminology and prior results
+  Proofs in this class "tediously long-winded" to pro mathematician
+    What constitutes a good proof later in course will even change
+  Write an essay with equations here and there
+    Not just lots of equations in a row
+    Avoid excessive symbolism
+  Be wary of "obvious"
+
+Lecture
+  Proof by contradiction
+    May be so intuitive you don't even realize you've use it
+    Is cubert(1332) <= 11
+    Let's suppose this is true
+    Cube both sides
+      1332 <= 11^3
+      1332 <= 1331 ?
+      Not true
+      So original assumption is not true
+      cubrt(1332) > 11
+      Without ever calculating cube root
+    If assertion implies something false
+      Assertion itself must be false
+  Theorem
+    sqrt(2) is irrational
+    Suppose it's rational
+    n and d without common prime factors
+    Such that sqrt(2) = n / d
+    Show n and d are both even, common factor 2
+    dsqrt(2) = n
+    2d^2  = n^2
+    Left side is divisible by 2
+      n must be even
+    n = 2k (we don't care what k is)
+    n^2 = 4k^2
+    2d^2 = 4k^2
+    d^2 = 2k^2
+      d must be even
+      QED
+  Proof assumes if n^2 is even, n is even
+  Why is this true
+    Let's assume product of 2 odd numbers is odd
+    Numbers factor into primes in an unique way
+    If there's a 2 among the primes that divise n^2
+    Powerful fact - prime factorizaton of integers
+  Proof by cases
+    Break it up into pieces that are easy to prove
+    Java logical expressions
+    Conditional guard on a bunch of code
+    x & y floating point real numbers (or integers)
+    if ((x > 0) || (x <= 0 && y > 10))
+    Same thing as:
+    if (x > 0 || y > 100)
+    How to prove:
+      If x is positive
+        Whole top expression is true
+        Whole bottom expression is true
+      If x <= 0
+        Ignore the first part entirely
+        Top case
+          x <= 0 && y > 100
+          But we already know x <= 0
+          So depends entirely on &&
+          So y > 100
+    Break complicated subproblems into easier subproblems
+      Chose different x cases
+      Some philosophers (intuitionists)
+        Think reasoning this way is worrisome
+      $1m Clay Institute question
+        One of a dozen
+        Computational complexity theory
+        P = NP?
+        P stands for polynomial time
+        NP stands for non-deterministic polynomial time
+        Everyone expects not equal
+          Do not know how to prove
+      Claim answer is on lecture table
+        And will show it tomorrow

@@ -1,0 +1,41 @@
+Nested Column Queries
+  When nested query returns values belonging to same column
+
+  // List social media accounts for all actors except personal websites
+    // A bit contrived, just go with it
+  // Subquery returns all the enum values for column
+  // ANY operator allows match with any value returned for column AssetType
+  SELECT * FROM Actors
+  INNER JOIN DigitalAssets ON ActorId=Id
+  WHERE AssetType = ANY (SELECT DISTINCT AssetType
+                         FROM DigitalAssets
+                         WHERE AssetType != 'Website');
+
+  // Simpler approach for same result
+  // But it was a good demo of a nested column query
+  SELECT * FROM Actors
+  INNER JOIN DigitalAssets ON ActorId=Id
+  WHERE AssetType != 'Website';
+
+  // Find the names of all actors that have a FB presence
+  SELECT FirstName, SecondName
+  FROM Actors
+  WHERE Id = ANY (SELECT ActorId
+                  FROM DigitalAssets
+                  WHERE AssetType = 'Facebook');
+
+  // IN clause may be used interchangeably to rewrite
+  SELECT FirstName, SecondName
+  FROM Actors
+  WHERE Id IN (SELECT ActorId
+               FROM DigitalAssets
+               WHERE AssetType = 'Facebook');
+
+  // Operator ANY, and alias IN, match at least one value from a group of values
+  // Operator ALL must match all values in group
+  // In this example, net worth must be higher than all actors with names beginning with j
+  SELECT FirstName, SecondName
+  FROM Actors
+  WHERE NetworthInMillions > ALL (SELECT NetworthInMillions
+                                  FROM Actors
+                                  WHERE FirstName LIKE "j%");

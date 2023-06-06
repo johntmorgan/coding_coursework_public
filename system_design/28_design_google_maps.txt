@@ -1,0 +1,353 @@
+Google Maps
+What is it?
+  Map application
+    Also Apple Maps
+  Travel from one place to another
+    Best possible paths depending on vehicle
+    How long is each path?
+    How much time does each path take to get to destination?
+
+When do we use?
+  Individuals and orgs
+  Navigate around world
+  Find locations and directions to new places quickly
+    Do not waste time
+    Do not waste money
+    Do not waste gas
+  See ETA
+  See shortest path given current traffic
+  Other apps use it
+    Ride-hailing
+      Uber
+    Waymo self-driving car
+    Hiking maps
+  Routing & logistics companies
+    Save delivery time & gas cost
+  More than 5m buisnesses use Google Maps
+    API for enterprises to use in application
+
+Requirements
+  Let's pick a few key features
+  Functional
+    Identify current location
+    Recommend fastest route to destination
+      By transportation type
+    Give directions
+      List in text format
+
+  Non-functional
+    Availability
+    Scalability
+      Both individuals and orgs like Uber/Lyft use
+    Low response time
+      2-3s to calculate ETA, route tops
+    Accuracy
+      Be fairly accurate with ETA
+
+  How do we get data on roads and layout
+    Government agencies provide
+    Google drives mapping vehicles
+    Modeled with graph data structure
+      Intersections = vertices
+      Roads = weighted edges
+    Not going to get super detailed though
+
+Challenges
+  Scalability
+    Millions of queries per second
+    Graph has billions of nodes & edges over 194 countries
+    Dijkstra does not scale well
+      Any path-finding algorithm is inefficient
+  ETA computation
+    Easy with empty roads - distance + vehicle speed
+    Categorize factors in terms of traffic load
+
+Resource estimation
+  Servers
+    32m DAU
+    1b MAU
+    8000 server rps
+    -> 4k servers required
+  Storage
+    One-time storage
+    20 PB as of 2022
+    Minimal changes daily
+  Bandwidth
+    Incoming
+      50 requests per user/day
+      200 Byte request size
+      18.5k requests/second - 32m * 50 / 86400 (seconds/day)
+      29.6 Mb/s bandwidth 
+        (18.5k * 200 * 8 - don't forget x8 for bytes to bits conversion here)
+    Outgoing
+      18.5k requests/second
+      2005 KB response size
+        2 MB visual
+        5 KB textual
+      297.03 GB/s
+    Total
+      297.03 Gbps
+
+Building blocks
+  Load balancers
+  Databases
+  Distributed search
+    Search places on map
+  Pub-sub system
+    Respond to events during navigation
+  Key-value store
+    Metadata info
+
+High-level design
+  Components
+    Location finder
+      For user's current location
+      Show on map
+    Route finder
+      Find path between two locations
+    Navigator
+      If user deviates from path
+      Track user journey
+      Send updated directions and notifications
+    GPS/Wifi/cellular
+      Find user's ground position
+    Distributed search
+      Convert place names to long/lat values
+        Maintains index
+    Area search
+      Coordinates distributed search, graph processing to find shortest path
+    Graph processing
+      Shortest path on shorter graph based on area spanning source and destination
+    Database
+      Have road data stored as graph
+      Use a graph database like DataStax Graph
+    Pub-sub
+      Listen to events from service, trigger accordingly
+        When user deviates from suggested path
+      Collect streams of location data
+        Used to find traffic patterns
+      Use Kafka for pub-sub
+    Third-party road data
+      Collcted and preprocess into single format to build graph
+    Graph building
+      Build graph from data
+    User
+    Load balancer
+
+Workflow
+  User needs to travel between destinations
+  Let's assume data has already been collected, graph built & stored
+  Enter starting point
+    Current location service
+  Location finder maintains persistent connection with user
+    Provide location using GPS, Wi-Fi, cellular tech
+  For destination, type in text
+    Use Typeahead to provide suggestions, prevent mistakes
+  After source & destination, path requested
+  Route finder forwards to area search service
+  Area search uses distributed search
+    Find lat/long for source & destination
+    Calculates area on map spanning the two points
+  Area search asks graph proc to process part of graph
+  Graph proc fetches edges and nodes within specified area
+    Finds shortest path
+    Returns to route-finder
+  Route-finder visualizes path
+    Displays steps to follow for navigation
+  Direction request handled by nvigator
+  Navigator tracks path being followed
+    Updates user location on map while moving
+    Shows where to turn with distance
+    If user deviates from path, event to Kafka
+  If navigator event to Kafka
+    Update subscribed topic of area search service
+    Area search recalculates path, suggests to user
+  Navigator provides live location to graph, building through pub-sub
+
+API design
+  currLocation(location)
+  findRoute(source, destination, transport_type)
+    Source, destination in text format
+    Default transport = car
+  directions(curr_location, steps)
+
+Challenges
+  Scalability
+    How to process huge road network graph
+      Billions of vertices and edges
+    Need efficient
+      Loading
+      Updating
+      Performing computations
+    Basic idea
+      Break down large graph into smaller subgraphs/partitions
+      Process subgraphs in parallel
+      Divide globe into small parts "segments"
+        Segment -> subgraph
+    Segment
+      Small area on which work is easy
+        Easy to load, update, traverse
+      Ex. divide city into hundreds of segments
+        5 x 5 miles in size
+      Segments can be polygons, not just squares
+        But let's assume squares for ease of explanation
+      Four coordinates
+        Latitude and longitude at each corner
+      Path-finding within segment
+        Intersection = vertex
+        Road = edge
+        Graph is weighted
+          Distance
+          Time
+          Traffic
+        Dijkstra's algorithm for shortest paths most common
+          But need to limit query time
+          A* is extension of Dijkstra
+            Uses heuristics to guide search
+            Minimize f(n) = g(n) + h(n)
+            g(n) is the cost from start to n
+            h(n) is heuristic estimating cheapest from n to goal
+          Algorithms specifically design for road maps to be fast
+            Arc flags
+            Contraction hierarchies
+            Transit node routing
+            Reach-based routing
+            Hub labeling
+      After running shortest paths
+        Store output in distributed storage
+          Cache most requested routes
+        Output is shortest distance in meters/miles between every two vertices on graph
+          Time via shortest path
+          List of vertices on shortest path
+        All above processing done offline
+          Not on user critical path
+      What if points are on edges (middle of street)?
+        Find vertices of edges where points lie
+        Calc distance of point from identified vertices
+          Approx from lat/lng
+        Choose vertices to minimize distance to intermediate point
+    Multiple segments
+      Each segment has unique name and boundary coords
+        Easy to find which location in which segment
+      Each segment has boundary edges "exit points"
+        Consider exit points as vertices in segment and calc shortest path
+        Exit point connects neighboring segments and is shared
+      Figure out how many segments need to connect
+        Aerial distance used to limit number of sgments
+          Find using haversine formula
+            Great-circle distance between two points on a sphere
+            Special case of more general formula in spherical trigonometry
+        Say source -> destination = 10km
+          Include segments 10 km from source and destination in each direction
+            Improvement from large graph
+      Once segments limited
+        Constrain graph so vertices are exit points of each segment
+        Now run shortest path to find route
+    To summarize
+      Divide problem up so work on parts of network instead of whole
+      Queries for road network processed in parts
+        In just one area? Just use that area
+        Need multiple parts? Connect multiple parts
+
+  ETA computation
+    Collect live location data from navigation via pub-sub
+    With location data streams, calculate and predict traffic patterns
+      Calc high/mid/low traffic
+      Average speed on different roads
+      Time interval during which pattern repeats
+
+Detailed design
+  Setment setup & request handling
+    Key-value store
+      Segment ID
+      serverID on which segment hosted
+      Store boundary coordinates, possibly as list
+      List of segment IDs of neighbor segments
+    Graph database
+      Road network inside segment
+    Relational database
+      Determine whether roads are congested at time of day
+        Should graph weights update based on live data?
+      edgeID
+      hourRange
+        When typical conditions on road
+      rush
+        Does road experience rush at some time
+  Add segment
+    Each segment has lat/long boundary coords and graph of road network
+    Segment adder adds segment & info
+      Assign unique ID with unique ID generator system
+    After assigning ID, forward to server allocator
+    Server allocator assigns server to segment
+      Hosts segment on server
+      Returns serverID to segment adder
+    Segment adder stores segment to server mapping in key-value store
+      Also stores segment to lat/lng coords in a separate key-value object
+  Handle request
+    User provides source and destination
+    Lat and lng of source and destination determined through dist search
+    Lat/lng passed to graph processing
+    Graph processing finds segments with source and lat/lng from key-value store
+      Then finds servers
+    Connects to relevant servers to find shortest path between source and destination
+      If within segment, just run query there
+      Otherwise, connect segments from different servers
+  Improve estimations with live data
+    Use GPS, Wifi, and cell towers to track user locations
+    Maps servers have persistent connection with all devices with location turned on
+    WebSocket
+      Two-way interactive communication session user/server
+        Real-time data transfer between user and server
+    Load balancer
+      Balances between server
+      WebSockets are heavy, limit on number of connections
+    Pub-sub system collects location data streams from all servers
+      Read by data analytics engine like Apache Spark
+    Data analytics engine uses data science techniques
+      ML, clustering, etc.
+      Measure and predict traffic on roads
+      Identify gatherings, hotspots, events, etc.
+      Find new roads
+    Data analytics engine publishes analytics data to pub-sub topic
+    Map update service listens to pub-sub topic for analytics
+      Updates segment graphs if new road or change in weight
+      Know segment update belongs to
+        Find routing server from key-value store and update there
+          (And I assume distances between exit points are then recalculated - JM)
+    Graph preprocessing
+      Recalcualtes new paths on updated segment data
+    Not practical to update, say, when user stops at a light
+      Keep two copies of data: normal and transitory conditions
+
+Evaluation
+  Availability
+    Large network graph on single server bad
+      Too big to load into memory
+      Can't handle two-way connections
+      SPOF
+    Divided the world into small segments on different servers
+    Segments easily loaded into server memory
+    Load balancer distributes request across segment servers
+      Can replicate each segment
+    Google maps uses lazy loading of data to reduce burden on system
+      Reduce amount of content to load
+      Only deliver to users when needed, saving bandwidth
+      Save client & server resources by only rendering some content
+  Scalability
+    Need to handle more user requests
+    Need to handle more data (segments)
+      Easy to add, don't have to change whole graph
+      Can easily change segment size - large in rural areas, small in dense urban areas
+  Fast response times
+    Run user requests on small subgraphs
+      Hundreds of vertices, not bad
+    Cache processed subgraph in memory and quickly respond to user requests
+    Keep segment info in key-value store, services can get quickly
+      Graph-processing gets segments for source/dest lat/lng
+      To load balance user requests
+        Key-value store queried for serverID
+  Accuracy
+    Capture live location data of users
+    Perform analytics using data science techs
+    Improve path, ETA based on these analytics
+      Update maps, ETA estimations

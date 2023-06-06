@@ -1,0 +1,54 @@
+Selection sort
+  Arrays & linked lists
+  First sorting algorithm
+    Remember you need a sorted list for binary search
+  How memory works
+    Think of drawers holding different objects for you
+    Each drawer has an address
+  Say you want to store a todo list
+    Arrays
+      One item in each slot, all next to each other
+      Say you hit a spot taken by something else
+        Have to move everything
+      You can "hold seats" in advance
+        Allocate extra space at the start
+        But you may wind up wasting "seats"
+    Linked lists solve this problem
+      Items can be anywhere in memory
+      Each item stores the address of the next
+      Adding is easy
+        Stick it anywhere in memory and store the address at the end of the (previous) last item
+      Never move items
+      So linked lists are generally much better at inserts
+    Why use arrays
+      Because you have to go through every element to find items later in the list
+      Linked lists are great if you want to read everything one item at a time
+      But if you're going to keep jumping around, terrible
+      Arrays can tell you based on simple math
+    Arrays start at 0
+      Make all kinds of array-based code easier to write
+      Almost every programming language does this (not Matlab lol - JM)
+      Position = index
+    Generally
+      Arrays read in O(1), insert in O(n)
+      Lists insert in O(1), read in O(n)
+    Inserting in middle?
+      Easier with a list, because you don't have to shift
+        (But you have to read down the list to find the position... JM)
+    Deleting
+      Easier with a list
+        Just change what the previous element points to
+        Have to shift again
+      Insertions can fail sometimes if there's no memory left
+        Deletions will always work
+      But note that insertion/deletion are O(1) only if you have access to the element (yep)
+      Linked lists usually keep head and tail pointers
+    What gets used more?
+      Arrays get used a lot because they allow random access
+      Linked lists can ONLY do sequential access
+      And a LOT of cases require random access
+      And we'll talk about arrays and lists as the basis for ADTs later
+  Selection sort
+    Go through list, find the most played artist, pull out and put at start of new list
+    Doing an O(n) search n times
+    So it's O(n^2) (even though on average you only go through half the list)

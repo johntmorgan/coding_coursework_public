@@ -1,0 +1,78 @@
+Callback functions
+  Callback functions are functions called after async event ends
+    Added to callback queue when event ends
+    Can use data from async events
+    But main goal is to carry out tasks that should be done after event ends
+
+Async functions and callbacks
+  setTimeout adds delays to tasks that need to be done after a certain time period
+
+    setTimeout(callbackfn, time);
+
+  setTimeout async called for time ms
+    Queues callbackfn function after time ms for the event loop to handle
+
+    setTimeout(function(){
+        console.log('setTimeout called for 4 seconds');
+    }, 4000); // 4000 = 4 seconds of idle time
+
+    setTimeout(function(){
+        console.log('setTimeout called for 2 seconds');
+    }, 2000); // 2000 = 2 seconds of idle time
+
+    console.log('All functions called.');
+
+  In the example above, setTimeout passed callback function as first argument
+    Passed the time after callback function invoked as second argument
+  Program was never blocked
+
+Interacting with files
+  Use fs module to interact async
+
+  fs.readFile(dir[,options], callbackfn)
+
+  callback function invoked after read completes
+
+  const fs = require('fs'); // import fs module
+  fs.readFile('sample.txt', 'utf8', function(err, data){
+      if(err === null){ // error check
+          console.log('File content:');
+          console.log(data);  // print file data
+      } else{
+          console.log('error reading file'); // error so print this
+      }
+  })
+  console.log('Called file read');
+    > Called file read
+    > File content:
+    > This is sample.txt file!
+
+  More options
+    fs.writeFile
+    fs.readDir
+
+Nesting callbakcs
+  Calling functions and their callbacks are another function's callback
+
+  const fs = require('fs'); // import fs module
+
+  // set time out for 5 seconds
+  setTimeout(function(){
+      console.log('five seconds complete');
+
+      // read file in callback of setTimeout
+      fs.readFile('sample.txt', 'utf8', function(err, data){
+          if(err === null){ // error check
+              console.log('File content:');
+              console.log(data);  // print file data
+          } else{
+              console.log('error reading file'); // error so print this
+          }
+      })
+  }, 5000); // 5000ms = 5 seconds
+
+  console.log('all functions called'); // print after calling all function
+    > all functions called
+    > five seconds complete
+    > File content:
+    > This is sample.txt file!

@@ -1,0 +1,378 @@
+Dynamic Programming 4 of 4
+
+Integer subproblems
+  Focus in on what we saw at beginning with Fibonacci
+    Look at smaller versions of integer
+Pseudopolynomial time
+  Have talked a lot about polynomial being a good running time
+  Psuedopolynomial time is a "pretty good" running time
+Two new examples
+  Rod cutting
+  Subset sum
+DP feature review
+Applying SRTBOT as usual
+  What is hardest as always getting the right subproblem
+    Prefixes, suffixes, substrings
+  For integers like Fibonacci want to calculate nth number
+  Otherwise take products of these
+    Subproblem with constraints to remember state
+      Piano fingering canonical example
+  Relate subproblems recursively
+    Think about question about subproblem solution reduced to smaller subproblems
+    Locally brute force all answers to question
+    Can think of as correctly guessing answer, then looping
+    But at the end have to pay for guess by looping over all possible guesses
+    Once you identify question pretty easy
+      Running time usually polynomial
+  Topo
+    Check relation is acyclic - shortest path in DAG
+  Base cases
+  Original problem
+    Solve via subproblems
+  Running time
+    Nonrecursive work in relation * #subproblems
+So that's the framework, have seen 4 times now
+Rod cutting example
+  Straightforward but contrast to next subproblem, subset sum
+  Given rod of length L
+    Say cutting into pieces
+  Given value of every possible length you could cut
+    Value v(l) of rod of length(l) for all l in {1, 2... L}
+      Assume no material lost when cutting (could adjust, but not very interesting)
+  What is max value partition of length-L rod?
+  Example
+    Original length 7
+       l: 1, 2,  3,  4,  5,  6,  7
+    v(l): 1, 10, 13, 18, 20, 31, 32
+    Could sell directly for $32 but could also split up
+      Could just divide v(l) by l and maximize that
+        6 has the highest ratio
+        2 is the closest competitor
+        6 + 1 = $31 + $1 = $32 - same as selling for $7
+      Actual best
+        3 + 2 + 2 = $13 + $10 + $10 = $33
+      Seems tricky to figure out
+      Exponentially many different partitions
+  SRTBOT time
+    Could try prefixes, suffixes, substrings for value structure
+      Or try smaller integers
+    Only l different choices for what length to cut first, brute force in l time
+    Subproblems
+      x(l) = max value partition of length l for l = 0, 1, ..., L
+    Relate
+      x(l) = max{v(p) + x(l - p) | 1 <= p <= l}
+        Brute forcing all possible choices for p
+    Topo
+      Always strictly decreasing l in this call
+      Solve problems in order of increasing l for l = 0, 1, ..., L
+    Base case
+      x(0) = $0 // formula does not work because p >= 1
+        Assumption, but reasonable one, don't get something for nothing
+    Original problem
+      x(L)
+    Time to compute
+      theta(L) subproblems
+      O(L) time
+      O(L^2) time
+  Very simple, straightforward DP
+    Have seen more complicated examples already
+  But highlights a question
+    Is theta(L^2) polynomial time?
+    Prof claims answer is yes
+      You could just look at it and say yeah L^2 but there's more to it than that
+      But it's a quadratic polynomial in L
+      And we haven't really thought about this too hard
+        But what does it mean to be polynomial time
+(Strongly) polynomial time
+  Not going to worry about (strongly) in this class
+  Means polynomial in the size of the input
+    For our model, measured in words
+    Generally we assume everything fits in a machine word
+      Therefore manipulated in constant time
+  Total size of input to rod problem is L + 1
+    rod of length L, and everything v(l)
+    = theta(L)
+    Explicitly avoided using n in this problem
+      Usually (though not always) use n for the problem size
+    L^2 is polynomial in L + 1 - good, the answer is yes
+  Now an example that looks very similar
+    But the answer is no!
+    But will still seem pretty reasonable
+  (Let's look at the subproblem DP for the problem first)
+Subset sum
+  Given multiset A = {a0, a1, ..., a(n - 1)} of positive integers & target sum T
+    Note: non-positive integers in recitation
+  Does any subset sum to the target sum?
+    Similar problem to rod cutting
+    Split up in similar values
+    But before could cut into any lengths
+    Here T is not in the multiset
+    Sometimes things add up to T, sometimes they don't
+  Example
+    A = {2, 5, 7, 8, 9}
+    T = 21? YES
+      5 + 7 + 9 = 21
+    T = 25? NO
+      Don't know a good way to prove no
+      Other than write a program... but will output no
+  "Decision problem"
+    Just interested in a yes or no answer - single bit
+      Most DP problems so far are max problems
+      Here it's boolean values
+    This is also going to be straightforward
+      Standard sets of subproblems
+  SRTBOT (subset sum)
+    What feature should I guess? have n numbers - in subset or not?
+    Is a0 in s - locally brute force
+      Have eliminated a0, leave a suffix of ais
+      Target sum for remainder is T - a0
+    Subproblems
+      x(i, t) = does any subset s <= A[i:] sum to t
+        for i = 0, 1, ..., n
+        t = 0, 1, ..., T
+    Relation
+      x(i, t) = OR {x(i + 1, t), x(i + 1, t - ai)}
+                (second option only holds if ai <= t)
+        either not in set or in set
+        but what is operator? not max/min
+          it's "OR" (in Python, "any")
+      Simple recurrence
+        But really impressive problem
+        Exactly 2^n subsets of A
+          Without memoization takes exponential time
+        But because split into n local choices
+          Collapses a lot of options into the same thing
+    Topo Order
+      Call x recursively, always increment i
+        But do NOT always decrement t
+      So decreasing i is the topo order
+    Base case
+      x(n, t) = { if t = 0, YES, else NO }
+    Original problem
+      x(0, T)
+    Running time
+      There are theta(nT) subproblems
+      Work per subproblem O(1)
+      So theta(nT) is the running time
+    (DAG with T = 6, a = {3, 4, 3, 1})
+  Is theta(nT) polynomial?
+    No! Why?
+    n integers input + 1 (T)
+      n + 1 input size
+    But our running time is a function of both n and T
+    What if T is 2^n?
+      Assume T fits in word, at most 2^w
+      w >= log(n)
+        But we don't know an uppper bound on w, can be larger
+        w = n is not a crazy idea - n-bit numbers
+    Not a strongly polynomial algorithm
+      But still pretty good as long as we know T is not enormous
+Pseudopolynomial
+  Not the best term, but established
+  O(1) degree polynomial in input size, just like before
+    And the input integers (a0...a(n-1)) and T
+  Not strongly polynomial but they are pseudopolynomial
+  And if polynomial is good, exponential is bad, pseudopoly is "pretty good" to be informal
+  Pseudopolynomial implies polynomial IF
+    input integers at most polynomial in the input size (which is a special case)
+    This should sound familar, constraint we've heard before
+    Condition when Radix sort runs in linear time
+  Counting sort, direct access arrays are also pseudopoly
+  Fibonacci
+  Radix sort technically
+    Weakly polynomial (nlogn(u) + n) polynomial in log of integers
+    Almost as good as strongly polynomial
+    Only place it appear in this class is Radix sort
+  Strongly poly > weakly poly > pseudopoly
+Reflecting on dynamic programs we've seen so far
+  Characterizing according to srtbot
+  Subproblems
+    Prefixes/suffixes
+    Substrings
+    Multiple sequences, products
+    Integers:
+      Pseudopolynomial
+    Vertices
+      Shortest path problems
+  Characterizing all seen in lecture (not recitation for now)
+  Bowling
+    Prefix/suffix - think about what happened first couple of pins
+  LCS
+    Two different sequences, then suffixes
+  LIS
+    Prefix/suffix
+  Floyd-Warshall
+    Subproblems based on prefixes of vertices
+      Could also think of it as integer - given i and must use less than i
+  Rod cutting
+    Kind of prefix (on values)
+    Or in integer (and considering smaller ones)
+  Subset sum
+    Suffix and integers - looking at suffixes and smaller values of T
+    Pseudopoly
+  Fibonacci
+    Looking at integers smaller than n
+    Pseudopoly
+  Alternating coin game
+    Substrings
+  Parenthesization
+    Substrings
+    Guess in middle, get before and after
+  Subproblem constraints/expansion
+    LIS: nonexpansive - did not expand number of subproblems
+  Vertices
+    Shortest path problems
+      Subproblem for each vertex
+  Subproblem expansion
+    2x:
+      alternating coin game
+        I go first, you go first
+      parenthesization
+        min and max
+    theta(1)x
+      piano fingering
+    theta(n)x
+      Bellman-Ford - expanding by how many edges in shortest path
+  Relation
+    How many incoming paths, how many branches to combine
+    theta(1) branching: Fib, bowling, LCS, ACG, Floyd-Warshall, subset sum
+    theta(degree) branching: DAG shortest paths, Bellman-Ford
+    theta(n) branching: LIS, parenthesization, rod cutting
+    combine multiple solutions
+      Sometimes just take best choice - finding shortest path in DAG
+      But combining
+        Fibonacci - add
+        Floyd-Warshall - concatenated two paths
+        Parenthesization - take prefix and suffix and multiply/add together
+          Not easily represented by shortest path in DAG
+  Original
+    Combine multiple subproblems: DAG, LIS, B-F, F-W
+So in retrospect
+  These DP lectures are about showing techniques
+  Set up different subproblems, constrain/expand
+
+Recitation
+  Subset sum review
+    Input: sum of n positive integers A[i]
+    Output: is there subset A' in A such that sum of a in A' a = S?
+    Can solve with dynamic programming in O(nS) time
+  Subset sum
+    Subproblems
+      Try 1-indexed prefixes for comparison
+      x(i, j): True if can make sum j using items 1 to i, false otherwise
+    Relate
+      Is last item i in a valid subset? (Guess!)
+      If yes, then try to sum to j - A[i] >= 0 using remaining items
+      If no, then try to sum to j using remaining items
+      x(i, j) = OR {x(i - 1, j - A[i]) if j >= A[i]
+                    x(i - 1, j) always             }
+      for i in {0,...,n}, j in {0...S}
+    Topo
+      Subproblems depend on strictly smaller i, so acyclic
+      (So increasing i is the topo order - JM)
+    Base
+      x(i, 0) = True (where 0 <= i <= n)
+      x(0, j) = False (where 1 <= j <= S)
+    Original
+      x(n, S)
+      Solve subproblems via recursive top down or bottom up
+    Time
+      Number of subproblems O(nS)
+      Work per subprobem O(1)
+      O(nS) running time
+  Exercises
+    Partition
+    Given a set of n positive integers A describe algorithm to determine whether A can be
+    Partitioned into two non-intersecting subsets A1 and A2 of equal sum
+    Solution
+      Run subset sum with same A and S = 1/2 sum a in A of a
+      JM: So basically you need to be able to find a subset sum exactly half total sum of numbers
+        If it's greater than half, other half won't equal, same for less
+    Close Partition
+      Give a set of n positive integers A, algo to find partition A into two non-intersecting subsets
+      Such that the difference between their sums are minimized
+      Go from 0 to 1/2 sum of a in A and return the closest you can get to 1/2 sum etc.
+      Still only takes O(nS) time for all subproblems
+        O(nS) time again to loop over all subproblems for max true S'
+    Subset Sum with negative integers
+      Like subset sum, but now allow calling problems with larger j
+      Instead of solving x(i, j) in range i in {0...n}, j in {0,...,S}
+        j ranges from jmin: sum of a over A for a < 0 of a (smallest possible j)
+        to jmax: sum of a over A for a > 0 of a
+      x(i, j) = OR{x(i - 1, j - A[i]), x(i - 1, j)} (note jmin <= j - A[i] <= jmax) is always true
+      Dependencies are still acyclic because x(i, j) depend on strictly smaller i
+      Base cases are
+        x(0, 0) = true
+        x(0, j) = false if j != 0
+      Running time
+        O(n(jmax - jmin))
+      JM:
+        So basically get down to 0, 0 with some combination of subtracting or not subtracting at the end
+    Alternatively, convert to positive
+      Choose large number Q > max(|S|, sum over a in A of |a|)
+        So Q is bigger than everything in problem
+      Add 2Q to each integer A to form A'
+        (So 2Q is bigger than |S| and sum of all abs values in a put together? - JM)
+      Append value 2Q n - 1 times to end of A'
+      Every element of A' is now positive
+      Solve for S' = S + n(2Q)
+      (2n - 1)Q < S' < (2n + 1)Q
+        Any satisifying subset contains exactly n integers from A'
+        At least one integer in a satisfying subset of A' corresponds to an integer of A
+          Because S' is not divisible by 2Q
+        If B' in A' sums to S', then the items in A corresponding will sum to S
+        Meanwhile if items in A sum to S, then choosing the k elements of A' corresponding
+          PLUS n - k of the added 2Q in A' will comprise B' that sums to S'
+      Exaample of a *reduction*
+        Using a black box to solve positive subset sum to solve general subset sum
+        Weaker pseudopolynomial time
+          O(n(S + 2nQ))
+  Knapsack problem ("0-1 Knapsack")
+    (At the *end* of the unit - JM)
+    Knapsack with size S, fill with items when each item i has size si and value vi
+    Output maximizing subset of items with sum si < S maximizing value vi
+    Subproblems
+      Is last item in an optimal knapsack?
+      If yes, get value vi and pack remaining space S - si
+      If no, then sum to S using remaining items
+      x(i, j) = max value by of items in size j sack using items 1 to i
+    Relate
+      x(i, j) = max(vi + x(i - 1, j - si) if j >= si, x(i - 1, j)}
+      for i in {0, ..., n}, j in {0, ..., S}
+    Topo
+      Subproblems x(i, j) depend only on smaller i so acyclic
+    Base
+      x(i, 0) = 0 for i in (0..n) no more space
+      x(0, j) = 0 for j in (1... to S) no more items
+    Original
+      x(n, S)
+      topdown/bottom up, parent pointers for items
+    Time
+      O(nS) subproblems
+      O(1) work per subproblem
+      O(nS) running time
+  Exercise
+    Close partition
+      Given integers A, solve a 0-1 Knapsack instance with si = vi = A[i] and S = 1/2 sum of a in A of a
+        Subset returned 1/2 of closest partition
+    Unbounded knapsack
+      Take as many of each problem as you would like
+      Just like 0-1, except i does NOT decrease when it is taken
+        x(i, j) = max(vi + x(i, j - si) if j >= si, x(i - 1, j)}
+        Still ok because topo order decreases i + j on every recursive call
+      Another formulation: less subproblems, more work per subproblem
+      Subproblem
+        x(j) = max value by packing knapsack with provided items
+      Relate
+        x(j) = max{vi + x(j - si) | i in (1, ... ,n) and si <= j} U {0} for j in {0,..,S}
+      Topo
+        Strictly smaller j so acyclic
+      Base
+        x(0) = 0 (no space to pack)
+      Original
+        x(S)
+        parents etc
+      Time
+        O(S) subproblems
+        O(n) work per subproblem
+        O(nS) running time

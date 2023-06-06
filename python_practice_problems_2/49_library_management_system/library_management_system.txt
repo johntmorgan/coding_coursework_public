@@ -1,0 +1,346 @@
+Library Management System (LMS)
+
+Getting Ready
+  Automate all library activities
+  Organize, handle, maintain record of numerous books & members
+  Librarian track books in library
+    New books
+    Borrowed books with due date
+    Member who borrowed
+    Returned books
+    Fine on late books
+  Maintain physical library
+    Position of book in library
+    User search for whether book available
+  Expectations
+    Efficient searching
+      Attributes other than book name
+    How will user be able to search for book by auth name, publication date etc.
+    User search specific category of books
+      Magazines, journals, newspapers, etc.
+  Versatility
+    Can software be used only by librarian?
+      All library members?
+  Book reservation
+    Book renewal to hold longer
+  Fine management
+    How is calculation and deduction of fines handled?
+  Design approach
+    Identify smallest components first
+  Design pattern
+    Factory design
+    Delegation design pattern
+    Observer design pattern
+
+Requirements
+  Store information about books and library members
+  Complete log of book borrowing process
+  Every book has a unique ID
+    Rack number to locate book physically
+  Book has ISBN, title, author name, subject, publication date
+  Multiple copies of book possible
+  Two users - librarian, member
+  Every user has a library card with a unique ID number
+  Each user can take out 10 books at a time
+  Each user can take out a book for up to 15 days
+  Each book item can be reserved by a single member
+  System keeps record of who issued or reserved book and on which date
+  System allows user to renew reserved book
+  System sends notification if book not returned within due date
+  Member should be able to reserve book if unavailable
+  System should allow user to seach book by title, auth, name, subject, publication date
+
+Use cases
+  System:
+    Library
+  Actors
+    Member
+      Search, check out, reserve, renew, return book
+      Modify library membership
+    Librarian
+      Admin
+      Add or remove book
+      Modify member and book status
+      Issue and return books
+  Secondary actors
+    System
+      Send alerts on reservations, late returns of books
+        (Return reminders?) JM
+
+Librarian
+  Add book
+  Remove book
+  Edit book
+  Issue book
+  Reserve book
+  Remove reservation
+  Renew book
+  Return book
+  Register new account
+  Cancel membership
+  Update account
+  View account
+  Log in/log out
+
+Member
+  Search catalog
+  Register for account
+  Update account
+  Cancel membership
+  View account
+  Log in/log out
+  Check out book
+  Reserve book
+  Remove reservation
+  Renew book
+  Return book
+
+System
+  Overdue notification
+  Return reminder
+  Reservation available notification
+  Reservation canceled notification
+
+No actor
+  Add book item
+  Edit book item
+  Remove book item
+  Update catalog
+  Issue library card
+  Search by subject name
+  Search by book title
+  Search by author name
+  Search by publication date
+  Pay fine
+
+Relationships
+  Generalization
+    Search catalog with:
+      Search by subject name
+      Search by book title
+      Search by author name
+      Search by publication date
+
+  Include
+    Add book has include relationship with add book item
+    Edit book has include relationship with edit book item
+    Remove book has include with remove book item
+    Edit, remove, add book items include with update catalog
+    Issue book has include with check out book
+    Check out book has include with remove reservation
+
+  Extend
+    Register new member has extend with issue library card
+    Return book has extend with pay fine case
+
+Bottom up
+  Book: abstract class
+    ISBN: string
+    Title: string
+    Subject: string
+    publisher: string
+    publicationDate: string
+    language: string
+    numberOfPages: int
+    authors: Author (complex member)
+    format BookFormat (enum)
+  BookItem
+    Extends book class - single instance of book
+      (may be multiple of same book in library)
+    isReferenceOnly
+    borrowed bool
+    dueDate date
+    price double
+    status: BookStatus
+    dateOfPurchase: date
+    placedAt: Rack
+    checkout(string memberId): bool
+  Rack
+    number: int
+    location_identifier: string
+  Person
+    name: string
+    address: Address
+    email: string
+    phone: string
+    Author extends
+      listOfBooksPublished
+      (erm do a join table, foreign key on book? - JM)
+  User
+    id: string
+    password: string
+    status: AccountStatus
+    person: Person
+    resetPassword() bool
+    Member extends
+      dateOfMembership: date
+      totalBooksCheckedOut: int
+      getTotalBooksCheckedOut() int
+      reserveBookItem(BookItem bookitem) bool
+      incrementTotalBoocksCheckedOut()
+      checkoutBookItem(BookItem bookitem)
+      renewBookItem(BookItem bookitem)
+      returnBookItem(BookItem bookitem)
+      checkForFine(string bookItemId)
+    Librarian extends
+      addBookItem()
+      blockMember()
+      unblockMember()
+  LibraryCard
+    cardNumber: string
+    issued: date
+    active: bool
+    isActive()
+  BookReservation
+    itemId: string
+    creationDate: date
+    status: ReservationStatus
+    memberId: string
+    getStatus()
+    fetchReservationDetails()
+  BookLending
+    itemId
+    creationDate
+    dueDate
+    returnDate
+    memberId
+    lendBook()
+    fetchLendingDetails()
+    getReturnDate()
+  Notification - abstract class
+    notificationId
+    created
+    content
+    sendNotification()
+    PostalNotification extends
+      address: Address
+    EmailNotification
+      email: string
+  Search
+    searchByTitle()
+    searchByAuthor()
+    searchBySubject()
+    searchByPubDate()
+    Catalog implements
+      bookTitles
+      bookAuthors
+      bookSubjects
+      bookPublicationDates
+      searchByTitle()
+      searchByAuthor()
+      searchBySubject()
+      searchByPubDate()
+  Library
+    name: string
+    address: Address
+    getAddress()
+  Enums
+    BookFormat
+      Hardcover
+      Paperback
+      Magazine
+      etc.
+    AccountStatus
+      Active
+      Closed
+      Canceled
+      Blacklisted
+      None
+    ReservationStatus
+      Waiting
+      Pending
+      Canceled
+      None
+    BookStatus
+      Available
+      Reserved
+      Loaned
+      Lost
+  Custom Data Type
+    Address
+      streetAddress
+      city
+      state
+      zipcode
+      country
+
+Relationships
+  User one-way with BookReservation and BookItem
+  BookReservation one-way BookItem
+  BookLending one-way BookItem
+
+  Author two-way Book
+  Rack, Librarian two-way BookItem
+  Notification two-way BookLending BookReservation
+  BookLending two-way BookReservation, User
+
+Composition
+  Library composed of BookItem
+  User composed of LibraryCard
+
+Aggregation
+  Catalog class contains Book class
+
+Inheritance
+  Librarian and Member extend User
+  EmailNotification and PostalNotification extend Notification
+  BookItem extends Book
+  Catalog extends Search interface
+
+Design pattern
+  BookFactory
+  Delegation from librarian to BookItem class
+  Observer to notify library members
+
+Additional requirements
+  Barcode scanner
+    Each member should have unique barcode on library card
+    Each book should have unique barcode
+    LibraryCard -> BarcodeReader
+    BarcodeReader
+      id: string
+      registered: date
+      active: bool
+      isActive()
+  FineTransaction
+    CheckTransaction, CashTransaction, CreditCardTransaction extend
+  What if 2 members try to reserve the same book?
+    First come first serve (FCFS)
+    If exactly the same time, perhaps which member has less books checked out
+    If members have already reached max checkouts, no reservations
+
+Sequence
+  Issue a book
+  Member requests to issue a book
+  Librarian verifies lending quota
+  If lending quota == maximum, librarian refuses
+  Else
+    Librarian gets book status
+    If book available, librarian issues book
+    If book reserved, librarian cancels request to issue book
+
+Activity: Book checkout
+  Enter member ID
+  Enter book ID
+  Max quota exceeded?
+    If yes, show error message
+  Book already reserved?
+    If yes, show error message
+  Book payment
+  Book status to "issued"
+  Increment number of books issued to member
+
+Activity: Book return
+  Enter book ID
+  Initialize book return
+  Due date passed?
+    If no, jump to decrement books issued
+  Calculate fine
+  Generate receipt
+  Collect fine
+  Decrement books issued to user
+  Book reserved?
+    No, status changed to available
+    Yes, status changed to reserved
+      Notify member
+    

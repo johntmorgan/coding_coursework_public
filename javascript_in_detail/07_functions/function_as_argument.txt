@@ -1,0 +1,50 @@
+Function as argument
+  When need function inside function
+  Pass function as argument
+  Works because functions are objects in JS
+    Receiving function: "higher-order function"
+    Passed function: "callback function"
+
+Passing a regular function
+
+  function printHello (){
+      console.log("Hello");
+  }
+
+  function foo (func){ // Create function taking another function as argument
+      console.log("in foo function");
+      console.log("calling func");
+      func();
+      console.log("finished calling");
+      console.log("returning");
+  }
+
+  foo(printHello); // invoke foo and pass printHello as argument
+    // Do not add parens, would invoke printHello and pass as argument value returned from invocation
+
+
+Passing an anonymous function
+
+  function foo (func){ // Create function taking another function as argument
+      console.log("in foo function");
+      console.log("calling func");
+      func(); // invoke the function passed as argument
+      console.log("finished calling");
+      console.log("returning");
+  }
+
+  foo(function () {
+      console.log("Hello")
+      });
+
+Passing an arrow function
+
+  function foo (func){ // Create function taking another function as argument
+      console.log("in foo function");
+      console.log("calling func");
+      func(); // invoke the function passed as argument
+      console.log("finished calling");
+      console.log("returning");
+  }
+
+  foo(() => console.log("Hello")); // invoke foo and pass printHello as argument

@@ -1,0 +1,64 @@
+React after Javascript
+
+React
+  Seamless integration with any library or framework
+  React is a view only library
+  Simple API, no steep learning curve
+    Only a handful of methods to understand
+  Code to make components like buttons is very simple
+    Very little boilerplate
+
+Javascript
+  World's most popular programming language
+  Incredibly powerful
+  Function and OOP language
+  React is in JS
+
+ES6
+  Version 6 of ECMA script programming language
+  ECMA Script is the standardized name of JS
+  V5 released 2011
+  V6 major enhancement
+    Adds many more features to make large-scale software dev easier
+    Also called ES2015
+  Major web browsers support some features
+  Notes
+    Constants const
+    let - set value within block
+  Arrow functions
+    var x = a => a + 1;
+    x(4) // returns 5
+    [1, 2, 3, 4].forEach(a => console.log(a + " => " + a * a))
+    // prints
+    1 => 1
+    2 => 4
+    3 => 9
+    4 => 16
+    [22, 98, 3, 44, 67].sort((a, b) => a - b)
+    // returns
+    [3, 22, 44, 67, 98]
+  Default function params
+    var x = (a, b = 1) => a * b
+    x(2)
+    // returns 2
+    x(2, 2)
+    // returns 4
+    Note params with defaults may appear before those without (unlike C++, Python, Ruby etc)
+  etc.
+
+JSX
+  Javascript Syntax Extension
+  Use HTML and XML in JS
+    Transpiled into JS
+
+Unidirectional data flow
+  React - easy to reason
+  All parts of UI contained within each other
+  Data flow tracing super simple
+
+Community
+  React popular and growing
+
+Why not go straight to React?
+  Hard to learn without prior JS knowledge
+  Will run into roadblocks

@@ -1,0 +1,40 @@
+Alterations
+
+  // Rename column, change column length from 20 to 120
+  // Need to re-specify type in a rename even if not changing column type
+  ALTER TABLE Actors CHANGE FirstName First_Name varchar(120);
+
+  // Alter type or clauses for a column
+  ALTER TABLE Actors MODIFY First_Name varchar(20) DEFAULT "Anonymous";
+
+  // Alternate syntax with CHANGE - must respecify column name
+  ALTER TABLE Actors CHANGE First_Name First_Name varchar(20) DEFAULT "Anonymous";
+
+  // Be careful!
+  ALTER TABLE Actors MODIFY First_Name INT;
+    > Error
+
+  // Easy if no data loss though
+  ALTER TABLE Actors MODIFY First_Name varchar(300);
+
+  // Add a column
+  ALTER TABLE Actors ADD MiddleName varchar(100);
+
+  // Remove a column
+  ALTER TABLE Actors DROP MiddleName;
+
+  // Place column using FIRST
+  ALTER TABLE Actors ADD MiddleName varchar(100) FIRST;
+  ALTER TABLE Actors DROP MiddleName;
+
+  // Place column using AFTER
+   ALTER TABLE Actors ADD MiddleName varchar(100) AFTER DoB;
+
+  If an index defined on a column, dropping the column also removes the index
+    If index consists of only that column
+
+  // Combine multiple alterations in a single MySQL statement, comma sep
+  ALTER TABLE Actors DROP MiddleName, ADD Middle_Name varchar(100);
+
+  Note MySQL may create new table with changes and copy data over sometimes
+    Can be expensive!

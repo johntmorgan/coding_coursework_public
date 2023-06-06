@@ -1,0 +1,8 @@
+Exponential and factorial time needed for NP-complete problems
+  See next chapter
+  Selection sort, bubble sort = O(n^2)
+  Find a non-exponential solution to NP-complete algorithm?
+    Win $1m! From Clay Mathematics Institute
+    Can be generalized to all problems
+    If you prove it's impossible, also win $1m
+  

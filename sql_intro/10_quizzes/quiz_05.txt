@@ -1,0 +1,28 @@
+1.
+WHERE myColumn = NULL
+
+vs.
+
+WHERE myColumn IS NULL
+
+// NULL is a special value, can't use with = or other comparison operators
+// Not the same, should always use IS NULL or IS NOT NULL
+
+2.
+// Outcome of query where SomeTable exists
+
+SELECT "Hello"
+FROM SomeTable
+WHERE NULL = NULL;
+
+// Nothing is printed, NULL must be tested with IS or IS NOT
+
+3.
+// Can a table have multiple clustered index
+  No, clustered index is the table itself
+
+4. Disadvantages of foreign key
+  Slows down write queries - must verify each honors constraint
+
+5. When does REPLACE behave exactly like INSERT
+  When table has no primary and unique index defined on it

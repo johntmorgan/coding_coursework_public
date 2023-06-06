@@ -1,0 +1,24 @@
+Fast and slow pointers
+  Traverse iterable data structure at diff speeds
+    Usually fast by 2, slow by 1
+  Commonly used in cycle detection
+  Example
+    Delete nth node from end of list
+      Space and then advance
+      When fast off end, delete slow
+
+Pattern matching
+  Yes
+    Find first x % in linked list
+    Find element at k-way point in linked list
+      Or middle element
+      Or element at start of Q2
+    Find kth last element
+    Detect cycle in linked list
+    Detect cycle in sequence of symbols
+
+Real world
+  Symlink
+    Avoid loops in shortcuts to different files
+  OOP compile
+    Avoid cyclic dependencies

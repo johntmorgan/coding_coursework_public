@@ -1,0 +1,48 @@
+Dijkstra's algorithm
+  Breadth-first search: figured out how to get from A to B
+    Not necesssarily the fastest path
+    IS the shortest path, because least segments
+  Adding times to each edge
+    How do you get there fastest? Dijkstra's algorithm
+  Dijkstra: 4 steps
+    Find the "cheapest" node
+    Update the costs of neighbors of this node
+    Repeat until done for every node in graph
+    Calculate final path
+  Update costs
+    If you found a cheaper way to get to A through B, update cost of A
+    Breadth-first wouldn't have always gotten there
+      If more/equal segments
+      BFS doesn't handle weights (afaik, so far...)
+  Cost of edge = "weight"
+    Graph with weights = "weighted graph"
+    Otherwise = "unweighted graph"
+    Graph can have cycles
+      Following a cycle always makes things longer
+        Unless the edges have a negative weight, as I know from the other book - JM
+      Undirected graphs automatically cycle - can just go back and forth
+      Dijkstra's algorithm only works on graphs with no cycles, or positive weight cycles
+  When tracking path, parent of cheapest way to get to node
+  Key idea of Dijkstra
+    Look at the cheapest node on your graph - there is NO cheaper way to get there!
+      Going through multiple more expensive nodes will always be more expensive!
+  After going to cheapest node, see where you can get from it
+  Then go to the next cheapest node from the start
+    Book example of money trades - can be about cheapness, not just time or distance
+  Negative weight edges
+    You can't use Dijkstra if you have them
+    Will break the algorithm
+      Assumes that once you get to a node as cheaply as possible, it's set
+        But negative weights give you more ways to get there
+    Use Bellman-Ford instead (out of scope of the book)
+  Implementation
+    3 hash tables
+      Graph
+      Costs
+        Infinity if you don't know yet
+        infinity = float("inf") in python
+      Parents
+    1 array
+      Processed
+    For the graph
+      Nested hash tables (can't we call them map/dict? sigh)

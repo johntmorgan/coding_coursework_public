@@ -1,0 +1,8 @@
+Custom Data Structures
+  Specialized structure to solve problem
+  Can be an adjustment of simple structure
+
+Examples
+  Stack getMin() in O(1) complexity
+  Make an aux stack. Push with each elem
+    Either current min or new elem, whichever is less

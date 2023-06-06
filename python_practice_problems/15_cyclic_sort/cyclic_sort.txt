@@ -1,0 +1,9 @@
+Cyclic Sort
+  In place comparison sort algorithm
+  Deal with arrays containing numbers in a set range
+    Usually unique unsorted elements
+  Place elements ate respective index
+
+Pattern matching
+  Input array with cycle (duplicate numbers)
+  Find missing integer number in given range 1 - n

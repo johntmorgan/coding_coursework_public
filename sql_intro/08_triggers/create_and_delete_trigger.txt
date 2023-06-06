@@ -1,0 +1,27 @@
+Creating a trigger
+  Must be assoc with a table in MySQL
+  Define using BEFORE or AFTER
+
+  // Basic use to validate user input
+  // Set net worth to 0 if < 0 or not specified
+  DELIMITER **
+  CREATE TRIGGER NetWorthCheck
+  BEFORE INSERT ON Actors
+  FOR EACH ROW 
+    IF  NEW.NetWorthInMillions < 0 OR NEW.NetWorthInMillions IS NULL
+    THEN SET New.NetWorthInMillions = 0;
+    END IF;
+  **
+  DELIMITER ;
+
+  SHOW TRIGGERS;
+
+  INSERT INTO Actors (FirstName, SecondName, DoB, Gender, MaritalStatus, NetWorthInMillions) VALUES ('Young', 'Actor', '2000-03-25', 'Male', 'Single', NULL);
+  > Query OK, 1 row affected (0.01 sec)
+
+  INSERT INTO Actors (FirstName, SecondName, DoB, Gender, MaritalStatus,  NetWorthInMillions) VALUES ('Old', 'Actor', '1960-10-02', 'Male', 'Married', -540);
+  > Query OK, 1 row affected (0.01 sec)
+
+  SELECT * FROM Actors;
+
+  DROP TRIGGER IF EXISTS NetWorthCheck;

@@ -1,0 +1,213 @@
+Took a break from PSet 3 - do not know Python dict syntax
+Last time
+  Tuples, lists
+  Tuples immutable, lists mutable
+  Nice power, but opportunities for challenges (aliasing)
+Today different direction
+  Recursion
+  Dictionaries
+  Put the two pieces together
+Recursion
+  "The process of repeating items in a self-similar way"
+  Taking a problem, reducing to a smaller version
+  Using that to tackle lots of interesting problems
+  Art: Droste effect
+  Don't want to have it go on infinitely
+  Great example of divide and conquer
+  Reduce to a simpler version of same problem
+  Semantically: a program calls itself
+  As LONG as you have a base case, a way of stopping
+  Looping constructs lead to iterative algorithms
+Multiplication example
+  mulitply a * b is the same as adding a to itself b times
+Thinking iteratively
+  Capture state by
+    Iteration number (i) starts at b, counts down, stop when 0
+    Keep track on result
+  def mult_iter(a, b):
+    result = 0
+    while b > 0:
+      result += a
+      b -= 1
+    return result
+Thinking recursively
+  a * b = a + a * (b - 1)
+  when b == 1
+    a * b = a
+  def mult(a, b):
+    if b == 1:
+     return a
+    else:
+      return a + mult(a, b - 1)
+  Each recursive call creates own frame
+  Flow of control passes back to previous scope
+      Then frames are gathered back up
+      No confusion about which variable
+Iteration or recursion
+  Recursive one crisper to look at
+  From a programmer's perspective more efficient to write
+  May NOT be as efficient for the computer - all the frames set up
+    Some languages are more efficient than others
+    But who cares with fast computers these days
+How do we know it will work?
+  Always decrements each time
+  Inductive reasoning
+If I want to prove a statement
+  Prove it's true for smallest value of n (0 or 1)
+  If it's true for arbitrary
+  Prove it's true for n + 1
+  Add 0 up to n
+  same as n * (n + 1) / 2
+  For 0
+    it's 0
+  If true for k, true for k + 1
+
+  k(k+1)/2 + k + 1 == (k+1)(k+2)/2
+
+  k^2 + k + 2k + 2 = k2 + 3k + 2 - yep
+  Can conclude true for all values, then
+
+Towers of Hanoi - I'm sure this is on leetcode
+  Temple somewhere in Hanoi
+  3 spikes
+  64 discs
+  All start on one spike
+  Move stack from one stack to another spike
+  Can never cover smaller disc with larger disc
+  It's on the quiz!
+  Recursive
+  Move a stack of n-1 over
+  Move bottom on onto stack
+  See code
+    Move all but bottom from "from" to "spare"
+    Move bottom from "from" to "to"
+    Move all but buttom from "spare" to "to"
+
+  def printMove(fr, to)
+    print("move from", str(fr), "to", str(to))
+
+  def Towers(n, from, to, spare):
+    if n == 1:
+      printMove(fr, to)
+    else:
+      Towers(n-1, from, spare, to) # move all but bottom ring from source to spare
+      Towers(n, from, to, spare) # move bottom ring from source to target
+      Towers(n-1, spare, to, from) # move all rings from spare to target
+
+Fibonacci example - rabbits
+  nth month, females = females(n - 1) + females(n - 2)
+
+Palindrome
+  Compare first and last letters until reaching middle
+  def isPalindrome(word):
+
+    def toChars(word):
+      word = word.lower() # ruby downcase
+      ans = ''
+      for c in word
+        if c in 'abcdefghijklomnopqrstuvwxyz'
+          ans += c
+      return ans
+
+    def isPal(word)
+      if len(word) <= 1:
+        return True
+      else:
+        return word[0] == word[-1] and isPal(word[1:-1])
+
+    return isPal(toChars(word))
+
+Dictonaries
+  Create a database to keep track of names of students
+  Could build lists with names, grades, courses
+    Store at same index in each list
+    i = name_list.index(student)
+    grade = grade_list[i]
+    course = course_list[i]
+    return (course, grade)
+  Works but ugly
+    Things stored in different places in list
+    Make sure need to add the same place
+  Dictionary is better
+    Index directly on item of interest
+    Dictionary combines a key with a value
+    Index by name/label
+  {key:value, key:value, key:value}
+
+  grades = { 'John':'A', 'Ana': 'B' }
+  grades["John"] -> "A"
+  adding:
+    grades["Sylvan"] = "A-"
+  test
+    'John' in grades -> True
+  delete
+    del(grades['Ana'])
+    Ruby: a.delete(:Ana)
+  grades.keys - arbitrary order
+  grades.values - arbirary order
+  gives us iterable - not list, but can walk down like it's a list
+
+Key things to keep in mind about dicts
+  Values can be anything
+    Mutable, immutable, lists, duplicates, more dictionaries
+  The keys need to be unique
+  The keys need to be immutable
+    ints, floats, strings, tuples, booleans
+    (floats not recommended due to comparison issues, lol)
+  Example: frequency of lyrics
+  Let user say every word that appears more than x number of times
+
+  # Takes array as input
+  def lyrics_to_frequency(lyrics):
+    myDict = {}
+    for word in lyrics:
+      if word in myDict:
+        myDict[word] += 1
+      else:
+        myDict[word] = 1
+    return myDict
+
+  def most_common_words(freqs):
+    values = freqs.values()
+    best = max(freqs.values())
+    words = []
+    for k in freqs:
+      if freqs[k] == best:
+        words.append(k)
+    return(words, best)
+
+  def words_often(freqs, min_times):
+    result = []
+    done = False
+    while not done:
+      temp = most_common_words(freqs)
+      if temp[1] >= minTimes
+        result.append[temp]
+        for w in temp[0]:
+          delete(freqs[w]) # remove word from dict
+      else:
+        done = True
+    return result
+
+    def fib_efficient(n, d):
+      if n in d:
+        return d[n]
+      else:
+        return fib_efficient(n-1, d) + fib efficient(n-2, d)
+        d[n] = ans
+        return ans
+
+  d = {1:1, 2:2}
+
+Book notes
+  Dictionary lookup time is *nearly* independent of size due to Hashing
+    See chapter 10
+  dict.keys, values produce objects that can be called "view" as well as "iterable"
+    Contents change if underlying object changes
+  Keys are only hashable
+    has __hash__ method maps object of type to int
+    has __eq__ method used to compare objects for equality
+    All pythons built-in immutable types may be used
+      Tuples can make great keys e.g. (flight_number, day)
+
+PSet 3

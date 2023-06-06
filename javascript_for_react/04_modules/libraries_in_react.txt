@@ -1,0 +1,64 @@
+Libraries in React
+  React is the only view layer for the application
+  There is some internal state management
+  Otherwise it's a component library that renders HTML for browser
+  Everything else added from APIs - Browser API, DOM API
+    Or JS functionalities
+    Or External libraries
+  Not always simple to choose the right library for complimenting React
+  Fetch data in React via native fetch API
+
+  import React from 'react';
+  const API = 'https://hn.algolia.com/api/v1/search?query=';
+  const DEFAULT_QUERY = 'redux';
+
+  export default class App extends React.Component {
+
+    constructor(props){
+      super(props);
+      this.state = {
+        title: 'Hello!',
+      };
+    }
+
+   componentDidMount() {
+      fetch(API + DEFAULT_QUERY)
+        .then(response => response.json())
+        .then(data => this.setState({ title: data.hits[0].title }));
+    }
+
+    render() {
+      return (
+        <h1> {this.state.title} </h1>
+      );
+    }
+  }
+
+  Must use another library to fetch data
+  Axios is a popular choice for React
+
+  import React, { Component } from 'react';
+  import axios from 'axios';
+
+  class App extends Component {
+    constructor(props){
+      super(props);
+      this.state = {
+        data: null,
+      };
+    }
+
+    componentDidMount() {
+      axios.get('https://api.mydomain.com')
+        .then(data => this.setState({ data }));
+    }
+
+    render() {
+      // JSX
+    }
+  }
+
+  export default App;
+
+  Libraries imported without path symbol are actually third party libraries
+  

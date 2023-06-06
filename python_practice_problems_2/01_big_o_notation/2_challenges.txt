@@ -1,0 +1,71 @@
+Big O Challenges
+
+1. 
+for var in range(1, n, 3):
+  print(pie)
+  for j in range(1, n, 2):
+      sum += 1
+      print(sum)
+
+O(n^2)
+
+2.
+n = 10  # n can be anything, this is just an example
+sum = 0
+pie = 3.14
+for var in range(n, 1, -3):
+    print(pie)
+    for j in range(n, 0, -1):
+        sum += 1
+
+print(sum)
+O(n^2)
+
+Just interesting problems (or ones I messed up)
+
+3.
+n = 10  # Can be anything
+sum = 0
+pie = 3.14
+var = 1
+while var < n:
+    print(pie)
+    for j in range(var):
+        sum += 1
+    var *= 2
+print(sum)
+
+O(n)
+Outer loop runs O(logn) times
+Inner loop runs 1 + 2 + 4 + 8 + ... + 2^k times
+  NOT n times
+  So is not O(nlogn) - well that's a very loose upper bound
+
+6.
+n = 10  # can be anything
+sum = 0
+pie = 3.14
+for var in range(n):
+    j = 1
+    while j < var:
+        sum += 1
+        j *= 2
+    print(sum)
+
+O(nlog2(n))
+Note: log2(n!) = O(nlog2(n))
+
+7.
+n = 10  # can be anything
+sum = 0
+pie = 3.14
+j = 1
+for var in range(n):
+    while j < var:
+        sum += 1
+        j *= 2
+    print(sum)
+
+O(n)
+Note j is NOT reset
+Inner while loop does not always run

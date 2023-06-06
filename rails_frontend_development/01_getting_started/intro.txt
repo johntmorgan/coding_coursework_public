@@ -1,0 +1,82 @@
+Introduction
+  Make a website for a client
+  Rails still best way for small team to be productive
+  Interactive, lots of movement
+    Well that means JS
+  Which language?
+  Lots of languages compile to JS
+    TypeScript, Elm, ClojureScript
+  Framework
+    React
+    Vue
+    Ember
+    Stimulus
+    Svelte
+    Preact
+  How to package code and CSS
+    Rails asset pipeline or Webpacker
+  Turbolinks?
+    Just updated
+  RoR 6.1 has lots of tools that interact with JS for great frontend
+
+This course
+  Rails front-end tools
+    Stimulus, Turbolinks, Webpacker
+  JS ecosystem tools
+    webpack, TypeScript, React
+  Requires Rails basics
+
+Assumptions
+  Rails is opinionated - things easier if structure in expected way
+    So is this course - does not show you every way to do things
+  Going to use JS to enhance Rails
+    NOT use JS to build SPA (single page application) that only uses Rails for API
+    Why not SPA?
+      Rails & browser behavior handle a ton of functionality
+      Moving to SPA requires building a lot of functionality yourself
+      Front-end frameworks are getting better at handling
+        But Rails still less complicated for many apps
+    When SPA?
+      If UX super different from normal web structure
+        Existing behavior of Rails offered by browser is unhelpful
+      If backend is already API supporting mobile app or external services
+        SPA prevents duplicating view-layer logic
+    But generally leveraging Rails view & browser features best way to create great apps
+  With these assumptions, still a ton of tools, archs, techs that you could use
+    We're going to navigate that space
+
+Let's build an app
+  Fictional music fesival North By North South
+  Multiple bands perform at various concerts
+  App contains a schedule of all concerts and venues
+  Not much to it
+    Rails scaffolding for minimal administration
+    Just to display 2 pages
+      Schedule page
+      Concert display page
+  Schedule page
+    Shows concerts, acts, times for festival
+    Add features for basic show-hide behavior
+      Complex date and search filters
+  Concert page
+    Simplified theater diagram for each concert
+    Select seats for kind of ticket purchase
+    More elaborated client-side behavior
+      Not just augmented forms
+  Data model
+    Festival includes several concerts
+    Each concert has a venue
+    Each venue has a number of rows and number of seats per row
+      Yes this is simplified
+    Each concert has one or more gigs
+    Each gig matches a band to a concert
+      Start order
+      Duration
+    Each concert has a bunch of sold tickets
+  Bulma CSS framework
+    Attracive
+    Adds relatively few class names to markup
+    Usually possible to figure out what CSS does from the class names
+
+  Demo does not seem to work - blocked host and adding it to config does nothing... hmmm....
+

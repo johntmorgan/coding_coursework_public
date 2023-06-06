@@ -1,0 +1,71 @@
+PS1
+  Let's build on the MovieIndustry database
+  Add 2 more tables, total of 4
+    Actors
+    DigitalAssets
+    Movies
+
+    +---------------------------------+-------------+-----------------+----+------------------+----------------------+
+    | Name                            | ReleaseDate | Producer        | Id | BudgetInMillions | CollectionInMillions |
+    +---------------------------------+-------------+-----------------+----+------------------+----------------------+
+    | Ocean's Twelve                  | 2004-12-10  | Jerry Weintraub |  1 |              110 |            435.00000 |
+    | Mr & Mrs. Smith                 | 2005-06-07  | Arnon Milchan   |  2 |              110 |            478.20000 |
+    | Mission: Impossible - Fallout   | 2018-07-12  | J. J. Abrams    |  3 |              178 |            791.10000 |
+    | London Fields                   | 2018-09-20  | Chris Hanley    |  4 |                8 |              0.48700 |
+    | Ocean's 11                      | 2001-12-07  | Jerry Weintraub |  5 |               85 |            450.70000 |
+    | Ocean's 11                      | 1960-08-03  | Lewis Milestone |  6 |                3 |              5.00000 |
+    | Regarding Henry                 | 1991-07-12  | J. J. Abrams    |  7 |               25 |             43.00000 |
+    | Mohabbatein                     | 2000-10-27  | Yash Chopra     |  8 |                3 |             12.55000 |
+    | Keeping Up with the Kardashians | 2007-10-14  | Ryan Seacrest   |  9 |              100 |            300.00000 |
+    | Avengers: Endgame               | 2019-04-22  | Kevin Feige     | 10 |              356 |           2798.00000 |
+    +---------------------------------+-------------+-----------------+----+------------------+----------------------+
+
+# 1 Print top 3 movies by box office
+    SELECT Name FROM Movies ORDER BY CollectionInMillions DESC LIMIT 3;
+
+    +-------------------------------+
+    | Name                          |
+    +-------------------------------+
+    | Avengers: Endgame             |
+    | Mission: Impossible - Fallout |
+    | Mr & Mrs. Smith               |
+    +-------------------------------+
+
+# 2 Print actors with shared second names
+    SELECT SecondName, COUNT(*) FROM Actors GROUP BY SecondName HAVING COUNT(*) > 1 ORDER BY COUNT(*) DESC;
+
+    // Course solution
+
+    SELECT DISTINCT concat(a.FirstName," ",b.SecondName)
+    AS Actors_With_Shared_SecondNames
+    FROM Actors a
+    INNER JOIN Actors b
+    ON a.SecondName = b.SecondName
+    WHERE a.Id != b.Id;
+
+# 3 Count the number of actors who share the same second name. Print the second name along with the count.
+    SELECT SecondName, COUNT(*) FROM Actors WHERE SecondName IN (
+    SELECT SecondName FROM Actors GROUP BY SecondName HAVING COUNT(*) > 1) GROUP BY SecondName ORDER BY COUNT(*) DESC;
+
+    // Course solution
+
+    SELECT a.SecondName AS Actors_With_Shared_SecondNames,
+    COUNT(DISTINCT a.Id) AS Count
+    FROM Actors a
+    INNER JOIN Actors b
+    ON a.SecondName = b.SecondName
+    WHERE a.Id != b.Id
+    group by a.SecondName;
+
+# 4 Write a query to display all those actors who have acted in at least one movie.
+    SELECT DISTINCT FirstName, SecondName FROM Actors INNER JOIN Cast WHERE Actors.Id = Cast.ActorId;
+
+    // Course solution - note CONCAT, AS
+    SELECT DISTINCT CONCAT(FirstName, " ", SecondName) AS ActorsActedInAtLeastOneMovie
+    FROM Actors
+    INNER JOIN Cast
+    On Id = ActorId;
+
+# 5 Write a query to show actors without any movie experience
+    SELECT FirstName, SecondName FROM Actors WHERE Id NOT IN(
+    SELECT DISTINCT Id FROM Actors INNER JOIN Cast WHERE Actors.Id = Cast.ActorId);

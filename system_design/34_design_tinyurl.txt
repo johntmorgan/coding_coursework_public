@@ -1,0 +1,259 @@
+TinyURL
+  Produce short aliases for long URLs
+    "short links"
+  Advantages
+    Convenient
+    Accessible
+    Can't be broken
+    Visually professional (kinda - JM)
+    Facilitate sharing
+    Less error prone
+    Smaller storage space
+  Disadvantages
+    Lose brand originality
+    Third-party service can be shut down
+      Shortened URLs floating around no longer work
+    Could hurt brand trustworthiness
+    Competition for best short URLs is intense
+
+Requirements
+  Functional
+    Short URL generation (unique)
+    Redirection
+    Custom short links
+    Deletion
+    Update (associated long URL)
+    Expiration time
+      Based on user requirements
+  Why are URLs deleted from system? Don't reuse
+    Default expiration 5 years
+    If never delete, search index grows out of bound
+  Non-functional
+    Availability
+      Otherwise redirection failures
+    Scalability
+    Readability
+      Can read short links
+    Low Latency
+    Unpredictability
+      Don't allow someone to guess all short URLs produced
+  Why is unpredictability so important?
+    Attackers can get total count to plan attacks
+    Short URLs could be secret
+      Attackers can use this to access long URLs
+      Compromise user privacy
+
+Resource estimation
+  Shortening:redirection 1:100
+  200m requests/month
+  Entry requires 500 Bytes of DB storage
+  5 years until expiration unless deleted
+  100m DAU
+  Storage
+    5 years * 12 months * 200m = 12 B shortening to store
+    12 B * 500 Bytes = 6 TB
+  Query rate
+    20 B redirections/month
+    26228288 seconds/month
+    76 URLs/s
+    Redirection 7.6k URLs/second
+  Bandwidth
+    Incoming: 76 * 500 * 8 = 304 Kbps
+    Outgoing = 1000 * 304 Kbps = 30.4 Mbps
+  Memory
+    20% of redirection = 80% of traffic
+    7.6k/second
+    0.66 billion/day
+    Cache 20%
+      66 GB
+  Number of servers
+    DAU/8000 = 100M/8000 = 12500 servers
+    (Seems pretty high throughput, expect lower - JM)
+
+Building blocks
+  Databases for mapping storage
+  Sequencer for unique IDs - starting point for short URL generation
+  Load balancer
+  Caches
+  Rate limiters - prevent system exploitation
+  Servers
+    Handle and navigate requests, run app logic
+  Base-58 encoder
+    Transform sequencer output into readable/user alphanumeric
+
+System APIs
+  shortURL(api_dev_key, original_url, custom_alias=None, expiry_data=None)
+    Requires user registration
+    custom_alias = optional key user defines as customer short URL
+  redirectURL(api_dev_key, url_key)
+    (Shouldn't this be accessible to non-registered users as well? - JM)
+  deleteURL(api_dev_key, url_key)
+    Returns success message after URL removed
+
+Design
+  Database
+    Not a lot of data to store
+    But storage must be horizontally scalable
+    User details
+    URL mappings
+    User registration NOT required for short URL
+      So can skip over adding this
+    Stored URL records have no relationship
+      NoSQL is suitable
+        MongoDB is very good
+          Leader-follower -> replicas for heavy reads
+          Ensures atomicity in concurrent write and avoids collisions
+        Cassandra, DynamoDB, Riak not good
+          This service is very read-intensive
+          These need read-repair during reading stage
+            Slow read to write performance
+          Leaderless, weaker atomicity on concurrent writes
+          Cassandra DOES provide strong availability than Mongo
+            But leader election algorithm holdups are pretty negligible
+              URLs usually not used instantly after generation anyway
+    (Should registered user info be kept in a SQL database? Or unnecessary complication? - JM)
+  Short URL generator
+    Sequencer to generate unique IDs
+    Base-58 encoder to enhance readability
+    Sequencer generates 64-bit numeric ids
+      These are in base-10
+    Alphanumeric = base-58
+      We'll go into this later
+  Load balancer
+    Global server (GSLB) apart from local for availability
+    Plenty of time between URL generation & use
+      Assume DB geographically consistent
+      Distributing requests globally is fine
+  Cache
+    Memcached for read-intensive
+    Simple, horizontally scalable, minimal data structure requirements
+    Data center specific caching layer to handle native requests
+  Rate limiter
+    Limit user quota
+      Can do this via api_dev_key
+      Fixed window counter would work fine
+        Simple
+  How to guarantee unique mapping if requests can go do different data centers?
+    Assumed data center was globally consistent
+    Could introduce unique character in short URL indicating data center
+      But then if data center is down, redirection could fail
+        (But not later, right? Other centers can handle even if another hands out... - JM)
+  What if cache miss at specific data center?
+    Fetch from globally consistent database, add to cache
+  What is probability of collision?
+    Should be zero given sequencer design
+    Custom short URLs are a different story
+      The user is provide it
+      Can calculate probability given size of database
+      If already n generated short URLs, probability is 1/n
+        JM: I'm confused.
+        First of all it's custom short URL count that should matter
+        This equation lowers probability of collision with more URLs
+          In fact it should decrease
+        It should be # of URLs, divided by total number of possible URLs, with some weighting for custom URLs
+
+Workflow
+  Shortening
+    Each new request gets forwarded to short URL generator by app server
+    When link generated, send copy to user and store in database for future use
+    How to avoid duplicate generation?
+      Check if long URL is already in database
+    How to ensure concurrent short URL requests do not overwrite?
+      MongoDB consistency by locking & concurrency control
+      All write requests go through single leader
+        Avoid possibility of race conditions
+  Redirection
+    App server receives redirection request
+    App server checks cache then database for record
+    How to ensure DB is not bottleneck
+      Range-based sequencer maps servers to short URLs
+        Redirect request to respective database
+      Unique IDs for various data stores and integrate into short URLs
+      (MongoDB good for read heavy, serve from replicas due to leader-follower? - JM)
+  Deletion
+    Logged-in user -> app server
+    App server forwards details to database
+  Custom short links
+    Check eligibility of short URL
+    Max length allowed 11 alphanumeric digits
+      (How is this picked exactly? - JM)
+    Check if available in database
+  How should system modify records on allocation of URL
+    Mark unique ID as unavailable for future use
+      Mark on base 10 server generating
+      Database can be NoSQL for good performance
+    Generate IDs, put in unused list
+      Put in used list as soon as used
+    Encoding ensures unique mapping between base-10 and base-58
+
+Encoder
+  Sequencer: 64-bit ID in base-10
+  Base-64 is most common encoding for alphanumeric strings
+    But can have readability issues
+      O looks like 0
+      I looks like l
+      Avoid chars like + and \
+    Taking out those chars reduces to base-58
+    Use modulus function to convert
+      Keep dividing base-10 by 58, making note of remainder at each step
+      Stop when there is no remainder left
+      Assign the char indexes to remainders
+        Recent-most to left-most place
+        Oldest to right-most place
+      2368135791013 -> [1][6][4][41][20][48][6][17] -> "27qMi57j"
+  Decoding just as important as encoding
+    Multiply number by # of 58s, add all results
+  Scope of short URL generator
+    Requirements
+      Should contain alphanumeric chars
+      None of the chars should look alike
+      Minimum length 6 chars
+    Starting range
+      Must have at least 10 digits - 1B
+    Ending point
+      Must have no more than 20 digits
+        3.13 bits needed for 1 decimal digit - lg2(10)
+        64/3.13 = 20
+    What about numbers < 10 digits?
+      Use for premium users, extra short links
+      But of course can't guarantee, some other customer may have claimed
+    What is short URL for biggest number?
+      2^64 - 1 = jpXCZedGfVQ
+  Sequencer lifetime
+    Numbers available = 2^64 - 10^9
+    2.4 billion requests/year
+    7.7 billion years
+
+Evaluation
+  Availability
+    Databases, caches, app servers built-in replications
+    Short URL system depends on replicable databse of available and used unique IDs
+    For disasters
+      Frequent backups of storage and app servers
+        Ideally 2x/day, can't afford to lose URL data (though you still lose a little... - JM)
+      Use Amazon S3 for backups
+        Cross-zonal replication & restoration
+    Global server load balancing for traffic
+    Rate limit client requests to protect against DoS
+  Scalability
+    Data distributed among horizontally sharded databases
+    Consistent hashing to balance load between application and database layers
+      Can also use range-based sharding, but could lead to imbalances
+    MongoDB facilitates horizontal scaling
+    Large number of unique IDs available in sequencer
+  Readability
+    Base-58 encoder, not base-64
+  Low latency
+    Encoding most time consuming, still only a few ms
+    System is redirection heavy
+      Minimal DB writes vs. reads
+    MongoDB is fast & high throughput on reads
+    User probably will take time to use ne URL
+      Synch replication is feasible
+    Distributed cache ensures fast redirects
+  Unpredictability
+    Sequencer generates in sequence
+      Distributes range among servers
+      Each server can randomly select from available unique IDs
+  
+

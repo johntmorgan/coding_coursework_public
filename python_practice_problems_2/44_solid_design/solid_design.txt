@@ -1,0 +1,100 @@
+SOLID design principles
+  Best practices
+  S - single responsibility
+  O - open/closed
+  L - Liskov substitution
+  I - interface segregation
+  D - dependency inversion
+
+No SOLID?
+  Code may become tightly coupled with components
+    Difficult to add new features
+    Difficult to fix bugs
+    Difficult to identify problems
+  Code untestable
+  Code often heavily duplicated
+  Fixing one error often causes others
+
+With SOLID:
+  Reduce tight code coupling
+  Reduce code complexity for future use
+  More extensible, maintainable, understandable code
+  Modular, feature specific, testable code
+
+SOLID basics:
+  Single responsibility
+    Each class responsible for single part/function of system
+  Open closed
+    Components open for extension but closed for modification
+  Liskov substitution
+    Objects of superclass replaceable with objects of subclass
+      Without breaking system
+  Interface segregation
+    Fine-grained interfaces client specific
+  Dependency inversion
+    High-level modules not dependent on low-level modules
+      Depend on abstraction, not concretion
+
+Single Responsiblity
+  Perhaps least understood
+  "A class should have only one reason to change"
+  Have only one functionality
+  Everything in class related to one goal
+  Ex. Book and invoice
+    Invoice violates
+      Print and storage functionality in Invoice
+      Need to change class to change print, storage functionality
+    Create new classes
+      InvoicePrinter
+      InvoiceStorage
+    Invoice associated with book
+    InvoicePrinter, InvoiceStorage containers for Invoice
+
+Open Closed
+  System should improve easily by adding more code instead of changing core
+  Core code always retains unique identity
+  Inheritance is one part of OCP
+  Use the interface because open for extension, closed for modification
+  OCP also defined as polymorphic OCP
+    (Adding different behaviors on top - JM)
+  Ex. Calculate volume of boxes using class
+    Box class, volume class
+    What if new box shapes?
+    Each box shape now extends VolumeCalculator class
+
+Liskov Substitution
+  Guides use of inheritance & polymorphism so app does not break
+  Objects of subclass should behave like objects of superclass
+    Should be replaceable
+  Vehicle class
+    Car and bike extend
+    What to do with startEngine()?
+    Have motorized and manual extensions from Vehicle
+    Then car extends from motorized, bike from manual
+    Do not stick startEngine() directly in vehicle class
+  Small violations can cause system breakdown
+  Avoids generalization of concepts that may not be needed in future
+  Makes code maintainable and easier to upgrade
+
+Interface Segregation
+  Do not have methods an interface wouldn't use and require
+  Don't have fat interfaces in classes
+  Small interfaces with a group of methods
+  Example: shape with area method
+    Don't add volume method directly
+    Add Shape3D class
+    Then Cube extends Shape3D
+  Each class is now implementing an interface they need to use
+  Most violated principle in OOP
+
+Dependency Inversion
+  High-level modules should not depend on low-level modules
+  Both should depend on abstractions
+    Which should not depend on details
+  Ex. School
+    Headmaster of school
+    Under has teachers, assistants, helpers
+    Headmaster must know type of faculty can see before hand
+    If new faculty type, say secretary, must reconfigure whole system
+    Instead: Faculty class
+    Headmaster can add faculty, but not specific types

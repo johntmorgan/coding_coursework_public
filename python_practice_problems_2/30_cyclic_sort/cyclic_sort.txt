@@ -1,0 +1,27 @@
+Cyclic Sort
+  In place comparison sort algorithm
+  Array divided into cycles
+  Each element is rotated to create sorted array
+  Deals with problems involving arrays w/numbers in certain range
+    Usually unsorted
+    Usually need to find missing/duplicate in range
+
+Pattern matching
+  Yes
+    Input array has a cycle - duplicate numbers
+    Problem asks to find missing number in a range
+  No
+    Problem not based on integer numbers
+    Input data not in array, can't be mapped
+    Given data not in [1 - n] range, where n is array size
+
+Real world
+  Computational biology
+    n genes
+    Find kth missing gene
+  Error checking
+    Network transmission error
+    Number in known range misinterpreted as different number in range
+    Find number caused by error, number misinterpreted
+
+  

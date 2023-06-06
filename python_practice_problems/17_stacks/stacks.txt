@@ -1,0 +1,8 @@
+Stacks
+  Linear LIFO data structure
+  Two ops, push and pop
+  Ex.
+    Reverse a string
+    Reverse stack with recursion
+      Store popped, recursively pop others
+      retrun to string

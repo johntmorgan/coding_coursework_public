@@ -1,0 +1,286 @@
+Propositions from Propositions
+Textbook
+  P and Q - propositions
+    Can only take on values T/F
+    "Boolean variables" - inventor 1800s George Boole
+  Not and or
+    Operations that change or combine propositions
+    Precise meaning specified by truth tables
+    (P and NOT(P) truth tables)
+      Reversed T/F
+    P and Q
+      Only true if P and also Q are true
+    P or Q
+      True if either P or Q true or BOTH are true
+    P xor Q "exclusive-or"
+      True if either P or Q but NOT both
+    P implies Q
+      Least intuitive
+      True when the if part is false OR the then part is true
+    If x is true, then
+      Goldbach's conjecture: we don't know if true
+      But x^2 >= 0 for every real number x is true
+      Therefore it's always true
+        Either false/true or true/true
+    If pigs fly, then
+      "Pigs fly" is false... so implies is True
+    If moon white, then cheese
+      False - because true then false
+    Implications with false hypotheses being true really bothers people
+      (Yep - JM)
+      But rarely comes up in ordinary settings
+      So don't get too bothered by what logicians do with them
+      But why is it this way?
+        Say Ci -> sensors have condition i, then Ai: take this action
+        Ci implies Ai
+        Say for 1 <= i <= 12
+        C2 and C5 are true, system takes actions A2 and A5
+        Then system obeys specification
+        So we want formula to come out true
+          (But isn't it a problem if the system takes action A1? -JM)
+          (I guess that's divorced from the question)
+  If and only if
+    P and Q have the SAME true value
+      True if P and Q both true
+      True if P and Q both false
+      False otherwise
+      Only common proposition join that is not in common speech
+  If (x > 0) || (x <= 0 && y > 100)
+  A OR (NOT(A) AND B)
+  Truth table calculation
+  Can reduce to A OR B
+    See truth table
+    "Equivalent" expressions
+    So can simplify to
+    If (x > 0 || y > 100)
+  Simplifying expressions can be important!
+  Cryptic notation
+    Mathematicians have symbol replacements for NOT, AND, OR, etc.
+    Concise but cryptic
+    Will use barP for NOT(P) but otherwise will stick to words
+      Except when formulas will run off page (oh great - JM)
+  Contrapositives
+    If I am hungry, then I am grumpy
+    If I am not grumpy, then I am not hungry
+      They are the same thing
+      See truth table
+  Converse
+    If I am grumpy, then I am hungry
+      Not the same thing
+      See truth table
+  Implication + converse
+    Equivalent to an iff statement
+      See truth table again
+  Validity and satisfiability
+    Valid: ALWAYS true
+      P OR NOT(P)
+      If P implies Q, and Q implies R, then P implies R
+    Equivalent - iff
+      A OR B IFF A OR (NOT(A) AND B)
+    Satisfiable - can sometimes be true
+      Come up with a systems design that satisfies specs
+        Specs must be possible or job is impossible
+      P is satisfiable iff NOT(P) is not valid
+  Normal form
+    Every propositional formula = sum-of-products or disjunctive form
+      An OR of AND-terms
+      (A AND B) OR (A AND C)
+      A AND (B OR C)
+      Distributive law
+        Similarity to distributing products over sums in arithmetic
+      Disjunctive normal form (DNF)
+        Each and-term is an and of every variable or its negation
+          Can often be simplified
+      Conjunctive normal form (CNF)
+          An and of OR terms wheer the OR terms are ORs only of variables or negations
+      Every propositional formula equivalent:
+        To both DNF and CNF
+  Proving equivalences
+    Truth tables run out of steam quickly (Thank goodness - JM)
+      n variables -> 2^n lines
+      30 variables -> 1B+ lines
+    Sometimes helps to simplify and use algebra
+      Reduce to AND, OR, NOT
+        A IMPLIES B = NOT(A) or B
+      Commutivity
+        A AND B <-> B AND A
+      Associativity
+        (A AND B) AND C <-> A AND (B AND C)
+      Identity
+        T and A <-> A
+      Zero for AND
+        F and A <-> F
+      Idempotence
+        A AND A <-> A
+      Contradiction
+        A AND NOT(A) <-> F
+      Double negation
+        NOT(NOT(A)) <-> A
+      Validity
+        A OR NOT(A) <-> T
+    DeMorgan's Laws
+      NOT(A AND B) <-> NOT(A) OR NOT(B)
+      NOT(A OR B) <-> NOT(A) AND NOT(B)
+    Simplify
+      NOT((A AND B) OR (A AND C))
+      DeMorgan
+      NOT(A AND B) AND NOT(A AND C)
+      (NOT(A) OR NOT(B)) AND (NOT(A) OR NOT(C))
+      Etc
+    Eventually wind up at disjunctive normal form
+      To prove equivalence
+      Convert both to DNF
+      But all that may be just as complicated as truth tables
+    SAT problem
+      Is there a way to solve these that only grows polynomially
+        Not exponentially like truth tables?
+        Unknown, and a lot hangs on the answer!
+        "Efficient" = runs in polynomial time
+
+Lecture
+  Proposition is either True or False
+   There are 5 regular solids - True
+    (Largest has 20 vertices, implications for satellite placement around the earth....)
+   There are 6 regular solids - False
+  Not a proposition
+    Wake Up!
+    Where am I?
+    It's 3 PM - True or False depending on time - prop should be true or not true forever
+  Ordinary language tends to be ambiguous
+    "Or"
+    Greeks carry swords or javelins
+      G implies (S or J)
+      But true if Greek carries BOTH sword and javelin
+    V symbol - disjunction symbol
+      Instead of OR
+      Arrow means implies
+      Not going to ask to memorize
+    Greeks carry bronze or copper swords
+      Means bronze or copper but not both
+        Bronze way better
+      G implies (B xor C)
+  Definition of OR
+    P OR Q is T iff P is T, Q is T, or BOTH are T
+    P OR Q is F iff P is F and Q is F
+  Definition of XOR
+    Truth table
+  AND
+  NOT
+  Java phrase again
+  if ((x > 0) || (x <= 0 && y > 10))
+              OR         AND
+  Digital logic
+    Circuit designers have their own notation
+      Bar x ::= NOT(X)
+      1 ::= T
+      0 ::= F
+      dot ::= AND (1 x 1 = 1)
+      + ::= OR (1 + 1 = 1) Not gonna use this notatoin
+  Binary addition circuit
+    Like decimal, but powers of 2 instead of powers of 10
+    39 is 100111 - 32 + 4 + 2 + 1
+    28 is 011100 - 16 + 8 + 4
+    To add, just like normal, but 0 and carry 1 when 1 + 1
+    100111
+    011100
+   1000011
+    67 = 39 + 28
+
+    a0, b0
+    Transmit down wires into digital boxes
+    Sum out the bottom d0
+    c5 extra digit 1/0 depending
+    c0 - c4 carry to transmit
+      "ripple carry"
+    half adder - first one, two inputs no ripple carry in
+    full adder - others - three inputs
+      produces binary representation
+    half adder
+      d ::= A xor B (::= not an equality but a definition)
+      c ::= A and B
+    full adder
+      s ::= A xor B
+      d ::= Cin xor s
+      cout ::= (cin and s) OR (a AND b)
+    S0
+      d0 ::= a0 XOR b0
+      c0 ::= a0 AND b0
+    Si = ai XOR bi
+    di = c(i - 1) XOR si
+    ci = (c(i - 1) AND s) OR (ai AND bi)
+
+  Truth tables, equivalence, validity
+    A truth assignment assigns a value T or F to each propositional variable
+    CS call assignment of values to variables an environment
+      If we know the environment, we can find the value of a propositional formula
+    Suppose environment v assigns:
+      v(P) = T, v(Q) = T, v(R) = F
+    Truth value of
+      (NOT(P AND Q)) OR (R XOR NOT(Q))
+    Two propositional formulas are equivalent
+      Iff they have the same truth value in ALL environments
+    DeMorgan's law
+      NOT(P OR Q) equivalent to NOT(P) AND NOT(Q)
+    IFF
+      P IFF Q is T iff P and Q have the SAME truth value
+      P, Q = T -> T
+      P, Q = F -> T
+      otherwise -> F
+    Satisfiability
+      iff it's T in some environment
+    Validity
+      iff it's T in all environments
+    Satisfiable:
+      P - depends on P
+      NOT(P) - depends on P
+    Not satisfiable:
+      P AND NOT(P) - simplest unsatisfiable formula
+    Valid:
+      P OR NOT(P)
+    G and H are equivalent if
+      G IFF H
+  Verifying valid, satisfiable
+    Truth table
+    But it doubles in size with each additional variable
+      Exponential growth
+    Modern digital circuits
+      Millions of adders in a modern one - doesn't work
+  Can you test for SAT (satisfiability) in a way that's more efficient that truth tables
+    The P = NP? question
+    Equivalent to asking if there is an efficient way
+      Polynomial rather than exponential
+    Most important question in CS today
+  Validity
+    Valid means it's always true
+    Complement NOT(G) is always false
+    So if NOT(G) is not satisfiable, G is valid
+    Sat and val stand and fall together
+      Get one, easy to get the other one
+    We'll talk about why so important in future lectures
+
+  Implies (slides only)
+    Value of P IMPLIES Q is F iff P is T and Q is F
+    If P is false, IMPLIES is always true
+      -1 = 1 IMPLIES I am the pope
+    Can try to prove valid formulas symbolically using axioms and deduction rules
+    Antecedents: P, P IMPLIES Q
+    Conclusion: Q
+    A sound rule preserves truth
+      If all the antecedents are true in some environment, so is conclusion
+    Modus ponens is sound
+      If P is T and P IMPLIES Q is T, then Q must be T via the truth table
+    Lemma:
+      A rule is sound iff AND {Antecedents} IMPLIES Conclusion is valid.
+
+  Propositional logic (slides only)
+    Prove formulas symbolically instead of truth tables, cot'd
+    Distributive law
+      P AND (Q OR R) === (P AND Q) OR (P AND R)
+    DeMorgan's Law
+      NOT(P AND Q) === NOT P OR NOT Q
+    Triple equals sign
+      Set of rules are complete
+      If two formulas are === these rules can prove it
+    Can also start with axioms and then use proof rules
+      Lukasiewicz proof system
+        Covers formulas with only IMPLIES and NOT as operators

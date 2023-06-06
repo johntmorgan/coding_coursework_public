@@ -1,0 +1,200 @@
+Text
+  Predicate formulas
+    Quantifiers
+      "For all" - upside-down A
+      x^2 >= 0 always true when x is a real number
+      For all x in R.x^2 >= 0
+      But predicate
+        5x^2 - 7 = 0
+        Is only sometimes true - when x = +- sqrt(7/5)
+      "There exists" - reverse E
+        There exists x in R.5x^2 - 7 = 0
+    Assertion that always true
+      Universal quantification
+    Sometimes true
+      Existential quantification
+    Goldbach's conjecture
+      Every even integer > 2 is the sum of 2 primes
+      For every integer n greater than 2, there exist primes p and q such that n = p + q
+      Evens set of integers greater than 2
+      For all n in Evens There exists p in Primes there exists q in Primes. n = p + q
+    Order of quantifiers
+      Swapping usually changes proposition meaning
+      "Every American has a dream"
+      Let A be the set of Americans
+      Let D be the set of Dreams
+      Predicate H(a, d) -> American a has dream d
+      There exists a d in D for all a in A.H(a, d)
+      For all a in A there exists a d in D.H(a, d)
+    Variables over one domain
+      When all variables take values from same nonempty set D, don't mention D
+      For all x in D there exists a y in D.Q(x, y)
+      For all X there exists y.Q(x, y)
+      Unnamed nonempty set is "domain of discourse"
+        Or just "domain" of formula
+    Negating quantifiers
+      Not everyone likes ice cream
+      There is someone who does not like ice cream
+      Same thing!
+      NOT(for all x.P(x)) equivalent to there existsx.NOT(P(x))
+      NOT(there exists x.P(x)) equivalent to for all x.NOT(P(x))
+    Validity for predicate formulas
+      NOT(for all x.P(x)) IFF there exists x.NOT(P(x))
+      There exists x for all y.P(x,y) IMPLES for all y there exists x.P(x,y)
+      but what is not valid:
+      For all y there exists x.P(x,y) IMPLES there exists x for all y.P(x,y)
+      Imagine P(x,y) means x > y
+        Could say x = y + 1
+        But then there is an integer bigger than all integers - false
+          "Counter model to assertion"
+Lecture
+  Predicate logic
+    Basic concept in mathematical language
+    Quantifiers
+      For all - upside down A
+      There exists - backwards E
+    Propositions with variables
+      P(x,y) ::= [x + 2 = y] (::= defined to be)
+      If x is 1 and y is 3 - it's true
+      If x is 1 and y is 4 - it's false
+      but NOT(P(1,4)) is true
+    For all x
+    There exists some y
+    UA acts like AND
+    Let s range over 6.042 staff
+    P(s) ::= [s is Pumped about 6.042]
+    For all.x(P.s)
+    P(Drew) AND P(Peter)... AND P(Michaela)
+    BE acts like OR
+    Let t range over 6.042 staff
+    There exists t.B(t)
+    B(Drew) OR B(Peter)...
+  Existential quantifier practice
+    Let x, y range over N (non-negative integers)
+    Q(y) ::= there exists x.x < y
+    What happens?
+      Q(3) is true: x = 1 works
+      Q(1) is true: x = 0 works
+      Q(0) is false: x < 0 is not true
+  Universal quantifier
+    R(y) ::= For every x.x < y
+      R(1) is False - x = 5 is a counter
+      R(8) is False = x = 12
+  Virus attack V1
+    What confuses people is mixing quantifiers
+    AE, EA
+    For all v in Virus . there exists d in defense.d protects against v
+    For every virus, I have a defense:
+      Listing them out
+      This is expensive!
+  Virus attack V2
+    There exists d in defense.for all v in virus.d protects against d
+    Single scanner protects against all viruses
+    That's what we want!
+  Alternating quantifiers
+    Proposition (not predicate, does not depend on x/y values)
+    G ::= For all x there exists y. x < y
+    x, y range over domain of discourse
+    Domain      G is:
+       N          T   Gimme x - let's choose x + 1
+       ints < 0   F   If x = -1, no integer larger
+       reals < 0  T   If you give me r, then r/2 - actually bigger bc negative
+  Reverse quantifiers
+    H ::= There exists y for every x. x < y
+    Domain      G is:
+       N          F   No biggest non-negative integer
+       ints < 0   F   No biggest negative integer
+       reals < 0  F   No biggest negative real
+    Will be false in any domain of discourse
+      Any y cannot be bigger than itself
+    H ::= There exists y for every x. x <= y
+    Domain      G is:
+       N          F   No biggest non-negative integer
+       ints < 0   T   Now a biggest y: -1
+       reals < 0  F   No biggest negative real
+
+  Validity and Satisfiability
+    True for all truth-values - valid
+      P IMPLIES Q OR Q IMPLIES P
+    For predicate formulas, more complicated
+      Valid - true for all domains and predicates
+      For all Z.[P(z) AND Q(z)] IMPLIES [For all x.P(x) AND for all y.Q(y)]
+      Why is this valid?
+      Implication
+      Proof strategy: assume left side is T
+      Then prove consequent (right hand side) holds
+      So for all values of z in domain, Q(z) and P(z) is true
+      Suppose val(z) = c, an element in the domain
+      The Q(c) and P(c) holds - so Q(c) by itself holds
+      But c could have been any element of the domain
+        So for all x.Q(x)
+        By "UG" - universal generalization
+      Similar conclusion for P
+      So the AND holds as well - proven right hand side is true
+      Not fair to call this a proof
+        Rules of the game are murky here
+        Hard to see what more basic things you can assume in proving it
+        Not right to say it's a proof, hasn't been exactly clear about rules
+          Gets very technical to determine what to assume or not
+    Universal generalization
+      P(c)
+    --------
+    for all x.P(x)
+    providing c does NOT occur in P - just assume in domain, property P
+
+    Similar example that is not valid
+    For all z.[P(z) OR Q(z)] IMPLIES [For all x.P(x) OR for all y.Q(y)]
+    Proof: give counter-model, where
+    left side of IMPLIES is T
+    show right side is F
+    Let domain ::= {1, 2}
+    Q(z) ::= [z = 1], P(z) ::= [z = 2]
+    Left hand side is true - everything is 1 or 2
+    Right hand side is false - is everything 2? no 1 != 2 - and likewise for Q(z)
+
+  DeMorgan's law for quantifiers
+    NOT(for all x.P(x)) IFF there exists y.NOT(P(y))
+    If it's not true that eveything has property P - iff there's something that doesn't have property p
+
+  AE in English
+    English is ambiguous - so can be tricky to translate
+  Two meta-theorems
+    Metamathematics - mathematics of mathematical logic
+  Math vs. English
+    "All that glitters is not gold"
+      G = glitters
+      Au = gold
+    For all x.[G(x) IMPLIES NOT(Au(x))]
+    But is that a sensible translation? No!
+    Gold glitters like gold!
+    He means "All that glitters is not *necessarily* gold" (poetic license)
+    NOT(For all x.[G(x) IMPLIES Au(x)])
+      Problem with machine translation from natural language into formal language
+    "There is a season to every purpose under heaven"
+    There exists s in Season for al p in Purpose.s is for p
+      Some season, say Summer, is good for all Purposes?
+      But summer is not good for snow shoveling!
+    The real meaning?
+    For all p in Purpose there exists s in Sesason.s is for p
+    Though of course there is "a man for all seasons"
+      Sir Thomas More - polymath - writer, cleric, UK chancellor
+  Two profound theorems about mathematical logic
+    (Optional but still worth knowing about)
+    Describe power and limits of logic
+    Meta theorems - theorems about theorems (meta - going up a level)
+    Theorem 1
+      Good news: only need a few axioms and rules to prove all valid formulas
+      (In theory, in practice need lots of rules)
+      Rules are just UG and modus ponens
+      Gödel's Completeness Theorem
+    Theorem 2
+      Bad news: there is no procedure to determine whether a quantified formula is valid
+      (In contrast to propositional formulas)
+        There, a truth table can blow up - so you can see it's invalid
+      Predicate calculus is logically undecidable
+        Can't write a program to take things in and spit them out
+    The proofs of these require a half term in an intro logic course after 6.042
+
+  Problem set
+    Quantifiers of the same type can be reordered without altering the meaning of the statement
+    

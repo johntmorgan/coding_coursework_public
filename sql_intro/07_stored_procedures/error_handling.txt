@@ -1,0 +1,175 @@
+Error Handling
+  When error occurs in stored procedure
+    Error returned to calling program
+    Stored procedure terminates
+  Error handler has 3 parts
+    Error condition
+    Action
+    Statements
+
+Error condition
+  Why handler invoked
+  Three options
+    MySQL error code
+    SQLSTATE code
+    User defined condition assoc with error code or SQLSTATE value
+  MySQL has error codes unique to MySQL server
+  ANSI has defined codes which are database independent
+    "SQLSTATE"
+
+Action
+  CONTINUE exection *or*
+  EXIT
+
+Statements
+  To be executed once activated
+  Usually setting variable name to be checked in stored procedure
+  But can have multiple lines in BEGIN END
+  DECLARE HANDLER to declare a handler
+    Can also define a name for an error condition
+      Good, codes are hard to remember
+
+Examples
+
+  // Already saw this, when cursor tries to fetch a row that does not exist
+  // Allows procedure to CONTINUE
+  DECLARE CONTINUE HANDLER FOR NOT FOUND
+  SET RowNotFound = 1;
+
+  // Can also rollback the previous operation and exit
+  // SQLEXCEPTION is a SQLSTATE value
+  // EXIT action causes block to terminate
+  // If block with EXIT enclosed in another block, control goes to outer block
+  DECLARE EXIT HANLDER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    SELECT 'An error has occurred, operatoin rolled back and the stored procedure was terminated';
+  END;
+
+  // Super common error is duplicate key - 1062
+  DECLARE CONTINUE HANDLER FOR 1062
+   BEGIN
+       SELECT 'Duplicate key error occurred' AS message;
+   END;
+
+  // Now let's put this in a stored procedure
+  // First call is successful
+  // Second call hits duplicate key handler
+
+  DELIMITER **
+  CREATE PROCEDURE InsertDigitalAssets(
+      IN Id INT,
+      IN Asset VARCHAR (100),
+      IN Type VARCHAR (25))
+  BEGIN
+      DECLARE CONTINUE HANDLER FOR 1062
+      BEGIN
+      SELECT 'Duplicate key error occurred' AS Message;
+      END;
+
+      INSERT INTO DigitalAssets(URL, AssetType, ActorID) VALUES(Asset, Type, Id);
+
+      SELECT COUNT(*) AS AssetsOfActor
+      FROM DigitalAssets
+      WHERE ActorId = Id;
+  END**
+  DELIMITER ;
+
+  CALL InsertDigitalAssets(10, 'https://instagram.com/iamsrk','Instagram');
+  CALL InsertDigitalAssets(10, 'https://instagram.com/iamsrk','Instagram');
+
+  // But you can also exit printing a message
+
+  DROP PROCEDURE InsertDigitalAssets;
+  DELIMITER **
+  CREATE PROCEDURE InsertDigitalAssets(
+   IN Id INT,
+   IN Asset VARCHAR (100),
+   IN Type VARCHAR (25))
+  BEGIN
+   DECLARE EXIT HANDLER FOR 1062
+   BEGIN
+   SELECT 'Duplicate key error occurred' AS Message;
+   END;
+
+   INSERT INTO DigitalAssets(URL, AssetType, ActorID) VALUES(Asset, Type, Id);
+
+   SELECT COUNT(*) AS AssetsOfActor
+   FROM DigitalAssets
+   WHERE ActorId = Id;
+  END**
+  DELIMITER ;
+
+  CALL InsertDigitalAssets(10, 'https://instagram.com/iamsrk','Instagram');
+
+  // Another example
+  // MySQL error code 1322, commmon
+  // Cursor statement is not a SELECT statement
+  // Let's describe the error and then use the name in the handler to make readable
+
+  DECLARE WrongCursorStatement CONDITION for 1322;
+  DECLARE EXIT HANDLER FOR WrongCursorStatement
+   SELECT 'Provide a SELECT statement for the cursor' Message;
+
+  // When MySQL reports an error, provides both MySQL error code and SQLSTATE value of error
+  // All MySQL error codes have corresponding SQLSTATE values
+  // These SQLSTATE values may not be unique, more than one MySQL code may map to a SQLSTATE value
+  CREATE PROCEDURE abc()
+  BEGIN END;
+
+  CREATE PROCEDURE abc()
+  BEGIN END;
+  > ERROR 1304 (42000): PROCEDURE abc already exists
+
+  // Different ways of phrasing - MySQL, SQLSTATE, NOT FOUND condition
+  // NOT FOUND is shorthand for class of SQLSTATE values
+  // All eligible to execute when cursor fails to fetch a row
+  // MySQL error code has highest precedence, then SQLSTATE, then generic handler
+  // Generic handler exmaples: SQLEXCEPTION, SQL WARNING, NOT FOUND
+  DECLARE CONTINUE HANDLER FOR 1329
+  SET LastRow =1;
+
+  DECLARE CONTINUE HANDLER FOR SQLSTATE ‘02000’
+  SET LastRow =1;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND
+  SET LastRow =1;
+
+// Scope
+
+  // INSERT statement is outside block with handler
+  DELIMITER **
+  CREATE PROCEDURE HandlerScope( )
+  BEGIN
+   BEGIN -- inner block
+      DECLARE CONTINUE HANDLER FOR 1048
+          SELECT 'Value cannot be NULL' AS Message;
+   END;
+
+   INSERT INTO DigitalAssets(URL) VALUES (NULL);
+  END**
+  DELIMITER ;
+
+  // Handler scope covers any calls to stored procedure in same block as declaration
+  // Here handler in proc1 invoked when INSERT in proc2 executed
+  // Define a separate handler in proc2 and it will take precedence
+  DELIMITER **
+  CREATE PROCEDURE proc1()
+  BEGIN
+  DECLARE CONTINUE HANDLER FOR 1048
+           SELECT 'Value cannot be NULL' AS Message;
+  CALL proc2();
+  END**
+  DELIMITER ;
+
+
+  DELIMITER **
+  CREATE PRoCEDURE proc2()
+  BEGIN
+   INSERT INTO DigitalAssets(URL) VALUES (NULL);
+  END**
+  DELIMITER ;
+
+
+  CALL proc1();
+  CALL HandlerScope();

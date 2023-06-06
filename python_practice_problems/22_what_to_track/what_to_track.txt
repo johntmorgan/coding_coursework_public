@@ -1,0 +1,15 @@
+What to Track
+  Frequency counts usually, to avoid O(n^2)
+  Array & strings
+    Boolean T/F return
+    Count data frequencies
+  Values in array corresponding squared in second?
+  Strings anagrams?
+  If player wins game?
+  Hashmaps store frequency count
+
+Pattern matching
+  Hard with naive O(n^2)+ approach
+  Can track data to solve efficiently
+  Often when choose from T/F, P1/P2, etc.
+  

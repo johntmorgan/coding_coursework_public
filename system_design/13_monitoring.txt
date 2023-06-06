@@ -1,0 +1,175 @@
+Distributed Monitoring
+Challenging to know hardware and app level
+  Distributed across multiple locations, many servers
+  Components can fail
+    Or response latency overshoot
+    Overloaded hardware
+    Unreachable hardware
+    Containers running out of resources
+  One service down can crash others
+  Need to know what went wrong quickly
+    Otherwise slow manual debug
+  Make sure working within service-level agreements (SLAs)s
+  Catch important trends
+  Catch signals of impending failures
+
+Monitoring systems
+  Gather
+  Interpret
+  & Display Data
+  Assist in
+    Debugging
+    Testing
+    Performance Eval
+    Bird's-eye view over services
+
+Need for monitoring
+  Ex. upload video to YouTube
+    UI service in server A takes video info
+    Gives data to service 2 in server B
+    Service 2 makes entry in DB X, stores in blob storage
+    Service 3 in server C manages database X & Y replication and synch
+    Service 3 fails!
+    Service 2 makes entry in database X
+    Database X crashes
+    Video request routed to database Y
+    "Video not found"
+  That was a simple example
+  Complex problems
+    Many data centers
+    Millions of servers
+    Decreasing human admin/server ratio
+      Not feasible to manually find problems
+  Downtime cost
+    Fault-tolerant systems hide most failures
+    Crucial to catch before snowball
+    October 2021, Meta down for 9 hours
+      Lose $13m/hour
+    Amazon outage
+      Automated capacity scaling -> unexpected internal client behavior
+      Large surge in connection activity
+      Overwhelmed network
+      Communications delays
+      Retries and attempts spiraled
+      $66,240/minute
+        So AWS down is 1/4th as costly as Meta... - JM
+  IT infrastructure spread all over globe
+  Types of monitoring
+    Ex. Educative
+      Learner connects to exec
+      Container is assigned
+      Service 1 in server A allocates container
+      Service 2 on server B takes info, informs service for UI
+      UI service on server C updates UI for learner
+      What if service 2 fails?
+        Learner sees "cannot connect"
+        How do Educative devs find out?
+  Two broad categories of errors
+    Server-side errors
+      Visible to monitoring
+      Error 5xx in HTTP response codes
+    Client-side errors
+      Root cause on client side
+      Error 4xx in HTTP resonse
+        May be invisible to service
+        Client requests may fail to reach
+
+Monitoring prereqs
+  Define what to measure and what units (metrics)
+  Define thresholds of all metrics
+  Inform stakeholders via alerts when values out of acceptable range
+  How are failures handled?
+    Reactive
+    Proactive
+  Reactive
+    Corrective after failure occurs
+    DevOps take quick action to find error
+    Still causes downtime, undesirable
+  Proactive
+    Actions taken before failure occurs
+    Prevent downtimes and associated losses
+    Better reliability
+  Not possible to avoid all problems
+    Something is always failing
+    Goal to find impending problems early
+    Design systems so service faults invisible to end users
+
+Metrics
+  What to measure
+  What units
+  Ex. web server
+    Traffic per second
+    Can join pool of servers?
+  Ex. network performance
+    Throughput, MBits/s
+    Latency, round-trip time
+  Collect with minimal performance penalty
+    Calc penalty
+      User-perceived latency
+      Computational resources used
+  Starting point
+    Tack physical resources of system
+    With monitor in place, little work needed:
+      Processor load
+      CPU stats
+        Cache hits & misses
+      RAM usage by OS & processes
+      Page faults
+      Disc space
+      Disc read & write latencies
+      Swap space usage
+  Linux
+    Use top command
+    Open interactive view of running system
+      Summary, list of processes or threads
+    See how long machine on, users logged in, average load recently
+    State of tasks - running, sleeping, stopped
+    CPU consumption
+    Phsyical memory overview - free, used, buffered, available
+  Populate metrics
+    Should be logically centralized
+      Global monitoring & alerting
+      Fetching metrics crucial to monitoring
+    Push or pull?
+  Pull strategy
+    Each monitored server must store in memory, send to endpoint
+    Monitoring system fetches metrics itself
+    Servers can't overload monitoring system by sending too much/too often
+  Push
+    May be beneficial sometimes
+    Firewall prevents monitor from accessing
+    Monitor can adjust global configuration
+      What data to collect
+      Interval of push
+  Logs
+    Contain CPU usage, app info, etc. to backtrace when problem
+    Populate metrics based on log value
+    Processing takes time
+      Need to act fast for issue detection
+    Can also temp keep data on server
+      For any momentary data spikes
+      To decouple monitoring system from data gen system
+  Persist data
+    How to store?
+      Centralized in-memory may be all needed
+      But for huge data center with millions of things, enormous amount
+        Time-series database
+          Help maintain durability
+          Give historical view on system
+  App metrics
+    May need to add code or APIs to expose metrics for components
+      Embed logging/monitoring code - code instrumentation
+  Monitoring systems
+    Comprehensive view of environment
+    Automate responses like commissioning more EC2 instances if traffic up
+    Warn humans when necessary
+  Metrics allow analyzing
+    Historical trends
+    Correlations
+    Changes in performance
+    Chg in consumption
+    Chg in error rates
+  Alerting
+    Responds to changes & takes action
+    Metrics-based condition/threshold
+    Action to take when values outside of permitted range

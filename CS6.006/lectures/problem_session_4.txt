@@ -1,0 +1,158 @@
+Binary Trees today, mostly
+  A little of binary heaps
+    Not until next Tuesday
+    But a little will be on problem set
+  But mostly binary trees
+    Set and sequence data structures
+  As of yesterday
+    Have seen all data structures implementing set and sequence interface
+    Those tables you've seen are now complete
+    Some data structures are really good, constant time for some operations
+      Might choose them for some applications
+    This week, have been describing trees
+  Trees are pretty good speed-wise for any type of query
+    Pretty good meaning logarithmic time
+      Not quite constant
+      But practically on your computer
+        logn = 64
+    Any input you're operating on with n machine words as your input
+    Need to be able to address all those machine words in your input
+      Size of address 64 bits on your computer
+      Assume size is at least log
+      logn no more than 64
+    It's not a constant factor for theory purposes
+      But practically much better than a polynomial factor
+  Bit of fun ompiled code from recitation notes
+    Test_Efficiency.py
+      Seq_Array
+        O(1) get_at, set_at fast
+      Seq_Linked_list
+        O(1) insert_first, insert_last fast
+      Seq_Dynamic_Array
+        O(1) get_at, set_at, insert_last, delete_last
+      Set_Hash_Table
+      Seq_Binary_Tree
+        lg for almost everything
+      etc.
+    A few things off - C intrinsic under Python doing certain things fast
+      E.g. seq_array build fast
+      Python 100 times slower than anything C does
+        Super crufty
+Question 1
+  Sequence AVL tree
+  Not in order of number, so better not be Set AVL!
+  Start is height balanced
+    However it's about as bad as you can get without being imbalanced, at the limit
+  What's missing if claiming sequence AVL
+    Heights - need to be able to tell for balance
+    Counts - required by sequence
+    Node 4 - height 3, size 7
+  Asking to perform a delete operation
+    Delete the eighth thing in the tree
+    Count along in-order traversal
+  Right then left rotation, followed by a right rotation to fix (see hand notes)
+  Red-Black
+    Allows higher than skew 2, weaker restriction
+    Only do constant number of rotations before fix tree - more complicated
+  This was more of a mechanical question
+  Now onto theory questions
+Question 2
+  List of n superheroes, opinion -s to +s
+  Find the logn most extreme opinions, talk to them
+  Given a read only in array
+    Find logn ones with strongest opinions in linear time
+  You actually don't know how to do this yet
+    One way to do it in 046
+    Will teach another way to do it on Tuesday via binary heaps
+  Binary Heaps
+    Implement subset of the set interface
+    build(X)
+    Implement priority queue interface
+    delete_superlative operation
+    delete_max()
+    What a heap can do
+    Have both implemented via set AVL tree
+      Build takes nlogn
+      Delete_max takes logn
+        Walk down tree and take out
+    What would do better?
+      Sorted dynamic array
+        Sort in nlogn time
+        Delete_max() in worst-case constant time if not resizing
+  How to build
+    Build so absolute values are most, and then delete_max logn time
+    One build operation
+    logn delete_max
+    For array or set avl tree build(X) O(nlogn)
+      Binary heap - O(n) time
+    Delete_max()
+      O(logn) time -> O(loglogn) time
+    So O(n) time, since O(n) bigger
+  Part B
+    Only have logn space
+    Can't build entire structure
+    Maybe can't get the running time bound as before
+      Need to sacrifice something
+      Can solve with binary heaps
+      But also with Set AVL trees
+    Can only read list of opinions
+    Can only write to logn space
+      Want to build a data structure of that size
+      If you have logn things, height will be loglogn
+    Have a set AVL tree
+      Keyed by absolute value of opinion
+      What do I put there? Let's put first logn things
+        Took logn * loglogn time
+    Now sweep through rest of list
+      Inserting things and deleting the smallest one
+Question 3
+  Worst-case bounds
+  When approach a data structure problem in this class
+    What are you storing
+    What's supposed to be in those things (invariants on data structures)
+  Two keys to deal with, bidder ID and bid
+    Two data structures to use
+    1. Dictionary keyed on bidder ID
+    2. Set AVL to store top k bidders keyed by bid
+    3. Set AVL to store n - k highest bidders keyed by bid
+  When someone interacts
+    Check to see if smallest in top k
+    Stick in n - k if so
+    Data structures maintain find_min/find_max of sets
+  Can't afford to sum at the end
+    Track total of bids k
+    Can think of augmenting structure with number
+    get_revenue() returns it
+    Make sure stays good when doing operations
+  Can't assume bids will be unique
+    Hash table it's required - but bidder ID is unique
+    Link each key to sequence data structure
+      - store all things there "multi set"
+  New bid
+    Look up current bid by bidder ID in dictionary - "cross-linking"
+      Dictionary
+        Hash table - O(1) expected
+        OR Set AVL - O(logn) worst-case
+      Pointer to bid in AVL tree
+Question 4
+  Receiver roster
+  Want to start players with the highest performance - average number of points per game
+  First, need to record a receiver, could have a lot of games
+  Dictionary on receiver
+    Each one has a data structure with all its games
+  Look up receivers
+    Worst-case logn time -> Set AVL keyed on receiver jersey
+  For each receiver:
+    Store a set AVL on games - set AVL - logn time
+  For each receiver:
+    Store sum of points in games, number of games as augmentation
+  Then to sort receivers
+    Set AVL again, storing recievers keyed on performance
+      Cross multiplication to compare
+    And pointed to by games to update
+  How to find the kth best thing in the tree?
+    Could also store sizes
+      Which a set AVL tree does not do by default (unlike sequence AVL tree)
+    Look up the kth item the same way you would
+Question 5 (outside class)
+  

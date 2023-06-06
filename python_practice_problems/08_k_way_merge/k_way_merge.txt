@@ -1,0 +1,9 @@
+K-way merge
+  Solve list of sorted arrays
+    Insert first element in min-heap
+    Remove smallest element from heap, add to array
+    Insert next element from element's heap into array
+
+Pattern match
+  Set of sorted arrays to merge
+  Find kth smallest/largest in set of sorted arrays

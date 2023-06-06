@@ -1,0 +1,309 @@
+Stable Matching
+Reading
+  Let's look at another man/woman matching problem
+  Each person has preferences about who to marry
+    Man has preference list of women and vice versa
+    Preferences are not symmetric
+  The goal: marry everyone, no polygamy
+  Want it to be "stable"
+    No pair of people who prefer one another to their spouses
+  In any matching
+    Not married but both like each other better than spouses = "rogue couple"
+    If no rogue couples, no affairs
+  A "stable matching" is a matching with no rogue couples
+  Turns out there is always a stable matching among men/women
+  But among "buddies" who can all match, may not be possible
+  The Mating Ritual
+    Every day, the man stands under the balcony of top choice among women
+      If he has no women left, he stays home and does math
+    Then each woman tells favorite suitor to stick around
+      Anyone told to leave crosses off preference list
+    When every woman has at most one suitor, each marries
+    Facts to prove
+      Ritual eventually terminates
+      Everybody ends up married
+      Resulting marriages are stable
+  Akamai
+    Used variation of mating ritual to assign web traffic to servers
+      Early used other combinatorial optimization algorithms
+      Requests correspond to women, web servers correspond to men
+      Requests have preferences based on latency and packet loss
+      Servers have preferences based on cost of bandwidth and co-location
+  Proof
+    There is a marriage day
+      Every day on which has not terminated, at least one man crosses a woman off
+      (Because if not terminated, one woman serenaded by two men)
+      Initially n^2 preferences, ritual can continue for at most n^2 days
+        (Or less if each list winds up with at least one name - JM)
+    Everyone winds up married
+      If a woman has a suitor, will have her favorite tomorrow
+        So next day chooses someone as desirable as favorite
+        Favorite suitor gets better or stays the same, never worse
+          Preserved invariant
+      If w is crossed off m's list, then w has a suitor she prefers over m
+      Invariant P holds vacuously at the beginning, no women crossed off to start
+      Assume to contrary that on last day of mating ritual Bob is unmarried
+        Not serenading anybody, list is empty
+        Every woman must have been crossed off his list
+        Every woman has a suitor she prefers to Bob
+        So every woman has a suitor, and it's only one, and they marry
+        But equal number of men and women, so if all women marry so do men
+        Contradicts assumption Bob is not married
+    Stable matching
+      Any couple that are not married, prove that not rogue couple
+      Case 1 - Jen is not on Brad's list by the end - then Jen has husband prefer to Brad
+      Case 2 - Jen is on Brad's list - wife must be higher on preference list than Jen
+  Who is favored by this ritual?
+    Women seem to have power
+      Choose favorite suitor and reject the rest
+      Suitors only change for the better
+      For men the women they serenade only get worse
+    But they do not!
+    Ritual produces a stable matching, but they need not be unique
+    Reverse roles and you often get a different stable matching
+    One person is a "feasible spouse" when there is a stable matching in which the two are married
+    If w is crossed off m's list, then w is not a feasible spouse for m
+    Lemma: this is a preserved invariant for the mating ritual
+    Proof
+      Suppose Q holds at some point in the Ritual
+      Some woman Alice is about to be crossed off Bob's list
+        Alice prefers Ted to Bob - and Ted is serenading Alice
+        This means Alice is at the top of Ted's list
+        So if Alice could be married to Bob, Ted would be married to someone he likes less
+        Ted and Alice would be a rogue couple
+      Definition
+        Optimal spouse - most preferred feasible spouse
+        Pessimal spouse - least preferred feasible spouse
+      Thm
+        Mating ritual marries every man to optimal spouse, every woman to pessimal spouse
+        If Bob is married to Alice on final day of ritual
+          Everyone above Alice was crossed off - not feasible
+          Alice is Bob's highest ranked feasible spouse - that is, optimal
+        Since Bob likes Alice better than any feasible wife
+        Alice & Bob would be rogue couple if married to husband she likes less than Bob
+          Bob must be Alice's least preferred husband
+  Applications
+    1962 Gale/Shapley paper
+    But was already used 10 years earlier to match residents to hospitals
+      Also used by at least one online large dating agency today
+
+Lecture
+  We've seen boy/girl connection graphs
+  A similar problem comes up in terms of "stable matching"
+    Matching up boys and girls in a way with constraints
+  Setup
+    5 boys, 5 girls to pair - each have a ranking of preferences
+    Want to acknowledge preferences as much as we can
+  Let's try a "greedy" strategy for boys
+    Give the first boy top choice
+    Then give the second boy top choice, etc
+    But when we look at marriages
+    Boy 1 is happy with girl C, but she may not be
+    And boy 4 is married to girl B
+      But boy 4 likes girl C more than girl B
+      And girl C likes boy 4 more than boy 1
+      Would be happier running off together
+      "Rogue couple"
+  Stable marriage problem
+    Marry everyone without any rogue couples
+      People may still not be happy, but doesn't matter
+        Won't find anybody else that is unhappy in the same way, would run off with them
+    Can you actually do this in real time?
+      Used to actually do this in class
+        Often worked but not always
+    Solutions
+      1. All girls get first choice - all girls have different first choice boys
+        But that is unusual, isn't it?
+      2. Another set not so obvious
+        "Boy optimal" - every boy gets best possible spouse
+        But is pessimal for girls - get worst possible spouse
+  This is more than a puzzle
+    College admissions (Gale & Shapley)
+      Trying to match up
+      Let's get a stable set of offers on the table
+    Matching hospitals and residents (fka interns)
+      Already in practice 20 years earlier, just not published
+      Was a mess before discovered (ARM edited a whole series incl. a book on this)
+        Huge measures for stability needed
+    Matching clients and servers
+      Akamai - providing cached webpages, respond quickly to local calls
+        65k servers, 2B requests per day
+        Requests = boys
+        Servers = girls
+        Large numbers - good thing this is amenable to running in parallel
+    Used in an Indian dance group at MIT
+  Stable Matching: The Mating Ritual
+    Morning: boy serenades favorite girl
+    Afternoon: girl rejects all but one
+    Evening: boy crosses girl off if rejected
+    Stop when no girl rejects
+    Each girl marries her favorite suitor (if any)
+      Stopping condition
+    State Machine
+  Stable Marriages
+    Termination:
+      There exists a wedding day
+    Partial correctness:
+      Everyone is married
+      Marriages are stable
+  Termination
+    Total # of names remaining on boys' lists
+      Strictly decreasing and N valued - (eh? contradicted by class Q and my own reasoning - JM)
+      Will reach a minimum value, that's when the algorithm stops
+      So there exists Wedding Day
+    Correctness
+      Girls improve day by day
+        Favorite tomorrow will be at least as desirable as today
+        Because favorite will stay until she rejects him for someone better
+        Lemma
+          The rank of a girl's favorite is weakly increasing
+        Lemma
+          The boy's favorite will be no more desirable, works down list
+          Rank of girl a boy serenades is weakly decreasing
+      Mating Ritual invariant
+        If G is not on B's list, she has a better current favorite
+        When G rejected B she had a better suitor, and her favorites never get worse
+      On wedding day
+        Each girl has <= 1 suitor (by def of wedding day)
+        Each boy is married or has no girls on his list
+          Either is serenading, or has no girls on his list
+          No bigamy, no husband sharing
+          Boys serenade one girl at a time
+      Everyone is married on wedding day, proof by contradiction
+        Suppose B is not married, his list is empty
+        By invariant, all girls have favorites better than B
+        All girls are married
+        Since no bigamy, all boys are married
+      Stability
+        Two cases, both trivial from invariant
+        Bob won't be in rogue couple with
+          case 1: a girl G on his final list
+            He's already married to the best of them
+          case 2: a girl G not on his list
+            She's married to someone she likes better
+        Bob can't be in a rogue couple with anyone
+  Optimal Stable Matching
+    Basic stability has value, doesn't mean everybody's happy
+    Just means nobody can find someone equally unhappy to run off with
+    How well do people do using the mating ritual (and other options)
+    Who does better, boys or girls?
+      Girls suitors get better over time (sounds good)
+      Boys sweethearts get worse
+      So do girls do better? No!
+      Why? Boys start off with first choice
+      They go down but only to best woman they can be married to
+    Nicole is optimal for Keith when highest ranked girl he can stably marry
+      He might like someone else more
+      But if he's not married to her, there's no way she's interested
+    Mating ritual is optimal for all boys at once
+      You'd think optimality is sacrificed for other boys, but not
+      And girls get pessimal spouse
+    Proof that mating ritual leads to boy optimal marriages
+      By contradiction
+      Say Nicole is optimal for Keith
+      And Keith does not marry Nicole
+      He must have crossed off Nicole on some earlier "bad" day
+      Assume Keith had the earliest bad day
+      On his bad day, Nicole rejected because she liked her suitor Tom better
+      And Tom has not crossed off his optimal girl yet
+        So Nicole is >= optimal for Tom
+      Nicole is >= optimal for Tom
+      Nicole prefers =Tom to Keith
+      So in any set of stable marriages with Nicole married to Keith
+        Tom will be married to someone he like someone less
+        And Nicole will be married to Keith who she likes less than Tom
+        Nicole and Tom would be rogue
+        Contradicts fact that Nicole is optimal for Keith
+          Marriage is not stable
+    Proof that girl pessimal, simpler but similar
+  Are other stable marriages possible?
+    Can switch roles of girls and boys for starters
+      Girl-optimal, boy-pessimal
+      (Could be same in rare cases)
+    But are there others the mating ritual doesn't find?
+      Can be many - if n boys/girls could be exponential in n
+    What would be the best? Big question
+    Do better by lying?
+      Instead of following protocol
+      Boys - No! already optimal
+      Girls - Yes! if conspire together to lie can reach girl-optimal
+        Are there protocols resistant to lying - another question
+      Book - Gusfield and Irving
+  Bipartite matching
+    Mating Ritual one example of this
+    Bipartite graph
+      Simple graph, vertices split into 2 groups
+      Edges - compatibility constraints
+        Specification each girl willing to be paired with certain boys
+        Match each girl to unique compatible boy
+    Formally
+      Want bijection from girls to boys that follows edges
+    What about a case where can't find a match?
+      3 girls compatible with just 2 boys, 1 girl compatible with another 2 boys
+      "Bottleneck" - proves a match not possible
+    Generally
+      Set S on left and look at image E(S) on right - all boys compatible with 1+ girls in S
+        |S| = 3, E|S| = 2
+        Bottlenecked
+        General definntion
+        |S| > |E(S)|
+    Lemma
+      A set S of girls without enough boys
+      E(S) ::= boys adjacent to at least one girl in S
+      |S| > |E(S)|
+      If there is a bottleneck, no match is possible, obviously
+    Thm
+      Conversely, if there are no bottlenecks, there is a match
+      Hall's Thm - not obvious, but let's prove
+  Hall's Thm
+    Bipartite graph H
+    The vertices H altogether are L(H) U R(H)
+    Edges of H only go between L(H) and R(H)
+  Bipartite match
+    Total injective function m : L(H) -> R(H) that follows edges
+      So every L vertex has a match on the other side
+    If |S| <= |E(S)| for all sets S C= L(H) then there is a match
+    How to verify no bottlenecks? It's hard
+      Need to check subsets of L(H)
+    Fairly efficient matching procedure runs quadratically - learn in algorithms class
+    There is a special situation that ensures a match
+      Every girl likes >= d boys
+      Every boy likes <= d girls
+      A degree-constrained graph
+      Min degree girls >= max degree boys
+    Degree constrained bipartite graph satisfies Hall's condition
+      Every girl likes >= d boys
+      Every boy likes <= d girls
+      No bottlenecks
+      Proof
+        Say set S of girls has e incident edges
+         d * |S| <= e <= d * |E(S)|
+         Cancel d's
+        So |S| < |E(S)|
+          No bottleneck QED
+    Many graphs with matches that are not degree-constrained
+      Just comes up often
+    Proving Hall's Theorem
+      No bottleneck, then there is a match
+      Suppose no bottlenecks
+      Lemma: no bottlenecks in any set S of girls
+        No subset will have a bottleneck
+      Lemma: if S a set of girls with |S| = |E(S)|
+        Then no bottlenecks between NOT(S) and NOT(E(S)) either
+      Suppose set T subset of NOT(E(S))
+        Taking T and image of T not in E(S)
+      No bottlenecks implies there is a perfect match
+      By strong induction on the number of girls
+      Case 1
+        Proper subset of girls with |S| = |E(S)|
+        By Lemmas, no bottlenecks in Hall graph (S, E(S)), and none in (NOT(S), NOT(E(S))
+        If no bottlenecks overall, no bottlenecks in restricted graphs
+        Matchings don't overlap, so union is a complete matching
+          Working subsets by themselves
+      Case 2
+        |S| < |E(S)| for all nonempty proper subsets S
+        Now you've got slack - pick girl g, must be compatible with one boy since no bottlenecks
+        Arbitrarily match her
+        Removing b still leaves |S| <= |E(S)| so no bottlenecks
+        By induction can match remaining girls and boys
+        That match along with g-b is a complete match - QED

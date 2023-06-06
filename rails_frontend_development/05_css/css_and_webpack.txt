@@ -1,0 +1,49 @@
+CSS and webpack
+  Was tricky to handle initially
+  Now about same complexity as using Sprockets
+  Default Webpacker allows plain CSS, SASS, SCSS
+    SCSS = similar to CSS
+    SASS = minimalist similar to Haml
+  Using SCSS here
+  So far have been using Bulma CSS framework
+    Have been importing it directly using a direct link in application.html.erb
+  Now let's add it via Webpacker
+    yarn add bulma
+  Add another library
+    yarn add @types/webpack-env -D
+  Make sure using the correct version of require, needed for static images
+  Import file in app/javascript/packs/application.scss
+    Pack all the application.* files into a single pack
+    Name application.scss, included in existing application pack
+    Add line
+      @import '~bulma';
+  According to webpacker docs need to add
+    <%= stylesheet_pack_tag("application") %>
+    (But it just causes an error for me... - JM)
+  Can now add custom rules to application.scss
+    Can import other files into the applicaion.scss file
+    Webpacker has no opinions about how you structure CSS
+  As with JS packs, top of page may be manifest of other pages
+    Then split those other pages into focused CSS rules
+      One for button styling, typography, colors
+  Webpack processes CSS with PostCSS
+    Parses SASS, SCSS
+    Can also do a lot of other post-processing - check the docs
+  To get static assets in projects, import
+  In application.ts, re-add boilerplate
+    const images = require.context("../images", true)
+    const imagePath = name => images(name, true)
+  First line uses require.context webpack method to add ../images dir to pack
+    Directory must exist, or compile fails!
+  Second line creates a method called imagePath
+    Export or use in other JS code to get name of file
+  Now to access any image file
+    From JS, use imagePath method just defined
+    imagePath("./arrow.png")
+  From SCSS can reference image directly
+    background-image: url("../images/arrow.svg")
+  In a Rails view, two helpers
+    asset_pack_path
+    image_pack_tag (replacement for image_tag)
+      image_pack_tag("media/images/arrow.png")
+      

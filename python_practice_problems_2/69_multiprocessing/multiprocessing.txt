@@ -1,0 +1,410 @@
+Multiprocessing
+  Execute tasks as processes using multiprocessing
+  Most APIs mirror those in threading module
+    Very easy to change code from one to other
+  Somewhat addresses global interpreter lock
+    Allows program to spin off tasks as separate processes
+      These then run on individual processors
+      Python is now concurrent and parallel
+        Threading = concurrent only
+  Creating, managing, tearing down processes more expensive than threads
+    Inter-process communication also slower
+    Python may not be practical choice if:
+      Super-critical
+      Time-sensitive
+
+Process
+  Program in execution
+  OS provide different ways of creating
+    Each has own nuances
+  set_start_method() to choose how to create
+    fork
+    spawn
+    fork-server
+  Pass arguments to process as list of args and/or kw dictionary
+    process = Process(target=process_task, name="process-1",
+                      args=(1,2,3), kwargs={
+                        'key1' : 'arg1',
+                        'key2' : 'arg2'
+                      })
+
+Fork
+  Default method used by Python to create process on Unix
+  Two families, fork and exec on Unix
+  Get an almost clone of self
+    Not everything copied
+    Check the manpage on your platform
+      "man fork" (q to quit - JM)
+    All open file descriptors copied
+    Multiple threads do not get copied
+  Not available on Windows
+  Under hood Python uses os.fork()
+  Creates new copy of Python interpreter
+    Each has its own GIL
+  Often don't want fork
+    Child comes with identical data structures, file descriptors
+    Say main process acquires lock
+    Thne you fork
+    Child receives copy with locked object
+    Child process then hangs, can't acquire
+    Can be very difficult to debug third-party module using threads
+  Overall
+    Forking & multithreading do NOT mix well
+    Some libraries assume proper process initialization
+      Not true when fork
+    Portability can be a big issue
+      Open file descriptors may be inherited differently
+      System calls may be limited
+      Can't be used on Windows at all
+    Prone to security holes
+      Child receiving pseudo-RNG would generate same sequence
+        Now patched
+        But could compromise e.g. SSL
+
+Spawn
+  Goes via exec family of system calls
+  When you ls or find in shell
+    Shell forks itself then invokes exec family variant
+  Transform calling process into another
+  Program in calling process run from entry point
+  Fork and exec can be called independently and don't need called in succession
+  Usually in Unix: fork in parent then exec in child
+  Spawn: fork followed by exec
+    posix_spawn may also be used on some systems
+      Basically same, some optional housekeeping
+  Solves problem with fork start method
+    Module state is not inherited by child
+  Slower than forking
+    Anything imported at module level in __main__ gets re-imported
+  Note process does receive any arguments passed
+    Send arguments to child via pickle
+    Pickle module for serializing and deserializing object
+      Convert into stream of bytes
+      Get errors if cannot be serialized, e.g. Lock()
+
+Forkserver
+  New single thread process called server is started
+  Parent process has server fork to make new processes
+    Single-thread, safe to invoke os.fork
+    Again does not run in Windows
+
+Queues & Pipes
+  Two ways for processes to communicate
+
+Queues
+  Three FIFO options
+    All based on queue.Queue in stdlib
+    Simple queue
+    Queue
+    Joinable queue
+  Can enqueue any picklable object
+  Queues are thread & process safe
+  Objects enqueued by single process
+    Always in order
+  Multiple processes enqueue at same time?
+    May be out of order
+  "Infinitesmal delay" after first enqueue where empty() still returns true
+    Can be an issue if created by Manager (coming soon)
+
+Pipes
+  Two-way connection between processes
+  Write to one end of pipe, retrieve from other end
+  If two processes write to same end, may become corrupt
+  Should be used by 2 processes
+  Can make a pipe work with >2 processes using synch primitives... but not goal
+  Takes in a boolean "duplex"
+    If False, then only one end sends, other receives
+    rec_conn, send_conn = Pipe(duplex=false)
+
+Non-blocking
+  get() in queue is blocking, recv() in pipe is blocking
+    add a timeout - q.get(block=False, timeout=5)
+    Also wrap in try/except
+
+Sharing State
+  If P2 passes to P1 via queue or pipe, does not see what P1 does to object
+    Also ids of enqueued, dequeued object are different
+      Although if integer, same id - Python returns references to existing ints
+    Queue and semaphore are truly shared
+  Value class
+    Create ctype object in shared memory
+    Returns wrapper over requested object
+      Makes reads & writes process-safe
+    Same id now if fork, different id if spawn but still sees value change
+  Array
+    Very similar to use of Value
+    Array('i', range(5))
+  Note that shared state objects only inherited by child process
+    Queue or Pipe pass results in RuntimeError
+
+Locks & Reentrant Lock
+  Synch primitives in multiprocessing to coordinate among multiple processes
+  Many commonalities
+  Pass in as argument - see examples
+
+Semaphore
+  Very similar to threading semaphore
+    acquire() first arg is "block" instead of "blocking"
+
+Barrier
+  Basically just like threading
+
+Pool
+  Group of processes that can receive task for execution
+  Very similar to thread pool
+  Creating & tearing down threads is expensive
+    Most languages use pool of threads
+  Process pools are similar
+    Processes = number of worker processes to use
+      If None, then based on os.cpu_count()
+    Initializer = optional method before process starts task
+    Initargs = args passed to init method
+    maxtasksperchild = how many tasks pool processes before exiting
+      default, live till the Pool exists
+  apply() to submit task
+    Simplest API that Pool provides
+    Executes method in single pool process
+    Blocking call, result returned to caller
+  apply_async()
+    Non-blocking call
+    Takes in callbacks for success and failure
+      callback = on_success
+    Note init method called twice
+      When pool set up
+  map()
+    Much more powerful
+    From map reduce
+    Pool class also breaks up into chunks
+      But does not get as sophisticated as original map-reduce
+      Just aggregates all results in order received
+        Presents to user-defined callback
+    Most important arg is chunksize
+      If chunksize = 2, then each process gets 2 integers to work on
+      If more chunks than processes, some will get more than 1 chunk
+  map_async()
+    Non-blocking
+  imap(), imap_unordered()
+    Blocking call and return iterator for results
+      No callback specification needed
+  starmap(), starmap_async()
+    Specify more than one argument
+  Failures
+    Map-reduce is originally fault-tolerant
+    However map APIs do not provide automatic error handling
+    Rely on user to handle failures via errorcallback
+      Can implement retry logic
+      Can use queue to collect and resubmit
+
+Manager
+  Share data across different machines
+    Synch list, dict between processes
+  Employs proxy pattern
+
+  my_string = "hello World"
+  manager = BaseManager(address=('127.0.0.1', port_num))
+  manager.register('get_my_string', callable=lambda: my_string)
+  server = manager.get_server()
+  server.serve_forever()
+
+  BaseManager takes ip address and port number
+    Can listen for requests from other proxies
+    Blank = default 127.0.0.1
+  In register, pass typeid
+    Proxy object returned has attribute by this name
+    What gets returned by invoking this method is specified by next argument
+      Can be a class name - new object of class returne
+      Can be method that returns existing object - here lambda returning my_string
+  server_forever is blocking call
+    Process running code effectively becomes server listening for proxies
+
+  On another machine:
+
+    manager = BaseManager(address=('127.0.0.1', port_num))
+    manager.register('get_my_string')
+    manager.connect()
+    proxy_my_string = manager.get_my_string()
+
+    print(repr(proxy_my_string))
+    print(str(proxy_my_string))
+
+  Create manager object that connects to other manager
+  Register with same typeid used when setting up manager
+  repr() shows string representation of the proxy object
+
+  Can also get manager running with non-blocking start()
+  Call shutdown() to exit after sleeping a certain time
+
+  BaseManager
+    Base class of all managers
+    Can also extend to create our own customized managers
+    Start manager or retrieve server object and invoke serve on it
+      Another Python server process is created internally
+    Proxy allows invocation of public/exposed methods directly
+    Can also share far more complex than simple types (coming soon)
+
+  BaseProxy
+    Proxy object return is type AutoProxy
+      Derives from base class BaseProxy
+        Other derivations: ListProxy, AcquireProxy, EventProxy, IteratorProxy, etc.
+
+  Custom Manager
+    Derive from BaseManager class
+
+    class MyManager(BaseManager):
+      pass
+
+    Register types with the manager class itself instead of manager instance
+      MyManager.register("UtilityClass", Utility)
+
+      class Utility:
+        def capitalize(self, name):
+          return name.capitalize
+
+  BaseManager register method
+    Takes in a number of params
+      typeid
+      callable
+      proxytype
+      exposed
+      method_to_typeid
+      create_method
+
+  Ex.
+    class Pair:
+      def __init__(self, x, y):
+          self.x = x
+          self.y = y
+
+      def get_x(self):
+          # return self.x
+          return fancy_type(self.x)
+
+      def set_x(self, new_x):
+          self.x = new_x
+
+      def set_y(self, new_y):
+          self.y = new_y
+
+      pair = Pair(5, 6)
+      manager.register('get_pair', callable=lambda: pair)
+
+      All other params take on default values here
+        Proxy returned is AutoProxy
+        Public methods available for consuming processes
+
+    exposed:
+      Restrict methods:
+        pair = Pair(5, 6)
+        manager.register('get_pair', callable=lambda: pair, exposed=['get_x'])
+
+    proxytype:
+      class MyProxy(BaseProxy):
+        def get_x(self):
+          x = self._callmethod('get_x')
+          return x * x
+
+    create_method:
+      Takes boolean true or false
+      True by default
+        Manager object has method added as attribute
+        Same name as typeid parameter
+        Get proxy for shared using manager.typeid()
+        Set to false - not created
+          If sharing of objects is not desired on this node
+
+    method_to_typeid
+      When you want to return proxies from exposed methods of the proxy
+        returned by the manager object
+      Ex.
+        Create item class and add to Pair class
+        get_item(self) in Pair returns Item class instance
+        Process interacting with proxy of object of Pair
+          Will receive a *copy* of the object
+        Instead you may want to return proxy to item object
+
+        manager.register('get_pair', callable=lambda: pair,
+                        method_to_typeid={'get_item': 'ItemWrapper'})
+
+        Return value of get_sum returns proxy
+        typeId is yet another class ItemWrapper
+
+        class ItemWrapper:
+            def __init__(self, res):
+                self.item = res
+
+            def set_wrapped_item(self, new_item):
+                self.item.change(new_item)
+
+            def get_wrapped_item(self):
+                return self.item.retrieve()
+
+        Referent for proxy is instance of ItemWrapper
+          Instance of wrapper created, passed result of get_item() call
+          Result is item object held by pair
+        typeid that is provided as mapping has constructor invoked
+          with result of method call
+        Proxy created over typeid and returned
+
+        Flow
+          User code invokes get_item()
+          Item object returned
+          Python creates object of type ItemWrapper
+          Passes item object from step 1 into constructor
+          Creates AutoProxy over ItemWrapper object
+          This proxy is returned to user instead of item
+
+  All examples discussed here implicitly use fork to create processes!
+  If spawn instead of fork
+  Need to provide picklable object as callable param
+
+SyncManager
+  So far have been using time.sleep() to delay server manager from shutting down
+  Obviously bad strategy
+  SyncManager is subclass of BaseManager
+    Offers proxies of synch constructs from threading module
+  Replace BaseManager with SyncManager and create semaphore proxy
+    Main process waits on semaphore while child after accessing sets
+  Also has methods returning proxies for condition, Event, Lock, and BoundedSemaphore
+  Also offers arrays, value, dictionary, list proxies
+    Changes made visible to other processes
+      manager.list([2, 1, 0])
+    But if you use a vanilla list, not visible
+    Nested lists?
+      Can append, but when manipulate, changes not visible
+      Can assign list to same index
+        nested_list = list({})
+        lstProxy.append(nested_list)
+        nested_list.append(99)
+        nested_list.append(98)
+        nested_list.append(97)
+        lstProxy[3] = nested_list
+
+Working with managers
+  Start processes on separate hosts that share data
+  Once connected, no difference between local/remote
+
+  Secure communication
+    Specify bytestring authkey
+    If authkey is none, current_process().authkey used
+    Producer and consumer must use same key
+
+    Pickling = security hole
+    Unpacking pickle may cause code execution
+    Do not trust pickles from unknown source!
+    Digest authentication via hmac
+
+Namespace
+  Type that can be registered with SyncManager
+    Does not have public methods
+    Can add writeable attributes to it
+  Think of it as a bulletin board
+    Attributes can be assigned by one process, read by others
+    Works for immutable values - strings, primitives
+      However, changes to mutable objects not propagated
+  Caveat
+    Attribute starting with underscore e.g. _item
+      Create attribute on namespace proxy not referent
+      Attribute not visible to other processes
+    But still works if you fork instead of spawn
+      Fork causes copy of parent memory image
+        Namespace object retains underscore in child process

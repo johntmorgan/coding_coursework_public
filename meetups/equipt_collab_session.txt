@@ -1,0 +1,61 @@
+5/31/23
+Collaborative session
+  Intro
+  Why leetcode
+  Spend about 35 min in breakouts
+  10 minutes open Q&A
+
+Equipt
+  Bring pros from top tier companies
+  Tech talks
+  Resume reviews
+  Interview prep
+  Recently launch Patreon
+
+Interview process in general - what to expect
+  All processes are different
+  Generally
+    Initial screening
+      Recruiter
+      Basic requirements
+      Easy screening questions
+        "What is CSS?"
+      Schedule next interview
+      Time to ask questions
+        About process
+          Good idea
+            Jumped to coding interview - ask how many questions
+    Personality interview
+      Manager, CEO if startup
+      Workplace behavior
+      How do you respond to e.g. conflict
+      Company culture fit
+        Some value long hours, above and beyond
+        Some work-life balance
+        How do you feel about those things
+    Coding challenge - our focus today
+      With engineers, engi manager
+      Problem solving
+      Or system architecture question
+      May be a take-home element (heard less lately due to ChatGPT?)
+        May be written or whiteboard
+      Want clean code
+      Not always hung up on efficiency, but want to know how react in real world
+
+What is leetcode?
+  Allows you to practice your programming skills by solving coding questions
+    Sometimes will say from xyz company
+  Big-O notation
+    Way to measure how slow or fast algorithm is
+    How degrade or change - how scalable
+    If solution works for small data set, that's great
+      But what about when the data set grows?
+    Often comes down to loops
+      Doing nested loops? Be careful!
+      Watch out for O(n^2)
+
+Let's do this in ~5 groups (26 people present)
+  Stick with easy problems to make sure can get done on time
+  Share screen open up leetcode
+    Or JSFiddle if using JS
+

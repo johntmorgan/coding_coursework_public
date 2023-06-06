@@ -1,0 +1,328 @@
+Conditional Probability
+Reading
+  Monty Hall confusion
+    The tree work seems to make it clear
+    Why was the problem so confusing?
+    Flawed argument
+      Contestant picks door A
+      Carol opens door B
+      Three outcomes where this happens
+      (A, A, B), (A, A, C), (C, A, B)
+      Switching doors only wins if (C, A, B)
+      (A, A, B) and (A, A, C) together have the same 1/9 probability
+      So it's 1/2 either way (wrong!)
+    Behind the Curtain
+      A "given" condition instruction to focus on only some of the possible outcomes
+      In the flawed example, given player chooses A, goat behind B
+      Nothing wrong with the calculation arriving at 1/2
+      However it was the wrong thing to calculate
+  Definition and Notation
+    Expression Pr[X | Y] probability of event X given that event Y happens
+    In the example above, event X wins on a switch
+    Event Y is the event that a goat is behind door B and the contestant chose A
+    We calculated Pr[X | Y] using a formula which serves as the def of conditional probability
+    Let X and Y be events where Y has nonzero probability. Then
+    Pr[X | Y] ::= Pr[X int Y] / Pr[Y]
+      Undefined when Y is zero (will implicitly assume it's nonzero from here)
+    Pure probability is often counterintuitive...
+      Conditional probability is often even worse
+      Conditioning can subtly alter probabilities and produce unexpected results
+        Whether in algorithms and CS or betting games
+  What went wrong in the flawed MH argument?
+    Chose the wrong condition
+      In description, learned location of goat when door B opened
+      But when we defined contestant opens A and goat is behind B
+      Included outcome AAC in which Carol opens C
+    Correct probability - win by switching given contestant chooses A, Carol opens B
+      Pr[{(A, A, B),(C, A, B)}] = 1/18 + 1/9 = 3/18
+      Pr[[win by switching] | [pick A and Carol opens B]] = Pr[(C, A, B) | {(A, A, B),(C, A, B)}]]
+        = 1/9 / (1/9 + 1/18) = 1/2 (???)
+  Four-Step Method fo Conditional Probability
+    Best of 3 hockey tournament
+    Team wins game 1 with probability 1/2
+    Next games: if won prior game, win 2/3, if lose, win 1/3
+      What is the probability they win overall
+    Sample space
+      S = {WW, WLW, WLL, LWW, LWL, LL}
+    Events of interest:
+      T = {WW, WLW, LWW}
+    Event local team wins first game
+      F = {WW, WLW, WLL}
+    Determine outcome probabilities
+      Multiply
+      WLL = 1/2 * 1/3 * 2/3 = 1/9
+      Probability local team wins tourney, given win first game
+      Pr[A | B] = Pr[A int B]/Pr[B]
+                = PR[{WW, WLW}]/Pr[{WW, WLW, WLL}]
+                = (1/3 + 1/18) / (1/3 + 1/18 + 1/9)
+                = 7/9
+  Why Tree Diagrams Work
+    The answer involves conditional probabilities
+    Probabilities on edges of tree diagrams are conditional
+    Product rule for conditional probabilties
+      Pr[E1 int E2] = Pr[E1] * Pr[E2 | E1]
+      Formal justification for multiplying edge probabilities to get outcome probs
+    Rule for 3 events
+      Pr[E1 int E2 int E3] = Pr[E1] * Pr[E2 | E1] * Pr[E3 | E1 int E2]
+  Probability of k-size subsets
+    Calculate the number of size-k subsets of the integers [1..n]
+      (of course its n choose k, but let's derive it again)
+    Pick some k-size subset S C= [1..n] as a target
+    Choose a size-k subset at random, with all subsets of [1..n] equally likely
+    Let p be the probability that randomly chosen equals target
+    Probability of picking S is p
+    All sets equally likely, number of size-k subsets equals 1/p
+    What's p?
+      Probability the smallest number in random set is one of the k numbers in S is k.n
+      Then the second smallest number is one of remaining k - 1 elements
+      So two smallest numbers in random set both in S are
+        k * (k - 1) / (n * (n - 1))
+      Three smallest numbers
+        k * (k - 1) * (k - 2) / (n * (n - 1) * (n - 2)) ... (n - (k - 1))
+      All k elements are in S
+        p = k! / n!(n - k)!
+          = k!(n - k)!/n!
+      So number of size-k subsets, 1/p, is in fact
+        n!/(k!(n - k)!)
+  Medical testing
+    Breast cancer diagnosis via mammogram - accurate 90-95% of the time
+    10% chance of a false negative
+    5% chance of a false positive
+    Testing middle-aged women with no family history of cancer - incidence ~1%
+    Four steps again
+      A be event person has cancer
+      B even the test is positive
+      Find Pr[A | B], probability the person has cancer, given test positive
+      Pr[A | B] = Pr[A int B] / Pr[B] = 0.009 / (0.009 + 0.0495) ~= 15.4%
+        So 84.6% chance the result is wrong, even though test is ~95% accurate!
+        To see why accuracy is no guarantee of value, observe there's a way to make test 99% accurate:
+          Always return a negative result!
+          But the "less accurate" mammogram is more useful
+    Natural frequencies
+      Makes sense when you think about it though
+        Almost everyone is healthy - even 5% false positive overwhelms results from ill
+      Imagine 10k women in demographic
+        Would expect 100 to have breast cancer
+        Of those, 90 would have a positive result
+        9900 are healthy, but 5% - 500, show a false positive
+        90 real positives out of 590 positives
+    A Posteriori Probabilities
+      Hockey team in reverse
+      What is the probability they won the first game, given they won the series?
+      Pr[B | A] = Pr(B int A) / Pr[A] = (1/3 + 1/18) / (1/3 + 1/18 + 1/9) = 7/9
+      Bayes' Rule
+        Pr[B | A] = Pr[A | B] * Pr[B] / Pr[A]
+      Proof
+        Pr[B | A| * Pr[A] = Pr(A int B) = Pr[A | B] * Pr[B]
+    Philosophy of Probability
+      (2^6972607 - 1) is a prime nubmer
+      Not obvious how to check
+      Try to estimate based on density of primes?
+        Prime Number Theorem implies about 1/5m in this range are prime
+          Probability 2 * 10^-8 this way
+      Or you could guess it's chosen to make a point... probability 1/2?
+      Or assigning a probability is nonsense, because either it's prime or it isn't
+        This is the book/course's approach
+      But alternate view: Bayesian approach
+        Degree of belief in a proposition
+        Was Bayes himself Bayesian in this sense? Unclear
+        But a Bayesian would be willing to talk about the probability that he was
+      Another school of thought
+        Can only apply probability to repeatable processes like rolling dice or flipping coins
+        "Frequentist" view
+          Make sense of the a posteriori probabilities in hockey
+            By imagining many series were played
+      Back to prime numbers
+        There is a probabilistic primality test
+        If N is composite, 3/4 chance discover
+          But remaining 1/4 inconclusive
+            But if so, run 1k times
+            Odds of getting wrong then (1/4)^1000
+          If you are comfortable using probability to describe personal belief
+            Then you are being a Bayesian
+          A frequentist would not assign a probability
+            But would be happy to bet on primality with high confidence
+        Despite the divide, real world conclusions are pretty much the same
+  Law of Total Probability
+    Break into cases simplifies many problems
+    Calculate probability of event A by splitting depending on whether E occurs
+      i.e. calc probability of A int E and A int NOT(E)
+      By sum rule these two combined = Pr[A]
+    Law of total probability: single event
+      Pr[A] = Pr[A | E] * Pr[E] + Pr[A | NOT(E)] * Pr[NOT(E)]
+    Example
+      Flip a fair coin
+      If heads, roll one die and take result
+      If tails, roll 2 dice and take sum of results
+      What is the probability process yields a 2?
+        Pr[E] = Pr[NOT(E)] = 1/2
+        Pr[A | E] = 1/6
+        Pr[A | NOT(E)] = 1/36
+      Pr[A] = 1/2 * 1/6 + 1/2 * 1/36 = 7/72
+    Can extend rule to any set of disjoint events that make up entire sample space
+    Law of total probability for 3 events
+      Pr[A] = Pr[A | E1] * Pr[E1] + Pr[A | E2] * Pr[E2] + Pr[A | E3] * Pr[E3]
+    Bayes Rule 3 events
+      Pr[E1 | A] = Pr[A | E1] * Pr[E1] / (Pr[A | E1] * Pr[E1] + Pr[A | E2] * Pr[E2] + Pr[A | E3] * Pr[E3])
+    Easy to generalize rules to n events
+    Conditioning on a single probability
+      Probability rules extend to those conditioned on an event
+      Inclusion-exclusion holds conditioned on a single event
+        Pr[A U B | C] = Pr[A | C] + Pr[B | C] - Pr[A int B | C]
+      But do NOT mix up events before and after
+        WRONG: Pr[A | B U C] = Pr[A | B] + Pr[A | C] - Pr[A | B int C] WRONG
+      Example why wrong
+        B ::= [0..9]
+        C ::= [10..18] U {0}
+        A ::= [1..18]
+        Pr[A | B] = 9/10 = Pr[A | C]
+        Pr[A | B int C]  = 0
+        So right hand side = 1.8, left-hand side can at most be 1 (is 18/19)
+
+Lecture
+  Basic idea we use all the time
+  Probability some event occurs given some info about it
+  Examples
+    Insurance company wants to know probability you'll live 10 more years given medical history
+    Investor wants to know probability stock rises given last month of gyrations
+      There are people who think you can do that - the "chartists"
+    System engineer - probability system overload given recent rate of requests
+    (Joke) - probability cat owner given in cat section of vet hospital
+  Conditional Probability: A Fair Die
+    Pr[roll 1] = |{1}|/|{1, 2, 3, 4, 5, 6}| = 1/6
+    "Knowledge" changes probabilities
+    Pr[roll 1 knowing rolled odd]
+    = |{1}| / |{1, 3, 5}| = 1/3
+  Look at tree
+    Rolled odd 1/2
+      Then 1/3 {1}
+      And 2/3 {3, 5}
+    Rolled even 1/2
+      0 chance of 1, non-1 chance = 1
+    Probability of rolling a 1 is 1/6
+    Probability of rolling a 3 or 5 is 1/3
+    Probability of rolling an even num is 1/2
+    Pr[one | odd] = 1/3
+    Pr[not one | odd] = 2/3
+    Pr[not one | even] = 1/2
+  Monty Hall (showing full tree again)
+    Pr[pick 1 | prize 1] = 1/3
+    Pr[open 3 | prize 1 & pick 1] = 1/2
+    We were reasoning about conditional probability in the way we defined our prob spaces in the first place
+    Pr[A int B] = Pr[A] * Pr[B | A]
+      Memorize this
+      Not a corollary
+      Basically the defintion of conditional probability
+    Pr[B | A] ::= Pr [A int B] / Pr[A]
+  Product Rule for 3 - generalizes to any finite number of sets
+    Pr[A int B int C] = Pr[A] * Pr[B | A] * Pr[C | A int B]
+  More intuitive way to think about probability
+    Conditioning on A defines a new probability function PrA where
+    Outcomes not in A are assigned probability zero
+    And outcomes in A have their probs. raised in proportion to A
+    Formally
+      Conditioning on A defines a new probability function PrA where
+      PrA[lomega] ::= 0 if lomega not in A
+                  ::= Pr[lomega]/Pr[A] if lomega in A
+    Now Pr[B | A] = PrA[B]
+    Implies conditional probability obeys all the rules, for example
+      Conditional Difference Rule - same as standard difference rule
+        Pr[B - C | A] = Pr[B | A] - Pr[B int C | A]
+  Law of Total Probability
+    Reasoning about probability by cases - break up into easy subcases
+    Set A embedded in larger example space S
+    3 sets B1, B2, B3 partitioning space
+      Also cut up set A
+    A = (B1 int A) U (B2 int A) U (B3 int A)
+    If talking about cardinality - could add them up
+    But in probabily, apply sum rule
+    Pr[A] = Pr[B1 int A] + Pr[B2 int A] + Pr[B3 int A]
+          Stated in terms of conditional probabilities
+          = Pr[A | B1] * Pr[B1] + Pr[A | B2] * Pr[B2] + Pr[A | B3] * Pr[B3]
+    If S is disjoint union of B0, B1, ...
+    Pr[A] = sum i of Pr[A int Bi]
+          = sum i Pr[A | Bi] * Pr[Bi]
+  Bayes Theorem
+    Probabilistic Diagnosis
+    99% accurate TB testing
+    Sounds great!
+    If you have TB, this test is guaranteed to detect it
+    If you don't have TB, the test says so 99% of the time, false positive 1% of the time
+    Your doctor gives you the test, it says you have TB
+      (Scary, antibiotic-resistant versions now in Asia)
+      How worried should be? What is the probability you actually have TB?
+      Pr[TB | test positive] = ?
+      "+" = "test positive"
+      Pr[+ | TB] = 1
+      Pr[+ | not TB] = 1/100
+      Pr[TB | +] = Pr[TB AND +] / Pr[+]
+                 = Pr[+ | TB] * Pr[TB] / Pr[+]
+                 = Pr[TB] / Pr[+] (Pr[+ | TB] = 1)
+      What is Pr[+]?
+        You do or don't have TB
+        Pr[+] = Pr[+ | TB] * Pr[TB] + Pr[+ | not TB] * Pr[not TB]
+              = 1 * Pr[TB] + 1/100 * Pr[not TB]
+              = 1 * Pr[TB] + 1/100 * (1 - Pr[TB])
+              = 99/100 * Pr[TB] + 1/100
+      So
+      Pr[TB | +] = Pr[TB] / (99/100 * Pr[TB] + 1/100)
+                 = 100Pr[TB] / (99PrTB + 1)
+      Key unknown here is probability someone in the population has TB
+        Can figure out or look up, then we are in business
+        11000 TB cases reported in 2011 in the US
+        Will be lots of unreported
+        So estimate
+        Pr[TB] = 1/10000
+        Let's plug back in
+      Pr[TB | +] ~= 1/100
+      So it's unlikely you have TB due to the relatively high false positive rate (1%)
+      Washed out the actual number of TB cases (0.01%)
+      Chance of TB remains small even after a false positive test!
+    So the test was not super useful here
+      What do you do if you test positive? Maybe nothing!
+      99% accurate test is not so accurate here
+      In fact trivial test that's 99.99% accurate: always say "no TB"
+    Test is not actually worthless though!
+    Bayes Rule
+      Pr[TB | +] = Pr[+ | TB] * Pr[TB] / Pr[+]
+      Pr[B | A] = Pr[A | B] * Pr[B] / Pr[A] (hard to remember, ARM re-derives every time)
+    99% accuracy stil useful
+      Did increase your probability 100 times
+      Suppose you have 5m doses of medicine for 350m population
+        Cover the 3.5m that test positive
+      (And that's more useful than the 99.99% positive test that always says no)
+  Monty Hall Conditional Confusion
+    It *is* a little confusing
+    Correct sounding arguments that give you the wrong answer
+    Look at the full tree again
+      Was excessive for figuring out switch vs no switch
+    Looking at branches where goat at 2
+      2/3 of the tree
+    Now looking at branch where prize at 1
+      1/3 of the tree
+    One argument: contestant has seen open door
+      Know the goat is at 2
+      What is the probability that the prize is at 1 given goat at 2?
+        Taking up half the outcomes
+      Pr[prize at 1 | goat at 2] = 1/2 - Really!
+      But does not calculate the probability of stick strategy winning. Why?
+      Because more information is available
+      Contestant does not just know that goat at 2, but that picked door at 1
+      So down to just 3 worlds now
+        Prize at 3 - 1/9
+        Prize at 1 - 1/18, 1/18
+      Pr[prize at 1 | picked 1 & goat at 2] = 1/2 - Also really!
+      Seems like they might as well stick - since the probability is 1/2 given what he knows when he chooses
+      But wait, the contestant knows even more
+        Not just that he picked 1 and there's a goat at 2, but that carol opened that door
+        Prize at 3 - 1/9 (3, 1, 2)
+        Prize at 1 - 1/18 (1, 1, 2)
+      So until now, conditioning on the wrong events - a common blunder
+        One to watch out for very carefully
+      Pr[prize at 1 | picked 1 & opened 2] = 1/18 / (1/18 + 1/9) = 1/3
+        So switch
+      By conditioning on everything the contestant knows, finally confirmed what we learned earlier
+        Pr[switching wins] = 2/3
+      Trying to illustrate a very basic blunder
+        If you don't get the conditioning event right, you're going to get the wrong answer
+        Fall back on 4-step to avoid

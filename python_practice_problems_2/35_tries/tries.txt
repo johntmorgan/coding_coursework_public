@@ -1,0 +1,23 @@
+Trie
+  Used for storing and locating keys from a set
+  Keys are strings stored char by char
+    Each node = single char
+  Order of chars from edges
+  Do not use additional space for strings with common prefixes
+  Move through tree until new char encountered
+    Add as child
+  Search via dfs following edges between nodes
+
+Pattern matching
+  Yes
+    Compare strings for partial matches
+    Optimize space in dictionary storage
+  No
+    Can't break strings down into characters
+    Partial matches between strings don't matter
+
+Real-world
+  Autocomplete
+    Suggestions based on common queries stored in Trie
+  Orthographic corrector
+    Pop-up suggestions, red lines under misspelled word

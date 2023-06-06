@@ -1,0 +1,41 @@
+1. Bad idea to add or drop col from very large table
+  Causes table to be rebuilt, very expensive
+
+2. RIGHT JOIN and LEFT JOIN same for self join of table
+  Robert De Niro
+  NULL
+
+3.
+SELECT * FROM
+A RIGHT JOIN B
+ON A.col = B.col;
+
+// Same as
+
+SELECT * FROM
+B LEFT JOIN A
+ON A.col = B.col;
+
+4.
+Consider the query:
+
+REPLACE INTO Actors(ActorId, FirstName, SecondName)
+VALUES(13, 'Will', 'Smith');
+
+A trigger xyz associated with Actors table is fired when REPLACE is executed.
+
+// The MySQL REPLACE statement inserts the row if there is no duplicate key error,
+  otherwise it deletes the row causing the error before inserting the new row.
+  An INSERT trigger will be fired when REPLACE statement is executed.
+
+5.
+Consider the query:
+
+TRUNCATE TABLE Actors;
+
+A trigger xyz associated with Actors table is fired when TRUNCATE is executed.
+
+// No triggers are fired because TRUNCATE is a sequence of DROP TABLE and
+  CREATE TABLE statements. It does not use DELETE statement so, a delete trigger
+  associated with the table that is being truncated is not fired.
+

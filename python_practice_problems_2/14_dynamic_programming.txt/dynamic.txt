@@ -1,0 +1,79 @@
+Dynamic Programming
+
+Calculating Fibonacci Numbers
+  Classic recursive implementation:
+
+    def fib(num):
+      if num <= 1:
+        return num
+      return fib(num - 1) + fib(num - 2)
+
+  Time complexity with recurrence relations
+    T(0) = 0
+    T(1) = 1
+    T(n) = T(n - 1) + T(n - 2) + 4
+    T(n) = 2T(n - 1) + 4
+    T(n) = 2T(n - 1) + c
+    T(n - 1) = 2T(n - 2) + c, so
+    T(n) = 2(2T(n - 2) + c) + c
+         = 4T(n - 2) + 3c
+         = 8T(n - 3) + 7c
+    T(n) = 2^k * T(n - k) + (2^k - 1)c
+    What value of k brings to base case?
+      n - k = 1, so k = n - 1
+    T(n) = 2^(n - 1)(1 + c) - c
+    So fib(n) is O(2^n)
+      Expontential time - not very efficient!
+  How to improve speed?
+    Many redundant calculations in Fibonacci
+    Eliminate via memoization
+      Linear time fibonacci
+
+Dynamic programming
+  Good when overlapping subproblems
+    E.g. need Fib(3) to get both Fib(4) and Fib(5)
+  Optimal substructure property
+    Overall solution constructed from optimal solutions of subproblems
+      fib(n) = fib(n - 1) + fib(n - 2)
+  Solve every subproblem just once
+    Store answer in a lookup table
+  Two approaches
+    Memoization
+      Top-down
+      Similar to regular recursive
+      Just look for answer in lookup table before computing
+        Store if not in table
+    Tabulation
+      Bottom-up
+      Solve all related subproblems first
+      Full up lookup table
+
+Memoizing Fibonacci
+  def fib(num, lookup_table):
+    if lookup_table[num] == -1: # Check if already present
+      if num <= 1:
+        lookup_table[num] = num
+      else:
+        lookup_table[num] = fib(num - 1, lookup_table) + fib(num - 2, lookup_table)
+    return lookup_table[num]
+
+Tabulating Fibonacci
+  def fib(num, lookup_table):
+    lookup_table[0] = 0
+    lookup_table[1] = 1
+    for i in range(2, num + 1):
+      lookup_table[i] = lookup_table[i - 1] + lookup_table[i - 2]
+    return lookup_table[num]
+
+  # Reduce space complexity, only need prior 2 numbers
+
+    def fib(num):
+      if num <= 1:
+        return num
+      second_last = 0  # The 0th
+      last = 1  # The first
+      current = 0
+      for i in range(2, num + 1):
+        current, second_last = second_last + last, last
+        last = current
+      return current

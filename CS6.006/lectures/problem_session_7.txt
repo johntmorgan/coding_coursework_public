@@ -1,0 +1,201 @@
+Today going to go over graph theory
+  Shortest path
+  APSP
+  Dijkstra modification
+Let's go through in order of problems
+Problem 7-1 warmup to make sure understand definitions & techniques
+  Dijkstra
+    Shortest path from single source to rest of your graph
+    A million ways to understand/explain
+  Run Dijkstra from source on actual graph
+    Use s for source, t for destination (letter after s)
+  Shortest path from s to everywhere on graph
+  Short version of Dijkstra
+    Label nodes as having infinity distance from source
+    Source node has distance 0
+    Insert into queue
+    Graph the closest unprocessed vertex
+    Updates neighbors using triangle inequality
+  So far everything inf distance except s
+  Look at neighbors and update with triangle inequality
+    Distance to a = 8
+    Distance to c = 7
+    Once you visit a vertex, never touch it again
+      Boxed to indicate
+    (Working through problem, like I did)
+    Negative switch at the end
+      Would have to update
+    Pretty straightforward
+Problem 7-2
+  Extension from two problem sessions ago
+    Defined the radius of an unweighted graph
+  Now we're on a weighted, directed graph
+  Weighted eccentricity: assoc to vertex in weighted graph
+    eps(u) = max over v in V of delta(u, v)
+  Weighted radius tries to find most central vertex
+    Minimizes weighted eccentricity
+    R(G) = min over u in V of eps(u)
+  Given a weighted directed, connected graph with no negative weight cycle
+  Find R(G) in O(|V|^3)
+  What did we do in our previous session?
+    Tried to come up with a clever algorithm
+    Then realized braindead was good enough
+    And that's the case here
+    Good reminder, if there's an obvious algorithm staring you in the face, try that first
+  To get radius
+    You need the eccentricity for every vertex
+  How do you get the eccentricity for every vertex?
+    Need the max shortest path from every vertex to other vertices
+  Use Johnson's algorithm for APSP
+    O(|V||E| + |V|^2 * log|V|)
+    |E| is at most 2|V|^2
+    So O|V|^3 tops
+    We're given that budget, we're fine
+  So now compute eccentricity for every vertex
+Problem 7-3
+  Underground sewer network
+  Map with n bidirectional pipes, but <= 4 pipes per junction - so degree bound
+  Positive integer length for each pipe
+    Starts to smell like a shortest path problem, but is it
+  There exist junctions with motion sensors
+  Stay as far as possible from motion sensors
+  O(nlogn) time, find path that maximizes distance to sensors
+  Unfortunately for us, doesn't look like a SSSP problem
+    More of a reachability problem in disguise
+  Obvious graph G here
+    Give a vertex per junction, undirected edge for each pipe, weight is length
+    Source = s and target = t
+    O(n) vertices
+    O(n) edges as well - degree bound
+    Why can't use this directly? Ignores the point of the problem
+    She's happy to walk a long path if it ignores the sensors
+  If you knew distance k was too close
+    Remove points that close, compute reachability
+    Gk = subgraph of vertices whose distance >= k
+    Could loop over every sensor and call Dijkstra for each one
+      But Dijkstra already runs in nlogn time, so can't run for n sensors
+      However... we don't need to know every distance, just closest one
+    Example
+      Trying to find shortest path to either of two vertices
+    Sneaky trick
+      Add a new source vertex, make it distance zero to every sensor
+      SSSP from vertex to rest of graph
+        Shortest path to all non-sensor vertices
+      G' = G with extra vertex x connected to every motion sensor with weight 0
+      Run Dijkstra starting at x - O(nlogn) time
+    One way to think
+      Ask what you can get out in nlogn time
+  Then construct Gk from G - loop over vertices and remove any whose distance is too small
+    O(n) time + space
+    But there's a catch, this is per k
+    If you have Gk, can say BFS on Gk establishes reachability from s to t
+      Takes linear in size graph so O(n)
+    If problem different, would be done
+      Avoid radius k, that's how you do that
+    Instead want to find largest possible k
+      k* = largest k where Gk is connected from s to t
+    Bad: loop over k until you reach k* + 1
+      O(k* * n)
+        No bound on k*, could be n, so doesn't work with nlogn budget
+      Can try nlogn times, binary search is the only thing we know
+        Want to find point on interface where point flips yes to no
+      Could binary search on the range from 0 to k
+      How to do that exactly
+        Upper bound on k is biggest distance from any vertex to any sensor
+        Want to binary search, want to be logarithmic in n
+        And edge weights could be really ginormous
+    Again we have a budget of nlogn
+      Sort vertices by distance delta(x, v) O(nlogn)
+      Take di to be the ith smallest distance
+      Binary search on i on the index into distance array
+      Array has length n, binary search takes O(logn) time
+      Plug into subgraph above & BFS test - O(n) time
+      Takes O(logn) steps of binary search
+      So takes O(nlogn) time
+    Clean up detritus at end of problem
+    Construct graph one more time right at k*
+    And use your favorite reachability algorithm
+      Or Dijkstra if you want the shortest path
+    If binary search gets to 0
+      Must past through a vertex with a sensor
+        Might as well return the shortest path so she can run
+        (or just return any path)
+Problem 4
+  n clearings, two-way trails <= 5/clearing
+  trail t has length lt and critter count ct
+  has to catch every critter on the path
+  want shortest path without failing to catch
+  Looks like a shortest path problem, but with twist - can't become sad
+  Budget O(nklog(nk)) time
+    Suspicious - size of problem is really nk
+    Similar to problem in last set (which I never saw, sigh - JM)
+    Universe is kinda like a state machine
+  Problem isn't too bad given the last problem (which I didn't see - JM)
+  G = (V, E) w/ k + 1 vertices for every clearing
+  Walk along graph, not only track costs but number of critters remaining
+    Keep a bunch of copies of graph, ascending when new critter collected
+    vc,i = at clearing c with i pocket spheres empty
+  For all trails a -> b with length l and critters c
+    Add edges, two cases: have store and do not - affects how state changes
+      Case 1: a does not have a store
+        Edge of length l from v(a, i) to v(b, i - c)
+          Must do for all possible is you can see for all i {c...k}
+            Many different states, must have at least c critters
+      Case 2 b has a store
+        Edge of length l from v(a, i) to v(b, k - c) for all i (no interval)
+      And of course do the symmetric b -> a
+  How long does it take to build this graph?
+    |V| = ((k + 1) * n) = O(kn)
+    |E| = O(kn)
+  s = source, t = destination
+  Need any path that starts at vs, k to vt, i for any i which avoids sadness
+  Wants shortest path, just do Dijkstra from vs,k
+    Takes O(knlog(kn)) time
+  Of course if shortest path is infinity, sadness is unavoidable
+  Cycle in constructed graph, not a DAG like last time
+Problem 5
+  Shipping problem (prof does trans-shipment problems)
+  Directed graph, continuous network, can get from s to t
+  n trucking routes each route ri is a tuple with (si, ti, wi, ci)
+  si: source, ti: target, wi = max weight, ci = cost
+  Figure out the heaviest thing that can be shipped
+  Very typical kind of setup
+  a) useful digression
+    Handy inequality pi weighted path
+    bottlneck(pi) = min edge weight of any edge in pi
+    Given directed graph and two vertices s and t
+    b(s, t) ::= max over any path pi from s to t of the bottleneck(pi)
+    I(t) = incoming neighbors of t
+    Claim: b(s, t) >= min(b(s, v), w(v, t)) for all v in I(t)
+    With equality for some v* in I(t)
+    pi-st = argmax pi s->t of bottleneck
+      In other words, this is the path that actually realizes quantity b
+      b(s, t) = bottleneck(pi-st)
+    Take vertex v in I(t)
+      Define a path that goes from s to t as follows: (pi-sv, t) = pi-tw
+      We know that b(s, t) = max bottleneck of any incoming path from s to t
+      pi-tw is a path from s to t
+        b(s,t) max bottleneck >= bottleneck(pi-tw)
+                               = min(bottleneck pi-sv, w(v, t))
+                               = min(b(s,v), w(v, t)) takes care of inequality
+                               Equality case via pretty easy contradiction
+                                If it's bigger, none can be the edge where your max path comes in, not right
+  b) have 3 * sqrt(n) cities
+    1) get largest shippable weight w*
+    2) get smallest cost to ship that weight w*
+    Let's do part 2 first, it's easy
+      Say you calculate w*
+      Only keep trucks that can ship it
+      Make a new graph Gc with vertex for every city
+      Directed edge per shipping route with edge weight = cost of edge
+        But only for routes that can carry at least w*
+      And just Dijkstra that graph
+      How long does that take?
+        Use direct access array for queue
+        Takes O(|V|^2) but v is sqrt(n) = O(n) time
+    Part 1 brief talk through
+      Basic observation - inequality in part 1 is like triangle inequality of the bottlneck world
+        Looks like update Dijkstra formula
+        Instead look at biggest bottleneck
+        But rather than summing edge lengths, update with formula
+        

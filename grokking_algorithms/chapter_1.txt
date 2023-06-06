@@ -1,0 +1,47 @@
+Introduction
+  Algorithm is a set of instructions for accomplishing a task
+  Binary search
+    Fast way to find something in a list
+      Returns position where located, or null
+    Cut in half each time
+    Dictionary with 240k words
+      Takes at most 18 steps to find
+      For 8 items, at most 3 - log2n (log2n(8) == 3)
+      logn always -> log2n unless otherwise stated in CS
+    Binary search only works when names are in sorted order
+  Big O
+    Going through every element of list, linear time
+    Binary search logarithmic time
+    1b element list, 1ms per element, have 10s
+      10m ms with linear search - 10000s when you have 10s
+      ~30ms with binary search
+    Point - huge, huge difference between linear and log time when the list is huge
+      With 100 elements, linear search was 15x slower
+      But with 1B it's 33m times slower
+    How to make 16 boxes on paper
+      Draw each one? 16 boxes, linear
+      Create by folding across whole paper? 4 folds, logarithmic
+    Big O is worst-case run time
+      If you go through a phone book by name and the name is right at the front
+        It's still O(n) time, not O(1) time
+    Most common Big O run times
+      O(logn) - "log time" binary search
+      O(n) - "linear time" simple search
+      O(n*logn) - Fast sorting, quicksort (or merge sort - JM)
+      O(n^2) - "quadratic time - JM" - Slow sorting, selection sort (or insertion, bubble sort - JM)
+      O(n!) - "exponential time - JM" - traveling salesperson
+      There are more (cubic? JM)
+        But these 5 are most common
+      We'll come back to this in a few chapters
+    Traveling salesperson
+      Example of O(n!)
+      Famous CS problem, appalling growth
+      Many smart people think it can't be improved
+      Travel between 5 cities - shortest path?
+      There are 120 permutations (5!)
+      Gotta check em all
+      Get to 100+ cities, the sun will die first
+      "NP-complete - JM"
+      BST are not really covered in this book until the last chapter
+        (Oh. - JM)
+      

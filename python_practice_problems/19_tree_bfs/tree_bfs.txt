@@ -1,0 +1,6 @@
+Tree breadth-first search
+  By level
+
+Pattern
+  Solution near root
+  Traverse tree one level at a time

@@ -1,0 +1,17 @@
+Temporary tables
+  Persisted for length of SQL monitor session
+  Removed once session terminated
+    No explicit cleanup required
+
+  CREATE TEMPORARY TABLE tableName (
+    col1 <dataType> <Restrictions>,
+    col2 <dataType> <Restrictions>,
+    col3 <dataType> <Restrictions>,
+    <Primary Key or Index definitions>);
+
+  CREATE TEMPORARY TABLE ActorNames (FirstName CHAR(20));
+
+  Use case:
+    Work with intermediate data or results
+    Complex queries w/joins, nested queries - break up and work on step by step
+

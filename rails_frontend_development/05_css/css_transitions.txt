@@ -1,0 +1,52 @@
+CSS transitions
+  Many ways to chane an elment
+  Meta-property is transition
+
+  .background-arrow {
+    background-image: url("../images/arrow.svg");
+    width: 25px;
+    height: 25px;
+    transition: all 0.3s ease-in-out;
+    // and so on
+  }
+
+  Four elements
+    First is name of property being observed (or keywords all or none)
+      Rotation angle doesn't have a property, so capture using all
+      But could limit background-color or margin by being specific
+      There's a list of properties
+        Any change where steps between values can be listed is fair game
+        Properties with discrete enumerated values (display) can't be transitioned
+        Can't transition to or from magic values like height or width auto
+    Second is amount of time in s or ms
+    Third is timing function that determines rate
+      linear, ease-in-out (faster in the middle) - more timing functions available
+    Last is a delay (not in code)
+  Now rotation is animated!
+
+  Transitions don't have to pair with transformations
+    Ex. change value on hover pseudo-element
+
+    .js--day-button {
+      transition: all 0.3s ease-in-out;
+
+      &:hover {
+        background-color: yellow;
+      }
+    }
+
+    Remove is-primary CSS class from .js--day-button in _schedule_day.html.erb
+
+    How to hide the concert info gradually?
+    Can't reliably transition max-height 100% to 0% - changes if width changes
+      But can do it with a specific max-height
+
+    .js--day-text {
+      transition: all 1s ease-in-out;
+      max-height: 1000px;
+
+      &.is-closed {
+        opacity: 0;
+        max-height: 0px;
+      }
+    }

@@ -1,0 +1,20 @@
+1. Computer Science Distilled
+  Small, quick book - get your head around the topics that exist in the space
+  Hash function is constant time... by magic!
+  Read with intro course
+2. Grokking algorithms
+  How a hash function works, how it can get messed up
+  Still a light read, lots of pictures, no code/psuedocode
+  Read before algorithms course
+3. Introduction to algorithms - wait for now
+  The big boy, wow
+  Read AFTER your DSA course
+  Very mathematical and technical
+  But you don't need to know everything in this book
+  Super mathematical
+4. Elements of programming interviews - wait for now
+  Can get it in C++, Java, Python
+  Very technical, question-first
+  Give you real-life examples of problems
+  Leetcode competitor
+    If you can solve this, you're good

@@ -1,0 +1,38 @@
+Bitwise Manipulation
+  Modify bits algorithmically using bitwise operations
+  Fastest computations
+    Processors natively support
+  Efficient when can transform input into binary form
+  Work on bit string, bit array, or binary numeral
+  Take bits as operands
+    Calc corresponding bit value in result
+  Four key bitwise operators
+    ~ NOT flip argument 0 to 1 and vice versa
+        flip all in string
+    & AND if both bits 1 are 1 return 1
+    | OR if either bit is 1 return 1
+    ^ XOR if both equal then 0, otherwise 1
+  Swap two numbers without a temp variable
+    Convert to binary
+    Store XOR of x and y in x
+    Store XOR or new x and y in y
+    Take XOR or x and y again and store in x
+  Compare char of two strings one by one
+    Concatenate 0 if same
+    Concatenate 1 if different
+
+Pattern matching
+  Yes
+    Input data manipulated at level of primitive bitwise operations
+    Input data unsorted, need to sort at better than O(nlogn)
+  No
+    Input data not numeric, cannot be converted to numeric
+
+Real world
+  Bit fields (flags)
+    Represent boolean things
+  Cryptography
+    Encrypt, decrypt sensitive data
+  Releasing process lock
+    Represent order in which lock acquired and released
+

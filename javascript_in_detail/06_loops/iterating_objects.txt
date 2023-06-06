@@ -1,0 +1,33 @@
+Iterating objects
+  Objects are an unordered collection of data
+  Use key (property name) to access data item
+  To access all values, list of keys
+
+    var obj = {'one': 1, 'two': 2, 'three': 3}; // initialise an object
+    console.log(Object.keys(obj)); // Print keys
+
+  Get all values with Object.values
+    var obj = {'one': 1, 'two': 2, 'three': 3}; // initialise an object
+    console.log(Object.values(obj));
+
+  Get array with [key, value] pairs
+
+    var obj = {'one': 1, 'two': 2, 'three': 3}; // initialise an object
+    console.log(Object.entries(obj));
+
+  var obj = {'one': 1, 'two': 2, 'three': 3}; // initialise an object
+  var keys = Object.keys(obj); // Create an array of keys of obj
+
+  for(var i = 0; i < keys.length; i++){
+      console.log("key:",keys[i], "value:",obj[keys[i]]); // print key and value
+  }
+
+  Can similarly iterate Object.values and Object.entries
+
+
+for/in loops
+  var obj = {'one': 1, 'two': 2, 'three': 3}; // initialise an object
+
+  for(var i in obj){
+      console.log("key:",i, "value:",obj[i]); // print key and value
+  }

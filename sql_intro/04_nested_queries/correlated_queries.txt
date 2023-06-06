@@ -1,0 +1,25 @@
+Correlated queries
+  A type of nested query
+  Inner query references a table or column from the outer query
+
+  // Want to know which actors have their first name as part of Twitter handle
+  // Inner Join version
+  SELECT FirstName
+  FROM Actors
+  INNER JOIN DigitalAssets
+  ON Id = ActorId
+  WHERE URL LIKE CONCAT("%",FirstName,"%")
+  AND AssetType = "Twitter";
+
+  // Correlated query version
+  // References FirstName in WHERE even though part of Actors table, which is only in outer query
+  // Legal to do this!
+  // Value of FirstName for each row in Actors table provided as scalar val to inner query
+  // Now using EXISTS to check for condition that is true about each actor
+  // Not interested in inner query return for each actor, just if it returns
+  SELECT FirstName
+  FROM Actors
+  WHERE EXISTS (SELECT URL
+                FROM DigitalAssets
+                WHERE URL LIKE CONCAT("%", FirstName, "%")
+                AND AssetType = "Twitter");

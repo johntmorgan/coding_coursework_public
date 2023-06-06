@@ -1,0 +1,58 @@
+EXPLAIN
+  Dry-run of query - blueprint/plan of how server plans to execute
+  When complicated queries perform poorly, use EXPLALIN
+    Identify bottlenecks
+  This is just a light intro
+  EXPLAIN, DESCRIBE synonyms
+    EXPLAIN used with queries
+    DESCRIBE used with structures
+      (by convention)
+
+  EXPLAIN SELECT * FROM Actors;
+
+  // Output is a table with columns
+    id
+      Sequential number of SELECT within the query
+    select_type:
+      Type of select - simple if no queries
+      Primary if outermost select
+      Much more:
+        https://dev.mysql.com/doc/refman/8.0/en/explain-output.html
+    table
+      Name of table
+      Derived if table comes from subquery in FROM clause
+    partitions
+      Partitions from which records matched by query
+      Not discussed in this course
+        Always NULL for our queries
+    type
+      Type of join
+    possible_keys
+      Among most useful
+      Indexes from which MySQL can choose to find rows
+      If NULL, then no indexes
+      Consider adding indexes based on columns in where on slow running query
+    key
+      Key that was actually used
+    key_len
+      Length of key used
+    ref
+      Which columns or constants compared to index to select rows
+    rows
+      The rows that must be examined for query
+    Filtered
+      Indicates estimated percent of table rows filtered by condition
+        Max is 100, no filtering
+    Extra
+      Additional info
+
+  DESCRIBE SELECT Id FROM Actors;
+    Now PRIMARY key used to resolve query
+
+  // Example of an inner join
+
+  EXPLAIN
+  SELECT * 
+  FROM Actors INNER JOIN DigitalAssets
+  ON Id = ActorId;
+

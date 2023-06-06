@@ -1,0 +1,128 @@
+This cheat sheet is a quick overview of some tips and tricks for the project. Feel free to drop by and refer to these tricks to make your tasks quicker, but don’t spend too much time doing trivial tasks right now.
+
+Array destructuring
+You can destructure an array by assigning it to some pattern of variables like this.
+
+var arr = [1, 2, 3];
+// the array pattern would be matched to the assigned pattern at declaration
+var [one, two, three] = arr; 
+
+JavaScript can unpack arrays using this trick for destructuring arrays.
+
+Additionally, we can use the rest ... operator. The rest ... operator assigns the remaining elements of the array to a variable as follows.
+
+var arr = [1, 2, 3, 4, 5, 6];
+// the array pattern would be matched to the assigned pattern at declaration
+var [one, two, ...rest] = arr; 
+The code above shows the same unpacking. We can assign the remaining array to a variable (in this case rest) using the ... operator. Play around with the code to test it out.
+
+String methods
+Because the project deals with many strings, use methods like match and replace to alter your string.
+
+var str = "HelloWorld."
+// match non alphabet characters
+var nonAlpha = str.match(/[^A-Za-z]/g);
+
+// replace non alphabet characters with ""
+var replaceAlpha = str.replace(/[^A-Za-z]/g, "");
+
+console.log("nonAlpha:", nonAlpha);
+console.log("replaceAlpha:", replaceAlpha);
+
+These methods are essential when making alterations to strings in the project. Furthermore, you can join strings as follows.
+
+var str1 = "HelloWorld.";
+var str2 = "Cool";
+// use concat:
+var merge1 = str1.concat(str2); // str1 + str2
+var merge2 = str1 + str2;
+
+Meanwhile, concatenating an array of strings is done with the join method as follows.
+
+var arr = ["hello", "world", "!"];
+console.log(arr.join(' '));
+console.log(arr.join());
+console.log(arr.join('.'));
+console.log(arr.join('|'));
+Or split them back to an array using the split method like this.
+
+var str = "Hello World !"
+
+console.log(str.split(' ')); // split on spaces
+console.log(str.split('l')); // split on character l
+console.log(str.split('World')); // split on 'World' string
+
+The split method, along with join, can help move strings between arrays throughout the project.
+
+Reduce dimension of an array
+Sometimes using a map method of an array results in an array of arrays that you might need to convert back to a single-dimensional array. Do this using the reduce method.
+
+var arr = [[1],[2], [3,4], [5]];
+
+var flatArr1 = arr.reduce((prev,curr)=> [...prev, ...curr],[]);
+var flatArr2 = arr.reduce((prev,curr)=> prev.concat(curr),[]);
+
+console.log(flatArr1);
+console.log(flatArr2);
+The two approaches work the same. Focus on the callback function for a better idea of what’s happening.
+
+Another approach is using destructuring techniques directly as follows for smaller arrays.
+
+var arr = [[1, 2], [3, 4, 5]];
+
+var flatArr1 = [...arr[0], ...arr[1]]
+
+var flatArr2 = arr[0].concat(arr[1]);
+
+console.log(flatArr1);
+console.log(flatArr2);
+In the previous two examples, the ... operator acts as a spread operator which spreads the content of the array.
+
+Comparing two arrays
+A neat technique to compare two ordered arrays is JSON.stringify. This converts them to strings and compares them.
+
+var arr1 = [1, 2, 3, 4, 5];
+var arr2 = [1, 2, 3, 4, 5];
+console.log(arr1 == arr2, arr1 === arr2);
+// Comparing using JSON.stringify
+console.log(JSON.stringify(arr1) === JSON.stringify(arr2));
+This works because JSON.strigify uses the same format to pad and depends on the order of the array. The following case would fail, despite the two arrays having the same values, because of the difference in ordering.
+
+var arr1 = [1, 2, 3, 4, 5];
+var arr2 = [5, 2, 3, 4, 1];
+console.log(arr1 == arr2, arr1 === arr2);
+// Comparing using JSON.stringify
+console.log(JSON.stringify(arr1) === JSON.stringify(arr2));
+Such cases can be catered by sorting arrays. For arrays, where the order is maintained, this technique is useful.
+
+Removing duplicates from arrays
+A technique to remove duplicate ordered arrays in an array is the following combination:
+
+Array.from(new Set(arr.map(JSON.stringify)), JSON.parse);
+This leverages our previous technique by feeding an array of strings to Set constructor. This creates an object with no duplicates. Creating an array from it gives an array without duplicates. While creating the new array without duplicates, use JSON.parse to revert the strings back to the arrays.
+
+var arr = [
+  [1, 2, 3, 4],
+  [1, 2, 3, 4], // duplicate
+  [1, 2, 3, 4], // duplicate
+  [1, 2],
+  [1, 2], // duplicate
+];
+// remove duplicates:
+arr = Array.from(new Set(arr.map(JSON.stringify)), JSON.parse);
+console.log(arr);
+In the end, we have an array of arrays without duplicates.
+
+Check for key in an object
+To check if an object has a certain key, use hasOwnProperty() method.
+
+Check for key in an object
+To check if an object has a certain key, use hasOwnProperty() method.
+
+var obj = {a: 1, b: 2, c: 3};
+
+console.log(obj.hasOwnProperty('a'));
+console.log(obj.hasOwnProperty('b'));
+console.log(obj.hasOwnProperty('z'));
+
+This technique is a convenient way of confirming if a key is a property name of an object.

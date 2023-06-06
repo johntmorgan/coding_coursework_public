@@ -1,0 +1,83 @@
+Classes
+  Only in ES2015 version!
+  Similar to constructor functions
+  Blueprints of type of object
+    Have properties and methods to generate objects
+    All objects created from class have same properties and methods
+      Do not necessarily have the same values
+  Use class keyword to creat classes instead of functions
+
+  class ClassName {
+    constructor(param1, param2) {
+
+    }
+  }
+
+  Class name also capitalized by convention
+  Body of class consists of constructor function
+  All properties defined within this function
+  Rest of the body consists of methods for the class
+  Params are optional in the constructor function
+  Additional functions can be defined
+    In the constructor function body
+    In the body of the class
+
+  class Employee{
+      constructor(_name, _age, _designation){
+          this.name = _name;
+          this.age = _age;
+          this.designation = _designation;
+          // Method
+          this.setAge = newage => {
+              console.log(`setting age from ${this.age} to ${newage}`)
+              this.age = newage;
+          }
+          // Property assigned by constructor function
+          this.company = 'Amazon';
+      }
+      // Methods defined outside the constructor
+      printAge(){
+          console.log(`${this.name} is ${this.age} years old`);
+      }
+  }
+
+  var employee1 = new Employee('Mark', 12, 'Manager'); // create Employee object
+  // Print Employee object assigned to employee1
+  console.log(`employee1 name: ${employee1.name} age: ${employee1.age}`)
+    > employee1 name: Mark age: 12
+  console.log(`employee1 company: ${employee1.company}`)
+    > employee1 company: Amazon
+  employee1.setAge(20); // call method to set age of employee1
+    > setting age from 12 to 20
+  console.log(`employee1 name: ${employee1.name} age: ${employee1.age}`)
+    > employee1 name: Mark age: 20
+  // Call printAge method for employee1
+  employee1.printAge();
+    > Mark is 20 years old
+
+  Name of class is Employee
+  Again use new keyword to create
+  Constructor function passed _name, _age, _designation
+  Properties of object are assigned to params passed
+  Constructor function creates a method for property setAge
+    Assigning to arrow function which updates value of age property
+  Company property assigned "Amazon"
+  Another method for property printAge
+    Syntax does not require any keyword to define, just the name
+
+Static methods
+  Belong to the class only, not the objects created from it
+    ES6 introduces keyword static
+
+    class Employee {
+        static compareAge(employee_1, employee_2){
+            return employee_1.age - employee_2.age;
+        }
+    }
+
+    Employee.compareAge(employee2,employee1);
+
+Despite the syntactic difference between classes and constructor functions
+  The two have the exact same underlying implementation
+  Classes are just a new interface to OOPs
+  ** Key difference static methods residing inside the class

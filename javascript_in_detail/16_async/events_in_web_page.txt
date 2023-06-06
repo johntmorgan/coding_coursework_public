@@ -1,0 +1,45 @@
+Events in Web Page
+  Use async JS to make dynamic changes and react to events
+  Events are actions that occur on browser or on a web page
+  JS can listen to these actions
+    load
+    click
+    keypress
+  Leverage these events through the Event object by adding listeners
+    addEventListener
+
+  window.addEventListener('load', ()=>{
+      console.log('loaded');
+  })
+
+  var element = window
+                  .document
+                  .getElementsByTagName('p')[0];
+  element.addEventListener('click', ()=>{
+      console.log('clicked');
+  })
+
+Event listeners + promises
+
+  // event: load
+  // element: window
+  // callbackfn: prints 'loaded'
+  var promise = new Promise ((resolve, reject)=>{
+      window.addEventListener('load', ()=>{
+          resolve('loaded');
+      })
+  })
+  promise.then(val => console.log(val));
+
+Event listeners + async functions
+
+  async function loaded(){
+      var promise = new Promise ((resolve, reject)=>{
+          window.addEventListener('load', ()=>{
+              resolve('loaded');
+          })
+      })
+      var value = await promise; // wait for event
+      console.log(value); // print resovled value
+  }
+  loaded(); // invoke function

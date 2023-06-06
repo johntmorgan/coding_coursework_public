@@ -1,0 +1,264 @@
+Breadth-First Search
+  Starting part 2 of this class
+    Graph Algorithms lecture 9-14
+  First lecture on graphs today
+    Will be somewhat of a review for many
+    Start from beginning
+    By end of lecture
+      Compute shortest path from one vertex to the other ones, somehow
+    Sometimes people call graph a network
+Graphs have a set of vertices and edges
+  G = (V, E)
+  V = Vertices
+  E = Edges C= V x V
+    Fancy notation for saying an edge connects vertices together
+    Edges are pairs of vertices
+  Two special cases we care about
+    Undirected graph
+      e = {v, w} - squiggly lines = unordered
+        {v, w} = {w, v}
+    Directed graph
+      e = (v, w) - ordered
+Graphs are literally everywhere
+  Computer networks
+  Social networks
+  Road networks
+  State space plus transitions (puzzles and games)
+    e.g. Rubik's cube, could make graph with every configuration is a node
+  Meshes
+  Circuits
+  Molecular structures
+    And many more
+  Many of these have specialty algorithms we won't cover in this course
+  Also 3d models, which prof usually teaches
+    Tons of triangles, basically a huge graph
+    Doing lots of differential geometry - curviness etc
+      Then step back and realize it's basically just a graph
+  Political redistricting
+    Most of the dicussion at a conference on it was on graph theory
+    Node for every precinct, boundary where share edge
+  You could take at least 3 separate tracks on graphs
+    Could build a PhD disseration doing nothing but simple graphs
+  In this class limited to a few lectures
+  Going to make some assumptions about graphs and problems
+Simplifying assumptions
+  Simple graph
+    No self loops
+    Every edge is distinct
+      Can't have multiple edges traverse same pair of vertices
+    One nice property
+      Edges are big O of V^2
+  Directed graph
+    |E| <= 2 * (|V| ch 2) // 2 in front because either direction
+    |E| = O(|V|^2)
+  Undirected graph
+    |E| <= (|V| ch 2)
+    |E| = O(|V|^2)
+  Writing down graph algorithms
+    Thinking about number of vertices and edges
+    Sometimes will see a bunch of expressions encoding same relationship in different language
+  Sometimes a graph is sparse - mostly what prof deals with
+    Consequence of topology
+    In that case, graph that scales like #edges >> scales like # vertices
+Neighbors
+  If there is an edge between vertices
+  Outgoing neighbor set of u in V is Adj+(u) = {v in V | (u, v) in E}
+  Incoming neighbor set of u in V is Adj-(u) = {v in V | (v, u) in E}
+  Out-degree of a vertex u in V is deg+(u) = |Adj+(u)|
+  In-degree of a vertex u in V is deg-(u) = |Adj-(u)|
+  For undirected graphs, Adj-(u) = Adj+(u) and deg-(u) = deg+(u)
+  Dropping superscripts defaults to ougoing
+    Adj(u) = Adj+(u)
+    deg(u) = deg+(u)
+  Example
+    Adj+(0) = {2}
+    Adj-(0) = {1}
+  Degree
+    Counting the number of edges pointing out/in
+    Going to write a lot of algorithms doing a for loop over neighbors of a given vertex
+      That's where degree comes into play
+  Worth bounding just a tiny bit
+    sum u in V of deg+(u) = 2 * |E| if undirected
+                          = |E| if directed (and just counting out-degree)
+Graph representations
+  Edge list
+  Adjacency list
+  Adjacency matrix
+  and many others
+  Say I represent like this
+    {(1, 0), (0, 2), (1, 2), (2, 1)}
+    Say have to check whether edge from v->w many times
+    Disorganized list, have to go through whole list
+      Time proportional to number of edges, up to V^2
+  More common
+    Adjacency list
+      Set that maps vertex u -> Adj(u)
+    How to store?
+      look up u, and then query list of stuff attached to u
+      store Adj(v) as direct access array or hash table to make lookup fast
+        expected O(1) lookups
+  Very extreme third example
+    Adjacency matrix, V x V array of edges that exist
+      Now really easy to check if edge exists
+      But if want to iterate over neighbors, have to iterate over every V, and pairs
+      Prof uses because easy to work with, but does incur space, not always efficient
+The canonical problem
+  Computing paths, especially shortest paths
+  Think of graph like map, node = intersection, edge = road
+  Does there exist a way to get from vertex to another?
+    A path is a sequence of vertices where every one is connected by an edge
+    Length = number of edges, or number of vertices - 1
+  Say undirected path, box with diagonal
+    Could go right then up between vertices
+    But single diagonal is faster
+  Very common problem
+    Routing packets on network - limit computers unless TOR
+Model graph problems
+  single_pair_reachability(G, s, t)
+    Is there a path in G from s to t?
+    Takes a bit of algorithmic thinking already
+  single_pair_shortest_path(G, s, t)
+    Return distance from s to t and a shortest path
+      Note this also solves reachability - if there is no path, shortest path is inf in length (or "shrug")
+      Reduction - using one function to solve another
+  single_source_shortest_path(G, s)
+    Give me the length of the shortest path from s to every other vertex in my graph
+      Return (say) array with every length
+      Again, solves prior problem - throw away everything other than path to t
+        May not be the fastest way to solve, but does cover you
+  So today we're going to worry about problem 3
+    Most difficult of 3 problems, covers other 2 pretty well
+Single_source_shortest_path
+  Shortest paths tree
+    A to A length 0
+    A to B length 1
+    A to C length 2
+    A to D length 3
+    A to E length 3
+    A to F length 4
+  But just length, not path
+    What is data structure that stores path
+    Every path could have V vertices in it
+      How big would that data structure be?
+      Any one path would take V space
+        Total V^2
+      But we actually just need linear space
+    Look at A B C - always shortest path A to C
+    Rather than storing giant set of shortest paths
+    Think of one vertex before in shortest path and trace backwards
+      Basically a predecessor
+  What is predecessor of F? it's E
+    What is predecessor of E? it's C
+    C -> B -> A
+  Don't store shortest path, just very last edge
+    Takes V space
+    Trace shortest path, walk along edges until get back to A
+    No cycles (was proven in math class - JM)
+    P(v), P of P of (V) etc until trace back
+      That is the shortest path tree
+        If you add an edge you need a new tree
+        General property - add one edge, everything can change
+How do you compute shortest paths
+  Level Set
+    Whole set of v in V that are distance k from source s
+    Lk = {v in V : d(s, v) = k}
+    Want the length of shortest path
+      Compute level sets and check which one you're in
+Breadth-First Search
+  Compute level sets Li and from that construct length and even shape of shortest path
+  Base case (i = 1): L0 = {s}, delta(s, s) = 0, P = {}
+  Inductive step:
+    To compute Li
+    For every vertex u in L(i - 1):
+      For every vertex v in Adj(u) that does not appear in any Lj for j < i:
+      add v to Li, set delta(s, v) = i and P(v) = u
+  Repeatedly compute Li from Lj for j < i for increasing i until Li is the empty set
+  Set delta(s, v) = infinity for any v in V for which delta(s, v) was not set
+  Prof notes
+    L0 = {s}
+    delta(s, s) = 0
+    P = {}
+  Breadth-first search fills in all of them
+    i = 1
+    while L(i - 1) != {}
+      For all u in L(i - 1), for all V in Adj(u) NOT IN U j = 0 to i - 1 Lj
+      Add v to Li
+      delta(s, v) = i
+      P(V) = (u, v)
+      i += 1
+  Time?
+    Have incurred v time, takes v space to allocate level set
+    For every node, have to visit neighbors
+      Don't see u nodes repeatedly
+      Sum u in v deg+u = 2|E| if undirected
+                       = |E| if directed
+    So this takes
+      O(|V| + |E|)
+      Which is called ~linear time
+        linear in time to store graph
+          slightly fishy, E can scale quadratically with V
+      Why do we need both terms here
+        If no edges in graph, |V| dominates
+        If lots of edges in graph, |E| can go up to |V|^2
+
+Recitation
+  Vertex and edge are "incident" or "adjacent" if edge contains vertex
+  Directed if pair ordered (u, v)
+  Undirected if pair unordered {u, v} or ((u, v) and (v, u))
+  Directed edge extends from vertex u (tail of e) to vertex v (head of e)
+    e incoming edge of v and outgoing edge of u
+  Path sequence of vertices such that for every ordered pair vi, v(i + 1)
+    There exists an outgoing path from vi to v(i+1)
+  Strongly connected
+    Path from every node to every other node in graph
+    Every connected undirected graph is also strongly connected
+  Graph representations
+    Many ways to represent graph in code
+    Most common
+      Set data structure Adj mapping each vertex u to another data structure Adj(u)
+        Adj(u) stores adjacencies of u
+        "Adjacency list"
+        Do not store edge pairs explicitly, store out-going neighbor vertices
+        When vertices uniquely labels from 0 to |V| - 1
+          Store top level Set Adj within a direct access array of length |V|
+            array slot i points to the adjacency list of vertex labeled i
+        Otherwise, if vertices not labeled in this way
+          Use hash table to map each u in V to Adj(u)
+          Store each Adj(u) simple unordered array ouf outgoing vertices
+
+    A1 = [[1], [2], [0], [4], []]
+    A2 = [[1, 4, 3], [0], [3], [0, 2], [0]]
+
+    Perfectly good data structure to loop over edges incident to vertex
+      Case for all algorithms discussed in this class, so will be default implementation
+      Each edge appears in any adjacency list at most twice, size is theta(|V| + |E|)
+      Problem: determining whether graph contains a given edge (u, v)
+        requires omega(|V|) time to step through adj list of u or v
+      Solution:
+        Store adjacency lists using hash_tables instead of regular unsorted arrays
+        Support edge checking in expected O(1) time
+        Still only using theta(|V| + |E|) space
+          Won't need this for our algorithms, so assume simpler unsorted-array-based adjacency list rep
+  Breadth-first search
+    Given a graph, find the vertices reachable by a path from a queried vertex s
+    BFS discovers the level sets of s
+    Set level Li is th set of vertices reachable from s via a shortest path of length i
+    Discovers levels in increasing order starting with i = 0
+      L0 = {s}
+    To compute level L(i + 1), include every vertex with an incoming edge from a vertex in L not get assigned a level
+    (code)
+    How fast?
+      Each vertex processed at most once
+      And examines at most O(|E|) edges
+      BFS runs in O(|V| + |E|) time
+    Use parent labels returned by breadth-first search to construct a shortest path from a vertex s to vertex t
+      Follow parent pointers from t backward through the graph to s
+  Problem
+    Find a shortest path from s to t with an odd number of edges
+    Construct bipartite graph with UO and UE representing reaching U in odd and even number of edges
+    For every edge (u, v) in E, construct the edges (UE, VO) and (UO, VE)
+    Run BFS on G' from SE to TO
+    G' has 2|V| vertices and 2|E| edges
+    BFS runs in O(|V| + |E|) time
+
+  

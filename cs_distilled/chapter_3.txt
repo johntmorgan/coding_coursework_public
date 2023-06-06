@@ -1,0 +1,69 @@
+Strategy
+
+Power sets
+  Set containing all subsets of a set
+    O(2^n)
+    Add a new number to initial set, then must add it to all existing sets, doubling length of set
+
+Recursion
+  Fibonacci, palindrome examples
+  Recursive code is generally shorter, easier to understand
+  But spawn clones (stack frames)
+    And CPU cycles are spent switching between them
+    Can be visualized via recursion trees
+  Iterative code generally more efficient
+    But for many problems, more complicated and harder to understand
+
+Brute force
+  Want to find lowest and highest stock prices on different days
+    Number of pairs of days increases quadratically (n(n+1)/2 pairs in interval of n days)
+  Knapsack
+    Can fit certain weight of objects, have a certain price
+    Brute force checking IS the best approach here
+    Again O(2^n)
+
+Backtracking
+  8 queens example
+  "Fail early, fail often"
+    Would have been good startup advice
+
+Heuristics
+  Finding a good enough solution without guaranteeing it's the optimal one
+  Greedy approach
+    Make the best choice at the time, do NOT backtrack
+    E.g. rapidly steal items and put in knapsack
+      Steal the most expensive item first
+      If you can fit the next most expensive item, add that
+      Quit when you can't fit the next item
+    For traveling salesman
+      Dijkstra's algorithm
+      Is there a better solution? Still a matter of active research
+      NP-complete
+
+Divide and conquer
+  Divide and sort
+    Merge sort
+      Split list in half O(1)
+      Merge list back together O(n)
+      Number of merges log2(N)
+      So nlogn
+
+Dynamic programming
+  Identify repeated subproblems, compute once
+    Common approach: "memoizing"
+    Store results of e.g. fib(1), fib(2)
+    Can turn very slow code into reasonable speed code
+
+Branch and bound
+  Common way to solve optimization problems
+  e.g. lower bound for driving - straight-line distance between cities
+  greedy knapsack = lower bound for optimal solution
+  powdered knapsack = upper bound for optimal solution (can place fractions of items, cost/weight)
+    Then take subproblems - put most expensive item in or not
+    What are upper and lower bounds now?
+    Try the next most expensive item in/out
+      Focus on best upper bound
+      May need to revert to other path depending on results
+    When you find upper bound = lower bound
+    Best possible path
+    Would love to code this out... I'm sure I'll have the opportunity soon!

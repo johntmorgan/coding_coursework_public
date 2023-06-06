@@ -1,0 +1,245 @@
+Design Patterns
+  Building on existing system is challenging
+  Need to make code easily adaptable for future
+  Design patterns = solutions to frequently occurring real-life problems
+
+Structure
+  Pattern name
+  Intent: use case
+  Motivation
+  Structure
+  Consequences: trade-offs
+  Implementation: example of code
+
+Advantages
+  Correct and efficient solutions
+    Derived and optimized by experienced programmers over time
+  Generic templates to modify for different problems
+  Clean and elegant solution, avoid code repetition
+  Template developers can build upon
+    Developers spend less time on code structure, more on solution quality
+
+If unfamiliar
+  Overly complicated architecture
+  May be confused why a pattern is used
+
+Popular patterns
+  Creational
+    Create objects without revealing creation method
+    Allow flexibility in deciding which objects created
+  Structural
+    Class/object composition & relationships between objects
+    Add functionalities to objects
+      Restucturing part of system does not affect rest
+  Behavioral
+    Communication between dissimilar objects in a system
+    Streamline, ensure info sync
+  Architectural
+    Solving architectural problems
+
+Creational patterns
+  Factory
+  Constructor
+  Singleton
+  Builder
+  Prototype
+  Abstract
+
+  Factory
+    Provides a template to create objects
+    Complex situations, type of object required varies
+    Does not use new keyword directly to instantiate
+    Provides a generic interface
+    Delegates object creation to subclass
+    Use:
+      Type of objects cannot be anticipated beforehand
+      Multiple objects sharing similar characteristics to create
+      Generalize object instantiation process
+
+  Constructor
+    Uses constructors in class to create objects
+    Use:
+      Multiple instances of same template
+      Libraries and Plugins design
+
+  Singleton
+    Restrictions class instantiation to single object
+      Cannot create more objects
+    Use:
+      Single object to coordinate actions across a system
+      Services can be singleton - store state, config etc.
+      Databases like MongoDB, database connections
+      Configurations if object with specific config
+
+  Builder
+    Build complex objects from simpler objects
+    Flexible, step by step process
+    Shields representation and process of creation
+    Use:
+      Need to create complex objects
+      DOM, create plenty of nodes and attributes
+        Construction can get quite messy
+
+  Prototype pattern
+    Instantiate objects with some default values
+    Clones object, provides existing properties to cloned object
+    Prototypal inheritance
+      Prototype object acts as blueprint
+    Use:
+      Eliminate initialization overhead
+      Want system to be independent about how products created
+      Creating objects from database whose values are copied
+
+  Abstract
+    Similar to Factory
+    Provides constructor to create families of related objects
+    Abstract, does not specify concrete classes or constuctors
+    Use:
+      Applications requiring reuse or sharing of objects
+      Applications with complex logic
+        Multiple families of related objects
+      Require object caching
+      Object creation to be shielded from client
+
+Structural Patterns
+  Decorator
+    Dynamically add properties, functionalities, and behavior to existing classes
+    New functionalities not essential enogh to be part of original class definition
+      Can cause clutter
+    Does NOT focus on object creation
+      Does not rely on prototypal inheritance alone
+    Ex. toppings on ice cream
+    Use:
+      Modify/extend object functionality without changing base code
+      Implement additiional functionalities of similar objects w/o code reuse
+
+  Facade
+    Provides simpler interface for complex system
+    Hides messy logic from client
+    Use:
+      Simplify client's interaction with system by hiding underlying code
+      Interact with methods in library without knowing background events
+
+  Adapter
+    Allows classes with different interfaces to work together
+    Useful if API modified or new implementations added
+      Keep other parts of system using old API working
+    Use:
+      Enable old APIs to work with new refactored ones
+      Allow object to cooperate with class w/incompatible interface
+      Reuse existing functionality of classes
+
+  Bridge
+    Allows components with separate interfaces to work together
+    Input/output work together but vary indepenently
+    Ex. air conditioner remote
+      New remote models with more features still work
+    Use:
+      Extend class in several independent dimensions
+      Change implementation at run time
+      Share implementation between objects
+
+  Composite
+    Structure objects in tree-like hierarchy
+    Each node of tree can either have children or be a leaf
+    Client works with objects uniformly
+    If leaf object receives request, handles
+    If recipient has children, forwards to child components
+    Consists of
+      Component - add, remove, get methods to manage children
+      Composite - subclass that implements component, has children
+      Leaf - subclass that implements component
+    Use
+      Allow object reuse without compatibility issues
+      Develop scalable app with lots of objects
+      Create tree-like hierarchy of objects
+
+  Flyweight
+    Takes common data structures/objects used by a lot of objects
+    Stores them in external object (flyweight) for sharing
+    Can say used for caching purposes
+    Can be used in multiple contexts simultaneously
+    Cannot be distinguished from non-sharable objects
+    Two states
+      Intrinsic: stored in flyweight
+      Extrinsic: depends on context, cannot be shared
+        Clients pass extrinsic to flyweight when needed
+    Use
+      Share list of immutable strings across applicaation
+      Prevent load time via caching
+
+  Proxy
+    Acts as a placeholder for another object
+    Controls access to object
+    Object might not be able to handle client requests alone
+      Adding proxy helps dividing load
+    Proxy looks just like target
+    Client may not know accessing proxy instead of target
+    Use:
+      Reduce workload on target object
+
+Behavioral Design
+  Chain of Responsibility
+    Allows request from client to be received by more than one object
+    Creates chain of loosely coupled objects
+      Either handle or pass to next object
+    Ex. event bubbling in DOM
+      Bubbles through different nested events until handled
+    Use
+      Program handles requests without knowing seq/type beforehand
+      DOM event bubbling
+
+  Command
+    Encapsulate requests/operations into separate objects
+    Client accessing API directly through application
+      What happens if API changes?
+      Use abstraction, separate requesting objects from implementing
+    Use
+      Queue and execute requests at different times
+      Perform operations like reset and undo
+      Keep history of requests
+
+  Iterator
+    Allows definition of various types of iterators
+    Sequentially iterate collection of objects
+      Do not expose underlying form
+    Most languages have built in iterators (enumerate etc.)
+    Maintain reference to current position and collection traversing
+    Functions: next, hasNext, currentItem, each
+    Use
+      Problems related to iteration
+        Flexible looping
+        Accessing elements from complex collection
+      Implement generic iterator
+
+  Mediator
+    Act as coordinator between different objects
+    Objects do not refer to each other directly
+    Allows loose coupling of objects
+    Ex. chat application
+      Chat box mediator for users
+    Use
+      Avoid tight coupling in system with a lot of objects
+      Improve code readability
+      Improve code maintainability
+
+  Observer
+    Important
+    Subscribe to event, wait for input, react when modified
+    Do not continuously check whether input provided
+    Ex. Get a subscription to a website
+      Don't check every few hours, wait for notification
+    Use
+      Improve code management
+        Break down large apps into system of loosely-coupled objects
+      Improve communication between app parts
+      Create one-to-many dependency between loosely coupled objects
+
+  Visitor
+    Define new ops to collection of objects without changing structure
+    Separate class from logic it implements
+    Objects can have a visit method that accepts the visitor object
+    Use
+      Perform similar operations on different objects of data structure
+      Perform specific operations on different objects of data structure
+      Add extensibility to libraries of frameworks

@@ -1,0 +1,4 @@
+Subsets
+  Find permutations, combinations
+  Make subsets form set
+  O(n * 2^n)

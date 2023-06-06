@@ -1,0 +1,37 @@
+1. Which MySQL statement will delete a table from database and free space in memory
+while keeping the structure of the table intact?
+
+  TRUNCATE TABLE table_name;
+
+2. Consider the following queries which give the same result. Pick the most efficient.
+
+  // Good
+  // Select non-overlapping subsets of rows
+  // Avoid expensive DISTINCT
+  SELECT * FROM table_name WHERE col1 = x
+  UNION ALL
+  SELECT * FROM table_name WHERE col2 = y AND col1 != x;
+
+  // Bad:
+  // If index on col1, then full-table scan on col2
+  SELECT * FROM table_name WHERE col1 = x OR col2 = y;
+
+  // Bad:
+  // DISTINCT is expensive because sorts rows to find duplicates
+  SELECT * FROM table_name WHERE col1 = x
+  UNION DISTINCT
+  SELECT * FROM table_name WHERE col2 = y;
+
+3. Which MySQL function assigns a sequential number to each row of table starting with 1
+  ROW_NUMBER()
+
+4. Suppose you perform an UPSERT i.e. a conditional update or insertion into a table.
+  If a row exists, an UPDATE is done and if a row does not exist, an INSERT is performed.
+  Which statement will you use?
+
+  INSERT with ON DUPLICATE KEY UPDATE
+
+5. Which option is true for the following statement: The output of a sub-query is
+  dependent on the column values of the parent query table.
+
+    Correlated sub-query

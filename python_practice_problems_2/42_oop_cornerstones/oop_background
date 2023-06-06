@@ -1,0 +1,247 @@
+Background of Object Oriented Programming
+  To model real-word scenarios
+  Objects and classes
+  Style, not tool
+  Old but vastly popular
+  Divide program into objects that communicate with each other
+  Every object has unique properties
+  Properties accessed and modified via operations
+  Ex. Employee
+    Properties: name, age, salary, designation
+
+Building blocks of OOP:
+  Attributes
+  Methods
+  Classes
+  Objects
+
+Objects have state and behavior
+Class is a blueprint for creating objects
+Attributes are variables representing state of object
+Methods are functions that represent behavior of object
+  Accept params, return values
+  Have access to class attributes
+
+Principles of OOP:
+  Encapsulation
+  Abstraction
+  Inheiritance
+  Polymorphism
+
+Encapsulation
+  Data hiding
+    Essential in OOP
+    Mask class internal operations
+    Only provide interface through which other entities interact
+  Implement classes to prevent unauthorized access
+  Encapsulation = binding data & methods together in class
+  Hide state and representation of object from outside
+  Class is a capsule with methods and attributes in it
+  Declare all variables of a class private
+  Implement getters and setters to affect class
+
+  class Movie:
+    def __init__(self):
+      self.title = ""
+      self.year = -1
+      self.genre = ""
+
+    def __init__(self, t, y, g):
+      self.title = t
+      self.year = y
+      self.genre = g
+
+    def get_title(self):
+      return self.title
+
+    def set_title(self, t):
+      self.title = t
+
+    def get_year(self):
+      return self.year
+
+    def set_year(self, y):
+      self.year = y
+
+    def get_genre(self):
+      return self.genre
+
+    def set_genre(self, g):
+      self.genre = g
+
+  Makes classes easier to modify and maintain
+  Specify which data hidden or accessible
+  Choose which variables are read-only or write-only
+
+Abstraction
+  Used in OOP to simplify program structure
+  Only reveal necessary system details
+  Hide irrelevant info
+  Ex. hitting volume up on remote
+    Do not know how TV actually does this
+
+  class Circle {
+    private double radius;
+    private double pi;
+  };
+
+class Circle:
+  #define data attributes within the constructors
+  def __init__(self):
+    self.radius = 0
+    self.pi = 3.142
+
+  def __init__(self, r):
+    self.radius = r
+    self.pi = 3.142
+
+  #define methods
+  def area(self):
+    return self.pi * self.radius * self.radius
+
+  def perimeter(self):
+    return 2 * self.pi * self.radius
+
+def main():
+  circle = Circle(5)
+  print("Area: {:.2f}".format(circle.area()))
+  print("Perimeter: {:.2f}".format(circle.perimeter()))
+
+if __name__ == "__main__":
+    main()
+
+    Only define radius in constructor
+    Then area and perimeter functions available
+    Even pi is hidden, as constant
+    Advantages:
+      Reduces complexity for user
+      Makes code extendable and reusable
+      Refines system modularity
+      Makes code more maintainable
+
+Abstraction vs. encapsulation
+  Abstraction: design level
+  Encapsulation: application level
+  Abstraction: hides data for simplicity
+  Encapsulation: restricts data access to prevent misuse
+  Abstraction: highlights work object performs
+  Encapsulation: deals with internal working of object
+  Abstraction: hide implementatoin using interace & abstract classes
+  Encapsulation: hide data using getter and setter functions
+
+Inheiritance
+  Create new class from existing class
+  Access modifiers = tags to define parts of program can access directly
+  5 types of inheritance
+    Single
+      Single class from single parent
+    Multiple
+      Single class from multiple base classes
+    Multi-level
+      Derived from class derived from another class
+    Hierarchical
+      More than one class from single base
+    Hybrid
+      Combo of multiple and multi-level
+      vehicle -> fuel car     -> hybrid
+              -> electric car ->
+  Note: Java, C#, Javascript do NOT support multiple inheritance
+
+  # Base class (Parent)
+  class Vehicle():
+      def __init__(self, name, model):
+          self.name = name
+          self.model = model
+
+      def get_name(self):
+          print("The car is a", self.name, self.model, end="")
+
+  # Single inheritance
+  # FuelCar class extending from Vehicle class
+  # Derived class (Child)
+  class FuelCar(Vehicle):
+      def __init__(self, name, model, combust_type):
+          self.combust_type = combust_type
+          Vehicle.__init__( elf, name, model)
+
+      def get_fuel_car(self):
+          super().get_name()
+          print(", combust type is", self.combust_type, end="")
+
+  # Hierarchical inheritance
+  # Alongside the FuelCar class, the ElectricCar class is also extending from Vehicle class
+  # Another Derived class (Child)
+  class ElectricCar(Vehicle):
+      def __init__(self, name, model, battery_power):
+          self.battery_power = battery_power
+          Vehicle.__init__(self, name, model)
+
+      def get_electric_car(self):
+          super().get_name()
+          print(", battery power is", self.battery_power, end="")
+
+  # Multi-level inheritance
+  # GasolineCar class is derived from the FuelCar class, which is further derived from the Vehicle class
+  # Derived class (Grandchild)
+  class GasolineCar(FuelCar):
+      def __init__(self, name, model, combust_type, gas_capacity):
+              self.gas_capacity = gas_capacity
+              FuelCar.__init__(self, name, model, combust_type)
+
+      def get_gasoline_car(self):
+          super().get_fuel_car()
+          print(", gas capacity is",self.gas_capacity)
+
+  # Multiple inheritance
+  # The HybridCar class is derived from two different classes, The GasolineCar class and the ElectricCar class
+  # Derived class
+  class HybridCar(GasolineCar, ElectricCar):
+
+      def __init__(self, name, model, combust_type, battery_power):
+          FuelCar.__init__(self, name, model, combust_type)
+          ElectricCar.__init__(self,name, model, battery_power)
+          self.battery_power = battery_power
+
+      def get_hybrid(self):
+          self.get_fuel_car()
+          print(", battery power is",self.battery_power)
+
+Inheritance advantages:
+  Reusability, don't duplicate methods
+  Code modification, ensure all changes are localized
+    Avoid inconsistencies
+  Extensibility, extend base class per derived class requirements
+    Upgrade or enhance parts without changing core attributes
+  Data hiding
+    Base class can keep some data private, derived class cannot alter
+
+Polymorphism
+  Object may have several different forms and behaviors
+    Ex. many types of animals
+  Two types
+    Dynamic
+    Static
+  Dynamic polymorphism
+    Defines methods with same name, return type, and params in base & derived classes
+    Call to overridden method decided at runtime
+    aka "runtime polymorphism"
+  Static polymorphism
+    "compile-time polymorphism"
+    method overloading or operator overloading
+    Overloading = more than one method with same name
+      Either # or type of arguments different
+  Static vs. Dynamic
+    Static: resolved during compile time
+    Dynamic: resolved during runtime
+    Static: method overloading
+    Dynamic: method overriding
+    Static: for code readability
+    Dynamic: to have separate implementation of method called in base class
+    Static: arguments must be different
+    Dynamic: arguments must be the same
+    Static: return type does not matter
+    Dynamic: return type must be the same
+    Static: private and sealed methods can be overloaded
+    Dynamic: private and sealed methods cannot be overridden
+    Static: better performance, binding at compile time
+    Dynamic: worse performance, binding at runtime

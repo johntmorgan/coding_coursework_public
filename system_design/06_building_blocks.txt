@@ -1,0 +1,88 @@
+Building blocks
+Bottom-up approach
+  Usually some problem similarities
+  Specific details often unique
+  Extracted similarities as building blocks
+    ex. load balancer
+      Will probably use in every problem one way or another
+    Just discuss design once
+    Use repeatedly later without reviewing
+  Think of using blocks as bricks
+  Many blocks are available in public clouds
+    AWS
+    Azure
+    GCP (Google cloud platform)
+    Good exercise to build systems via these...
+  Key building blocks
+    Doman Name System
+      Hierarchical and distributed naming systems for
+      computers connected to internet via different protocols
+    Load balancer
+      Distribute requests among pool of servers
+      Reduce load
+      Bypass failed servers
+    Databases
+      Store, retrieve, modify, delete data
+      Database types
+      Replication
+      Partitioning
+      Analysis of distributed databases
+    Key-value store
+      Non-relational database
+      Scalability
+      Durability
+      Configurability
+    Content Delivery Network (CDN)
+      Keep viral content
+        Videos, images, audio, webpages
+        Efficiently delivers content to end users
+    Sequencer
+      Unique ID generator
+      Maintain causality
+      Three different ID gen methods
+    Service monitor
+      Critical in distributed systems
+      Server-side system
+      Client-side system
+    Distributed caching
+      Multiple cache servers coordinate
+    Distributed messaging
+      Used between producers, consumers
+      Decouple the two
+      Independent scalability
+      Reliability
+    Publish-subscribe system
+      Asynchronous service-to-service
+      Popular in serverless microservices arch & data proc
+    Rate limiter
+      Throttle incoming requests
+      Defensive layer - whether intended or unintended
+    Blob store
+      Storage solution for unstructured data
+        Multimedia files, binary executables
+    Distributed search
+      Take query, return result in a few seconds or less
+      Crawl
+      Index
+      Search
+    Distributed logging
+      I/O intensive
+      Time-consuming and slow
+      Get a scalable, reliable system
+    Distributed task scheduling
+      Mediate between tasks and resources
+      Allocate resources to meet task-level and system-level goals
+      Offload bg proc to asynch
+    Sharded counters
+      Distributed counting system
+      Deal with millions of read/write requests
+        e.g. celebrity tweet
+  Blocks topologically ordered by dependence
+  Conventions
+    Requirements section
+      Highlight deliverables
+    Functional requirements
+      Features a user can use
+    Non-functional
+      Needed for user to consider usable
+      High availability, low latency, scalability, etc.

@@ -1,0 +1,44 @@
+Breadth-first search
+  Can use to
+    Make a checkers AI that finds the shortest route to victory
+    Write a spellchecker - fewest edits to real word
+    Find doctor closest to you in your network
+  Shortest-path problem
+  Graphs are made up of nodes and edges
+    Nodes can be connected to many neighboring nodes
+  Check your neighboring nodes
+    Then check their neighboring nodes
+    First degree, second degree, etc.
+  Answer 2 separate questions
+    Can you get from node A to node B, are they in the network?
+    What is the shortest path from node A to node B?
+  Use a queue to go through degrees in order
+    enqueue, dequeue
+    FIFO (vs stack LIFO)
+  To make a graph?
+    graph = {}
+    graph["start"] = ["node", "node", "node"]
+  Directed graph
+    arrows in one direction
+  Undirected graph
+    arrows in both directions
+  Queue in Python = deque (double-ended queue)
+    enqueue = append
+    dequeue = popleft # why - JM
+  Also important to mark nodes you've already visited
+    Can wind up doing extra work
+    Can wind up in an infinite loop
+  (Coded breadth first search example)
+  Running time?
+    If you wind up searching the whole network, you've searched every edge
+      O(number of edges)
+    Also keep queue
+      Adding one person = 0(1)
+      Adding every person = O(number of people)
+    BFS running time is
+      O(number of edges + number of nodes)
+      O(V+E) -> v = vertices, math speak for nodes
+  Trees
+    A special type of graph where edges never point back up
+    (Well that's simple, but prob more on them later)
+  

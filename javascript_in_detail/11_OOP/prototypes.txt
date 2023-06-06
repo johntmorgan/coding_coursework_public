@@ -1,0 +1,98 @@
+Prototypes
+  We know about objects and their mutation
+    Have assigned properties from one object to another
+      How to neatly have all properties of another object?
+  All JS objects have the property prototype
+    Under the property name __proto__
+    Prototype of each object assigned during creation, is itself an object
+
+    let vehicle = { wheels : 4 }; // object assigned to variable named vehicle
+    let car = { seats : 5 }; // object assigned to variable named car
+    let driver = {} // empty object assigned to variable named driver
+
+    // Print all objects and __proto__ property for each variable
+    console.log(`vehicle:`, vehicle, vehicle.__proto__);
+      > vehicle: { wheels: 4 } {}
+    console.log(`car:`, car, car.__proto__);
+      > car: { seats: 5 } {}
+    console.log(`driver:`, driver, driver.__proto__);
+      > driver: {} {}
+
+    __proto__ property appears as empty object
+      Properties of protoype are hidden
+      But can see through browser console
+
+    -{wheels: 4}
+    --wheels: 4
+    __proto__:
+    --constructor: f Object()
+    --hasOwnProperty: f hasOwnProperty()
+    --isPrototypeOf: f isPrototypeOf()
+    --propertyIsEnumerable: f propertyIsEnumerable()
+    --toLocaleString: f toLocaleString()
+    --toString: f toString()
+    --valueOf: f valueOf()
+    --__defineGetter__: f __defineGetter__()
+    --__defineSetter__: f __defineSetter__()
+    --__lookupGetter__: f __lookupGetter__()
+    --__lookupSetter__: f __lookupSetter__()
+    --get __proto__: f __proto__()
+    --set __proto__: f __proto__()
+
+    All these properties are essential for classifying objects
+
+Using prototypes
+  let vehicle = { wheels : 4 }; // object assigned to variable named vehicle
+  let car = {
+      seats : 5,
+      __proto__ : vehicle // __proto__ property assigned to vehicle
+  }; // object assigned to variable named car
+
+  // Print all objects and __proto__ property for each variable
+  console.log(`vehicle:`, vehicle, vehicle.__proto__);
+    > vehicle: { wheels: 4 } {}
+  console.log(`car:`, car, car.__proto__);
+    > car: { seats: 5 } { wheels: 4 }
+  console.log(`vehicle seat:`,vehicle.seats);
+    > vehicle seat: undefined
+  console.log(`car wheels:`, car.wheels);
+    > car wheels: 4
+
+  What if car has its own wheels?
+
+  let vehicle = { wheels : 4 }; // object assigned to variable named vehicle
+  let car = {
+      seats : 5,
+      __proto__ : vehicle, // __proto__ property assigned to vehicle
+      wheels : 6,
+  }; // object assigned to variable named car
+
+  // Print all objects and __proto__ property for each variable
+  console.log(`vehicle:`, vehicle, vehicle.__proto__);
+    > vehicle: { wheels: 4 } {}
+  console.log(`car:`, car, car.__proto__);
+    > car: { seats: 5, wheels: 6 } { wheels: 4 }
+  console.log(`car wheels:`, car.wheels);
+    > car wheels: 6
+
+  __proto__ property is only checked if immediate object has no prop with respective name
+  __proto__ link traversed after confirming target property does not already exist
+  prototype object itself has __proto__ property assigned to null
+    Should always be null, prototype object, or another object
+      Deprecated to assign to any other value
+
+  Object.getPrototypeOf(obj): retrieves __proto__ property of obj object
+  Object.setPrototypeOf(obj, proto): assignes value of proto to __proto__ property of obj
+
+  let vehicle = { wheels : 4 }; // object assigned to variable named vehicle
+  let car = { seats : 5 }; // object assigned to variable named car
+
+  Object.setPrototypeOf(car, vehicle);
+  // Print all objects and __proto__ property for each variable
+  console.log(`vehicle:`, vehicle, Object.getPrototypeOf(vehicle));
+    > vehicle: { wheels: 4 } {}
+  console.log(`car:`, car, Object.getPrototypeOf(car));
+    > car: { seats: 5 } { wheels: 4 }
+  console.log(`car wheels:`, car.wheels);
+    > car wheels: 4
+

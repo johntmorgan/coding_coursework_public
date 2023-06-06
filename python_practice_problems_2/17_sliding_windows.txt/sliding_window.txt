@@ -1,0 +1,36 @@
+Sliding window
+  Computational method
+  Reduce use of nested loops
+  Variation of two pointers pattern
+  Pointers used to set window bounds
+  Window is a sublist over part of an iterable data structure
+  Process data in segments, not entire list
+  Set window size depending on requirements
+    Need to find 3 consec integers with largest sum, set window to 3
+
+Is problem suitable?
+  Yes:
+    Repeated computations on contiguous data elements
+      Subarray, substring
+    Window moves across array from one end to the other
+    Size of window may be fixe dor variable
+    Repeated comps may be direct part of soln or intermediate step building
+    Computations performed every time the window moves tak O(1)
+      Or slow growing function, say log of small variable, k << n
+  No:
+    Input data structure does not support random access
+    Must process entire data w/o segmentation
+
+Real world
+  Telecommunications
+    Find max number of users connected to base every k ms sliding window
+  E-commerce
+    Dataset of product ids in order viewed by user
+    List of of similar products
+      How many times do products occur together?
+  Video streaming
+    Stream of numbers representing buffering events in session
+      Calc median buffering in each interval
+  Social media
+    Lists of topics 2 users posted about
+    Find shortest sequence of posts by one user that includes topics by other user

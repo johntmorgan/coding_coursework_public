@@ -1,0 +1,406 @@
+Deviation from the Mean / Markov & Chebyshev Bounds
+Reading
+  Why care about EV?
+  Random var may never take a value anywhere near expectation
+  Connection to estimation by sampling
+  Say want to estimate average age, income, family size, or other measure
+  Random process for selecting people - say throwing darts at census lists
+  Makes selected person's age, income, etc. into random variable
+    Mean equals actual average age or income of population
+  What is confidence in estimate from repeated sampling?
+    How large a sample do we need to reach a level?
+    Fundamental to all experimental science
+    Because of randomness - "noise" - repeats rarely come out exactly the same
+  Judging sampling or measurement accuracy -> find prob. that estimate deviates by a given amount
+    Engineering
+      Design a sea wall to withstand tsunamis for a century
+      Assemble network, how many component failures without maintenance for  amonth
+      Insurance - financial reserve to pay benefits for 3 decades
+    Find probability of *extreme* deviations from the mean
+  Markov's Thm
+    Coarse estimate of probability that a random var takes value much larger than mean
+    Almost trivial by itself, but leads fairly directly to stronger results
+    Example first: IQ
+      Built so average would be 100
+      At most 1/3 can have an average of 300 or more
+      Otherwise average instantly > 100
+      Similarly, at most 2/3 can have IQ > 150
+      Not very strong conclusions
+      No IQ over 300 ever recorded
+      Only small fraction IQ > 150
+    Markov's Thm
+      If R is a nonnegative random variable, then for all x > 0
+      Pr[R >= x] <= Ex[R] / x
+      Proof
+        Let y vary over the range of R. Then for any x > 0
+        Ex[R] ::= sum y of y * Pr[R = y]
+                >= sum y >= x of y * Pr[R = y]
+                 >= sum y >= x of x * Pr[R = y]
+                  = x * sum y >= x of Pr[R = y]
+                   = x * Pr[R >= x]
+        First inequality follows from the fact that R >= 0
+      Corollary (rephrasing)
+        If R is a nonnegative random var, then for all c >= 1
+        Pr[R >= c * Ex[R]] <= 1/c
+  Applied Markov's Thm
+    Go back to the Hat-Check problem
+    Now what is probability that x or more men get the right hat
+    Pr[G >= x]
+    Compute an upper bound with Markov's Thm
+    Ex[G] = 1, so
+    Pr[G >= x] <= Ex[G] / x = 1 / x
+    There is no better than a 20% chance that 5 men get right had, regardless of # of people
+    Chinese appetizer
+      Probability everyone gets same appetizer as before? 1/n
+      Markov's theorem
+      Random variable R is number of people that get right appetizer
+      Then Ex[R] = 1
+      Pr[R >= n] <= Ex[R] / n = 1/n // precisely right
+    Markov's theorem is not always so accurate
+      Probability everyone gets their hat back 1/n upper limit
+      But probability is actually 1/n!
+      So probability bound that is way too large
+  Markov for bounded variables
+    Say average MIT student IQ is 150 (not true)
+    What is prob. MIT student IQ > 200
+    No more than 150/200 or 3/4 of the students can have such a high IQ
+    PR[R > 200] = Ex[R] / 200 = 150/200 = 3/4
+    But let's say we know no MIT student has IQ < 100
+    T ::= R - 100
+    Then T is nonneg and Ex[T] = 50
+    Pr[R > 200] = Pr[T > 100] <= Ex[T] / 100 <= Ex[T] / 100 = 50/100 = 1/2
+    In fact get better bounds by applying Markov Thm to R - b instead R
+    For any lower bound b on R
+    Similarly if any upper bound u on a random variable, then u - S will be a nonneg rand var
+    Applying Markov's theorem to u - S allow to bound probability S is less than expectation
+  Chebyshev's Theorem
+    Markov's Theorem gives a better bound when applied to R - b instead of R
+    A good trick for getting stronger bounds is to apply to some cleverly chosen function of R
+      Functions that are powers of the absolute value of R especially good
+      |R|^Z is nonnegative for any real number z
+      Markov also applies to event |R|^Z >= x^Z
+      But for positive x, z > 0 this event equivalent to event [|R| >= x]
+    Lemma
+      For any random variable R and positive real numbers x, z
+        Pr[|R| >= x] <= Ex[|R|^Z] / x^Z
+      |R - Ex[R]| // R's deviation from its mean
+      Pr[|R - Ex[R]|] >= x <= Ex[|(R - Ex[R]^Z)] / x^Z
+    Case when z = 2 is so important it has been given a name: "variance"
+      Var[R] of a random variable R is
+      Var[R] ::= Ex[(R - Ex[R])^2]
+        aka "mean square deviation"
+    Chebyshev Thm - restatement
+      R is a random variable, x in Real+
+      Pr[|R - Ex[R]|] >= x <= Var[R] / x^2
+    Let's break it down a little
+      R - Ex[R]: the deviation of R above its mean
+      Square it and: (R - Ex[R])^2
+      This is a random variable
+        Near 0 when R is close to the mean
+        Large positive number when R deviates far above or below the mean
+      So if R is always close to the mean, the variance is small
+      If R is often far from the mean, the variance will be large
+  Variance in two gambling games
+    Game A: Win $2 with probability 2/3 and lose $1 with probability 1/3
+    Game B: Win $1002 with probabiility 2/3, lose $2001 with probability 1/3
+    Which game is better financially?
+    Same probability of winning
+    Expected payouts are equal:
+      Ex[A] = 2 * 2/3 + (-1) * 1/3 = 1
+      Ex[B] = 1002 * 2/3 + (-2001) * 1/3 = 1
+    However the games are very different
+    The difference is captured by variance
+    Computing Var[A]
+      A - Ex[A] = 1 with probability 2/3
+                = -2 with probability 1/3
+      (A - Ex|A|)^2 = 1 with probability 2/3
+                    = 4 with probability 1/3
+      Ex[(A - Ex|A|)^2] = 1 * 2/3 + 4 * 1/3
+                 Var[A] = 2
+    Computing Var[B]
+      B - Ex[B] = 1001 with probability 2/3
+                = -2002 with probability 1/3
+      (B - Ex|B|)^2 = 1002001 with probability 2/3
+                    = 4008004 with probability 1/3
+      Ex[(B - Ex|B|)^2] = 1002001 * 2/3 + 4008004 * 1/3
+                 Var[B] = 2004002
+    Huge diff in variance
+      Intuitively the payoff in game A is usually close to the expected value
+      However the payoff in game B can deviate very far from this value
+    High variance = high risk
+      10 rounds of game A - expect to make $10, could lose $10
+      10 rounds of game B - expect to make $10, could lose $20k!
+  Standard deviation
+    In game B - deviations from mean are ~1k and ~2k
+    But the variance is 2m
+    That's because the "units" of variance are wrong
+    If the random var is in dollars, then the expectation is in dollars
+    But the variance is in square dollars
+    So people often use standard deviation instead of variance
+    SD(r) = sqrt(Var[R]) = sqrt(Ex[(R - Ex[R])^2])
+    So standard deviation is the sqrt of the mean square deviation
+      Or "root mean square" for short
+    Has the same units (dollars in example) as the original random variable and mean
+    Intuitively, measures average deviation from the mean
+      Can think of square root on outside cancelling square on inside
+    Standard dev in Game B
+      SD(B) = sqrt(Var[B]) = sqrt(2004002) ~= 1416
+      Random variable B actually deviates from the mean by either positive 1001 or negative 2002
+      So standard deviation of 1416 describes situation more closely than variance
+    For bell shaped distribution, standard dev measures "width" of interval in which values most likely fall
+    Rephrase Chebyshev in terms of standard dev, substituting x = c * SD(r)
+    Let R be a random variable, and let c be a positive real number
+      Pr[|R - Ex[R]| > c * SD(r)] <= 1/c^2
+    Result, "likely" values of R are clustered in an O(SD(r))-sized region around Ex[R]
+  IQ example
+    National average IQ is 100
+    Standard deviation of IQs is 10
+    How rare is an IQ of 300 or more?
+    Random variable R is the IQ of a random person
+    Ex[R] = 100
+    SD(r) = 10
+    R is nonnegative
+    Markov - coarse bound
+      Pr[R >= 300] <= 1/3
+    Chebyshev
+      Pr[R >= 300] = Pr[|R - 100| >= 200] <= Var[R] / 200^2 = 10^2 / 200^2 = 1/400
+      At most 1/400 has an IQ of 300 or more - much tighter bound
+  Properties of Variance
+    Average of the square of the distance from the mean
+      Sometimes called "mean square deviation"
+      Square root - "root mean square deviation" (standard deviation)
+    But why bother squaring?
+      Why not study the absolute value of |R - Ex[R]|
+    The answer: variance and standard deviation have useful properties
+      Much more important in probability than average absolute deviation
+    Formula for variance
+      Apply linearity of expectation
+      Lemma
+        Var[R] = Ex[R^2] - Ex^2[R] // Ex^2[R] = (Ex[R])^2
+      Proof
+        mu = Ex[R]
+        Var[R] = Ex[(R - Ex[R])^2]
+               = Ex[(R  - mu)^2]
+               = Ex[R^2 - 2 * mu * R + mu^2]
+               = Ex[R^2] - 2 * mu * Ex[R] + mu^2
+               = Ex[R^2] - 2 * mu^2 + mu^2
+               = Ex[R^2] - mu^2
+               = Ex[R^2] - Ex^2[R]
+    Variance of indicator variable
+      B is a Bernoulli variable where p ::= Pr[B = 1] then
+        Var[B] = p - p^2 = p(1 - p)
+    Variance of time to failure
+      Mean time to failure of 1/p for process that fails during any hour with probability p
+      Var[C] = Ex[C^2] - (1/p)^2
+      Need a formula for Ex[C^2]
+      Ex[C^2] = p * 1^2 + (1 - p)Ex[(C + 1)^2]
+              (math)
+              = (2 - p) / p^2
+      Lemma
+        Var[C] = (1 - p) / p^2
+    Dealing with constants
+      How to calculate the variance of aR + b
+      Thm
+        Var[aR] = a^2 * Var[R]
+      Thm
+        Var[R + b] = Var[R]
+      Corollary
+        SD(aR + b) = |a|SD(R)
+    Variance of a sum
+      Is NOT equal to the sum of the variances
+      But variances do add for independent variables
+        Pairwise independence is good enough, mutual not needed
+        Situations like Birthday Matching - pairwise but not mutual
+      Thm
+        R and S independent random variables
+        Var[R + S] = Var[R] + Var[S]
+        Proof
+          Ex[R] = 0, since can replace R by R - Ex[R] in equation, same goes for S
+          For any variable T with expectation zero, Var[T] = Ex[T^2]
+          Need only prove
+          Ex[(R + S)^2] = Ex[R^2] + Ex[S^2]
+          Follows from
+          Ex[RS] = Ex[R] * Ex[S]
+          Since R and S are independent
+        Easy to see does not hold for variables that are not independent
+          If R = S
+          Var[R + R] = Var[R] + Var[R] By square multiple rule
+            4Var[R] = 2Var[R], implying Var[R] = 0
+          So fails when R = S and R has nonzero variance
+      Thm: Pairwise independent additivity of variance
+        If R1, R2, ... , Rn are independent variables
+        Var[R1 + R2 + ... + Rn] = Var[R1] + Var[R2] + ... + Var[Rn]
+        Now simple way of computing variance of variable J that has (n, p) binomial distribution
+          J = sum k = 1 to n o Ik where the Ik are mutually independent indicator variables
+          Pr[Ik = 1] = p
+          Variance of each Ik is p(1 - p) so by linearity of variance
+          Var[J] = nVar[Ik] = np(1 - p)
+
+Lecture
+  Deviation from the Mean
+  Why do we care about the mean?
+  If you keep experimenting with the same random variable collecting values
+    Long-run average will be about the same as the mean
+    But let's get more precise
+    Talk about deviation from the mean
+    Or "what does the mean... really mean?"
+  Toss 101 fair coins
+    E[#Heads] = 50.5
+    Pr[exactly 50.5 Heads] = 0 // can't flip half a head
+    Don't expect the Expectation!
+    Pr[exactly 50 Heads] < 1/13
+    Pr[50.5 +- 1 Head] < 1/7
+  Flip 1001 coins
+    E[#Heads] = 500.5
+    Pr[#H = 500] < 1/39
+    Pr[#H = 500.5 +- 1] < 1/19
+  Probability has gone down
+    Less likely to be within distance 1 as flip more coins
+  But what about within a % of the mean?
+    Pr Pr[#H = 500.5 +- 1%] = Pr[#H = 500.5 +- 10] ~= 0.49 // not so bad
+  Giving meaning to the mean
+    Let mu :== E[R]
+    Pr[R far from mu]?
+      Rephrase as
+      Pr[|R - mu| > x]
+    R's average deviation?
+    E[|R - mu|]
+  Example
+    Two dice
+      Same mean
+      Different deviations
+    1) fair die
+      E[D1] = 3.5
+    2) loaded die, only throws 1 & 6
+      E[D2] = 3.5 also!
+    Deviations
+      Fair die:
+        E[|D1 - mu|] = 1.5
+      Loaded die:
+        E[|D2 - mu|] = 2.5 // in fact it's always 2.5 on every roll!
+    Look at PDF
+  Moral of the story: the mean alone is not a good predictor of R's behavior
+  Generally need more about its distribution, especially probable deviation from its mean
+  Bounds of Deviation
+    Markov - Russian probability theorist
+    Example: IQ - late 19th, early 20th invented
+      Trying to break mold at Harvard of admitting children of wealthy alumni
+      Based on merit and intelligence quotient
+    Designed to average 100 over the whole population
+    What fraction of the population could have an IQ >= 300
+      (May have never been recorded, but we're talking logically here)
+      Can't have more than 1/3
+      Because then average > 100
+    Pr[IQ >= 300] <= E[IQ] / 300 = 1/3
+    Is IQ higher than x
+    PR[IQ >= x] <= 100 / x
+    This is Markov's Bound
+    Worth noting - assuming that IQ cannot be negative
+  Markov Bound
+    If R is nonnegative:
+    Pr[R >= x] <= E[R] / x
+    For x > 0
+    Could even restrict to x > E[R]
+      Only x's give us a nontrivial bound > 1
+    Alternative form
+      Pr[R >= c * mu] <= 1 / c
+      let x = c * E[R]
+      Pr[R >= 3 * expected] <= 1/3
+    It's weak though
+      No IQ ever recorded as high as 300
+      Every example from now - more info, can deduce a tighter bound
+      But this is as well as you can do with very limited
+    Also it's obvious
+    Useful anyway - if clever
+    Here's a use
+    IQ >= 300 again
+    Say IQ never goes below 50 (but it does, I know that from ASD work... - JM)
+    Get a better bound using IQ - 50
+      Since this is now >= 0
+    Pr[IQ >= 300] =
+    Pr[IQ - 50 >= 300 - 50] <= (100 - 50) / (300 - 50) = 1/5
+      "Improved Markov Bound"
+      Shifting R to have 0 as minimum
+  Chebyshev Bound
+  Bounds on Deviation
+    Markov gave you a coarse bound with very little info about R
+    With a little more info, tight bounds
+    Even though Markov bound seems weak
+    The Chebyshev bound is actually a trivial corollary of Markov
+    Pr[|R - mu| >= x] // square both sides
+    Pr[(R - mu)^2 >= x^2]
+      // (R - mu)^2 is a non-negative random variable to which Markov applies
+    Pr[(R - mu)^2 >= x^2] <= E[(R - mu)^2] / x^2
+      Remember that numerator - it's the variance of R
+      Extra bit of info about shape of distribution of R
+      Can state much more powerful theorems
+    Pr[|R - mu| >= x] <= Var[R] / x^2
+    Var[R] = E[(R - mu)^2]
+    Key thing - getting inverse square probability - bounds get smaller much rapidly
+    Variance is also called the "mean square error"
+    One issue with variance
+      If you think of R as some dimension - it's a squared variable - so its units are squared
+    So standard deviation (sigma) - matching units of R
+      SD(r) ::= sqrt(Var[R])
+      "root mean square error"
+    Suppose R has a bell curve shape
+      Mean in the middle (by symmetry)
+      Standard deviation is an interval around the mean
+      The probability you're within 1 SD is fairly high for standard distributions
+        (But not unknown/unusual distributions - know little then)
+      Pr[|R - mu| >= x] <= (SD(R))^2 / x^2
+        Replace x by constant C * SD, where C is multiple of standard deviation
+        Gets small very fast as C grows
+      Pr[|R - mu| >= C * SD(r)] <= 1 / c^2
+        This tells us R is probably not many SDs from mu
+        What is probability R is 1 SD away - well upper bound is just 1, not very informative
+        What's the probability that the error is 2SD? Pr <= 1/4
+          3SD, 1/9, 4 SD, 1/16
+  Variance
+    How to use Chebyshev's bound etc?
+    Variance of an Indicator/Bernoulli
+      (Remember, 0/1 valued)
+      I is an indicator with E[I] = p
+      Var[I] = E[(I - p)^2]
+             = E[I^2 - 2pI + p^2]
+             = E[I^2] - 2pE[I] + p^2
+             = E[I] - 2p * p + p^2
+             = p - 2p^2 + p^2
+             = p - p^2 = pq // where q = 1 - p
+    Calculating variance
+      Var[aR + b] = a^2 * Var[R] // additive constant b doesn't matter
+      Var[R] = E[R^2] - (E[R])^2 // can write E^2[R] for the latter
+    Space Station Mir again
+      Destructs with probability p in any given hour
+      E[F] = 1/p (Mean time to fail)
+      Var[F]?
+      Pr[F = k] = q^(k - 1)p
+      Var[F] = E[F^2] - E^2[F]
+      F = 1, 2, 3, ..., k, ...
+      F^2 = 1, 4, 9, ..., k, ...
+      E[F^2] ::= sum k = 1 to inf of k^2 * Pr[F^2 = k^2]
+               = sum k = 1 to inf of k^2 * Pr[F = k] // and we know k so
+               = p / q * sum 0 to inf of k^2 * q^k // sum has closed form
+      Total expectation approach
+      E[F^2] = E[F^2 | F = 1] * Pr[F = 1] + E[F^2 | F > 1] * Pr[F > 1]
+      Lemma
+        For F = time to failure, g : Real -> Real
+        E[g(F) | F > n] = E[g(F + n)]
+      Corollary
+        E[F^2 | F > 1] = E[(F + 1)^2]
+      So
+        E[F^2] = E[F^2 | F = 1] * Pr[F = 1] + E[F^2 | F > 1] * Pr[F > 1]
+               =  1 * p + E[(F + 1)^2] * q
+               =  1 * p + (E[F^2] + 2 / p + 1) * q
+      Skipping a few steps
+      Var[F] = 1 / p * (1 / p - 1)
+      So Mir
+      p = 10^-4
+      E[F] = 10^4
+      sigma < 10^4
+      So by Chebyshev
+      Pr[lasts > 4 * 10^4 hours] <= 1/4
+      Pr[lasts > 4.6 years] <= 1/4
+    Calculating variance - general rules
+      Variance is additive... but only if R1, R2, ... , Rn are pairwise independent
+      Var[R1 + R2 + ... + Rn] = Var[R1] + Var[R2] + ... + Var[Rn]

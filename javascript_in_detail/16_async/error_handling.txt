@@ -1,0 +1,145 @@
+Error handling
+  Many errors working with async tasks
+
+Try & catch
+    try {
+      // execute statements
+    } catch (err){
+      // handle error err received from try block
+    }
+
+  For any error, execution stops within block
+  Control then jumps to catch block
+  Catch block handles error, accessible via variable err
+
+    try{
+      console.log('entered try block');
+      undefinedFunc(); // invoke undefined func
+      console.log('invoked func in try block'); // will not be executed
+    } catch (err){
+      console.log('entered catch block');
+      console.log("Err:", err);
+      console.log('Printed error');
+    }
+
+    > entered try block
+    > entered catch block
+    > Err: ReferenceError: undefinedFunc is not defined
+        at Object.<anonymous> (/usercode/index.js:3:3)
+        at Module._compile (internal/modules/cjs/loader.js:778:30)
+        at Object.Module._extensions..js (internal/modules/cjs/loader.js:789:10)
+        at Module.load (internal/modules/cjs/loader.js:653:32)
+        at tryModuleLoad (internal/modules/cjs/loader.js:593:12)
+        at Function.Module._load (internal/modules/cjs/loader.js:585:3)
+        at Function.Module.runMain (internal/modules/cjs/loader.js:831:12)
+        at startup (internal/bootstrap/node.js:283:19)
+        at bootstrapNodeJSCore (internal/bootstrap/node.js:623:3)
+    > Printed error
+
+throw token
+  Explicitly throw error for error handlers
+    Create customized errors
+
+    try{
+      throw 'Will not execute anything';
+      console.log('entered try block');
+      undefinedFunc(); // invoke undefined func
+      console.log('invoked func in try block'); // will not be executed
+    } catch (err){
+      console.log('entered catch block');
+      console.log("Err:", err);
+      console.log('Printed error');
+    }
+
+    > entered catch block
+    > Err: Will not execute anything
+    > Printed error
+
+  Recommended to throw Error objects, rather than other value types
+
+Async is tougher
+  Events handled by environment
+  Callbacks only within JS
+
+  Error handling with callback
+
+  const fs = require('fs'); // import fs module
+
+  // readFile that doesn't exist
+  fs.readFile('content.txt', 'utf8', (err, data) =>{
+    // callback function
+    if(err){
+      // add error handling code here
+      console.log('Err:', err);
+    } else {
+      console.log('data: ', data);
+    }
+  });
+
+  Note, using throw here will interrupt program
+    Prevent any unexpected behavior, terminate
+
+Error handling with promises
+  Capture the value passed by the reject function inside the promise
+
+  promise.then(callbackfn).catch(errHandlingfn);
+
+  Chaining
+    // Any error thrown by reject, or using throw token, breaks chain
+    // Jump to invoke errHandlingfn in catch method
+
+    promise
+    .then(callbackfn1)
+    .then(callbackfn2)
+    .then(callbackfn3)
+    .catch(errHandlingfn);
+
+  const fs = require('fs'); // import fs module
+
+  var readFile_promise = new Promise((resolve, reject) =>{
+    // readFile that doesn't exist
+    fs.readFile('content.txt', 'utf8', (err, data) =>{
+      // callback function
+      if(err){
+        reject(err); // reject err
+      } else {
+        resolve(data); // resolve data
+      }
+    });
+  })
+
+  readFile_promise.then(val=>{
+    // callback function for promise
+    console.log('data: ',val); // print value
+  }).catch(err => {
+    // error handling
+    console.log('Err:', err); // print error
+  })
+
+Error handling with async functions
+  Use traditional try and catch
+  Additional feature with promises set on await
+  catch block captures reject function's value the same way the throw statement does
+
+  const fs = require('fs'); // import fs module
+  async function async_file_read(){
+    try{
+      var readFile_promise = new Promise((resolve, reject) =>{
+        // readFile that doesn't exist
+        fs.readFile('content.txt', 'utf8', (err, data) =>{
+          // callback function
+          if(err){
+            reject(err); // reject err
+          } else {
+            resolve(data); // resolve data
+          }
+        });
+      })
+      var data = await readFile_promise;
+      console.log('data: ', data);
+    } catch (err){
+      console.log('Err:', err);
+    }
+  }
+
+  async_file_read(); // invoke async function

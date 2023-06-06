@@ -1,0 +1,24 @@
+K-way merge
+  Solve problems with list of sorted arrays
+  Place first elem of each array in min-heap
+    Track which array each is from
+  Remove min elem, insert from same array in heap
+  Merge together several arrays at once
+
+Patterns
+  Yes
+    Set of sorted arrays or
+    Matrix of sorted rows/columns
+    Need to merge arrays
+    Find Kth smallest/largest in set of sorted arrays
+  No
+    Input structures are not arrays/linked lists
+    Data is not sorted
+      Or is sorted but not matching criteria
+
+Real world
+  Merge tweets in Twitter feed
+  External sorting procedures
+    When algo processing huge amounts of data
+    Repeatedly fetch from external storage
+    Reduce number of merge passses

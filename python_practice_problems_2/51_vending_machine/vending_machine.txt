@@ -1,0 +1,191 @@
+Vending Machine
+  Automated machine
+  Snacks, chocolates, beverages to consumers
+  Multiple racks inside vending machine
+  User inserts money
+    Selects rack number
+    Presses button
+  Vending machine dispenses based on $$ and product selection
+  Started as postcard machines in 1880s UK
+  Standalone units
+  Power supply
+
+Questions
+  States
+    Functions, how many states
+    Inserting money, what does machine do?
+    Who presses the button, what happens next?
+    What does dispense function do
+    If dispensing, can insert money?
+    What if try to buy product with no money
+  Money handling
+    What if less paid than product price?
+    What if more paid than product price?
+    Credit card purchases or cash only
+
+Design
+  Start small again
+    Product in machine
+    Then inventory
+
+Design patterns
+  State design pattern
+  Singleton design pattern
+
+Requirements
+  Products at different locations in machine
+  One of 3 states
+    NoMoneyInsertedState
+    MoneyInsertedState
+    DispenseState
+  Actors
+    User
+    Admin
+  Admin can add or remove product
+  System allows user to select by specifying rack #
+  User inserts money as cash
+  System calculates money inserted
+  Check whether exact amount required
+  If amount greater than product price
+    Dispense product
+    Return change
+  If amount less than error price
+    Display error
+    Return money
+
+Use case
+  System
+    Vending Machine
+  Actors
+    Customer
+      View products
+      Insert money
+      Select product
+      Take product
+      Take out change
+    Admin
+      Customer abilities
+      Add product
+      Take product out
+      Take money out
+    System (secondary)
+      Search for product
+      Dispense after validating money
+  Use cases
+    Customer
+      View products
+      Select product
+      Insert money
+      Take product
+      Take out change
+    Operator
+      Add product
+      Remove product
+      Remove cash
+    System
+      Search product
+      Validate money
+      Dispense product
+      Return change
+  Relationships
+    Associations
+      Operator has a generalization relationship with customer
+        Can do everything a customer can and more
+    Include
+      Select products has include relationship with search products
+      Validate money has include relationship with dispense product case
+    Extend
+      Return change has an extend relationship with validate money case
+
+Classes
+  State
+    NoMoneyInsertedState
+    MoneyInsertedState
+    DispenseState
+  State class is an interface
+    MoneyInsertedState
+      insertMoney
+      pressButton
+      returnChange
+      updateInventory
+      dispenseProduct
+    NoMoneyInsertedState
+      ditto
+    DispenseState
+      ditto
+    Note: all functions available in each state
+      Not every function has a meaningful definition in each state
+  Product
+    name: string
+    id: int
+    price: double
+    type: ProductType
+  Rack
+    productId: int (not products: Product {list} ? - JM)
+    rackNumber: int
+  Inventory
+    noOfProducts: int
+    products: List<Product>
+    addProduct()
+    removeProduct()
+  Vending machine
+    currentState: State
+    amount: double
+    noOfRacks: into
+    racks: List<Rack>
+    availableRacks: List<int>
+    insertMoney()
+    pressButton()
+    returnChange()
+    dispenseProduct()
+    updateInventory()
+    getProductIdAtRack()
+  Enum
+    ProductType
+      Chocolate
+      Candy
+      Snack
+      Beverage
+      Other
+
+  Relationships
+    Composition
+      VendingMachine composed of Rack
+      Inventory composed of Product
+
+    Aggregation
+      VendingMachine contains State interface
+
+    Association
+      VendingMachine two-way Inventory
+      Rack two-way Product
+
+    Inheritance
+      State classes implement State interface
+
+  Design pattern
+    No money inserted state
+    Money inserted state
+    Dispense state
+
+  Additional requirements
+    Refund/cancel
+      Add as function to all states
+        refundFullMoney()
+          Warning if NoMoneyInserted
+          Blocked if DispenseState
+            (Hmm really should make dispense trigger and money deduction atomic - JM)
+
+Activity Diagram
+  Product purchase
+    Money inserted?
+      No: Loopback
+    Yes: select product
+    Product is available?
+      No: Loopback to select
+    Yes: money validation
+      Not enough: dispense money back
+      Exact: dispense product
+      More: dispense change
+        Dispense product
+    Loop back to: money inserted?

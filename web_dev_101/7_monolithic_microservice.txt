@@ -1,0 +1,175 @@
+Monolithic architecture
+  Contains entire application code in single codebase
+    Self-contained
+    Tightly coupled
+    Unlike microservices
+      Each fature may have one or more dedicated microservices
+  Ex. Facebook
+    User posts
+    Comment system
+    Groups
+    Marketplace
+    Portal ads
+    Photo storage
+    Live streaming
+    Recommendation system
+    In monolith: all coded in single codebase
+  Simple to build, test, and deploy compared to microservices
+  During initial stages, often start this way and branch later
+    This is a trade-off
+    Refactoring, re-writing code is expensive
+    Dismantling features from tightly coupled architecture demands a lot of time and resources
+    But there have been times where businesses have done it
+      ex. LinkedIn
+      However LinkedIn started when cloud computing, microservices not the norm
+  Current landscape
+    Applications built and deployed on the cloud
+    Businesses have to move fast
+    Good decision to pick loosely coupled, stateless microservices from the start
+      if multiple distinct features and expect things to grow fast in future
+  Simple requirements?
+    Monolithic architecture best
+    Microservices = overkill
+      Managing all these modules running in conjunction not a walk in the park
+
+When to pick monolithic
+  Pros
+    Simple to develop, test, deploy, monitor, manage
+    Everything in one repository
+  Cons
+    Continuous deployment
+      Even a minor code change in one layer/feature ->
+      Redeploy entire application
+    Regression testing
+      Perform a thorough regression testing after every deployment
+      Minor change in one feature can affect others due to tight coupling
+    Single points of failure
+      Bug in any feature can take the whole thing down
+    Scalability
+      As code size increases, things get tricker to manage
+    Technology leverage
+      Using multiple programming languages = messy
+        Or even not possible
+        Tricky to use Java and NodeJS together in a single codebase
+    Not cloud-ready, hold state
+      Not all monolith apps are this way
+      But generally legacy apps use static variables quite a bit
+  So when?
+    Simple requirements, app not complex
+      Todo list, sports news app, internal tax calc app
+    Limited features and complexity
+      No serious expansion in the near future
+
+Microservice architecture
+  Different features deployed separately as loosely coupled services
+  Work in conjunction to form a large distributed online service as a whole
+  Single responsibility, separation of concerns
+  Easier, cleaner app maintenance, feature development, testing, deployment of modules
+  Allows different teams to manage different features
+  Scalability is easy
+  Each microservice has a separate database (ideally)
+    Eliminates single points of failure, system bottlenecks
+  Pros
+    No single points of failure
+      One service goes down, whole application stays up
+    Leverage heterogeneous technologies
+      Every micro interfaces with others via REST API gateway interface
+        Mix Java, Python, Ruby, NodeJS etc.
+      Use multiple database types
+        SQL and NoSQL together (more in database lesson)
+    Independent and continuous depoyments
+      Dedicate teams for every service
+      Scale independently without impacting others
+  Cons
+    Management complexity
+      Several services powered by server clusters
+      System management, monitoring complex
+      More components to manage
+        Apache Zookeeper - node manager
+        Distributed tracing for monitoring nodes
+      Skilled resources, even dedicated team just to manage
+    Strong consistency
+      Hard to guarantee
+      Things are eventually consistent instead (see database chapter)
+  So when?
+    Complex use cases
+    Apps need to add new features fast
+      Social network application
+        Lots of components - messaging, real-time chat, video streaming, photo uploads, post like & share...
+    Not much need for regression testing
+    Doesn't become a mess with lots of features
+  Overall
+    Think very carefully about requirements before picking
+
+More on tradeoffs
+  Fault isolation - easy in microservices - isolate and debug
+    Don't need to scan whole codebase
+  Dev team autonomy
+    Monolith
+      Single codebase velocity suffers beyond a certain size
+      Compile time and test runtime increases too (have seen that with Sparkmesh- JM)
+      Thorough regression testing required in monoliths
+      All teams must stop working when code pushed to production in mono
+        Approval may be required from multiple teams, creating bottleneck
+    Microservices
+      Dedicated teams have ownership of codebases
+      Full dev and deployment autonomy (depends on the situation though right? - JM)
+      Code management easier
+      Easier to scale services
+      So great if need to move fast, quickly launch features to market, scale
+      But cannot ignore increase in complexity
+        Distributed logging
+        Monitoring
+        Inter-service communication
+        Service discovery
+        Alerts
+        Tracing
+        Dedicated build and release pipelines
+        Health checks etc.
+        May have to write custom tooling from scratch
+  Example: Segment
+    Monolith -> microservices -> monolith
+    Customer data platform
+    Split for fault isolation and easy debugging
+      Minimize damage a fault caused in system
+    Integrates data from many different data providers
+      Microservice for every provider
+      Architecture got more and more complex
+        Productivity toll
+        Defects started increasing
+          Three engineers solely getting rid of defects to keep online
+          Slowed organization down a lot
+    Final architecture: "Centrifuge"
+      Single code repository
+      Handled billions of messages per day to multiple APIs
+      Will dive deeper now
+
+Even more on tradeoffs
+  Ex. Segment continued
+    Hundreds of thousands of events ingested per second
+    Directed to different APIs and webhooks via message queue
+      "Server-side destinations"
+      Over 100 @ Segment
+    When started with monolith
+      Ingested events from sources, forwared to distributed message queue
+      Queue moved event payload further to other destination APIs
+      Some events failed to deliver, retried after time intervals
+      Queue contained both new events and failed events waiting for retry
+      Queue eventually flooded
+        Delays in delivery of events to destinations
+    Split to microservices
+      Queue for delivery to each destination
+      Cut down load on each queue, enable scale
+      If one queue gets flooded, others not affected
+    But as business scaled
+      More and more destinations added
+        Every services and queue needed to be uniquely scaled based on traffic load
+          Had to be done manually
+        Autoscaling implemented
+          Every service different CPU and memory requirements
+          Manual tuning required
+          Queues needed more resources for maintenance
+  Ex. Isto
+    Open-source service mesh
+      Connect, secure, control, observe microservices
+      Microservices -> monolith

@@ -1,0 +1,119 @@
+Parameters
+  Placeholder for a variable
+  Used to pass data to and from stored procedure
+  Define by specifying mode, data type, optional max length
+  Used to make stored procedure flexible
+    Also avoid direct user inputs in a query string
+      Source of runtime errors
+      Or even opening for malicious input
+  Three modes
+    IN
+    OUT
+    INOUT
+  IN mode
+    Application calling stored procedure must pass argument
+  OUT mode
+    Stored procedure will pass application to caller
+    Stored procedure cannot acccess initial value
+    Value is NULL when procedure begins execution
+  INOUT
+    Pass argument to procedure
+    Procedure works on it
+    Procedure passes back to caller
+
+  // Let's use a procedure that displays actors with net worth > input param
+
+  DELIMITER **
+
+  CREATE PROCEDURE GetActorsByNetWorth(
+              IN NetWorth INT )
+  BEGIN
+   SELECT * 
+   FROM Actors
+   WHERE NetWorthInMillions >= NetWorth;
+  END **
+
+  DELIMITER ;
+
+  CALL GetActorsByNetWorth(500);
+  CALL GetActorsByNetWorth(750);
+
+  // Error if no param passed
+  CALL GetActorsByNetWorth();
+    > ERROR 1318 (42000): Incorrect number of arguments for PROCEDURE MovieIndustry.GetActorsByNetWorth;
+    expected 1, got 0
+
+  // Now let's pass an argument back to the caller
+
+  DELIMITER **
+
+  CREATE PROCEDURE GetActorCountByNetWorth (
+   IN  NetWorth INT,
+   OUT ActorCount INT
+  )
+  BEGIN
+   SELECT COUNT(*)
+   INTO ActorCount
+   FROM Actors
+   WHERE NetWorthInMillions >= NetWorth;
+  END**
+
+  DELIMITER ;
+
+  CALL GetActorCountByNetWorth(500, @ActorCount);
+  SELECT @ActorCount;
+    > 3
+
+  // Now an INOUT example
+  // A bit contried to show INTOUT simple
+
+  DELIMITER **
+
+  CREATE PROCEDURE IncreaseInNetWorth(
+  INOUT IncreasedWorth INT,
+  IN ActorId INT
+  )
+  BEGIN
+  DECLARE OriginalNetWorth INT;
+
+  SELECT NetWorthInMillions Into OriginalNetWorth
+  FROM Actors WHERE Id = ActorId;
+
+  SET IncreasedWorth = OriginalNetWorth + IncreasedWorth;
+
+  END**
+  DELIMITER ;
+
+  SET @IncreasedWorth = 50;
+
+  CALL IncreaseInNetWorth(@IncreasedWorth, 11);
+
+  SELECT @IncreasedWorth;
+    > 78
+
+  // Can return multiple values to caller
+  // Let's return male and female actors with net worth > amount
+
+    DELIMITER **
+
+    CREATE PROCEDURE GenderCountByNetWorth(
+     IN NetWorth INT,
+     OUT MaleCount INT,
+     OUT FemaleCount INT)
+    BEGIN
+         SELECT COUNT(*) INTO MaleCount
+         FROM Actors
+         WHERE NetWorthInMillions >= NetWorth
+               AND Gender = 'Male';
+
+     SELECT COUNT(*) INTO FemaleCount
+         FROM Actors
+         WHERE NetWorthInMillions >= NetWorth
+               AND Gender = 'Female';
+
+    END**
+    DELIMITER ;
+
+    CALL GenderCountByNetWorth(500, @Male, @Female);
+    SELECT @Male, @Female;
+      > 2 1

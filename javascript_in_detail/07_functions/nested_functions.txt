@@ -1,0 +1,43 @@
+Nested Functions
+  Function declared inside another function
+
+  function outer (a){
+    console.log("Outer function executed with arg",a);
+    function inner(b){
+      console.log("Inner function executed with arg:",b);
+      return;
+    }
+    inner(a);
+    return;
+  }
+  outer(1);
+
+Advantage
+  Variables available
+
+  Kludgy:
+    function outer (a){
+      console.log("Outer function executed with arg",a);
+      a++;
+      return a;
+    }
+    function inner(b){
+        console.log("Inner function executed with arg:",b);
+        return;
+    }
+    var outerReturn = outer(1);
+    inner(outerReturn);
+
+  Nested!
+    function outer (a){
+      console.log("Outer function executed with arg",a);
+      a++;
+      var b = 5;
+      function inner(){
+        console.log("Inner function executed and have access to:", a, b);
+        return;
+      }
+      inner();
+      return a;
+    }
+    var outerReturn = outer(1); // invoke outer and assign the output to outerReturn

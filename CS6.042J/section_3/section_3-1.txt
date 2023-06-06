@@ -1,0 +1,475 @@
+Sums & Asymptotics
+Reading
+  Sums and products come up a lot in:
+    Analysis of algorithms
+    Financial applications
+    Physical problems
+    Probabilistic systems
+  Remember
+    1 + 2 + 3 + ... + n = (n(n + 1) / 2)
+    can write left as "sum i = 1 to n of i"
+    But the right hand expression easier to understand & evaluate
+      Also more clearly reveals growth rate of the sum
+    Expressions without subscripted summation or products - or dots
+      "Closed forms"
+    Closed form for a geometric sum
+      1 + x + x^2 + x^3 + ... + x^n = (1 - x^(n + 1) / (1 - x))
+      Left side requires n additions and (n - 1) * n / 2 multiplications
+      Right side can be evaluated via fast exponentiation with at most
+        2logn multiplications, a division, a couple subtractoins
+      Closed form also makes growth and limiting behavior much more apparent
+  The examples were easy to verify by induction
+    However no hints about how formulas found in first place
+    Finding is part math and part art
+  What's in this chapter (unit? - JM)
+    First central example: annuity
+    The value is a large & nasty-looking sum
+    Then several methods for finding closed forms for several sorts of sums
+    In some cases a closed form will not exist
+      Then general approach for finding closed form for upper/lower bounds
+    Sum methods also work for products
+      Can convert into a sum by taking logarithm
+        Later will find a closed form for factorial this way
+    Finally, asymptotic "Big Oh" notation
+      Often used to bound error terms when no exact closed form expression
+      Also provides a convenient way to express growth rate or order of mag of a sum/product
+  Annuity example
+    1m today or $50k for the rest of your life
+      1m is instant
+      50k is more total dollars assumign you live long enough
+    Annuity is a financial instrument
+      Fixed amount of money every year for specified # of years
+    An n year, m payment annity
+      m dollars at start of each year for n years
+      Sometimes n is finite, but not always
+    Examples
+      Lottery payouts
+      Student loans
+      Home mortgages
+    What is an annuity worth?
+      Intuitively $50k for 20 y < 1m
+        If you had it all now, could invest and collect interest
+      But what about vs. $500k?
+    Future value of money
+      What is a dollar in the future worth today?
+      Assume money invested at fixed interest rate p
+      Let's assume p = .08 for this discussion (has ranged 1% - 17% in last 30 years)
+      Invest $10 today
+        Next year (1 + p) * 10 = $10.80 next year
+        (1 + p)^2 * 10 = $11.66 in two years
+        So $10 next year is only $9.26 today
+    So for n year, m payment annuity
+      The first payment of m is worth m
+      But the next payment is worth m/(1 + p)
+      Third payment is worth m/((1 + p)^2)
+      nth payment is worth m/((1 + p)^(n - 1))
+      Total value equals sum
+      V = sum i = 1 to n of m / ((1 + p)^(i - 1))
+      = m * sum j = 0 to n - 1 of (1 / (1 + p))^j (where j = i - 1)
+      = m * sum j = 0 to n - 1 of x^j (where x = 1/1 + p)
+      Goal of these substitutions? Get summation into form of simple geometric sum
+    How to discover closed form?
+      Perturbation method
+  Perturbation method
+    Given a sum with a nice structure, "perturb" sum to get something simpler
+    Suppose
+      S = 1 + x + x^2 + ... x^n
+      xS = x + x^2 + ... x^(n+1)
+      difference between S and XS is not great, massive cancel if subtract
+      S - xS = (1 - x^(n+1))
+      S = (1 - x^(n + 1)) / (1 - x)
+    More examples with "generating functions" in future chapter
+  Closed form for the annuity value
+    V = m((1 - x^n) / (1 - x))
+    V = m((1 + p - (1/(1 + p))^(n-1))/ p))
+    Much easier to use than a summation
+    So real value of lottery ticket that pays $50k per year? Plug in numbers
+    V ~= $530,180
+    So with payments deferred, million dollar lottery is really worth ~half the value!
+      Nice trick for lottery advertisers
+  Infinite geometric series
+    What if you live forever?
+      Sounds like infinite money!
+    But can calculate value of annuity by taking limit of sum as n tends to infinity
+    sum of i = 0 to inf of x^i = (1 / (1 - x))
+    Proof
+      sum of i = 0 to inf of x^i ::= lim n-> inf sum i = 0 to n of x^i
+        = lim(n -> inf) (1 - x^(n + 1)) / (1 - x)
+        = 1 / 1 - x
+          since lin n -> inf x^(n + 1) = 0 when |x| < 1
+          x = 1 / (1 + p) < 1
+    V = m * 1 / (1 - x)
+      = m * (1 + p) / p
+    V ~= $675000
+      Seems wild $1m today is worth more than $50k for eternity eh?
+      But if we had $1m today at 8% interest, could take out $80k every year
+  Examples
+    1 + 1/2 + 1/4 ... = 2
+    0.99999... = 1
+    1 - 1/2 + 1/4 - ... = 2/3
+    1 + 2 + 4 + ... + 2^(n - 1) = 2^n - 1
+    1 + 3 + 9 + ... + 3^(n - 1) = (3^n - 1) / 2
+  Definitions
+    If the terms in a geometric sum grow smaller, sum is geometrically decreasing
+    If the terms grow larger, geometrically increasing
+    In iether case, the sum is usually approx equal to term with the greatest abs. value
+  Variations of Geo Sums
+    Often can't transform with simple variable subs to form sum of x^i
+    A non-obvious but useful thing to do is differentiating or integrating wrt x
+      sum of i = 1 to n - 1 of ix^i = x + 2x^2 + 3x^3 + ... + (n - 1)x^(n - 1)
+      Not a geometric sum - ratio between terms not fixed
+    But differentiating equation leads to
+      d/dx(sum of i = 0 to n - 1 of x^1) = d/dx((1 - x^n)/(1 - x))
+      (and then a good bit of cleanup from there - JM)
+      = (1 - nx^(n - 1) + (n - 1)x^n) / (1 - x)^2
+      A little complicated, still easier to work with than the sum
+      Notice that if |x| < 1, series converges to a finite value even with inf terms
+  Thm
+    If |x| < 1 then
+      sum i = 1 to inf of ix^i = x / (1 - x)^2
+  Suppose there is an annuity that pays im dollars at the end of each year 1 forever
+    Say m = $50k, then $100k, then $150k
+    Hard to believe this is finite! but:
+    V = sum i = 1 to inf im/(1 + p)^i
+      = m * (1 / 1 + p) / (1 - (1 / (1 + p))^2)
+      = m * (1 + p) / p^2
+    V = $8437500
+      Payments increase but only additive, while value decreases exponentially over time
+      Geometric decrease swamps additive increase
+      Payments in distant future almost worthless
+  Sums of powers
+    Where does:
+      1 + 2 + 3 + ... + n = (n(n + 1) / 2)
+      come from?
+    Or:
+      sum i = 1 to n of i^2 = (2n + 1)(n + 1)n / 6
+    First:
+      How did Gauss prove as a young boy?
+      Related to perturbation method
+      Can write
+        S = 1 + 2 + ... + (n - 1) + n
+        S = n + (n - 1) + ... + 2 + 1
+        2S = (n + 1) + (n + 1) + ...
+           = n(n + 1)
+        S = n(n + 1) / 2
+      Does not work for summing consecutive squares
+        However, can observe might be third-dgree polynomial in n
+        Sum contains n terms that average out to value growing quadratically in n
+        sum i = 1 to n of i^2 = an^3 + bn^2 + cn + d
+          plug in some values for n
+          n = 0 implies 0 = d
+          n = 1 implies 1 = a + b + c + d
+          n = 2 implies 5 = 8a + 4b + 2c + d
+          n = 3 implies 14 = 27a + 9b + 3c + d
+        Solve system
+          a = 1/3, b = 1/2, c = 1/6, d = 0
+    The point: if the desired formula turns out to be a polynomial
+      Then once you estimate the degree of the polynomial, all coefficients found automatically
+      Be careful! Doesn't guarantee solutions are right!
+        Go back and prove via induction or other method
+      If initial guess at form was not right, resulting formula totally wrong!
+  Approximating sums
+    Cannot always find closed form, one is not known for:
+      S = sum i = 1 to n of sqrt(i)
+    Find closed-form upper and lower bounds
+    Replace sum by integral and add either first or last term in sum
+    Def function f : R+ -> R+
+      Strictly increasing
+        x < y IMPLIES f(x) < f(y)
+      Weakly increasing
+        x < y IMPLIES f(x) <= f(y)
+      Strictly/weakly decreasing etc.
+    Let f : R+ -> R+ be a weakly increasing function
+      S ::= sum i = 1 to n of f(i)
+      I ::= int 1 to n f(x)dx
+    Then
+      I + f(1) <= S <= I + f(n)
+    If f is weakly decreasing
+      I + f(n) <= S <= I + f(1)
+    Proof
+      Suppose f : R+ -> R+ is weakly increasing
+      Value of sum S is sum of areas of unit-width rectangles of heights f(1), f(2),...,f(n)
+      I = int 1 to n of f(x)dx
+      Comparing area of shaded regions
+        S is at least I plus leftmost rect - S >= I + f(1)
+        S is ast most I plus rightmost rect S <= I + f(n)
+      Very similar argument for weakly decreasing case
+    Bound S = sum i = 1 to n of sqrt(i)
+      I = int 1 to n of sqrt(x)dx
+        = x^(3/2) / (3 / 2) 1 to n
+        = 2/3(n^(3/2) - 1)
+      2/3(n^(3/2) - 1) + 1 <= S <= 2/3(n^(3/2) - 1) + sqrt(n)
+      So the sum is "very close" to 2/3n^(3/2)
+        We'll define "very close" later
+  Hanging over the dge
+    Have a stack of books - how far past the edge of the table can the top book go?
+      Can actually get it to go as far as you want!
+    Let's approach recursively
+      One book can stuck out half its length
+      Now suppose stable stack
+        Overhang of a stable stack to be horizontal distance from center of mass to furthest edge of top
+        Place center of mass at the edge of the table
+      In general stack of n books stable if and only if center of mass of top i book sits over the i + 1 book
+        For i = 1, 2, ... n - 1
+      Overhang of one book B1 = 1/2
+      Now suppose stable stack of n + 1 books with max overhang
+        If overhang of n on bottom book not max, could get a book to stick out farther
+          By replacing the top stack with stack of n books of greater overhang
+        So maximum overhang, B(n + 1) achieved by putting a max overhang stable stack n
+          On top of the bottom book
+          Reasoning shows this is the unique way to get the best stack
+      Let center of mass of top n books be the origin
+        Horizontal coord of center of mass of whole stack will equal increase in overhang
+        Center of mass of bottom book has horiz coordinate 1/2
+        Horiz coord of center of mass of whole stacks is
+        (0 * n) + (1/2 * 1) / (n + 1) = 1 / 2(n + 1)
+        B(n + 1) = Bn + 1 / 2(n + 1)
+        B(n + 1) = B(n - 1) + 1 / 2n + 1 / (2n + 1)
+                 = B1 + 1/2*2 + ... + 1/2n + 1/(2(n + 1))
+                 = 1/2 * sum i = 1 to n + 1 of 1 / i
+    Harmonic numbers
+      nth harmonic number Hn is
+        Hn ::= sum i = 1 to n of 1/i
+      H4 = 1/2 + 1/3 + 1/4 = 25/12 > 2
+        A four book stack can have top book completely off the edge already!
+      No known closed form expression for harmonic numbers
+      But use integral thm to get close upper and lower bounds
+      int 1 to n 1/xdx = ln(x) from 1 to n = ln(n)
+      So
+        ln(n) + 1/n <= Hn <= ln(n) + 1
+        nth harmonic number very close to ln(n)
+        Even better approx (hard math work):
+          Hn = ln(n) + y + 1/2n + 1/12n^n + e(n)/120n^4
+          y is a value Euler's constant 0.577215664
+          e(n) between 0 and 1 for all n
+          (will not prove formula)
+      Anyway
+        Plug in, max overhang for n books is very close to 1/2ln(n)
+        Since ln(n) grows to infinity as n increases, with enough books can go forever off table
+          But it will take 227 books to achieve an overhang of 3, so
+    Can you build it another way?
+      Can stick bottom book out the most instead
+        Ties the arrangement from sticking out the top book
+      So can swap the top two books
+        There is no way to beat these two approaches
+      But you can do more if more than 1 book rests on a book - think inverted pyramid
+        Stack of n books extends proportional to cubert(n) - much more than ln(n)
+    Asymptotic equality
+      When understand function growth up to some (unimportant error terms) use "~"
+        Hn ~ ln(n)
+        Indicates leading term of H(n) is ln(n)
+      Defintion
+        For functions f, g : R -> R we say f is asymptotically equivalent to g:
+          f(x) ~ g(x)
+        IFF
+          lim x -> inf f(x) / g(x) = 1
+      How do you cover the second term?
+        Wrong: Hn ~ ln(n) + y
+        Right: Hn - ln(n) ~ y
+  Products
+    How to find closed forms for products instead of sums?
+    n! ::= bpro i = 1 to n of i
+    Convert any product into sum by taking logarithm
+      P = bpro i = 1 to n of f(i)
+      ln(P) = sum i = 1 to n of ln(f(i))
+      Then apply summing tools to find closed form - or approximate
+      Then exponentiate at the end to undo logarithm
+    ln(n!) = ln(1 * 2 * 3 * ... (n - 1) * n)
+           = ln(1) + ln(2) + ln(3) + ... + ln(n - 1) + ln(n)
+           = sum i = 1 to n of ln(i)
+      Unfortunately no closed form known for sum, use int to get closed-form bounds
+      int 1 to n ln(x)dx = xln(x) - x 1 to n
+                         = nln(n) - n + 1
+      nln(n) - x + 1 <= sum i = 1 to n of ln(i) <= nln(n) - n + 1 + ln(n)
+      Exponentiating then gives
+        n^n/(e^(n - 1)) <= n! <= n^(n + 1)/e^(n - 1)
+      So n! is within a factor n of n^n/e^(n - 1)
+    Stirling's formula
+      n! probably most commonly used product in discrete math
+      Mathematicians have worked to find tight closed-form bounds on value
+      For all n >= 1
+      n! = sqrt(2pi * n)(n/e)^n*e^(ee(n))
+      Where 1/(12n + 1) <= ee(n) <= 1/12n
+      Can be proved by induction (with some pain)
+        Also lots of elementary calculus proofs, but let's skip
+    Stirling's Formula: important stuff to notice
+      ee(n) is always positive
+        n! > sqrt(2pi * n)(n / e)^n
+        for all n in N+
+      ee(n) tends to 0 as n gets large
+        n! ~ sqrt(2pi * n)(n / e)^n
+        Who'd have thought both pi and e in a closed form expression asymptotically equal to n
+      ee(n) is small even for small values of n
+        So Stirling's formula provides good approx for n! for most all values of n
+        For n >= 10, within 1 % of correct value
+        For n >= 100, within 0.1% of correct value
+      If we want to be closer
+        Multiply by e^(1/12n) for upper bound
+        Multiply by e^(1/(12n + 1)) for lower bound
+      For n >= 10, either bound within 0.01%
+      For n >= 100, either bound within 0.0001%
+
+Lecture
+  New unit - counting/combinatorics
+  When counting - add up numbers along the way, deal with sums a lot
+  Arithmetic, geometric, harmonic sums - all come up regularly
+    All have reasonably nice formulas
+  Arithmetic
+    Sum for children, 18th century to keep busy
+    89 + 102 + 115 + 128 + 141... + 456
+    Gauss - magnetism, probabilty, congruence, number theory
+    Saw 30 numbers, each 13 greater than previous
+      Figured the tutor knew the trick
+    89 + (89 + 13) ... (89 + 29 * 13)
+    F + (F + d) + ... + (L - d) + L =:: A
+    Find sum between that and slight perturbation
+      Write sum backwards, add
+    F + (F + d) + ... + (L - d) + L =:: A
+    L + (L - d) + ... + (F + d) + F = A
+    (F + L) + (F + L) + (F + L) = 2A
+    A = (F + L) / 2 * number of terms
+    1 + 2 + ... + (n - 1) + n = (1 + n) / 2 * n = n(n + 1) / 2
+  Geometric sums
+    Each sum is a fixed multiple of previous sum
+    Gn = 1 + x + x^2 + ... + x^n
+    Note that 1 = x^0
+    Trick this time, multiply Gn by x
+    Increase power by 1, right shift
+    xGn = x + x^2 + x^3 + ... + x^(n + 1)
+    Then subtract it
+    -xGn = -x - x^2 - ... - x^n - x^(n + 1)
+    Gn - xGn = 1 - x^(n+1)
+    Gn = 1 - x^(n+1) / (1 - x)
+    Standard trick - see more of with generating functions
+    What about when infinite sum?
+      1 + x + x^2 + ... + x^(n - 1) + x^n + ... = sum i = 1 to inf of x^i
+    lim n -> inf Gn = 1 - lim(n -> inf) x^(n + 1) / (1 - x) = 1 / (1 - x) as long as x < 1
+  The future value of $$
+    I will pay you $100 in 1 year, if you will pay me $X now
+      Bank will pay 3% interest (generous today! was stingy)
+      Define bankrate b ::= 1.03
+      Bank incrases my $$ by 1.03 in a yaer
+      If I deposit $X now, will have b*X in year
+      Won't lose money as long as
+        bX >= 100
+        x >= $100/1.03 = $97.09
+        $1 is worth $0.9709 now
+      So n paid in 2 years is worth
+      nr paid in 1 year is worth
+      nr^2 today
+      n paid k years from now is worth nr^k today where r ::= 1/bankrate
+  Annuity
+    Contract people buy to provide no-risk income - typically insurance deal
+    I pay you $100/year for 10 years, if you will pay me $Y now
+    100r + 100r^2 + 100r^3 + ... 100r^10
+    = 100r(1 + r + ... + r^9)
+    = 100r(1 - r^10/ (1 - r)) = $853.02
+    Quickie:
+      What if bank rate unexpectedly increases in the next few years
+      Who comes out ahead?
+  Question
+    Annuity with
+      $10k year
+      4% interest
+      Payout forever
+      What should be price?
+    r = 1/1.04
+    = 10000r + 10000r^2 etc
+    10000 * r * 1 / (1 - r) = $250000
+  Harmonic Sums - Book Stacking
+    Suppose trying to stack bunch of books on table (uniform weight etc ofc)
+    Top book in picture is past the edge of the table - can you do that?
+    How far out can you get book farthest to the right?
+    Let's start with one book
+      Book length 1
+      Center of mass in middle
+        Need to keep center of mass supported
+        Largest overhang when center of mass right at edge of table
+        So half book is hanging off table
+    Ok, now n books, and going from n to n + 1
+      If the stack resting on the table won't fall over, center of mass must be over table
+      Now know how to place a stable stack of n books to get largest overhang
+    Let's consider n + 1
+      Want to get out further
+      Center of mass of n + 1 must be at edge of table
+      What about center of mass of top n books?
+        Need center of mass supported
+        Put center of mass of top n books at edge of n + 1 bottom book
+      So increase in overhang by adding one more book (delta)
+        delta = difference in center of mass of n and center of mass of n + 1
+        com of 1 book and com of n books should be 1/2 apart
+        balance point is distance 1/2 divided by sum of n and n + 1
+        delta = 1/2 / (n + 1) = 1 / 2(n + 1)
+    Bn ::= overhang of n books
+    B1 = 1/2
+    B(n + 1) = Bn + (1 / (2(n + 1))) - recursive definition of Bn
+    Bn = 1/2 (1 + 1/2 + 1/3 + ... + 1/n)
+    Harmonic sum
+      Hn ::= 1 + 1/2 + 1/3 + ... + 1/n
+      Bn = Hn/2
+  Harmonic sums
+    How do we calculate Bn = Hn/2
+    No simple formula for sum
+    But simple formula that estimates accurately
+    Bounding by integrals
+    Let's draw unit rectangles for each number in sum
+      Draw a curve through left corners - 1/(x + 1)
+      A curve that is strictly below bounds of rectangles - lower bound on Hn
+    Hn = area of rectangles
+       > area under 1/(x + 1)
+    Area under 1/(x + 1) =
+      int 0 to n 1 / (x + 1)dx = int 1 to n + 1 1/x dc = ln(n + 1)
+    So for overhang 3, need Bn >= 3
+      Hn >= 6
+      integral bound: ln(n + 1) >= 6
+      So ok with n >= ceil(e^6 - 1) = 403 books
+      Actually calculate Hn: 227 books are enough
+    Dramatic fact
+      ln(n + 1) -> inf as n -> inf
+      So your overhang can be as big as desired!
+    CD cases over the edge
+      (Textbooks don't work - compress, not rigid)
+      43 cases high - 1.8 or 1.9 case lengths
+    What is upper bound for Hn?
+      run a curve through upper right corners - is 1/x + 1 (since not included now)
+      Hn < (int 1 to n 1/x * dx ) + 1
+         < ln(n) + 1
+    Asymptotic bound for Hn
+      ln(n + 1) < Hn < 1 + ln(n)
+    These numbers are very close and get closer as n grows
+    Hn ~ ln(n)
+    "~" - asymptotically equal
+    Def: f(n) ~ g(n)
+    lim n -> inf (f(n)/g(n)) = 1
+  Asymptotic equivalence
+    n^2 + n ~ n^2
+    Proof
+      lim n -> inf (n^2 + n) / n^2 = lim n -> inf (1 + 1/n) = 1
+    Fundamentally only care about high order term
+      Lower order terms disappear when looking at asymptotic equivalence
+  Integral sum bounds
+    Let f : R+ -> R+ be a weakly decreasing function
+    S ::= sum i = 1 to n of f(i)
+    I = int 1 to n of f(x) * dx
+    I + f(n) <= S <= I + f(1)
+  Stirling's Formula
+    Closed form for n!
+    n! ::= 1 * 2 * 3 ... (n - 1) * n = bpro i = 1 to n i
+    There's no fixed size of formula to express it
+    First turn product into sum by taking logs
+    ln(n!) = ln(1 * 2 * 3 * ... * (n - 1) * n)
+           = ln(1) + ln(2) + s... + ln(n)
+           = sum i = 1 to n of ln(i)
+    Now a weakly increasing function
+      f : R+ -> R+
+      S ::= sum i = 1 n f(i), I ::= int 1 to n f(x) * dx
+      I + f(1) <= S <= I + f(n)
+      int lnx * dx  = x * ln(x / e)
+      n ln(n /e) <= sum <= nln(n/e) + ln(n)
+      sum ~= nln(n/e) + ln(n)/2 (taking average of second term)
+      exponentiate both sides
+      n! ~= sqrt(n)(n / e)^n - imprecise, not asymptotically equal (and very dangerous to exponentiate asym equal and assume still equal)
+      A precise approximation
+      n! ~ sqrt(2pi * n) * (n / e)^n
+
+

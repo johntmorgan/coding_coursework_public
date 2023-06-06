@@ -1,0 +1,122 @@
+Interactivity, State, and Hooks
+  Now let's make it actually interactive
+  In React, use JSX to specify event handlers like old-school HTML embedded JS
+  But how to make changes as result of events
+    Can't use immutable props!
+  React uses "state" to refer to parts of a component that change
+    When changed trigger an update to display
+    Component can't change own props
+      State of parent change -> re-render child with new props
+    React requires to you register state changes with system
+  As of React 16.8
+    Hooks - before then functions could not change state, classes did via different mechanism
+    We'll be focusing on hooks + functional components since that's the future
+
+  import * as React from "react"
+
+  interface SeatProps {
+    seatNumber: number
+    initialStatus: string
+  }
+
+  export const Seat = (props: SeatProps) => {
+    const [status, setStatus] = React.useState(props.initialStatus)
+
+    function changeState(): void {
+      if (status === "open") {
+        setStatus("held")
+      } else if (status === "held" {
+        setStatus("open")
+      }
+    }
+
+    function stateDisplayClass(): string {
+      if (status === "open") {
+        return "has-background-white"
+      } else if (status === "held") {
+        return "has-background-success"
+      } else {
+        return "has-background-warning"
+      }
+    }
+
+    return (
+      <td>
+        <span className={`button ${stateDisplayClass()}`} onClick={changeState}>
+          {props.seatNumber}
+        </span>
+      </td>
+    )
+  }
+
+// First new line
+  const [status, setStatus] = React.useState(props.initialStatus)
+
+  Calling the React method useState, which is a React hook method
+  Called a hook because allows component to "hook into" React rendering lifecycle
+  Allows component to change the larger system
+    There are several default hooks and you can create your own as well
+  useState registers a given value as part of a React state
+    Changing that value triggers a re-render
+  Argument to useState is the initial value of the new state object in question
+    Taking value from initialState passed in as a prop
+
+  Change Row to pass in initialStatus="open"
+
+  import * as React from "react"
+  import Seat from "../components/seat"
+
+  interface RowProps {
+    rowNumber: number
+    seatsInRow: number
+  }
+
+  const Row = (props: RowProps) => {
+    const seatItems = Array.from(Array(props.seatsInRow).keys()).map(
+      seatNumber => {
+        return (
+          <Seat key={seatNumber} seatNumber={seatNumber} initialStatus="open" />
+        )
+      }
+    )
+    return <tr>{seatItems}</tr>
+  }
+
+  export default Row
+
+// The useState method has a weird return value, two-element-array
+  Typically capture into 2 different variables via JS destructuring syntax
+  Here, capture into status and setStatus
+    status - property with current value of state
+    setStatus - state setter
+  Important gotcha - argument passed to useState is only used on render
+    On re-render, component tracks existing state and does not use initial value
+
+Ok, now we can get and set the value of the changing state of our component
+  Now looking at JSX there's a stateDisplayClass() method call
+  Have added another prop to the span, onClick={changeState}
+  onClick prop is how React does event handling
+    Create a prop whose name is on followed by the event
+    Value of that prop is a function that is called when the event happens
+      Here using {changeState}
+  When button is clicked, onClick event fires
+    Go to changeState function inside component
+    Within function, check status (defined by call to useState)
+      Change value of status based on current using setState function
+      This officially registers the change with react
+    Using setState triggers an element redraw
+      Takes us back to the return value and the call to stateDisplayClass()
+      This then changes the background color of the item based on current status
+  So clicking once = changes status to held, then display class has-background-success
+  Clicking again calls setStatus("open"), re-render changes to has-background-white
+
+Caveats
+  Hooks can only be used in components defined as functions
+    Declared at top level of the function
+      Not inside a nested function, loop, if statement
+    To manage >1 value in state
+      Make multiple setState calls
+        Get setters for each of them
+      OR have initial value be array or object
+      More complicated? Other hooks and ways to do things
+    TypeScript validates proper status values, to be discussed...

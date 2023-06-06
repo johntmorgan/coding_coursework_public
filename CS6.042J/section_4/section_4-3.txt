@@ -1,0 +1,113 @@
+Independence
+Reading
+  Suppose flip two fair coins on opposite sides of the room
+  Intuitively, one coin landing does not affect the way the other lands
+  Event with probability 0 is independent of everything including itself
+  If Pr[B] != 0 though:
+  Independent iff Pr[A | B] = Pr[A]
+  Disjoint events are NOT independent!
+    If A int B = 0, knowing A happens means you know B does not happen
+    Disjoint events are NEVER independent, unless one has Pr = 0
+  Independent def 2:
+    A is independent of B iff Pr[A int B] = Pr[A] * Pr[B]
+  Notice symmetry
+    A is independent of B iff B is independent of A
+  Independence is an assumption
+    Pr two coins heads = 1/2 * 1/2 = 1/4
+    In this case, reasonable assumption
+    But many cases where unjustified
+      Hourly forecast 10% per hour, 90% dry
+      Odds of dry day != (0.9)^12 = 0.28
+      If it's dry at 5 PM, odds higher than 90% dry at 6 PM
+    Deciding when to assume independence is tricky: examples ahead
+  Mutual independence
+    What if there are more than 2 events?
+      Flips of n coins all independent of each other
+    Probability of each event in set same no matter which of other events
+    For any selection of 2+ events, probability all occur = product of individ probs.
+  DNA testing
+    OJ Simpson blood 1/170m odds
+    Marker A - 1/100, marker B - 1/50, marker C = 1/40 etc.
+    1/100 * 1/50 * 1/40 * 1/5 * 1/170
+      Defense pointed out this assumes the markers appear independently
+      Statistics based on just a few hundred blood samples
+        Does this make sense?
+  Pairwise independence
+    3x coinflips
+      Three events A1, A2, A3 are not mutually independent
+      Even though any two are independent
+    Set of events is k-way independent
+      iff every set of k of those events is mutually independent
+    Set is pairwise independent iff 2-way independent
+      So 3x coinflips are pairwise independent, but not mutually independent
+        Pairwise is much weaker than mutual
+      Suppose the 5 markers in the OJ case were pairwise independent
+        Then probability of having all markers not more than
+          1/100 * 1/170 = 1/17000
+        Of course if they are not independent at all
+          Then you just have 1/170
+    Assuming mutual independence may not be reasonable without
+      Hundreds of millions of blood samples
+
+Lecture
+  Independent events have nothing to do with each other
+  Easy to work with, don't have to figure out interaction
+  Often come up with e.g. 5 coin tosses
+    Any reason to think any influence on the 6th flip? No
+  Technical definition
+    Events A and B are independent iff
+      Pr[A] = Pr[A | B]
+  Another (less intuitive?) definition
+    Pr[A] * Pr[B] = Pr[A int B]
+  Need Pr[B] != 0 for definition 1
+  While the second definiton always works
+  Symmetric in A and B so
+    A independent of B iff B independent of A
+  Corollary:
+    If Pr[B] = 0, then vacuously, B independent of everything including itself
+  A indep of B means A is indep of whether B occurs
+  Lemma
+    A independent of B iff A independent of NOT(B)
+    Simple proof using Pr[A - B] = Pr[A] - Pr[A int B]
+  Mutual independence
+    Events A1, A2, An are mutually independent
+    When probability Ai occurrs is unchanged by which other ones occurs
+    Pr[Ai] = Pr[Ai | Aj int Ak int ... int Am]
+    Alternate
+      Pr[Ai int Aj int ... int Am] = Pr[Ai] * Pr[Aj] * ... * Pr[Am]
+    Example
+      Successive coin flip
+      H ::= ith flip is heads
+      What happens on 5th flip is independent of 1st, 4th, 7th flip
+      Pr[H5] = Pr[H5 | H1 int H4 int NOT(H7)] etc
+  Pairwise independence
+    Flip a fair coin twice
+    H1 ::= [Head on 1st flip]
+    H2 ::= [Head on 2nd flip]
+    O ::= [Odd # heads]
+    Claim: O is independent of H1
+      May seem weird - O depends on both first and second flip
+      Check with official definition
+      O = {HT, TH}, Pr[O] = 1/2
+      O int H1 = {HT} Pr[{HT}] = 1/4
+      Pr[O int H1] = 1/4 = Pr[O] * Pr[H1]
+    However O, H1, H2 NOT mutually independent
+      If you know any 2, you can figure out third one
+      Pr[O | H1 int H2] = 0 != Pr[O]
+      Any two are independent, but the three of them are not independent
+  K-way independence
+    Flip a fair coin k times
+    Hi ::= [Head on ith flip]
+    O ::= [Odd # Heads]
+    Any set of k of these events are mutually independent
+    But all k + 1 of them are not
+      In fact the first k will 100% determine the last
+    Events A1, A2, ... are k-way independent
+      If any k of them are mutually independent
+    Pairwise is this for k = 2
+    O, H1, ... Hk are k-way, not (k + 1)-way independent
+    But you need to check all the equations
+      2^n - (n + 1) equations to check!
+        (minus n + 1 because don't need to check singletons, empty)
+        Not easy to verify mutual independence via this calculation
+        Usually arrive at it by assumption most of the time

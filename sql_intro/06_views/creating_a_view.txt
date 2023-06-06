@@ -1,0 +1,66 @@
+Creating a View
+  Views are virtual tables created via SELECT QUERY
+  Why good? Several possible reasons
+    Only show subset of data meaningful to users
+    Restrict # of rows & cols show for security
+    Simplify multi-table queries to single table
+  Views are stored in the database along with tables
+  Can create view from single talbe, by joining two tables, or from another view
+
+  // Show number of digital assets owned by an actor
+  CREATE VIEW DigitalAssetCount AS
+  SELECT ActorId, COUNT(AssetType) AS NumberOfAssets
+  FROM DigitalAssets
+  GROUP BY ActorId;
+
+  // Can be queried in same manner as a table
+  SELECT * FROM DigitalAssetCount;
+
+  // Also appears in list of tables
+  SHOW TABLES;
+
+  // To see which are views
+  SHOW FULL TABLES;
+
+  // Create a view from multiple tables using JOIN
+  CREATE VIEW ActorsTwitterAccounts AS
+  SELECT FirstName, SecondName, URL
+  FROM Actors
+  INNER JOIN DigitalAssets
+  ON Actors.id = DigitalAssets.ActorID
+  WHERE AssetType = "Twitter";
+
+  // Use OR REPLACE to make changes... or create
+  CREATE OR REPLACE VIEW ActorsTwitterAccounts AS
+  SELECT CONCAT(FirstName, " ", SecondName) AS ActorName, URL
+  FROM ACTORS
+  INNER JOIN DigitalAssets
+  ON Actors.Id = DigitalAssets.ActorID
+  WHERE AssetType = 'Twitter';
+
+  // SELECT statement can also have a nested subquery
+  // Create table of actors with net worth more than average net worth
+  CREATE VIEW RichActors AS
+  SELECT FirstName, SecondName, Gender, NetWorthInMillions
+  FROM Actors
+  WHERE NetWorthInMillions > (
+  SELECT AVG(NetWorthInMillions)
+  FROM Actors)
+  ORDER BY NetWorthInMillions DESC;
+
+  // Create a view from a view
+  CREATE VIEW RichFemaleActors AS
+  SELECT * FROM RichActors
+  WHERE Gender = 'Female';
+
+  // Explicitly define cols of view instead of leaving to SELECT statement
+  CREATE VIEW ActorDetails (ActorName, Age, MaritalStatus, NetWorthInMillions) AS
+  SELECT CONCAT(FirstName, " ", SecondName) AS ActorName,
+  TIMESTAMPDIFF(YEAR, DoB, CURDATE()) AS Age
+  MaritalStatus, NetWorthInMillions
+  FROM Actors
+
+  // Then query view by age
+  SELECT ActorName, Age, NetWorthInMillions
+  FROM ActorDetais
+  ORDER BY Age DESC;

@@ -1,0 +1,168 @@
+ECMAScript
+  Syntactic standard for programming languages
+    JS conforms to ECMAScript specifications
+  ECMA = European Computer Manufacturer's Assoc
+  ECMAScript used to create languages
+    JS itself is a scripting language
+  ES1 1997 - ES5 2009
+  After ES6 in 2015, yearly releases
+    Not all browsers support all versions
+      Latest release may not be supported by most
+  Solution: transpilaion
+    Convert source code in one language to another
+
+Babel
+  One of the most popular transpilers
+    Backwards compatibility of ES6 in browsers
+      Or for JS engines that do not already support
+  Converts ES5+ source code to ES5
+
+  ES6 version with arrow function
+
+    var func = ()=>{
+      console.log("hello");
+    }
+    func();
+
+  ES5 version (what I knew well - JM)
+
+    var func = function (){
+      console.log("hello");
+    }
+    func();
+
+Webpack
+  "Babel's big brother"
+  Ensures final project supported by environment
+
+ECMAScript versions
+  ES5
+    Array
+      .isArray()
+      .map()
+      .reduce()
+      .filter()
+      .forEach()
+    JSON
+      .parse()
+      .stringify()
+    Object
+      .create()
+      .keys()
+      .getPrototypeof()
+    Date
+      .now() // new
+
+    Allows strict mode - no undeclared variables allowed - new
+
+  ES6
+    Array
+      .find()
+      .findIndex()
+    Arrow functions
+    Classes
+    Multiline strings
+      var str2 = `hello
+      world`;
+    Promises
+    Block scope with let and const
+    Default param values for functions if not given specific argument
+        function es6_func (arg = 'hello'){
+            var arg = arg;
+            return arg;
+        }
+    Object.entries
+      var obj = {a : 1, b : 2, c : 3};
+      console.log(Object.entries(obj));
+      > [ [ 'a', 1 ], [ 'b', 2 ], [ 'c', 3 ] ]
+
+  ES7 - 2016
+    ** instead of Math.pow()
+    Array.includes()
+      Could have used indexOf, but fails to find NaN while includes does not
+
+  ES8 - 2017
+    Object support via Object object
+      Object
+        .values()
+        .entries()
+    String
+      .padStart()
+      .padEnd()
+    Trailing commas ok
+      func(1,2,);
+    Async
+      async, await
+
+    ES9 - 2018
+      Async iteration
+        Directly iterate iterable object returned by async
+      ... operator for rest operation
+        Rest of the properties accumulated via object destructuring
+
+          var obj = {a : 1, b: 2, c: 3};
+          // using rest operator
+          var {c , ...restobj} = obj; // destructure obj
+          console.log(c); // property c value
+            > 3
+          console.log(restobj)
+            > {a: 1, b: 2}
+
+      ... operator for spread operation
+
+        var obj = {a : 1, b: 2, c: 3};
+        // using spread operator
+        var newobj = {d : 4, ...obj}; // new object newobj with obj properties
+        console.log(newobj); // newobj printed
+          > { d: 4, a: 1, b: 2, c: 3 }
+        console.log(obj); // original obj printed
+          > { a: 1, b: 2, c: 3 }
+
+      Regex support via RegExp object
+        DotAll flag (/s) allowing . in RegEx to match line terminators, emojis
+        Unicode flag /u
+        Named capture groups
+        Look behind assertion (?<=)
+      Promise.finally
+        Executes in chain regardless of entering catch block or not
+
+    ES10 - 2019
+      Array.flat()
+        arr.flat(Infinity) - flatten to single dimension
+      Array.flatmap()
+        Maps function to on array then lowers dimensions
+
+        var arr = [0, 1, 2, 3, 4];
+        console.log('original:', arr);
+        var mapped_arr = arr.map(x => [x, 2 * x ]);
+        console.log('mapped:', mapped_arr); // print mapped
+        var answer = mapped_arr.flat();
+        console.log('mapped and flattened:',answer); // map and then flat
+          > [
+              0, 0, 1, 2, 2,
+              4, 3, 6, 4, 8
+            ]
+
+        var answer2 = arr.flatMap(x => [x, 2 * x]);
+        console.log('flatMap:', answer2);
+          > [
+              0, 0, 1, 2, 2,
+              4, 3, 6, 4, 8
+            ]
+
+      Object.fromEntries()
+        Use a list of key-value pairs as argument
+
+        var obj = {a : 1, b: 2, c: 3};
+        var entries = Object.entries(obj);
+        console.log(Object.fromEntries(entries));
+        console.log(Object.fromEntries(arr));
+        console.log(Object.fromEntries(map));
+
+      String
+        trimStart()
+        trimEnd()
+      Catch blocks without params
+      Print functions with all lines of source code
+        Function.toString()
+      JSON.stringify prevents ill-formed Unicode strings

@@ -1,0 +1,56 @@
+Arrow functions in react
+  Arrow functions = more concise way of writing a function
+  Frequently used to make things simpler in React
+    Event handling
+    Preventing bugs
+
+  // JavaScript ES5 function
+  function getGreetingFunc() {
+    return 'Welcome to JavaScript';
+  }
+
+  // JavaScript ES6 arrow function with body
+  const getGreetingArrow1 = () => {
+    return 'Welcome to JavaScript';
+  }
+
+  // JavaScript ES6 arrow function without body and implicit return
+  const getGreetingArrow2 = () =>
+    'Welcome to JavaScript';
+
+Ex. filter out students
+  // Old way of doing it
+  const students = [
+    { ID: 1, present: true},
+    { ID: 2, present: true},
+    { ID: 3, present: false},
+  ];
+
+  const presentStudents = students.filter(function(student){return student.present;});
+  console.log(presentStudents);
+
+  // New way of doing it
+
+  const students = [
+    { ID: 1, present: true},
+    { ID: 2, present: true},
+    { ID: 3, present: false},
+  ];
+
+  const presentStudents = students.filter(student => student.present);
+  console.log(presentStudents);
+
+Rules of thumb
+  If only one statement inside function body, omit return and curly braces
+  Omit function keyword in beginning
+  Get rid of param parens if only one param
+  Note: arrow function does not rebind this
+    Prevent any errors due to this within callbacks
+  Many syntaxes - can be overwhelming for React newcomers
+
+Ex
+  function square(x) {
+    return x * x
+  }
+
+  var square = (x) => x**2;

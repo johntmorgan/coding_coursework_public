@@ -1,0 +1,29 @@
+Getting architecture right is key
+  Don't get the base right, have to start over
+  Carefully think through architecture to avoid major design changes and code refactoring
+  Architects, developers, and product owners spend a lot of time studying discussing business reqs
+    "requirement gathering and analysis"
+    Then sit down and brainstorm use cases to implement
+      Try to figure out corner cases as early as possible
+        while trying to fit the building blocks together
+    May also write a high-level design document
+  After picking a tech stack
+    Write a POC: proof of concept - only for industry scale product
+      Get a closer, more hand-on view of tech and primary use case implementation
+      Insight into pros and cons of tech, performance, limitations
+      Helps with learning curve if working with entirely new tech
+      Non-tech: product owners, stakeholders, have something concrete to play with
+      Showcase POC to stakeholders
+        If satisfied, then create main repo and first dev branch on GitHub etc.
+    Indie developer small group
+      Skip POC, start with main code
+  Course design
+    First half: discuss concepts and architectural components involved in designing web apps
+      Get insights into different tiers of application architecture
+      Monolithic repos
+      Microservices
+      Peer to peer archtecture
+      etc.
+    Second part
+      Use cases designing architecture for applications we use in daily life and are familiar with
+      Understand how designed from the ground up

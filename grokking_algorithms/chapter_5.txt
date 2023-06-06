@@ -1,0 +1,52 @@
+Hash tables
+  Look up grocery store price in book by name
+    If you look at every line, O(n)
+    If alphabetized, ~O(logn)
+    But even better would be a buddy who already memorized everything
+      Then O(1)
+  Hash function
+    Put in a string, get back a number
+      "Maps strings to numbers"
+    Must be consistent - always maps the same for the same string
+    Must map words to different numbers
+    Hash function + array to store words/prices by output number = hash table
+      Aka hashmaps, maps, dictionaries, associative arrays
+        (Um uhhh aren't maps/dicts usually BST backed? - JM)
+      Python already has dicts
+  Also used for e.g. looking up IP addresses from URLs
+    "DNS resolution"
+  Also used to e.g. track who has already voted
+    Just see if the key is still there
+      (Could also use a set for a readable list, O(logn) tho - JM)
+  Also used to e.g. serve static pages on websites
+    "Caching"
+    Yes for Facebook's login page
+    No for custom, updated feed it builds just for you
+    Save data in cache
+  Collisions
+    Impossible to write a hash function such that keys ALWAYS maps to different spots in an array
+    Two items get assigned to same bucket (or slot in the book)
+      Start a linked list
+    What if hash function just goes alphabetically
+      Lot of items starting with letter a
+      What if all items start with a?
+        You might as well just have made a linked list
+    Hash function is therefore REALLY important
+      Linked lists will slow you down a lot if they get long
+      Avoidable with a good function (and enough buckets - JM)
+    How to pick a good hash function? Stay tuned
+  Performance
+    Average case, hash tables O(1) search, insert, delete
+      Remember O(1) is not instant, just doesn't scale with size of table
+    Worst case, all O(n)
+  Load Factor
+    # of items in table / total number of slots
+    Once your load factor approaches 1, it's time to resize
+      Standard to double array size (yep - JM)
+    Good rule of thumb, resize when load factor above 0.7
+    You don't want to resize too often, but averaged out, hash tables -> 0(1) even with resizing
+  Good hash function
+    Want to distribute evenly
+      Again, don't worry about it, there are people that work on it full time
+      "old men/women in dark rooms with big beards" - lol
+      Check out SHA function, briefly described in last chapter

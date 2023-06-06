@@ -1,0 +1,129 @@
+Linked lists
+Python does NOT have a built-in linked list structure
+  Not required with lists
+But knowledge useful for coding interviews
+Cover behavior, show how to implement in Python
+Singly linked lists
+  Unidirectional links etc.
+Two classes
+  Node class
+    Data, pointer
+    Data can range from string to integer
+    Pointer is a node-type variable
+
+Node class
+
+class Node:
+  def __init__(self, data):
+    self.data = data
+    self.next_element = None
+
+Head pointing to beginning of list
+
+class LinkedList:
+  def __init__(self):
+    self.head_node = None
+
+Linked lists vs lists
+  Linked lists
+    Insertion and deletion
+      Head in O(1)
+      Tail in O(n)
+    O(n) to access element
+    Nodes may be dispersed in memory
+    Delete in O(1) time given pointer to node
+      But if delete tail, need to traverse to find prior and set pointer to None
+  Lists
+    O(n) to insert or delete anywhere
+      Append/pop for lists O(1) in python at tail
+    O(1) to access element
+    Arranged contiguously in memory
+
+Linked list operations
+  get_head() - return head of list
+  insert_at_tail(data) - insert element at end
+  insert_at_head(data) - insert element at head
+  delete(data) - delete element with value
+  delete_at_head()
+  search(data)
+  is_empty()
+
+  # O(1)
+  def get_head(self):
+    return self.head_node
+
+  # O(1)
+  def is_empty(self):
+      if self.head_node is None:
+          return True
+      else:
+          return False
+
+  def insert_at_head(self, data):
+    # Create a new node containing your specified value
+    temp_node = Node(data)
+    # The new node points to the same node as the head
+    temp_node.next_element = self.head_node
+    self.head_node = temp_node  # Make the head point to the new node
+    return self.head_node  # return the new list
+
+  def print_list(self):
+    if(self.is_empty()):
+        print("List is Empty")
+        return False
+    temp = self.head_node
+    while temp.next_element is not None:
+        print(temp.data, end=" -> ")
+        temp = temp.next_element
+    print(temp.data, "-> None")
+    return True
+
+  Singly-linked list deletion
+    Combines principles from both search and insertion
+    Use search to find the value in the list
+    More efficient than arrays
+    Do not need to shift all elements backward
+    Remove in constant time
+
+    Deleting at head
+      Head now points to what was second element in list
+
+    def delete_at_head(lst):
+        # Get Head and firstElement of List
+        first_element = lst.get_head()
+
+        # if List is not empty then link head to the
+        # nextElement of firstElement.
+        if first_element is not None:
+            lst.head_node = first_element.next_element
+            first_element.next_element = None
+        return
+
+    lst = LinkedList()
+    for i in range(11):
+        lst.insert_at_head(i)
+
+    lst.print_list()
+
+    delete_at_head(lst)
+    delete_at_head(lst)
+
+    lst.print_list()
+
+Doubly-linked lists
+  Contains pointers to both previous and next node
+  Add previous_element to next_element in Node class
+  Do not need to track previous node when searching for deletion
+    Need to change 2 pointers, not one now
+  Advantages
+    Traverse in both directions
+    More compatible with complex algorithms
+    Deletion more efficient
+  Disadvantages
+    Requires extra memory for previous_element pointer
+
+Tail pointer
+  Can also track this like head_node
+    Now insert_at_tail works in O(1)
+  In DLL, insert/delete twice as fast, traverse list from both sides
+  

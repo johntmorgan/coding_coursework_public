@@ -1,0 +1,28 @@
+REPLACE
+  Much like INSERT
+  But cannot insert row if table already has row with same primary key
+  Replace allows adding row with same primary key as existing row in table
+  Under the hood, REPLACE deletes the row and then adds the new row
+    Maintains primary key constraint at all times
+    Of course you could use UPDATE to achieve same effect
+    REPLACE useful in automated scripts - don't know if primary key will be present
+      Acts like an INSERT or update as appropriate
+
+  REPLACE INTO
+  Actors (Id, FirstName, SecondName,DoB, Gender, MaritalStatus, NetworthInMillions)
+  VALUES (3, "George", "Clooney", "1961-05-06","Male", "Married", 500.00);
+
+  // What if values not replaced?
+  // Other fields all set to NULL
+  REPLACE INTO
+  Actors (Id)
+  VALUES (3);
+
+  // If a table has no primary key, REPLACE behaves exactly like INSERT
+    Don't know which row to replace
+  // Can't replace into a table being read from in subquery
+  // Error:
+  REPLACE INTO Actors
+  SET id = (Select Id
+            FROM Actors
+            WHERE FirstName = "Brad");

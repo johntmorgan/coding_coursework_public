@@ -1,0 +1,169 @@
+Binary Heaps
+  Priority Queue
+    Several data structures, one main one
+  Subset of set interface
+    Subset interesting - maybe solve better - faster, etc.
+    Storing items with keys which we think of as priorities
+  Interface
+    build(X) - init to items in X
+    insert(X) - add item x
+    delete_max() - delete and return max-key item
+    find_max() - return max-key item
+      could ofc delete max and reinsert
+    two main operations - insert and delete_max
+  Lots of motivations
+    High priority packets
+    Lots of processes running on single-threaded core
+    Next event ordered by time
+  Data structure?
+    Sequence AVL? Good answer, fancy, will get to soon
+    Set AVL
+      Supports operations and many more
+      Everything logn except build nlogn
+  Speed up find_max in a Set AVL
+    augment -> O(1) find_max
+      Store in every node max key item in subtree
+  But what we'll see today
+    New kind of data structure, binary heap
+Binary Heap
+  Essentially simplification of Set AVL
+  Achieve same time bounds - build will be faster by a logn factor
+  Main advantge
+    Simpler
+    In-place sorting algorithm
+Along the way, let's look at two other structures first
+  Dynamic but unsorted array
+  Dynamic sorted array
+  Heap is kind of a fusion between arrays and trees
+  If you have an unsorted array
+    Easy to insert into, just append to end O(1) amortized
+    Delete max is slow
+      Scan through whole array O(n)
+      Swap max elem with last elem and then delete last (pop)
+  Sorted array
+    Easy to find max - at the end
+    delete_max = O(1) amortized
+    insert = O(n) - can binary search to find where belongs, but then do big shift
+      Might as well just swap repeatedly, same thing
+  Want the best of both worlds
+    logn time for both
+    can just do with Set AVL
+    but let's do it a little different
+Priority Queue sort
+  insert(x) for x in A (build(A))
+  repeatedly delete_max()
+  Tbuild(n) + n * Tdelete_max <= n * (Tinsert + Tdelete_max)
+  Unsorted array - selection sort -> n^2 time
+  Sorted array - insertion sort -> n^2 time
+  AVL Tree sort - nlogn time - not in place
+Goal today
+  nlogn comparisons in-place
+  Also n build time
+  First and only nlogn in-place sorting algorithm in this class
+  Because in-place - have to have array storing items
+  Bot going to use a regular unsorted/sorted array
+    just an array but sorted differently
+  But logn performance is the binary tree, more or less
+  So we want to embed a tree into an array
+How do we embed a tree into an array?
+  Choose tree that's perfectly balanced
+    So 2^i nodes at depth i
+      But only works when n is a power of 2
+    Next best - that
+      Except at max depth, where nodes are left-justified - restricted to be as far left as possible
+    "Complete binary tree"
+  Represent Complete Binary Tree as an array
+    Write nodes in depth order - lowest depth first
+      A B C D E F G H I J
+    Very different than traversal order
+  Between complete binary tree and array is bijection
+    Complete constraint forces everything
+    No rotations necessary in heaps, always balanced
+    Height = ceil(logn) always
+    Works for priority queue subset of set interface
+      Would not be possible for more general trees
+    Don't need to store pointers, just store array
+Implicit data structure
+  No pointers, just array of n items
+  Would still like to know children of a node
+  Do with index arithmetic
+  There's 2x nodes on each level - multiply by 2
+  left(i) = 2i + 1
+  right(i) = 2i + 2
+  parent(i) = floor((i - 1) / 2)
+  So don't store pointers, just compute when needed
+Heap property
+  Binary heap Q (there are multiple types, more in future)
+  Array Q representing complete binary tree where every node i
+  satisfies Max-Heap Property at i
+  Q[i] >= Q[j] for j in {left(i), right(i)}
+  Which of children is larger?
+    We don't know, and we don't care
+      Very different from BST
+  Lemma:
+    Q[i] >= Q[j] for node j in subtree of i (greater than all descendats)
+  Therefore root is maximum
+    Very easy to find
+    But hard to delete
+      Normally would like to delete a leaf in BST
+      But say you delete far left leaf
+        Now not left justified
+      Only last delete is easy
+      Would like to move root to last leaf
+  Insert
+    New item has to do on the end of the array
+    Q.insert_last
+      Add a node in very last level of binary tree (or starts new level on far left)
+      Now may not satisfy max-heap property anymore
+      But check and fix - no rotations needed
+    max_heapify_up(i)
+      Look at node inserted - could mess up with parent
+      if Q[parent(i)].key < Q[i].key
+        swap Q[parent(i)] with Q[i]
+      Now what about other child of node
+        Must be fine, was already smaller than former parent
+      But what about grandparent?
+        Recurse to fix
+        Bubbles up - height of tree - logn time
+    So insert = O(logn)
+  Delete_max(): - could of course do all this with min instead
+    Almost the same
+    Need to delete the root item
+    Swap and delete
+    swap Q[0] <-> Q[|Q| - 1]
+    Q.delete_last()
+    So now heapify_down
+    max_heapify_down(0)
+      recursive algorithm
+    max_heapify_down(i)
+      if i is leaf, done
+      swap with larger of two children
+        let j in {left(i), right(i)} maximizing Q[j].key
+        if Q[i] < Q[j]
+          swap Q[i] <-> Q[j]
+        recurse on J
+  That's almost it now, still missing
+    Linear build
+    In-place sorting algorithm
+In-place sorting
+  Have array
+  Maintain that Q is a subarray of A
+  To insert - just increment size of Q
+    Constant time
+  To delete_max - just decrement the size of Q
+  Heapsort
+    Can sort by building and then kicking out
+  Build in linear time
+    Could just insert one at a time - theta(nlgn)
+    Trick: add everything at once and heapify down
+    Better - sum of heights of nodes - O(n)
+      Paying constant at leaves
+        Many leaves
+      Paying logn at root
+      Not quite geometric but turns out to be linear
+  Sequence AVL
+    Store in arbitrary order and augment by max
+
+Recitation
+  Priority queue framework for at least 3 sorting algorithms
+  

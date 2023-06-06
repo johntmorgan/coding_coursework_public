@@ -1,0 +1,176 @@
+Instagram
+  Free social networking
+  Post photos and short videos
+  Add caption for post
+  Hashtags
+  Location-based geotags
+  Posts display in follower feeds
+  Posts seen by public if tagged
+  Can also make profile private
+  Userbase
+    India, USA, Brazil, Indonesia...
+
+Requirements
+  Functional
+    Post photos & videos
+    Follow and unfollow users
+    Like or dislike posts
+    Search posts and photos
+    Generate news feed
+      Chronological (not anymore... - JM)
+  Non-functional
+    Scalability
+    Low latency
+    Availability
+    Durability
+      Never lose uploaded content
+    Consistency
+      Compromise
+      Ok for content to show late in faraway regions
+    Reliability
+
+Resource estimation
+  Read-heavy system
+  No restriction on uploads
+  Efficient storage key
+  1 B users globally
+  95m photos/videos shared/day
+  500m DAU
+  60m photos, 35m videos shared
+  3 MB photo size
+  150 MB video size
+  20 requests/user/day
+  Storage
+    60m * 3 MB = 180 TB/day photos
+    35m * 150 MB = 5250 TB/day
+    5430 TB/day
+    5430 * 365 = 1981 PB/year (biggest yet... though YT underbudget imo JM)
+    Ignored comments, status sharing
+    Users info and post metadata
+    But let's keep it simple
+      (And photos & video probably dominate)
+  Bandwidth
+    5430 TB/day / 86400 = 62.84 GB/s = 502.8 Gbps
+    100:1 readers to writesr
+    So let's just go 50.28 Tbps out
+    High outgoing bandwidth!
+      Let's use compression on the media
+      Place content close to users via CDN, IXP and ISP caches
+  Number of servers
+    Assume 100 rps
+    100 * 86400 = 8640000
+    Divide 500m * 20 / 8640000 = 1157 servers
+      (Way lower, does not use 8k users/server approx of any other lessons - JM)
+
+Design
+  High-level design
+    Upload, view, search images & videos
+    Store uploaded images & videos
+    Retrieve from storage
+    Users follow each other
+  API design
+    postMedia(userID, media_type, list_of_hashtags, caption)
+      POST method
+    followUser(userID, target_userID)
+      unfollowUser same
+    likePost(userId, target_userID, post_id)
+      dislikePost same
+    searchPhotos(userID, keyword)
+      Shows posts with highest reach on key search
+      Data loaded on scrolling
+    viewNewsFeed(userID, generate_timeline)
+  Storage schema
+    SQL or NoSQL?
+    Data is inherently relational
+      Need an order for posts, chronological
+      Need no data loss
+      Benefit from relational queries
+    SQL-based chosen
+      Tables
+        Users
+          ID, name, email, bio, location, creationDate, lastloggedIn
+        Followers
+          Relations of users
+          Unidirectional relationship
+        Photos
+          ID, location, capition, creationTime, etc.
+          UserID to track, foreign key
+        Videos
+          ID, location, caption, time of creation
+    Store photos and videos in blob storage
+    Data estimation
+      222 bytes/user row * 500m = 111 GB
+      Followers 8 bytes/row * 250m = 2000 (most users don't follow anyone?? - JM)
+    NoSQL
+      Also used in actual instagram
+      Cassandra for timeline generation
+
+Detailed design
+  More components
+    Load balancer
+    App servers to host service
+    Relational database to store data
+    Blob storage for photos & videos
+  Upload a photo
+    Load balancer routes to app server
+    App server adds entry to database
+    App server sends update to user (error if needed)
+    (And photo stored in blob storage? - JM)
+  View a photo
+    Fetch from database, show to user
+    Search via keyword
+  Read requests
+    Way more than writes
+    Uploading takes time
+    Separate read & write services
+  Cache data
+    For millions of reads
+    Lazy loading to minimize client waiting time
+      Load when user scrolls
+      Save bandwidth
+
+Generate timeline
+  Pull approach
+    Fetch following list
+    Get photos posted
+      Usually returns nothing - Insta is read-heavy!
+    Store in queue
+    Display to user
+    Slow!
+  Generate offline
+    Fetch relevant data before
+  Push approach
+    Every user pushes to others timelines
+    Inefficient - celeb push to millions of followers
+  Hybrid
+    Push to followers with hundreds/thousands
+    Pull from celeb users with 100k+ followers
+  Where to store timeline?
+    Key-value store against userID
+      Store data in blob
+      Link to blob as value of key-value pair
+  Story feature
+    Disappear in 24h
+    Task scheduler deletes after
+
+Finalizing
+  Use CDN
+    Keep celeb images and videos here
+  Sharded counters for likes & views on a celebrity post
+    Distribute across edge servers
+
+Non-functional reqs
+  Scalability
+    Add more app service layers, servers as needed
+    Increase number of databases
+  Latency
+    Cache & CDNs
+  Availability
+    Storage, databases, etc. replicated across globe
+  Durability
+    Persistent storage with backup of data
+  Consistency
+    Blob stores, databases
+  Reliability
+    Databases with replication, redundancy
+    Load balancing to route around failed servers

@@ -1,0 +1,104 @@
+High availability "HA"
+  The norm in computing today
+  Key feature of cloud platforms
+  Ensures uptime more than usual
+    Strong reliability, minimum downtime
+  Sole mission: stay online, stay connected
+    Ex
+      Backup generator in hospital, ATC in case of power outage
+  Expressed as percentage
+    99.99999%
+    May see in service level agreements (SLA) of cloud platforms
+  How important?
+    Social apps down might not affect too much
+    But very important for mission-critical systems:
+      Aircraft, spacecraft, mining, hospital servers, finance stock-market systems
+  Design system to be fault tolerant with redundant components
+
+  Why do systems fail?
+    Software crashes
+      Corrupt software files
+      Memory hogging unresponsive processes
+      Unpredictable crashes taking down entire cloud node
+    Hardware failures
+      Overloaded CPU and RAM
+      Hard disk failure
+      Node going down
+      Network outage
+    Human error
+      Biggest reason
+        Flawed configurations "and whatnot"
+          Tiny network config error by Google took down 1/2 of JP internet
+    Planned downtime
+      Routine maintenance
+      Patching software
+      Hardware upgrades
+
+  Fault Tolerance
+    Most important way to achieve HA
+    Handles faults
+    If a few instances/nodes go offline and bounce back, no problem
+      System works at reduced level, does not go down
+    Ex
+      Social networking
+        Backend failure -> image upload, post likes etc. go down
+        Application as a whole stays up
+    "Fail soft"
+    Design at application and deployment level
+    Architecturally break down into more granular, loosely coupled microservices
+
+  Splitting monolith into microservices
+    Easy management and maintenance
+    Ease of development
+    Ease of adding new features without affecting other services
+    Scalability, high availability
+    Each microservice takes on one feature of application
+      Photo upload, comment sytem, instant messaging, groups, marketplace
+
+  Redundancy
+    Duplicate server instances
+    Keep on standby to take over in case active server instances go down
+    Fail-safe backup mechanism in deployment architecture
+    Active-passive HA mode
+      Initial set of nodes active, another set passive on standby
+      Replace in case of active failure
+    GPS, aircraft, comms satellites - zero downtime
+      Ensured by making components redundant
+
+  Get rid of single points of failure
+    Move away from monolithic architecture
+    Large number of distributed server nodes work in conjunction
+      Achieve single synchronous application state
+    With lots of redundant nodes - no single points of failure
+    Single point of failure at component level = bottleneck
+      Detect in performance testing, eliminate as soon as possible
+    Monitor systems in real time to detect bottlenecks, single point failures
+      Automation allows instances to self-recover
+    Systems become smart enough to add or remove instances on the fly as pre requirements
+      Kubernetes
+
+  Replication
+    A number of similar nodes share workload
+      No passive instances
+    When a couple nodes do down, remainder bear load
+    "Active-active high availability"
+
+  Distribute workload geographically
+    Eliminate single point of failure at data center
+  Use multi-cloud platforms to deploy workloads
+
+  High availability clustering
+    "Fail-over cluster"
+    Set of nodes running in conjunction
+      Ensure high availability of the service
+    Connected by private heartbeat network
+      Continously monitors the health and status of each node in the cluster
+    Single state across all nodes achieved
+      Shared distributed memory, distributed coordination service e.g. Zookeeper
+    Several more techniques
+      Disk mirroring
+        RAID = Redundant Array of Independent Disks
+      Redundant network connections
+      Redundant electrical power
+    Multiple HS clusters run together in one geo zone
+      Ensures minimum downtime, continual service

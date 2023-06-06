@@ -1,0 +1,25 @@
+React Lifecycle and Lifecycle Methods
+  This is not comprehensive, just an intro to some important ones
+  Every React component goes through a lifecycle
+  Lifecycle methods are React functions used to control what happens
+    when each bit of UI renders, updates, considers re-render, disappears
+
+  componentWillMount()
+    Invoked before component mounted on DOM
+    Happens once in lifecycle of component, before first render
+    Ex. may request server for user information before mounting
+      However React doc says to use constructor() for initializations before rendering
+        Says componentWillMount() unsafe, avoid in new code
+
+  componentDidMount()
+    Invoked when component mounted on DOM
+    Initialize state and props required in DOM, requesting info from server
+
+  componentDidUpdate()
+    Invoked when component is updated
+    Send requests to server for any update in state or props required for DOM
+
+  componentWillUnmount()
+    Invoked when component is removed from DOM
+    Clear up things relatd to component
+      Ex. user logs out, clear credentials and other auth tokens for security

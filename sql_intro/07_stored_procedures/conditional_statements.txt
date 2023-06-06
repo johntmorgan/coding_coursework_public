@@ -1,0 +1,181 @@
+Conditional Statements
+  Conditional control statements execute only if condition true
+  Condition can range from literal or variable to a function that returns a value
+  Two conditional statements
+    IF
+    CASE
+  Both similar functionality
+    Choice between is preference, generally
+    But let's talk where you'd prefer one
+  IF statement
+    Very similar to other programming languages
+    Three forms
+      IF-THEN
+        Statements executed depending on condition
+        Condition can evaluate to TRUE, FALSE, or NULL
+          So not TRUE != FALSE in MySQL
+        Condition between IF and THEN
+        Syntax
+        IF Condition THEN
+        If_statements;
+        END IF;
+      IF THEN ELSE
+      IF THEN ELSEIF ELSE
+  CASE
+    CASE case_value
+    WHEN case_value1 THEN statements
+    WHEN case_value2 THEN statements
+    [ELSE else-statements] - optional
+      Get an error if no ELSE and CASE does not match
+
+    // Can also do searched CASE
+
+  // Let's test marital status of actors and gradually add conditions
+
+  DELIMITER **
+
+  CREATE PROCEDURE GetMaritalStatus(
+   IN  ActorId INT,
+   OUT ActorStatus VARCHAR(30))
+  BEGIN
+   DECLARE Status VARCHAR (15);
+
+   SELECT MaritalStatus INTO Status
+   FROM Actors
+   WHERE Id = ActorId;
+
+   IF Status LIKE 'Married' THEN
+       SET ActorStatus = 'Actor is married';
+   END IF;
+  END**
+
+  DELIMITER ;
+
+  CALL GetMaritalStatus(1, @status);
+  SELECT @status;
+    > NULL because actor not married
+
+  CALL GetMaritalStatus(5, @status);
+  SELECT @status;
+    > "Actor is married"
+
+  // Let's add an ELSE branch
+  DROP PROCEDURE GetMaritalStatus;
+
+  DELIMITER **
+
+  CREATE PROCEDURE GetMaritalStatus(
+   IN  ActorId INT,
+   OUT ActorStatus  VARCHAR(30))
+  BEGIN
+   DECLARE Status VARCHAR (15);
+
+   SELECT MaritalStatus INTO Status
+   FROM Actors
+   WHERE Id = ActorId;
+
+   IF Status LIKE 'Married' THEN
+       SET ActorStatus = 'Actor is married';
+   ELSE
+       SET ActorStatus = 'Actor is not married';
+   END IF;
+
+  END **
+
+  DELIMITER ;
+
+  CALL GetMaritalStatus(1, @status);
+  SELECT @status;
+
+  CALL GetMaritalStatus(5, @status);
+  SELECT @status;
+
+  // And ELSEIF
+
+  DROP PROCEDURE GetMaritalStatus;
+
+  DELIMITER **
+
+  CREATE PROCEDURE GetMaritalStatus(
+   IN  ActorId INT,
+   OUT ActorStatus  VARCHAR(30))
+  BEGIN
+   DECLARE Status VARCHAR (15);
+
+   SELECT MaritalStatus INTO Status
+   FROM Actors
+   WHERE Id = ActorId;
+
+   IF Status LIKE 'Married' THEN
+       SET ActorStatus = 'Actor is married';
+
+   ELSEIF Status LIKE 'Single' THEN
+       SET ActorStatus = 'Actor is single';
+
+   ELSEIF Status LIKE 'Divorced' THEN
+       SET ActorStatus = 'Actor is divorced';
+
+   ELSE
+       SET ActorStatus = 'Status not found';
+
+   END IF;
+  END **
+
+  DELIMITER ;
+
+  CALL GetMaritalStatus(1, @status);
+  SELECT @status;
+
+  CALL GetMaritalStatus(5, @status);
+  SELECT @status;
+
+  CALL GetMaritalStatus(6, @status);
+  SELECT @status;
+    > "Actor is divorced"
+
+  // Searched CASE for complex condition
+
+  DELIMITER **
+
+  CREATE PROCEDURE GetAgeBracket(
+      IN ActorId INT,
+      OUT AgeRange VARCHAR(30))
+  BEGIN
+   DECLARE age INT DEFAULT 0;
+
+   SELECT TIMESTAMPDIFF(YEAR, DoB, CURDATE())
+   INTO age
+   FROM Actors
+   WHERE Id = ActorId;
+
+   CASE
+       WHEN age < 20 THEN
+           SET AgeRange = 'Less than 20 years';
+       WHEN age >= 20 AND age < 30 THEN
+           SET AgeRange = '20+';
+       WHEN age >= 30 AND age < 40 THEN
+           SET AgeRange = '30+';
+       WHEN age >= 40 AND age < 50 THEN
+           SET AgeRange = '40+';
+       WHEN age >= 50 AND age < 60 THEN
+           SET AgeRange = '50+';
+       WHEN age >= 60 THEN
+           SET AgeRange = '60+';
+       ELSE
+           SET AgeRange = 'Age not found';
+   END CASE;
+  END**
+  DELIMITER ;
+
+  CALL GetAgeBracket(1, @status);
+  SELECT @status;
+    > "50+"
+
+  CALL GetAgeBracket(5, @status);
+  SELECT @status;
+    > "40+"
+
+  // Use IF and CASE interchangeably
+  // CASE more readable
+  // IF more familiar to programmers, more easily understood
+  // When using CASE, make sure to have explicit error handling for NULL values via ELSE or error

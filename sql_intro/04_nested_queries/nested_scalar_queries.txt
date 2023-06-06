@@ -1,0 +1,35 @@
+Nested Scalar Queries
+  A query within a query
+  Get desired result in a single query
+  Often slower but more readable & expressive than join equivalent
+  May be the only way to do certain retrieval
+
+  // Here's the basic join query
+  SELECT URL AS "Brad's Insta Page"
+  FROM Actors
+  INNER JOIN DigitalAssets
+  WHERE AssetType = "Instagram" AND FirstName = "Brad";
+
+  // Rewritten as a nested query
+
+  SELECT URL AS "Brad's Insta Page"
+  FROM DigitalAssets
+  WHERE AssetType = "Instagram" AND
+  ActorId = (SELECT Id
+             FROM Actors
+             WHERE FirstName = "Brad");
+
+  // You can also store the data the inner query provides
+  // When a subquery returns a single value it returns a "scalar operand"
+  // Query will fail if returns more than one row
+    > SELECT * FROM Actors WHERE FirstName = "Brad";
+    > SELECT Id FROM Actors WHERE NetWorthInMillions = 240;
+
+  // Another example, return actor that has most recently updated any account
+  // Inner join
+  SELECT FirstName
+  FROM Actors
+  INNER JOIN DigitalAssets
+  ON ActorId = Id
+  WHERE LastUpdatedOn = (SELECT MAX(LastUpdatedOn)
+      FROM DigitalAssets);

@@ -1,0 +1,24 @@
+Stacks
+  Linear data structure
+  LIFO
+  Push & pop operations
+  Element can only be added to top, unlike list
+  Used to store sequentially dependent items
+    Nature and correlation determined by programmer
+  Repeatedly modify stream of elements
+    Push elements on, pop when conditions met
+
+Patterns
+  Yes
+    Get elements out in reverse of insert order (LIFO)
+  No
+    FIFO order required
+    Order of outputs/operations not significant
+
+Real world
+  Checking code files
+    Balanced parens?
+  Undo/redo functionality
+  Recursive call stacks
+    Compiler calls stack itself internally
+

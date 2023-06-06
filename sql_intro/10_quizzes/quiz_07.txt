@@ -1,0 +1,59 @@
+1.
+Consider the following two tables, that are related by the column MovieID
+which is unique. Additionally, assume there are no duplicate rows in either of the tables.
+
+Can you write a query that emulates a full join between the two tables?
+
+SELECT MovieID, MovieName FROM Movie
+LEFT JOIN Cinema
+WHERE MovieID = MovieID;
+
+UNION
+
+SELECT MovieID, CinemaName FROM Movie
+RIGHT JOIN Cinema
+WHERE MovieID = MovieID;
+
+2.
+What if tables have duplicate rows?
+
+UNION removes, but UNION ALL keeps BUT intersecting portion between 2 tables printed twice
+So minus intersecting portion once from resulting set
+
+SELECT * FROM A
+LEFT JOIN B
+ON aID = bID
+
+UNION ALL
+
+SELECT * FROM A
+RIGHT JOIN B
+ON aID = bID
+WHERE aID IS NULL;
+
+// Also viable
+
+SELECT * FROM A
+LEFT JOIN B
+ON aID = bID
+WHERE bID IS NULL
+
+UNION ALL
+
+SELECT * FROM A
+RIGHT JOIN B
+ON aID = bID;
+
+// Column which isn't unique/primary act as foreign key?
+True
+
+// Disadvantages of foreign key constraints
+Slow down application due to verification
+Increase size, index must be defined on foreign key
+
+// Also true about foreign keys
+An alternative to foreign key constraint is to enforce checks at the application
+layer and remove foreign key constraints at the database layer.
+
+A table can define a foreign key relationship between its two columns as long as
+the two columns aren’t the same column.

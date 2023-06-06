@@ -1,0 +1,228 @@
+Python Classes & Inheritance
+  Second OOP Lecture
+  Create own data types through classes
+    Abstracted
+  Coordinate example
+  Fraction example
+  Today
+    Talk about a few more nuances
+    Information hiding & class variables
+    Inheritance
+  Implementing vs. using the class
+  Implementing
+    Define attributes
+    Methods way to use data type
+  Self variable refer to any instance of class
+    Without having a particular instance in mind
+  Why use OOP?
+    Examples so far have been numerical
+    Can create objects that mimic real life
+    Create objects that define cat, rabbit
+  Cat
+    Name, age, color
+  Rabbit
+    Age, color
+  Two kinds of attributes
+    Data attributes
+      Pretty cut and dried with coordinate example
+      More up to you for e.g. animal
+    Procedural attributes
+      Aka methods
+      Find distance between coordinates
+      Animal object make sound
+
+    class Animal(object):
+      def __init__(self, age):
+        self.age = age
+        self.name = None
+
+    my_animal = Animal(3)
+
+    # Getters
+    def get_age(self)
+      return self.age
+
+    def get_name(self)
+      return self.name
+
+    # Setters
+    def set_age(self, new_age)
+      self.age = new_age
+
+    def set_name (self, new_name)
+      self.name = new_name
+
+    # Tell Python how to print()
+    def __str__(self):
+      return("animal: " + str(self.name) + ": " + str(self.age))
+
+  You should implement getters and setters for your classes
+  Prevents bugs when implementation changes later
+  a = Animal(3)
+  a.age - will try to access age attribute - NOT RECOMMENDED
+  a.get_age() - do this instead
+
+  Why use getters and setters? Information hiding
+    Abstract data from user
+    User should not now how implemented, just how to use
+
+  Now want to change age to years as underlying attribute
+    animal.get_age() still works normally
+  Python's actually not great at information hiding
+    Lets you do some things you really should not do
+    (a.age we already saw)
+    Also lets you write to data attributes from outside class
+    a.age = 'Infinite'
+      Code might crash, but Python allows it
+      Python does NOT ensure it remains an int
+      (static vs. dynamic typing?)
+    Allows you to create data attributes for an instance from outside class definition
+      a.size = "tiny"
+    It's NOT GOOD STYLE to do any of these! (!!!)
+
+  Default arguments
+    def set_name(self, new_name='')
+      self.name = new_name
+
+    a = Animal(3)
+    a.set_name()
+    print(a.get_name()) -> ''
+
+    a = Animal(3)
+    a.set_name('Lila')
+    print(a.get_name()) -> 'Lila'
+
+  Adds layers of abstraction to code
+  Consider each person/animal on slide as separate Animal
+    One thing it has is an age
+  Create separate species on top of animal
+    More specific
+  Cat, Rabbit, Person
+  They're all animals
+    Maybe a person has a friends list
+    Cat has lives left
+  Maybe some people are students
+    Has a major or favorite subject
+
+  Parent and child classes
+  Parent class: Animal
+  Child class: Inheriting from parent class
+    Whatever an animal can do, a cat, rabbit, person can do
+    But add more information
+    Add more behavior
+    Or even override behavior
+    A person can speak - say 'Hello'
+    A student can say "I have homework" - overrides person
+
+  Say we have the animal class from before
+  (ruby class Cat << Animal
+  class Cat(Animal):
+    def speak(self):
+      print("meow")
+    def __str__(self):
+      return('cat:'+ 'str(self.name)' + ':' str(self.age))
+
+  Calling .speak() from a plain Animal throws an error
+  __init__ is not missing, uses Animal's version
+
+  class Person(Animal):
+    def__init__(self, name, age):
+      Animal.__init__(self, age)
+      self.set_name(name)
+      self.friends = []
+
+    def get_friends(self):
+      return self.friends
+
+    def add_friend(self, fname):
+      if fname not in self.friends:
+        self.friends.append(fname)
+
+    def speak(self):
+      print("hello")
+
+    def age_diff(self, other)
+      diff = self.age - other.age
+      print(abs(diff)), 'year difference')
+
+    def __str__(self):
+      return "person:" + str(self.name) + ":" + str(self.age)
+
+  import random
+
+  class Student(Person):
+    def __init__(self, name, age, major=None):
+      Person.__init__(self, name, age)
+      self.major = major
+
+    def change_major(self, new_major):
+      self.major = new_major
+
+    def speak(self):
+      r = random.random() # Number 0 to 1 but not incl 1
+      if r < 0.25
+        print('I have homework')
+      elif 0.25 <= r < 0.5
+        print('I need sleep')
+      elif 0.5 <= r < 0.75
+        print('I should eat')
+      else
+        print('I am watching TV')
+
+  So far we've seen instance variables
+    Common across all instances of class
+    Value of variable different between instances
+
+  Class variables - shared between all instances of class
+    One instance that modifies hits all instances
+
+  class Rabbit(Animal):
+  tag = 1
+    def __init__(self, age, parent1=None, parent2=None):
+      Animal.__init__(self, age)
+      self.parent1 = parent1
+      self.parent2 = parent2
+      self.rid = Rabbit.tag
+      Rabbit.tag += 1
+
+    # Tag gives unique id to each Rabbit instance
+    Rabbit.tag -> 1
+    r1 = Rabbit(3)
+    r2 = Rabbit(41)
+    r1.rid = 1
+    r2.rid = 2
+
+    def get_rid(self)
+      return str(self.rid).zfill(3) # Fill in zeros to 3 digits
+    def __add__(self, other)
+      return Rabbit(0, self, other)
+
+    r4 = r1 + r2
+    r4.get_parent1 -> R1
+    r4.get_parent2 -> R2
+
+    r4 == r5
+
+    def __eq__(self, other)
+      parents_same = self.parent1.rid == other.parent1.rid \
+                     and self.parent2.rid == other.parent2.rid
+      parents_opposite = self.parent1.rid == other.parent2.rid \
+                         and self.parent2.rid == other.parent1.rid
+      return parents_same or parents_opposite
+
+    # Note you can't compare parents directly, use rid instead
+
+Read chapter 8.2
+  __lt__ etc. comparisons use first object to determine point of comparison
+  isinstance: built-in Python method
+    isRabbit
+    isStudent
+    etc.
+  to make an attribute private in Python, 2x underscore at beginning but not end
+  generator
+    yield x # returns each value in for loop one at a time
+    # re efficient for e.g. a huge lists of students
+
+PSet 4
+
+

@@ -1,0 +1,200 @@
+Typeahead
+  Aka autocomplete feature
+  Comes into play when typing query in search box
+  Provides list of suggestions, based on
+    User search history
+    Search context
+    Trending content across users/regions
+  Frequently searched always at top of list
+    (Actually my own recently searched often seems to - JM)
+  Does not make search faster
+    Helps user form sentences more quickly
+
+Requirements
+  Functional
+    Suggest top N freq/relevant based on text typed in search box
+      Let's say N = 10
+  Non-functional
+    Low latency
+      Show in real time after user types
+      Can't exceed 200 ms
+      Average time between two keystrokes 160ms
+        Ok if a little over
+        If user is typing fast, may already know what they want
+      But if much over, suggestions stale and less useful
+    Fault tolerance
+    Scalability
+
+Resource estimation
+  Basic data
+    Let's use Google Search
+    3.5B searches per day
+      Let's assume 2B unique
+  Storage
+    Query 15 chars on average
+    Each char takes 2 Bytes
+    2B * 15 * 2 = 60GB/day for queries
+    60 * 365 = 22 TB/year
+  Bandwidth
+    Incoming
+      15 * 3.5B = 52.5B chars/day
+      52.5B/8600 = 0.607M chars/second
+      0.607M * 2 * 8 = 9.7 Mbps
+    Outgoing
+      Top 10 queries per char
+      15 * 10 * 9.7 = 1.46 Gbps
+    Overall
+      1.47 Gbps
+  Server numbers
+    607k requests/second
+    Server 8k queries/secod
+    607/8 = 76 servers
+    Only looking at app servers
+
+Building blocks
+  Databases for storing queries
+  Load balancers
+  Caches
+    Keep top N suggestions for fast retrieval
+      (On top searches I assume? - JM)
+  (No inverted index building? - JM)
+
+High-level design
+  Don't just suggest queries in real time
+    Also store in database
+      Suggest based on popular/recent searchs
+  Every typed char hits application server
+  Suggestions service obtains top 10 from cache
+    Redis
+  Assembler service
+    Collects searches
+    Applies analytics to rank
+    Store in NoSQL distributed across nodes
+  Load balancer for incoming reqests
+  App servers as entry points
+    Forward requests to microservices
+    Encapsulate architecture
+      Authentication
+      Monitoring
+      Request shaping
+      Management
+
+API design
+  getSuggestions(prefix)
+  addToDatabase(query)
+  How to update small section of page?
+    Async with AJAX
+
+Storing prefixes
+  Trie data structure
+    Many strings
+    Search using any prefix
+    Minimal latency
+      Database too slow vs reading from RAM
+      Store index in memory efficiently
+        But duplicate in database
+    Tree-like data structure
+      Each node stores char in phrase in order
+      Can combine nodes as one where only single branch exists
+        Reduce tree depth
+        Reduce traversal time
+        Increase efficiency
+  Track top searches
+    Store number of times searched in trie node
+  How else to make trie traversal fast?
+    Pre-compute top 10 for every prefix in node
+      Requires extra space to save
+  Trie partitioning
+    Billions of queries per second
+      (I thought it was a few billion/day - JM)
+    One Trie can't handle
+    Storing all prefixes in one Trie not viable either
+    Split into multiple tries
+    Let's say split in 2, each has a replica
+      Not equal load balancing ofc
+    Where to store mapping?
+      Cluster manager like ZooKeeper
+        (App server cache? - JM)
+  Update Trie
+    Offline after interval
+    Log queries & frequency in hash table
+    Aggregate regularly
+    Clear out hash table after update
+    Use MapReduce to process logging data regularly
+      Dump results into hash table in e.g. Cassandra
+    Replicate Trie to update offline
+      Then start using for suggestions, throw away old ones
+    OR have primary copy and secondaries
+      Update secondary, then promote to primary
+  What if prefix frequencies increase enough to overflow integers?
+    Normalize within 0-1000 range
+    Stop additions after reaching threshold
+
+Detailed design
+  Split into 2 main parts
+    Suggestion service
+    Assembler
+  Suggestion service
+    getSuggestions(prefix)
+    Return top 10 popular queries from distributed Trie cache (Redis)
+  Assembler
+    Off the user's critical path
+    Don't update the trie in real time
+      Will slow down suggestion service
+      Top suggestions may not change much after trie creation
+    Separate service
+    Components
+      Collection service
+        Collects phrases, time, metadata
+        Dump in database to process later
+      Database
+        HDFS (Hadoop Distributed File System)
+          Huge amounts of data
+      Aggregator
+        Consolidate raw data
+        Retrieve from HDFS, allocate to workers
+      MapReducer
+        Aggregates frequence over time
+        Stores in Cassandra
+      Cassandra
+        Good for storage, large amounts of data in tabular format
+    Trie builder
+      Creates, updates tries
+      Stores on shards in database via ZooKeeper
+      Store in persistent storage, rebuild easily
+        NoSQL document database for storing - MongoDB
+  Common trie? Or per-user?
+    Common trie
+    Per-user incredibly complex, time-consuming
+      Probably duplicate as well
+    (I think some real world systems *do* include recent searches though - JM)
+
+Evaluation
+  Requirements
+    Low latency
+      Reduce tree depth
+      Update trie offline
+      Use geographically distributed app & database servers
+      Redis & Cassandra cachce on top of NoSQL database clusters
+      Partition tries to distribute load
+    Fault tolerance
+      Replication, partitioning
+    Scalability
+      Add or remove servers with load
+  Client-side optimization
+    Client only contacts server if no keys pressed
+      Say delay > 160 ms
+      (I feel many systems do though...)
+    Client can wait until user types first few chars
+    Clients can save a local copy of recent history
+      Reuse rate relatively high
+    Establish connection with server as soon as possible
+      As soon as client visits search page
+      WebSocket protocol, usually
+    Push portion of cache to CDNs and other edge caches
+      At IXPs or even inside client ISP   
+  Personalization
+    Save personal history separately on server and cache on client
+    Server can include before transmitting to client
+      Personalized > everything else
+  

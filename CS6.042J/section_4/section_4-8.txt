@@ -1,0 +1,209 @@
+Random walks on graphs
+Reading
+  The hyperlink structure of the WWW can be described as a digraph
+    Vertices are webpages with a directed edge from vertex x to vertex y
+      If x has a link to y
+    xi -> xj directed edge when xi contains a hyperlink to page xj
+  In 1995 Page/Brin realized graph structure useful in building search engine
+  Traditional doc search programs had been around for a long time
+    Relevance might be returned for each doc based on frequency or position
+    Works fine if only a few documents
+    Web has billions of documents, millions of matches
+    Google gave first rank of 482k to their text
+      How did it know?
+  First idea
+    Define page rank to be indegree(x)
+      Number of links pointing to x
+      But vulnerable to dummy pages pointing to page
+      And page could be influential if containing lots of links
+  Then improved idea
+    Count probability of being at each page after a long random walk on web graph
+      If user at page x, each link followed with p = 1/3
+      Assigned each edge x -> of the web graph with probability conditioned on being on page x
+    Pr[follow link <x -> y> | at page x] ::= 1/outdeg(x)
+    Compute probability of arriving at a particular page y
+      By summing over all edges pointing to y
+    Pr[go to y] = sum edges x->y of Pr[follow link <x -> y> | at page x] * Pr[at page x]
+                = sum edges x->y of Pr[at x] / outdeg(x)
+    One issue
+      Some pages have no hyperlinks out - user cannot escape
+        But user can restart
+        And even if they don't get stuck, may restart eventually anyway
+      Add supervertex to the web graph
+        Add an edge from every page to the supervertex
+        Supervertex points to every other vertex with equal probability
+        Restart walk from random place
+        Ensures graph is strongly connected
+        A page with no hyperlinks links to supervertex with p = 1
+        For pages with hyperlinks, point to supervertex with p = 0.15 (arbitrary)
+          So other outgoing edges 0.85/n (where n is number of links out)
+  Stationary distribution
+    Core idea behind page rank
+    Suppose each vertex has a probability corresponding to likelihood walker there at given time
+    Assume walk never leaves graph vertices
+      sum vertices x of Pr[at x] = 1
+    Definition
+      Assignment of probabilities to vertices in a digraph is a stationary distribution if for all vertices x
+      Pr[at x] = Pr[go to x at next step]
+    Page ranks defined to be a stationary distribution
+      Find a nonneg number, Rank(x), for each vertex x such that
+        Rank(x) = sum edges y-> x of Rank(k)/outdeg(y)
+      Additional constraint
+        sum vertices x Rank(x) = 1
+    So if there are n vertices
+      These two equations provide a system of n + 1 linear equations in the n variables, Rank(x)
+      Second one essential to avoid Rank(x) ::= 0 for all x, which is useless
+    Strongly connected graphs have unique stationary distributions
+      Addition of supervertex assures this
+      Starting from any vertex and taking a sufficiently long random walk
+      The probability of being at each page closer and closer to stationary distribution
+      Note that general digraphs without supervertices may have neither property
+        There may not be a unique stationary distribution
+        Even when there is, there may be starting points from which probabilities of positions
+          Do not coverge to the stationary distribution
+  Just keeping track of digraph is a daunting task
+    In 2011, Google invested $168m in a solar power plant
+      Google servers = 200k households
+
+Lecture
+  Random walks
+  Provide probabilistic models for a bunch of settings
+  Have seen a couple already
+  General look
+  Have a digraph
+    Think of the process of choosing which edge to follow probabilistically
+    Sum of probabilities must be 1
+  Gambler's ruin (never saw this did I? - JM)
+    0 when bankrupt to T when at target
+    p ::= Pr[win a bet]
+    q ::= 1 - p = Pr[lose a bet]
+    What is Pr[reach T before 0] - given that starting at some state n
+  Applications of random walk
+    Physics - Brownian motion - particle being buffeted by atomic forces
+      Modeled by saying can move in any direction in 3-space chosen at random
+      Einstein modeled first - main components of Nobel Prize, relativity not yet firmly proven
+    Finance - stocks, options
+      Biased, random oscillation of stock prices
+    Algorithms - web search, clustering
+  Questions
+    Pr[reach O in 7 steps | start at B]
+    Average # steps from B to O
+    Pr[reach G before O | start at B]
+  Example
+    Toss HTH before TTH
+    Can model with tree diagram
+      50/50 H vs T to start
+      Pr[win] = 1/2 * Pr[win | H] + 1/2Pr[win | T]
+      Split subtrees the same way
+    Wind up with set of linear equations to solve
+      Get to win and loops keep you in that state, ditto for lose
+  Stationary distributions
+    Back to the first digraph
+    Suppose start in state B
+    What's probability of being at each state after each step?
+      Start: (Pb, Po, Pg)
+             (1, 0, 0)
+      After 1 step: P'b, P'o, P'g
+                   (1/2, 1/4, 1/4)
+      After 2 steps: (P''b, P''o, P''g)
+        P''o = Pr[B to O | at B] * P'b + Pr[O to O | at O] * P'o (and green, but no vertex to O)
+        P''o = 1/4 * 1/2 + 1/3 * 1/4
+             = 5/24
+      After 2 steps: (P''b, P''o, P''g)
+                      1/2, 5/24, 7/24
+      Linear algebra
+        The edge probability matrix for a random walk graph is the same as the adjacency matrix
+        Using edge probabilities instead of zeroes and ones
+        M ::= 3 x 3 grid with all possible edges
+          Just read probability of connection off the graph
+          (1/2 1/4 1/4)
+          (  0 1/3 1/3)
+          (  1   0   0)
+        Distribution update is really vector/matrix multiplication
+        (Pb, Po, Pg) * M = (P'b, P'o, P'g)
+        Distribution after t steps?
+          And as t -> inf?
+        (Pb, Po, Pg) * M^t = (Pbt, Pot, Pgt)
+          Already useful computationally
+          Can compute power by successive squaring
+          Only need log(t) to figure out distribution of probabilities
+    Ok, now stationary distribution
+      Once you get there, it's stable, you stay there
+        Next-step distribution is the same
+      What is one here?
+        Pb = P'b = (1/2)Pb + 1Pg
+        Po = P'o = (1/4)Pb + (1/3)Po
+        Pg = P'g = (1/4)Pb + (2/3)Po
+        Pb + Po + Pg = 1 (can't set all to zero, degenerate)
+        Solving for them (8/15, 3/15, 4/15)
+    Linear algebra
+      Find stationary dist vector sbar
+      By solving sbar * M = sbar
+                   |sbar| = 1
+    Problems with stationary distribution
+      What about a loop between 0 and 1
+        Does not converge to a stable distribution (which would be 1/2, 1/2)
+      What about two loops coming off a center loop
+        Get stuck on one of side loops, stable
+        An uncountable number of stable distributions
+      Turns out strong connection is sufficient to ensure stationary distribution
+      There exists stationary distribution for any finite graph
+        Is it unique? Sometimes - yes if strongly connected
+      Does a random walk approach it from any starting distribution?
+        Sometimes (0/1 loop is a problem)
+      How quickly does convergence happen?
+        Varies depending on graph
+  PageRank
+    "Page" is after Google cofounder Larry Page
+    Which webpages are "more important"?
+    Use web structure itself to identify important documents
+    Model internet as a graph
+    Users click random link on a page - directed edge
+    Keep doing a walk on the web graph
+    Occasionally start over randomly
+      Losing steam, in cycle, at dead end
+    A page is "more important" if viewed a lot of the time
+    So entire web as digraph
+      Vertices are webpages
+      Edge(V, W) exists if link from page V to page W
+      Edges out of V equally likely
+        Simple model, might or might not work (but actually did work well)
+      Pr[V, W] = 1 / outdeg(V)
+    To model starting over
+      Add a "super-node" to the graph
+      Edge from super-node to each other node ie. "pick a random page and start over"
+      Edges from each other node back to super-node
+        From all terminal edges - documents etc.
+        But that alone is not sufficient
+          Can get stuck in a clump of nodes even though none are dead ends
+        Page/Brin suggested customized probability edge back
+          Decided each .15 to jump
+    Super-node
+      Original paper - every node can jump to every other node
+        But save massively on vertices and edges by running through supernode
+    PageRank computes stationary distribution sbar
+      Of length trillions
+      PageRank(V) ::= sv
+      Rank V above W when
+        sv > sw (probability of being in v > probability of being in w)
+      At time - ~2 weeks to create a new graph
+        then hours (< days) to compute a new distribution - lots of parallel calcs
+    Resistance to scamming
+      No creating fake nodes to yourself
+        No weight, nobody is pointing to the fakes
+      No adding links to important nodes to look important
+        Because none of them aren't pointing back
+    Importance of Super-node
+      Ensures unique stable distribution of sbar
+        When a digraph is strongly connected, that is sufficient
+      Every initial distribution pbar converges to sbar
+        lim t -> inf pbar * M^t = sbar
+      Convergence is rapid
+        t is small so sbar easy to compute
+    Actual Google Rank
+      More complicated now
+      PageRank was the original idea
+        Google thinks it gets overattention now
+      Now a closely held trade secret using text, location, payment, and other criteria over 15 years
+        Continue to evolve to handle manipulation
+      However PageRank still plays a significant role

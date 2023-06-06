@@ -1,0 +1,88 @@
+Functions
+  Piece of code
+    Defined once, run many times
+
+JS functions
+  function keyword
+  name
+  param(s)
+  returned value
+  return type
+  context this
+
+Function are actually objects in JS
+  Have attributes and methods as well
+  Only differentiator is they can be called
+
+Anonymous function
+  Define and call at same time
+
+  Named
+    function MyFunction()
+    {
+      console.log("Hello! I'm a named function!");
+    }
+
+    myFunction();
+
+  Anonymous
+    var myFunction = function()
+    {
+      console.log("Hello! I'm an anonymous function");
+    }
+
+    myFunction();
+
+How to declare JS function
+  Function declaration - function keywords before function name
+  But if "function" appears anywhere else, declaring by function operator
+
+  Function declaration - most typical
+    - Allows hoisting, can be used before declaration
+    function function_name(Arg1, Arg2...) {};
+
+  Function expression - most common
+    - Assign function as object to variable
+    - Use function as callback function
+
+    Named
+      var var_name = function function_name(Arg1, Arg2..) {};
+
+    Anonymous
+      var var_name = function(Arg1, Arg2..) {};
+
+  Generator function
+    function* name (Arg1, Arg2..) {}
+
+  Generator function expression
+    Named
+      function* function_name(Arg1, Arg2..) {}
+    Anonymous
+      function* (Arg1, Arg2..){}
+
+  Arrow function - shorter syntax, eliminate "this" value
+    - Can exclude parens if only one param
+    - Erase brackets if only one statement
+
+    var var_name = (Arg1, Arg2..) => {};
+
+  Function constructor
+    - Least recommended
+    - Function keyword actually a constructor which creates a new function
+    - Arguments passed to constructor become arguments of newly created function
+    - Last param is a string converted into a function body
+    - Security, engine optimization issues
+
+    var var_name = new Function(Arg1, Arg2.., 'FunctionBodyString');
+
+Tests
+  var cube = function cube(x) {
+      return x**3;
+  };
+
+  var cube = function(x) {
+      return x**3;
+  };
+
+  var cube = (x) => { return x**3; };
+

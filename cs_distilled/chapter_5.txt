@@ -1,0 +1,95 @@
+Algorithms
+  Search for existing algorithms when solving problems!
+  Sorting
+    Selection Sort O(N^2)
+      Many, many O(N^2) sorting algorithms out there
+    Insertion Sort O(N^2)
+      Good at sorting databases that are already mostly sorted
+      Even if huge
+      ~ O(n) in these cases
+    But for large data sets that aren't already mostly sorted, O(n^2) too slow
+    Merge Sort, Quicksort both O(nlogn)
+      Quicksort
+        Choose pivot, split others into greater/smaller piles
+        Repeat until piles of 4 or less
+          Just put those in the right order
+    Many, many more sorting algorithms out there
+  Searching
+    Sequential search
+      Look at all items, one after the other, until you reach the end
+      O(n), pretty obviously
+    Can improve IF items are well-structured
+    Sorted array?
+      Binary search, O(logn) - discard half items in each step
+    Hash Table?
+      O(1)! Even if billions of items
+        (But how long does it take to set up, and how much space does it take - JM)
+  Graphs
+    How do you find a node you want?
+    If given no help, must simply visit every node
+    Two key strategies: breadth-first and depth-first
+      Depth-first - explore to bottom, then back up
+        Use a stack to keep track of the exploration trail
+          (yep, just did that on CS106B assignment 6 lol - JM)
+      Breadth-first
+        Visit one level at a time, gradually going deeper
+        Use a queue to keep track of nodes to visit
+      Which to use?
+        Depth-first is easier to implement
+          Also uses last memory - just need to store current path
+          Breadth-first may not be practical with say 1m children
+        Breadth-first is good if you think the node is nearby
+          Higher cost, but will be faster if node is close
+        If you think you'll have to explore the whole thing? Depth-first.
+  Graph Coloring
+    Must assign each node a color (or other label)
+    Neighboring nodes cannot share a color
+      Cell phone towers need to operate on different frequencies to avoid interference
+    Finding the minimum number of colors for a valid color assignment
+      NP-complete, exponential
+      Check out UVA graph coloring example (or just wait for the MIT course - JM)
+  Path finding
+    Shortest path between nodes, most common graph problem
+      GPS navigation, perhaps with weighted edges for traffic (so cool - JM)
+      Airline routes (as we've seen in CS106B)
+    BFS and DFS are usable but bad
+    Dijkstra algorithm famous way of doing it
+      Uses priority queue
+      Priority is weight of edges from starting node
+      Therefore next node to explore is always closest to start
+      However, can cycle forever without finding goal
+        Happens when some edges can have negative weights
+        "Negative cycle"
+    What about a really huge graph?
+      Bidirectional search - start and beginning and end
+        Find a common node, you're done
+        Much smaller search space
+  PageRank
+    How Google analyzed the web
+      Pages are nodes
+      Links are edges
+      More links to a page = more important
+      More important page linking = more important
+    Every page starts with equal number of points
+      Points are redistributed over multiple rounds until stable = PageRank
+        (Stabilizes quickly, per CS106B - JM)
+    Can also use to e.g. figure out who's important on Twitter
+  Operations Research
+    Define an objective to maximize or minimize
+      Yield, profit, performance, loss, risk, cost
+    Used by airlines to optimize flight schedules
+      Small tweaks can save millions
+    Can model with linear equations?
+      "Linear optimization problem"
+    Two linear constraints (money and floor space)
+      Simplex method
+        Very good at solving, known since the 1960s
+        Lots of off-the-shelf solutions
+        Look for intersection of two lines
+          Corner of space under lines is optimum - mathematically proven
+          Also works for 3+ variables - hard to visualize, same principle
+
+  Many more algorithms
+    More advanced Dijkstra: A*
+    Similarity between two words: Levenshtein Edit Distance
+    (Recommended reading includes MIT course book, so let's wait for that)

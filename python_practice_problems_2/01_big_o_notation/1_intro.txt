@@ -1,0 +1,150 @@
+Intro
+  Time complexity of algorithm expressed as a polynomial
+  Compare algorithms, compare polynomials
+
+Asymptotic analysis
+  Worry about large input sizes only
+  If input small, how bad does poor algorithm hurt, really?
+  f(n) is O(g(n))
+    If there exists positive real constant c an integer n0 > 0
+      such that for all n >= n0, f(n) > c(g(n))
+    Does not have to hold for all n
+    Tells us that for very large values of n
+      f(n) at most within constant factor of g(n)
+    Rate growth of f(n) within constant factors of g(n)
+  X f(n) = O(g(n)) is not technically accurate!
+    A whole lot of functions can satisfy conditions
+    O(g(n)) is a set of functions
+    f(n) belongs to O(g(n)) ok
+  Example
+    f(n) = 3n^3 + 4n + 2
+    Verify time complexity O(n^3)
+    Find constant c and integer n0
+    Say n0 = 1
+    c = 9
+    3n^3 + 4n^3 + 2n^3 > 3n^3 + 4n + 2
+    Not a unique solution
+    Note cannot find c/n0 for O(n^2) or O(n)
+    But can find for O(n^4), O(n^5) etc.
+    But not so useful to say O(n^4)
+      Looser bound
+      Generally want tightest possible bound
+  More
+    O(n) faster than O(n^2) at large sizes, but not *always*
+    Two O(n) algos within constant factors
+
+Simplified asymptotic analysis
+  Drop multiplicative constants with all terms
+  Drop all but highest order term
+  3n^5 + ... -> O(n^5)
+
+Ascending order of growth
+  Constant
+  Log
+  Log-square
+  Root(n)
+  Linear
+  Linearithmic - nlogn
+  Quadratic
+  Cubic
+  Quartic
+  Exponential - 2^n
+  Exponential - e^n
+  Factorial
+
+Other asymptotic notations
+  Big omega
+    f(n) is in omega(g(n)) if constant c > 0 and n0 > 0
+      such that f(n) >= cg(n) for n >= n0
+      For sufficiently large n, f(n) will grow at least as fast as g(n)
+    This is *not* the best-case running time
+    If f(n) in O(g(n)), then g(n) in omega(f(n))
+  Big theta
+    If f(n) in O(g(n)) and f(n) in omega(g(n))
+    c1 > 0, c2 > 0 and n0 > 0, c1 * g(n) >= f(n) >= c2 * g(n) for n >= n0
+    Functions grow at same rate within constant factors
+    Asymptotically tight bound
+  Little o
+    f(n) in o(g(n)) if for ANY constant c > 0 there is n0 > 0 such that
+    f(n) < c * g(n)
+    There is a minimum n after which inequality holds, no matter how small c
+      as long as c not negative or zero
+    n not in o(n), not strictly less than itself
+    n + 10 in o(n^2) in o(10^n)
+  Little omega
+    f(n) is in w(g(n)) if for any c > 0, exists n0 > 0 such that f(n) > c * g(n)
+      for n >= n0
+
+Why is Big O preferred
+  Focus on worst-case time and space complexity
+  Algorithm will grow at most as fast as a constnat multiple of a certain function
+    more useful than growing at least as fast
+  Big Omega... often not very useful with worst-case
+  But what about Big Theta?
+    Great to have a tight bound on worst-case running time
+    But imagine complex algorithm, haven't found tight bound
+    Still can use loose upper bound (Big O)
+  Common to see Big O used to characterize worst case even when Big Theta easy
+    Not technically wrong, Big O is subset of Big Theta
+  Little o and little omega require strict inequality
+    and valid n0 for any choice of c
+    Not always easy!
+  From now on, simplify analysis by counting # executions of each line of code
+    Print(sum) takes one primitive op, not two
+
+Useful formulas
+  Sum from i = 1 to n of c = cn
+  Sum from i = 1 to n of i = n(n + 1) / 2
+  Sum from i = 1 to n of i^2 = n(n + 1)(2n + 1) / 6
+  Sum from i = 0 to n of r^i = (r^(n + 1) - 1) / (r - 1)
+
+Log useful formulas
+  log(a * b) = log(a) + log(b)
+  log(a / b) = log(a) - log(b)
+  log(a^n) = nloga
+  sum from i = 1 to n of log(i) = log(n!)
+
+General tips
+  Every time a list or array iterated over c * length, likely in O(n) time
+  When number of elements in problem space halved each time, likely O(log(n)) time
+  Singly nested loop, likely in quadratic time
+
+Common complexity scenarios
+  for x in range(n):
+    # constant time statement
+  Running time complexity = n = O(n)
+
+  For loop with increments:
+  for x in range(1, n, k):
+    # constant time statement
+  Running time complexity = floor(n/k) = O(n)
+
+  Nested for loop:
+  for i in range(n):
+    for x in range(m):
+      # constant time statement
+  Running time complexity = n * m = O(nm)
+
+  Nested for loop, dependent variables
+  for i in range(n):
+    for x in range(i):
+  Running time complexity = (n - 1)((n - 1) + 1) / 2 = O(n^2)
+
+  Nested for loop with index modification
+  for i in range(n):
+    i *= 2
+    for x in range(i):
+  Running time complexit = n(n - 1) = O(n^2)
+
+  Loops with log(n) time complexity
+    i = constant
+    n = constant
+    k = constant
+
+    while i < n:
+      i *= k
+
+    Running time complexity = logk(n) = O(logk(n))
+    Example
+      i = 1, n = 16, k = 2
+      log2(16) = 4

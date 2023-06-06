@@ -1,0 +1,48 @@
+Drop, Show & Rename Views
+
+  // To see full views
+  SHOW FULL TABLES
+
+  // Drop a view
+  DROP VIEW
+
+  // Rename a view
+  RENAME TABLE
+  // or
+  rename & create
+
+  SHOW FULL TABLES
+  WHERE table_type = 'VIEW';
+
+  SHOW FULL TABLES
+  LIKE '%Actor%';
+
+  // information_schema database is a catalogue of all MySQL databases
+  // Contains metadata - db names, tables, privileges, datatypes of columns
+
+  SELECT table_name
+  FROM information_schema.TABLES
+  WHERE table_type = 'VIEW'
+  AND table_schema = 'MovieIndustry';
+
+  // Deleting views with drop view
+  // Error if try to delete non-existent and no IF EXISTS clause
+
+  DROP VIEW DigitalAssetCount, ActorAssets;
+    > Error 1051 (42S02): Unknown table 'MovieIndustry.ActorAssets'
+  DROP VIEW IF EXISTS DigitalAssetCount, ActorAssets;
+    > (warning, but query executes, DigitalAssetCount is dropped)
+
+  // Can use RENAME TABLE on views, in same namespace as tables
+
+  CREATE VIEW ActorAge AS
+  SELECT *
+  FROM Actors
+  WHERE TIMESTAMPDIFF(YEAR, DoB, CURDATE()) > 50;
+
+  RENAME TABLE ActorAge
+  TO ActorsOlderThan50;
+
+  // You can also copy the query used to create the view
+  // Then drop the view
+  // Then create a new one

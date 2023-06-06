@@ -1,0 +1,84 @@
+Sorting
+  Arranging items systematically
+  In CS: putting elem list in some order
+  Common orders
+    Numerical
+    Lexicographical (by letter)
+  Efficient sorting very important
+    Optimize many other algorithms
+
+Selection sort
+  Find minimum item in list, place at beginning
+    Swap with item in target location
+  Have two lists:
+    Sublist of already-sorted, left to right
+    Sublist of remaining items to sort
+  O(n^2)
+    Must iterate over entire list for each item
+    Impractical for large inputs
+  Space complexity O(1), in-place
+
+Bubble sort
+  Compare adjacent elements, swap if in wrong order
+  O(n^2) again
+  Space complexity O(1), in-place
+
+Insertion sort
+  Iterates over list, figures out correct item position, inserts there
+  Again O(n^2)
+  But only O(n^2) when list sorted in reverse
+  When already sorted, omega(n) **
+    Just go down list once, nothing to move
+  Space complexity O(1), in-place
+
+Merge sort
+  Actually used in real-life projects
+  More algorithmically complex but faster
+  Recursive divide and conquer
+  Divide list into halves, sort halves, merges in order
+  Base case merge two lists of size one
+  Merge is the heavy lifting
+  O(nlogn)
+
+Quicksort
+  Fastest known comparison-based sorting algorithm
+    Merge sort works better on linked lists
+    Other non-comparison based algorithms outperform
+  Start with a list of n elements
+  Choose a pivot from list to be sorted
+  Partition into 2 unsorted sublists at pivot
+    Elements equal to pivot may go either way
+  Concatenate sorted sublists and pivot to yield one sorted list
+  How to pick pivot?
+    Randomly - pick first element every time = 1/n^(n - 1)
+    Median of 3
+      Pick 3 random elements, choose median
+      Ensures first element not picked
+        Bad - Iterate over whole list to sort, O(n^2)
+  Time
+    Worst case O(n^2)
+      Rare
+      Array already sorted in same order
+      Array alread sorted in reverse order
+      Elements in array all same
+    Average case O(nlog(n))
+
+Search
+  Brute force
+    Linear search, O(n)
+  Binary search, O(log(n))
+    Halve list at every iteration
+
+  def binary_search(lst, left, right, key):
+    while left <= right:
+        mid = left + (right - left) // 2
+        # Check if key is present at mid
+        if lst[mid] == key:
+            return mid
+        # If key is greater, ignore left half
+        elif lst[mid] < key:
+            left = mid + 1
+        # If key is smaller, ignore right half
+        else:
+            right = mid - 1
+    return -1

@@ -1,0 +1,20 @@
+Searching 152 files for "deepcopy"
+
+/Users/johnmorgan/leetcode/ace_coding_python/12_graph_algorithms/challenge_5.py:
+   70      # stores the current path in 2D list (Deep copy)
+   71      if source == destination:
+   72:         paths.append(copy.deepcopy(path))
+   73      else:
+   74          # If current vertex is not destination
+
+/Users/johnmorgan/leetcode/ace_coding_python/15_divide_and_conquer/challenge_4.py:
+   21      if remaining < 0:
+   22          return float('inf')
+   23:     vert_remove = copy.deepcopy(lst)
+   24      vert_remove[largest_index] = 0
+   25      vert_collect = ms_recursive(vert_remove, steps + 1)
+   26:     horiz_remove = copy.deepcopy(lst)
+   27      for index in range(len(horiz_remove)):
+   28          horiz_remove[index] -= 1
+
+3 matches across 2 files

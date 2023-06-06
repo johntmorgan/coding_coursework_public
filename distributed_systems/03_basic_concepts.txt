@@ -1,0 +1,563 @@
+Basic Theorems and Concepts
+
+Partitioning
+  Scalability is major benefit of distributed systems
+    Store and process much larger datasets than possible on single machine
+    Partitioning major mechanism to achieve this
+  Split dataset into multiple smaller datasets
+    Assign different nodes to store and process
+      Can add more nodes to system, handle more data
+  Two kinds of partitioning
+    Vertical partitioning
+    Horizontal partitioning (sharding)
+    Terms original from era of relational databases
+      Tabular view of data
+      Rows and columns
+      Each row = different entry
+      Each column = attribute
+    Vertical partitioning
+      Split table into multiple tables with less columns
+      Use additional tables to relate rows across tables
+        Join operation
+      Can then store tables in different nodes
+      Normalization is one way to perform
+      General vertical paritioning goes far beyond
+        Splits a column even when normalized
+    Horizontal partitioning
+      Each table contains percentage of initial rows
+      Store subtables in different nodes
+      Many different strategies
+        e.g. alpha by name
+  Limits
+    Vertical: lose efficiency combining data from different tables
+    Horizontal: avoid accessing data from multiple nodes
+      May need to access multiple nodes if searching for split range of rows
+    Horizontal may also lose transactional semantics
+      Single machine, easy to perform multiple operations in atomic way
+        Either all or none succeed
+        Much harder to achieve in distributed system
+    Common theme in distributed systems
+      No silver bullet
+      Must make tradeoffs to achieve desired property
+  Vertical partitioning mostly a data modeling practice
+    Performed during design, maybe independent of storage used
+  Horizontal partitioning common in distributed databases
+    Engineers must know how system works under hood to use
+    Will mostly focus on horizontal partitioning
+
+Algos for Horizontal Partitioning
+  There are a lot, different advantages and drawbacks
+  Range partitioning
+    Split into ranges according to value of a specific attribute
+    Store each range in separate node
+      Ex. alpha name example from earlier
+    System store and maintain list of all ranges
+      Map which node stores which range
+        System consults and refers to proper node(s)
+    Advantages
+      Simple
+      Easy to implement
+      Range queries using partitioning key value
+      Good performance on queries using range key
+        If resides in single node
+      Adjusting ranges easier and more efficient
+        Can change range, just exchange data between two nodes
+    Disadvantages
+      Can't query using keys other than partitioning
+      Bad performance when range is big and covers multiple nodes
+      Uneven distribution of traffic or data
+        e.g. some initial letters in names are more common
+    Techs
+      Google BigTable
+      Apache HBase
+  Hash partitioning
+    Apply hash function to specific attribute of each row
+      Partition based on result
+        Hash(name) mod n
+    Advantages
+      Calculate mapping at runtime
+        No need to store and maintain mapping
+        Beneficial in terms of data storage needs and performance
+      Greater chance than hash function will uniformly distribute data
+    Disadvantages
+      No ability to perform range queries at all, even for attribute used as key
+      Adding or removing nodes causes full re-partition
+  Consistent partitioning
+    Similar to hash partitioning
+    Solves increased data movement of hash partitioning
+    Each node in system randomly assigned integer in range of [0, L]
+      Range is called ring (ex. [0, 360])
+      System uses record with attribute value s as a key to locate node after point
+      hash(s) mod L
+    When new node enters ring, receives data only from next node in ring
+      When leaves ring, data transfers to next node in ring
+    Advantages
+      Like hash paritioning, but reduces data movement when nodes added or removed
+    Disadvantages
+      Potential for non-uniform distribution because of random assignment of nodes in ring
+      Potential for more imba data dist as nodes added or removed
+        Node dataset not distributed evenly when removed but all transferred to another node
+        Mitigate through virtual nodes
+          Assign each physical node multiple locations in the ring
+    Techs
+      Apache Cassandra
+    Papers
+      Dynamo
+
+Replication
+  Helps with availability
+  Store same piece of data in multiple nodes
+    If one crashes, data is not lost
+    Requests served from other nodes meanwhile
+  Challenge
+    Multiple copies of data now
+      Need to maintain and keep in sync
+  Should function transparently to end-user or engineer
+    Create illusion one copy of every piece of data
+      Look like single centralized system of single node
+      Of course, not always possible
+        May require significant hardware resources
+        Give up other properties to achieve ideal
+  May accept system with high performance, occasional non-consistent view of data
+    Under specific conditions when can account for in app design
+  Two main strategies
+    Pessimistic replication
+      Guarantee from beginning all replicas are identical
+    Optimistic replication
+      "Lazy replication"
+      Allow replicas to diverge
+      Will coverge again if system does not receive any updates for a bit
+    Very active field in research! Many algos!
+
+Single-Master Replication
+  Update a single node as leader/primary that receives all updates
+    "Primary-backup replication"
+    Remaining replicas are followers
+    Can only handle read requests
+    Master executes update locally, propagates to other nodes
+  Techniques for propagating updates
+    Syncrhonously
+      Node indicates to client update is complete
+      But only after other replicas acknowledge
+      Guarantees client can view update in later read in all replicas
+      Increased durability
+        Update not lost even if leader crashes right after acknowledges update
+      But makes requests slower
+        Leader must wait for responses from replicas
+    Asynchronously
+      Leader replies to client as soon as updates locally
+      Increases performance
+        Client no longer must wait for network requests to replicas
+      Decreased durability
+        Client might see old (stale) values on later read
+          Operation can hit replica not yet updated
+        If leader crashes right after update acknowledgement
+          Propagation requests to other replicas are lost
+  Tech note
+    Postgres, MySQL use single-master replication
+      Support both synchronous and asynchronous replication
+  Advantages
+    Simple to understand
+    Simple to implement
+    Concurrent operations serialized in leader node
+      Remove need for more complicated, distributed concurrency protocols
+      Easier to suppor transactional operations
+    Scalable for read-heavy workloads
+      Add more read replicas
+    Disadvantages
+      Not very scalable for write-heavy
+        Single node determines capacity for writes
+      Obvious tradeoff between performance, durability, consistency
+      Scaling read capacity by adding more followers can create a bottleneck
+        in bandwidth of leader node, if lots of followers
+      Failing over to follower node when leader crashes is not instant
+        May increase downtime, risk of errors
+  Failover
+    When master node crashes, follower takes over
+      Manual approach, operator selects new leader node
+        Safest, incurs significant downtime
+      Automated
+        Follower nodes attempt to elect new leader
+        Faster but quite risky
+        Many ways for nodes to get confused
+          We'll talk about in more detail later
+
+Multi-master replication algorithm
+  Use when availability, performance more important that data consistency, transactional semantics
+  Ex.
+    E-commerce shopping cart
+    Must always be able to access cart, add idems
+      If two replicas diverge because of itermittent failures
+        customer can resolve conflicts during checkout
+  "Multi-primary replication"
+  No single master node that serializes requests
+  Write requests handled concurrently by all nodes
+    Nodes might disagree on right order for requests - "conflict"
+    Nodes will need to resolve when it occurs
+  Conflict resolution
+    Eager resolution
+      Resolve during write operation
+    Lazy resolution
+      Write operation maintains multiple alternative versions
+      Resolve during e.g. later read operatoin
+  Approaches
+    Return to client
+      Client selects right version
+        Shopper selects correct version of cart
+    Last-write-wins
+      Timestamp using local clock
+      Of course can lead to unexpected, no global notion of times
+        Write A can overide write B even if B happened "as a result" of A
+    Causality tracking
+      Determine if one caused the other
+      But there can still be non-causal concurrent writes
+        No easy decision then
+    We'll talk more about this later
+
+Quorums in distributed systems
+  Main pattern so far: writes to all replicas, reads from one
+    When we ensure writes performed syncrhonously
+      Ensure subsequent reads see all previous writes
+        Regardless of node that processes read
+  Problem in synchronous replication
+    Low availability for write operations
+      Single node failure -> system unavailable to write until recovers
+    Solve
+      Write data only to node that processes write
+      Process read from all nodes, return latest value
+    Increases availability of writes, decreases availability of reads
+    Tradeoff - mechanism for balance?
+  Quorums
+    Ex
+      3 replica system
+      Require writes to complete in 2 nodes
+      Require reads to retrieve from 2 nodes
+      Can be sure reads have the latest value
+      One node in "read quorum" included in "write quorum"
+  Paper - quorum-based protocol for replica control
+    V = replica #
+    Vr = read replicas
+    Vw = write replicas
+    Require
+      Vr + Vw > V
+      Vw > V/2
+    Ensure data item not read and written by two operations concurrently
+    Ensure one node receives two write operations and imposes an order on them
+      Two write operations cannot occur concurrently on the same item
+    Both rules together agree distributed database behaves as a centralized, one-replica system
+    Really useful in multi-node systems
+      Also used in distributed transactions and consensus protocols
+
+Safety guarantees
+  Ensure system will behave in specific, predictable way
+    Easier to reason about system and any anomalies than can occur
+      Build proper safeguards
+  Safety guarantors
+    Atomicity
+    Isolation
+    Consistency
+  Atomicity and isolation from database research and ACID transactions
+  Consistency made popular by CAP theorem
+  Atomicity
+    Hard - possibility of partial failures
+  Consitency
+    Hard - network asynchrony
+  Isolation
+    Hard - inherent concurrency
+
+ACID transactions
+  Atomicity
+    Guarantees transaction with multiple operations is a single unit
+      Either all operations execute or none
+    In distributed - execute on all nodes or none
+  Consistency
+    Only transitions database from one valid state to another
+      Maintains any invariants (application-specific)
+    Ex
+      Table A has records, refer to table B via foreign key relationship
+      Do not delete table A record unless records in table B already deleted
+        NOT the concept of consistency in distributed systems
+  Isolation
+    Even though transactions might run concurrently
+      Result is as if executed one at a time, no interference
+        Prevents anomalies
+  Durability
+    Once transaction committed, remains committed even case of failure
+      Recorded in non-volatile storage in single-node, centralized systems
+    In distributed - durably stored in multiple nodes
+      Recovery possible even in presence of total failure of a node & its storage
+
+CAP Theorem
+  Fundamental theorem
+  Inherent tradeoff
+  Impossible for distributed data store to provide more than 2 of following:
+    Consistency, availability, partition tolerance
+  Consistency:
+    Every successful read receives the result of the most recent write
+      Note different from ACID consistency
+  Availability
+    Every request receives non-error response
+  Partition tolerance
+    System continues to operate despite arbitrary number of messages
+      being dropped between nodes due to network partition
+    Not a property we can abandon
+    In a distributed system, always a risk of a network partition
+    If network partition happens
+      Keep operating and compromise consistency
+      Stop operating and compromise availability
+    No such think as trading off partition tolerance for both consistency and availability
+  Final CAP statement
+    Can either be consistent or available in event of a network partition
+    Proof
+      User writes x = 10 to node A
+      User reads x from node B
+      Network failure partitions A from B
+      Can fail one operation, break availability property
+      Can process both, return stale value from read, break consistency
+  Establishes basic limitations of distributed systems
+    Designers must make explicit tradeoffs between availability and consistency
+  Categories systems in one of two ways in literature
+    CP, AP
+    Depends on which property violated during partition
+  Note choice only needs to be made during a network partition
+  During normal operation
+    Tradeoff latency for consistency
+    To guarantee consistency, delay write operations until propagated across system
+      Latency hit
+    Single-master replication example
+      Synchronous replication favors consistency over latency
+      Asyncrhonous replication favors latency over consistency
+  PACELC Theorem
+    Extension of CAP
+    In case of network partition (P) choose between availability (A) and consistency (C)
+    But else (E) when no network partition, choose between latency (L) and consistency (C)
+    New categories of system: EL and EC
+    Combine to make 4 categories
+      AP/EL
+      CP/EL
+      AP/EC
+      CP/EC
+    AP/EL or CP/EC usually
+      Either you want performance/availability or consistency
+      Some systems cannot be strictly classified
+        Can tune differently at different times
+
+Consistency models
+  Consistency in CAP -> return result of most recent write
+    Oversimplification!
+  Many different forms of consistency
+  Consistency model defines set of execution histories that are valid in a system
+    Formalize the behaviors of systems
+      Can provide guarantees about their behavior
+    Can confidently use distributed system in a way that does not violate safety properties care about
+      Treat as black box with a set of properties
+  Model A stronger than model B when it allows fewer histories
+    Or A makes more assumptions about or imposes more restrictions on the system's possible behaviors
+  Stronger model = generally easier to build a system on
+  Most fundamental models
+    Linearizability
+    Sequential consistency
+    Causal consistency
+    Eventual consistency
+  Linearizability
+    Operations appear to be instantaneous to external client
+    Happen at a specific point
+    Once operation complete and acknowledgment delivered to client, visible to all clients
+    Instantaneous, visible operations
+    In a centralized system, linearizability is obvious
+    Instantaneity is not obvious in a distributed system
+      Synchronous replication -> linearizable
+        But write operation takes longer
+      Asynch -> non-linearizable
+      Latency - consistency tradeoff in PACELC
+    Very powerful consistency model
+      Treat complex systems as simple, single-node datastores
+      Can build more sophisticated logic
+        Mutexes, semaphores, counters
+        Not possible under weaker consistency
+  Sequential consistency
+    Operations allowed to take effect before invocation or after completion
+    No real-time guarantees
+    Operations from different clients have to be seen in same order by all other clients
+    Operations of every client preserve order specified by program
+      Allows more histories than linearizability
+      Poses some constraints that help real-life applications
+    Ex. Social media
+      Do not really care about ordering of friend posts
+      Do expect posts from single friend in right order
+        And comments from friend to appear in post in order submitted
+  Causal consistency
+    Only causally related operatios need to be seen in same order by allnodes
+    Display comments out of chrono order in order to display after comment replying to
+    Does not need to be related to time, can be application-specific property
+      Causal consistency is a weaker model that prevents a class of unintuitive behaviors
+  Eventual consistency
+    Reads to not need to return the latest write as long as system eventually at stable state
+
+CAP Theorem Consistency
+  C -> linearizability
+  Impossible to build system available during network partition while being linearizable
+  Even weaker like sequential not supported per research
+  Lots of other models too!
+  CAP Theorem draws a line into 2 key categories
+    Strong consistency
+    Weak conistency
+  Strong
+    Correspond to "C" cannot be supported in systems that need to be available during network partitions
+  Weak
+    Preserve availability during network partition
+  Two models commonly supported
+    Strong -> linearizability
+    Weak -> eventual consistency
+  Why converged?
+    Lineariziability: need to give up availability for consistency under CAP
+      Might as well make consistency as strong as possible
+        More power, easier to work with
+    Eventual
+      Simple, performant
+      Might as well take weakest guarantees for biggest performance boost
+    (JM question: what if e.g. Reddit comments and need causal consistency?)
+
+Isolation levels and anomalies
+  Concurrency = opportunity for anomalies
+    Transactions with multiple operations can reach different results depending
+  Formal models that define what is and is not possible in system behavior
+    Isolation levels
+  Serializability
+    Two transactions concurrently should give same result as sequentially
+  Repeatable read
+    Data once read does not change during course
+  Snapshot isolation
+    All reads made in transaction see a consistent snapshot of database
+      from start until transaction commits successfully
+      if no other transaction has updated the same data since that snapshot
+  Read committed
+    Does not allow transactions to read data not yet committed
+  Read uncommitted
+    Lowest isolation level, allows transaction to read uncommitted data by other transactions
+  Stronger isolation = prevent anomalies at cost of performance
+  Anomalies
+    Dirty writes
+    Dirty reads
+    (Fuzzy) non-repeatable reads
+    Phantom reads
+    Lost updates
+    Read skew
+    Write skew
+  Dirty write
+    When a transaction overwrites a value previously written by another transaction not committed
+    Violate integrity constraints
+    Ex
+      Write A: x = 1, y = 1
+      Write B: x = 2, y = 2
+      Can wind up with x = 2, y = 1
+        Rather than both from write A/B
+    Impossible for system to rollback to previous image
+    Need to prevent this anomaly in most cases
+  Dirty read
+    Transaction reads a value written by another transaction not yet committeds
+    System might make decisions depending on these value
+    Ex
+      Bank transfer
+      Total amount of money must be same at all times
+      During transfer, will look as if money lost from source acct
+    Can be useful sometimes
+      Generate big aggregate report on full table
+        Can tolerate some inaccuracies
+      Troubleshoot issue, inspect database state in middle of ongoing transaction
+  Fuzzy/non-repeatable read
+    Value retrieved twice during transaction, value is different
+    Similar issue as dirty reads
+    Also an issue when
+      First read used for conditional logic
+      Second read used to update data
+        May act on stale data
+  Phantom read
+    Transaction does a predicate-based read
+    Another transaction writes while data is in flight
+      Work on stale or inconsistent data
+    Ex
+      Calculate max and average age of employee set
+      Between two queries, B inserts a bunch of old employees
+        Average age now greater than max
+    Safe if no predicate-based reads, only select records with primary key
+  Lost update
+    Transactions read same value and both try to update
+    One update survives
+    Other is not informed it did not survive
+    Can be safe in some cases
+  Read skew
+    Transaction can only see parts of another transaction
+    Reading two friends lists
+      Read the first list - 2 people are friends
+      People unfriend each other
+      Read the second list - 2 people are not friends
+    Rare to need to prevent this
+      Just show one friends list at a time in this example!
+  Write skew
+    Transactions read same data, modify disjoint sets of data
+    Ex
+      Two people in on-call list both remove themselves simultaneously
+        Saw someone else in list, but wind up with nobody in list
+  Lots of possible anomalies
+    Need to analyze one by one to see which need to be prevented
+
+Isolation levels
+  Serializable prevents all anomalies
+    Can only analyze serial executions for defects
+    If all possible serial executions are safe, concurrent execution also safe
+    Performance costs - reduces concurrency to guarantee safety
+  Table with anomalies vs. isolation levels
+
+Consistency and isolation
+  Linearizability - Serializability
+  Sequential consistency - Repeatable Read
+  Causal Consistency - Snapshot Isolation
+  Eventual Consistency - Read Committed
+  x - Read Uncommitted
+  Isolation levels not that different from consistency models
+  Some models are stricter, increase safety
+    Trade off performance and availability
+  Stricter models "imply" less strict models
+    e.g. Linearizability implies causal consistency
+  Differences
+    Consistency applies to single-object operations
+      Read/write to a single register
+    Isolation levels apply to multi-object operations
+      Read/write to/from multiple rows in table within transaction
+    Linearizabilty provides real-time guarantees
+    Serializability does not
+      Say a customer gets balance, withdraws, gets balance
+      Serial execution, balance may still not be updated
+      Even though executed in serial order
+  Strict serializability
+    Combo of linearizability and serializability
+    Guarantees result of multiple transactions equivalent to result of serial execution
+      Also compatible with real-time ordering of transactions
+    Transactions appear to execute serially
+      Effects take place at some point between invocation and completion
+    Also a more useful guarantee than plain serializability
+    In centralized systems
+      Strict serializability simple, just as efficient as only serializability
+      Relational databases "serializability" may = "strict serializability"
+    In distributed not true
+      Can be more costly, requires additional coordination
+
+Hierarchy of models
+  (Image)
+
+Why all the formalities?
+  Help us define different types of properties in a more precise way
+  When design a system, reason about properties the system needs to satisfy
+    Know which models are sufficient to provide required guarantees
+  Often applications built on top of pre-existing datastores
+    Derive most properties from datastores
+    Research to find datastores that provide guarantees app needs
+  Terminology and models presented here not used consistently in industry atm
+    Makes decision-making and system comparison a lot harder
+    Some data stores do not precisely state consistency guarantees
+      Or well hidden
+      Statements should be highlighted as most important in documentation
+    ANSI-SQL standard
+      Serializable level by Oracle 11g, MySQL 5.7, Postgres 9.0 susceptible to anomalies
+    

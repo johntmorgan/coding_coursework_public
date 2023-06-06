@@ -1,0 +1,73 @@
+Global Interpreter Lock
+  Already discussed some
+  Big challenge to concurrent apps in Python
+  Can take a multithreaded or async approach
+    But either way need to be mindful of GIL
+  Here going to implement web server
+    Threads, then asyncio
+  Examine issues wtih compute-bound tasks
+
+Setup
+  Very simple webservice
+  Return nth prime number requested by client
+    So 1 -> 2
+    While 10 -> 29
+  Very inefficient compute-intensive algo used to find prime
+    Don't focus on the code
+    Can substitute any CPU-intensive task here
+  Demo code
+
+Single Thread
+  Bombard server in infinite loop with prime requests
+  Also a monitor thread
+    Counting requests per second
+    Counter reset to zero after every second
+  Also a thread with delay asking for 10000th
+    To consume single thread
+  Demonstrates that single thread does not field any requests
+    Once starts processing larger request
+  Usual solution:
+    Spawn separate thread for each client connection
+      Main thread doesn't block
+
+Multiple threads
+  Spawn new threads manually
+    Could also use a ThreadPoolExecutor to handle new connecitons
+  Requests reduced 99% now instead of full stop
+    Do not drop down to zero
+    Because interpreter schedules other threads for execution
+      So all get a chance to make progress
+    But interpreter favors thread involved in long-running task
+  Can tweak switch interval
+    sys.setswitchinterval()
+    Say reduce to 2 ms
+      2x number of requests completed after long runner started
+    Increase to 1s
+      Basically no requests completed
+  At the end of the day, additional CPU cores do not help b/c GIL
+    In Java would not see such a decline
+      Shorter-running threads would be scheduled on idle CPUs
+
+Multiprocessing
+  Use a ProcessPoolExecutor
+  GIL and switch intervals irrelevant
+  Total number of requests completed lower
+    More overhead due to inter-process communication
+  Long-running contained to single processor
+
+Async
+  Event loop, single thread
+  Have one thread that runs server_code() & becomes event loop thread
+  Spawn other threads that make client requests
+  Again, as soon as long-running request submitted, # requests drops to zero
+    Single event loop, CPU-bound task brings entire app to stop
+
+Async with Executors
+  Offload calculation to thread or process pool
+  Otherwise it all remains the same
+  Thread pool results similar to multithread
+    Requests down more than 99%
+    But do not drop to zero
+  Process pool results
+    Only drop a little bit
+    GIL not limiting anymore

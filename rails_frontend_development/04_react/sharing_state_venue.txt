@@ -1,0 +1,113 @@
+Sharing State - Venue Component
+  Hooks & useState - clean in one component
+    Often components need to share state
+    Sometimes shared across subtree of DOM elements
+    Sometimes shared across entire page
+  More in the future, but let's talk about the simplest scenario
+    Parent/child sharing
+  Typically state is owned by common parent
+    Parent sends values down to child as props
+    Parent (usually) sends function to child for change
+      Child calls to change parent state
+    When parent state changes, re-renders
+      Then child re-renders with new prop values
+    "Lifting state up", "Passing state down"
+
+Ex. pull-down menu to determine number of seats at a time
+  Clicking a set selects total number of seats to right of clicked seat
+  If seats not available, clicking does nothing
+  Feature adds one new piece of state, number of seats being purchased
+    Also requires Seats to know what's to the right
+  Number of seats should be owned by Venue
+  Seat state should be lifted up to Row - determine which valid
+    When seat clicked, update nearby seats
+
+  import * as React from "react"
+  import VenueBody from "./venue_body"
+  import VenueHeader from "./venue_header"
+
+  interface VenueProps {
+    rows: number
+    seatsInRow: number
+  }
+
+  const Venue = ({ rows, seatsInRow }) => {
+    const [ticketsToBuy, setTicketsToBuy] = React.useState(1)
+
+    function ticketsToBuyChanged(event: React.SyntheticEvent) {
+      const target = event.target as HTMLSelectElement
+      setTicketsToBuy(parseInt(target.value, 10))
+    }
+    return (
+    <>
+      <VenueHeader
+        seatsInRow={seatsInRow}
+        changeHandler={ticketsToBuyChanged}
+      />
+      <VenueBody
+        seatsInRow={seatsInRow}
+        rows = {rows}
+        ticketsToBuy={ticketsToBuy}
+      />
+    </>
+    )
+  }
+
+  export default Venue
+
+// Venue has been split into header and body
+  Header is different structurally
+  In React, prinicple to keep components small and split as add DOM elements
+  Adding one piece of states to venue, number of tickets
+  Start managing state with const [ticketsToBuy, setTicketsToBuy] = React.useState(1)
+    Property with ticketsToBuy
+    Setter setTicketsToBuy
+  VenueHeader and VenueBody both use different pieces of hook return value
+  Change handler is ticketsToBuyChanged
+    Use setTicketsToBuy setter function created by useState hook
+    Pass as a prop to the VenueHeader component
+
+VenueHeader
+
+  import * as React from "react"
+
+  interface VenueHeaderProps {
+    seatsInRow: number
+    changeHandler: (event: React.SyntheticEvent) => void
+  }
+
+  const options = seatsInRow => {
+    const arrayOfNumbers = Array.from(Array(seatsInRow).keys())
+    return arrayOfNumbers.map(i => (
+      <option key={i + i} value={i + 1}>
+        {i + 1}
+      </option>
+    ))
+  }
+
+  export const VenueHeader = (props: VenueHeaderProps) => {
+    return (
+      <div>
+        <span>How many tickets would you like?</span>
+        <span className="select">
+          <select onChange={props.changeHandler}>
+            {options(props.seatsInRow)}
+          </select
+        </span>
+      </div>
+    )
+  }
+
+// First declare incoming props
+// Then build up list of <option> tags like building up list of rows
+  Do that with a map function that returns a JSX representation of the option
+    Including a key because it's a React list
+Value is the JSX for the handler, select tag containing generated options
+  Select item has an onChange event handler
+    Triggers changeHandler function passed in with prop
+  In function, extract the new value of the select tag
+    Pass to setTicketsToBuy setter function
+    ticketsToBuy is passed to all child rows as a prop
+      Changing value will cause components to re-render
+        Remember components do not get re-created when prop changes
+        Existing components created are called with new prop values

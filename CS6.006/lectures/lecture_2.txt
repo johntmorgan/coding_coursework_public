@@ -1,0 +1,307 @@
+Data structures intro
+  Here is the famous Erik Demaine, who loves algorithms
+  Welcome to algorithms
+    Today we're doing data structures not algorithms
+    But lots of algorithms in each data structure
+      Like multiple algorithms for free! (lol)
+  Today: Sequences, sets, linked lists, dynamic arrays
+    Fairly simple today
+  Beginning of several data structures lectures
+  But first let's talk about an interface (API/ADT - now old) vs. data structure
+    An interface says what you want to do "specification"
+      What data you can store
+      What operations are supported, and what they mean
+    A data structure says how you do it
+      Gives you actual representation
+      Tells you how to store it
+      Actually gives you algorithms for supporting interface operations
+  In this class, 2 main interfaces (and various special cases)
+    Separate what you want to do from how to do it
+    Interface is kind of problem
+    Data structure is solution - different problems may have many solutions
+      May be advantages to some data structures
+        Might do some things faster than others
+          May pick a different structure depending on what you want to do
+          But maintain the same interface
+  Anyway 2 main interfaces: Set, Sequence
+    Highly loaded terms - mean something very different to mathematician and Python coder
+      Although there is no sequence in Python
+    The basic idea with both: we want to store n things
+      The things will be fairly arbitrary
+        Could be integers, strings
+      Care about values
+        May want to maintain in sorted order and search for a given value "key"
+      Care about representing a particular sequence we care about
+        5, 2, 9, 7 in that order - could store in a list in Python - will keep in order
+  Will focus on Sequence today (set at end, will do more soon)
+    Next several lectures will bounce back and forth, closely related
+      Pretty abstract at the moment
+  Also 2 main data structure tools/approaches
+    arrays
+    pointer-based/linked
+  Will go over both todays
+  A few different levels of sequences we might care about
+  Static sequence interface
+    Number of items does not change
+    Items themselves might
+    items X0, X1, ..., X(N-1) in python - n items
+  Operations/methods to support
+    build(x) - get started, make new DS for items in x
+      Don't worry too much about where items come from today
+      Going to give you items in order (via iterable in Python)
+      Make new structure that has those items in that order
+    len() - return n
+      These methods are object-oriented way of thinking of operations your interface supports
+    iter_seq() - output x0, x1... x(n-1) in sequence order
+    get_at(i) - return x(i) at index i
+      Dynamic access anywhere in sequence
+    set_at(i, x) - set x(i) to x
+      Change at index to a new item
+  Should remind you very closely of a data structure
+    This is an interface
+    Like a list in python
+      Erik prefers to call it an array (list could mean many things)
+  Natural solution to problem
+    A static array
+    Tricky because there are no static arrays in Python, only dynamic arrays
+    But what are static arrays really?
+  Key:
+    Word RAM model of computation
+    The idea is that your memory is an array of w-bit words
+    Can access this array randomly
+      Give you the number 5, can get the 5th word in RAM
+      Can access any word equally quickly
+    When we say an "array"
+      Consecutive chunk of memory
+        Example, array of size four
+        Starts at location address (python: id(array))
+      So if you want to get array[i] == memory[address(array) + i]
+      Can do get_at and set_at in constant time, O(1)
+        As quickly as access the memory
+  Static array solution
+    O(1) = get_at, set_at, len (store n with address)
+    O(n) = build, iter_seq
+  Build: how do you create an array in the beginning
+    Let's talk memory allocation model - allocate array of size n in theta(n) time
+      Initializing array to 0 is what costs linear time
+    Constant vs. linear won't really matter (for most problems with higher time complexity? - JM)
+    Side effect of model
+      Space = O(time)
+  We solved the static sequence problem
+    Simple, boring, optimal running times
+  One more note in Word RAM
+    Side effect of array taking constant time
+    Need to assume w >= log n (w currently 64 in most machines)
+      If you have n things you're dealing with
+      Need a way to address things
+        Give me the "ith one, address" - need to be in word
+        Need word size at least log(n), just to address things in input
+        May seem weird, think of machine as having constant size
+          But a real machine has RAM also
+          But if wanted to process larger input, buy more ram
+      So when n's get really big, increase w just so can address RAM
+        A way to ridge reality - fixed machines
+        With theory, huge n
+        Need notation of word size also changing in asymptotic way
+      More important next week, when discuss hashing
+        And why hashing reasonable
+  Dynamic sequences
+    Now things get interesting
+    Static sequence operations *plus*
+    insert_at(i, x) - make x the new x(i), shifting everything over by 1 in terms of index
+      Unlike set_at where you erase what's at i and replace with new x
+      Be careful with labeling
+        When call get_at after, it's with new indexing
+    delete_at(i) shift x(i + 1) into space, and so on all the way out to n
+    insert/delete_first/last(x)/()
+    insert_last changes no indices
+    insert_first changes all of them
+    get_first/last()
+    set_first/last(x) - special cases, interesting in algorithms context
+      Mathematician would say hey, it's just shorthand for a particular get/set call
+      But interesting from a data structures perspective
+        Algorithm might be better than normal get/set_at
+  Now let's solve this
+    Linked lists - you've probably seen before, but now going to analyze
+    Let's see how efficiently they solve these operations we care about
+    Just to review, store items in nodes
+      Each node has item field and next field (pointer)
+      Store in item fields values to represent in order
+      Next fields link together
+    Also track head of list - represents list
+      Can also store length at head
+    Rely on pointers being stored in a single word
+      Can dereference them in constant time in word RAM model
+        Nodes may be stored in arbitrary location in computer
+      Can allocate array in linear time
+      Now array of size 2 each time we make node
+      Pointers are just indices into giant array
+    Nice because easy to manipulate order without physically moving nodes around
+      Whereas arrays are problematic
+  Dynamic sequence operations analysis
+    Static array vs. linked list, each have advantages
+    Static array:
+      Insert at beginning (worst case - everybody needs to shift) theta(n) but no better
+      Insert/delete anywhere - cost theta(n) time - for two reasons
+        Near the front, need to do shifting
+        What if you delete the last element though?
+          No, because the size is constant (I guess we didn't allocate with open space - JM)
+          Might have allocated arrays next to each other
+          So need to allocate new array and copy over - theta(n)
+            New array won't be contiguous to old array
+            Even if allocation free, copying over -> theta(n)
+      So surprise, static arrays are really bad for dynamic operations
+        No surprise
+        But you can still do them
+  Linked lists are *almost* the opposite
+    len? O(1) because you stored it with the head
+    insert and delete at the front really efficiently
+      allocate new node (array of size 2)
+      new elem next points to where head used to
+      head points to new element
+      really efficient O(1)
+    But everything else is slow
+      Want to get 10th item? Need to follow pointers 10 times
+      Accessing ith item takes order i time
+    get_at/set_at need theta(i) time - in worst case, theta(n)
+  So kind of complementary data structures here
+  Static array
+    Great at random access - constant time get_at or set_at
+  Linked lists
+    Bad at random access, better at being dynamic
+      Insert and delete at beginning at least in constant time
+    Want to insert at specific position is hard
+      Have to walk to position
+      But can get to constant time with tail pointer you maintain
+      "Data structure augmentation"
+        Now insert_last is fast
+        Delete_last is trickier (need a doubly linked list)
+    So linked list is great if you're working on the ends, even dynamically
+    Arrays great if random access and nothing dynamic - adding/deleting at ends or middle
+  Let's get the best of both worlds with dynamic arrays
+    All the good running times of both
+    Won't get all but will get most
+  Some of what these intro lectures are about is telling you how Python is implemented
+  Dynamic arrays are what Python calls lists
+    You don't have to implement by hand
+    Built into fancy new languages for free because so useful
+    This lecture is about how implemented and why so efficient
+  Dynamic arrays
+    Relax constraint that size of array we use = n (number of items in sequence)
+    Static array allocates exactly size n
+    Let's make size roughly n instead
+    From an algorithms perspective "roughly" usually means throw away constant factors
+      Right answer here, though not always the right answer
+    Enforce size = theta(n) - at least n, at most some constant times n
+      1.1 to 10 would all work, going to use 2n here
+    Now stuff almost works for free
+      With some subtlety
+    Maintain A[i] = x(i)
+    Lots of blank space at the end
+      Track pointer to first element
+      Track length of array (number of items)
+      Track size of array (including both occupied and open slots)
+    insert_last?
+      Go to A[len] and set to x, then increment len O(1)
+      Unless len = size, then there is a problem
+      Then we need to make the array bigger
+        Static array have to do every time - linear cost of allocation
+        Now only going to do it sometimes
+      if n = size:
+        allocate new array of 2 * size (doing size + 5 is bad - have to resize frequently)
+        resizes are expensive
+          pay to allocate new array *and* to copy all items over - linear either way
+          resize at n = 1, 2, 4, 8, 16
+          resize cost = theta(1 + 2 + 4 + 8 + 16)
+          theta(sum from i to log2n of 2^i) - geometric series
+            2^(k+1) - 1
+            geometric series are dominated by the last term
+            just put a theta = theta(2*log2n) = theta(n), linear time
+        linear total time to do resizing
+          that's good - kind of
+          amortization - operation takes T(n) amortized time
+            if any k operations take <= k * T(n) time (a bit sloppy, but good enough)
+            O(1) amortized - almost constant - as good as you can hope for
+              A particular kind of averaging - over the sequence of operations
+              Resizing at the end will take n - very expensive
+              Charge high cost to all the other operations that make it happen
+              Not quite as good as constant, worst case
+              As good as you could hope to do in dynamic allocation model
+  Table in lecture notes
+    Sequence - more data structures in lecture 7
+    Arrays - really good at get_at and set_at theta(1)
+      Everything else linear
+    Linked List - really good at insert_first, delete_first theta(1)
+      Everything else linear
+    Dynamic arrays
+      maintain get_at and set_at constant time
+      insert last is constant amortized
+      delete_last? Don't need to resize array, just delete length
+
+  Recitation
+    Sequences maintain collection of items in extrinsic order
+    Each item stored as a rank in the first sequence
+      Including first and last item
+      Because some external party put it there
+    Sequences are generalizations of stacks and queues
+      Which support a subset of sequence operations
+    Set interface (next 6 lectures)
+      Maintain a collection of items based on an intrinsic property
+        Usually based on a unique key, x.key, associated with each item x
+      Generalizations of dictionaries and other intrinsic query databases
+    Sequence implementations
+      Note that none of the data structures support dynamic operations in sub-linear time
+        Will improve in lecture 7
+    Memory management and allocation abstracted away in Python
+      But know that behind the scenes, Python makes request for fixed amount of memory in which to store
+    Suppose computer program wants to store two arrays, each storing 10 64-bit words
+      Separate requests for 640 bits of memory
+    Linked List Sequence
+      Instead of allocating a contiguous chunk of memory, stores each item in node
+        node.item stores the item
+        node.next storing memory address of the node containing next item in sequence
+      Sometimes called pointer-based or linked
+      Much more flexible, constituent items can be stored anywhere in memory
+      Address of node with first element called the head
+        Easy to add item after item simply by changing addresses (relinking pointers)
+      Adding a new item at the head takes O(1) time
+      However only way to find ith item is to step through one-by-one
+        Linear time for get_at and set_at
+    Dynamic Array Sequence
+      Over-allocate additional space when requesting space for array
+      Inserting item as simple as copying new value into empty splot
+      Trades a little extra space for constant time insertion
+      Good deal, but any additional allocatoin will be bounded
+      Repeated insertions will fill additional space
+        Reallocate and copy over array again
+      How does Python support appending to end of length n list in worst-case O(1) time?
+        It doesn't
+        Sometimes appending requires O(n) to transfer to larger allocation in memory
+        However, doing it the right way can guarantee at most O(n) time for sequence length n
+        So insertion will take O(1) time per insertion on average
+        "Amortized constant running time"
+      To achieve amortized constant running time for insertion
+        Allocate extra space in proportion to size of array
+        Typical implementation will allocate double the size needed - "table doubling"
+        However any constant fraction of additional space will achieve amortized bound
+      Python source in C for Python lists:
+      new_allocated = (newsize >> 3) + (newsize < 9 ? 3 : 6)
+      Additional allocation is modest, roughly one eighth size of array appended
+      Bitshifting to the right by 3 is equivalent to floored division by 8
+      So n/8 insertions for every linear time allocation of array
+        Still gets you amortized constant time
+      What about removing from the end?
+        Popping last item can occure in constant time
+        Just decrement stored length of array
+        But if a large number of items removed, you are wasting memory
+        How big should this new allocation be?
+        To achieve constant amortized running time
+          Make sure there remains a linear fraction of unused allocated space when rebuild
+            Guarantee at least omega(n) sequential dynamic operatoins before next time reallocate memory
+        Class implementation:
+          When you remove down to 1/4th of the allocation
+          Contents are transferred to allocation 1/2 as large
+          Of course Python Lists already support dynamic operations using these techniques
+            Code is to help you understand how amortized constant append and pop could work
+    (Detecting cycle in linked list with slow and fast pointers)
+

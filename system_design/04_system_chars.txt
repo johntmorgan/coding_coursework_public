@@ -1,0 +1,142 @@
+Non-functional system chars
+Availability
+  Percentage of time system
+    Accessible to clients
+    Operating normally
+  Ratio
+    (Total time - time down) / total time * 100
+  Number of nines
+    90% (1 nine) 36.5 days/year, 16.8 hours/week
+    99% (2 nines)
+    99.9% (3 nines)
+    etc. out to 7 nines
+  Service providers
+    May measure at different points in time
+    May measure from start of service
+      May measure for clients from start of using
+    May not reduce numbers if only down for some
+    Exclude planned downtimes
+    May exclude cyberattacks
+    Important to look at carefully
+
+Reliability
+  R
+  Probability will perform functions for specified time
+  How does it perform under varying operating conditions
+  Mean time between failures (MBTF)
+    (Elapsed time - Sum down time) / # failures
+  Mean time to repair (MTTR)
+    Maintenance time / # repairs
+  Want high MBTF, low MTTR
+  With availablity, key service level objectives (SLO)
+    Availability - time loss
+    Reliability - frequency and impact of failures
+    Assess health of service
+    Distinct but related
+    A is a function of R
+    R can change independently
+    A depends on R
+    Can have low A, low R
+    Or low A, high R
+    Desirable: high A, high R
+
+Scalability
+  Handle increasing workload without compromising performance
+  Ex. search engine
+    Handle increasing users
+    Handle increasing data stored
+  Diff types
+    Request workload
+    Data/storage workload
+  Dimensions
+    Size scalable
+      Simply add users and resources
+    Administrative
+      More orgs/users can share distributed system
+    Geographical
+      Cater to multiple regions with acceptable performance
+  Approaches
+    Vertical - scaling up
+      Provide more capacity to existing device
+        CPU
+        RAM
+        etc.
+      Expensive
+    Horizontal - scaling out
+      Increase machines in network
+      Use commodity nodes
+        Cheap
+      Need to build system to work as if many nodes are single huge server
+
+Maintainability
+  Keep system up and running
+  Find and fix bugs
+  Add new functions
+  Keep system platform update
+  Ensure smooth system operations
+  Three underlying aspects
+    Operability
+      Ensure smooth running normally
+      Achieve normal conditions when fault
+    Lucidity
+      Simplicity of code
+      Simple = easy to understand and maintain
+    Modifiability
+      Integrate modified, new, unforseen features easily
+  Measuring
+    M
+    Probability that will restore functiongs within fault occurrence
+    M = 95% for half an hour
+      Then 95% back to active within half an hour
+    MTTR (mean time to repair)
+    MTTR = Total maint time / total # repairs
+    Keep MTTR as low as possible
+  Capabilty to undergo repairs and modificaitons while operational
+  Closely related to reliability
+    Only diff variable of interest
+    Maint = time-to-repair
+    Rel = both time-to-repare and time-to-failure
+
+Fault tolerance
+  Real world
+    Hundreds of servers and databases
+    Billions of users
+    Tons of data to store
+  Need data safety
+  Need to avoid recalculating intensive tasks
+  Avoid single point of failure
+  FT: Execute even if 1+ components fail
+    Can be software or hardware
+    100% FT system is very difficult
+  Features where FT is necessary
+    Availability = receive every request 24/7
+    Reliability = taking action on every request
+  Techniques
+    Replication
+      Services
+        Swap out failed nodes with healthy
+      Data
+        Swap out failed data store with replica
+      Make switches transparently on large service
+        No impact to customers
+      Create multiple copies of data in separate storage
+      Need to update copies regularly for consistency
+      Updating data in replicas is challenging
+      Strong consistency
+        Synchronously update data
+        But reduces availability
+      Asynchronously
+        When can tolerate eventual consistency
+          Results in stale reads until replicas converge
+      Always a tradeoff
+      Must compromise on consistency and availability
+        CAP theorem
+    Checkpointing
+      Save state in stable storage when consistent
+      Perform in many stages at different time intervals
+      When failure occurs, get data from prevoius checkpoint
+      Same issue as replication
+        All processes must be stopped to be in same state
+          No comms between
+        "Synchronous checkpointing"
+      Checkpointing in inconsistent state -> data inconsistency

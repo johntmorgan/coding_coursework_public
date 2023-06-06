@@ -1,0 +1,72 @@
+Array Methods
+  Methods of object are property names assigned to functions
+  These methods are invoked to execute the function
+
+forEach
+  Iterates array in loops
+  arr.forEach(<function>)
+
+  The function to be passed given arguments in order
+    function callbackfn(value: any, index: number, array: any[])
+
+    var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+    arr.forEach((val, ind, array) => { // arrow function to print arguments
+        console.log("Value:", val, " Index:", ind, " arr:",array); // print values
+        });
+    console.log(arr);
+
+    We call the forEach method for array assigned to arr
+    To the forEach method, pass arrow function which takes 3 args (val, ind, array)
+      The function prints those values
+
+    Another version
+      Only 2 arguments
+      The _ operator ignores that argument
+      Note we can also pass non-arrow functions
+
+    var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+    arr.forEach((_, ind) => { // arrow function that takes only the second argument
+        console.log(" Index:", ind, " Val:",arr[ind]); // print values
+        });
+    console.log(arr); // print array assigned to arr
+
+filter
+  Filter elements in array that pass a certain test, then return in new array
+    Original array left unchanged
+
+  arr.filter(<function>);
+
+  passed function: function callbackfn(value: any, index: number, array: any[])
+
+  var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+  var arr1 = arr.filter(a => a > 30); // Filter elements greater than 30
+  console.log("arr:",arr); // print original array
+  console.log("elements greater than 30:",arr1); // print filtered array
+
+  Can also use the some or every method to get a boolean
+    If any or all values satisfy condition
+
+find
+  Finds the first element in an array, then returns it
+  Original array left unchanged
+
+  function callbackfn(value: any, index: number, array: any[])
+
+  var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+  var val = arr.find(a => a > 20); // find element greater than 20
+  console.log("arr:",arr); // print original array
+  console.log("element greater than 20:",val); // print element returned by find
+
+  // Using another element of the callbackfn (JM experiment)
+
+  var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+  var val = arr.find((_, ind) => ind > 3); // find element with index > 3
+  console.log("arr:",arr); // print original array
+  console.log("element with index > 3:",val); // print element returned by find
+
+  // findIndex returns the first index not the val
+
+  var arr = [10, 20, 30, 40, 50]; // initialise an array and assign to arr
+  var val = arr.find(a => a > 20); // find index of element greater than 20
+  console.log("arr:",arr); // print original array
+  console.log("index with val greater than 20:",val); // print element returned by find

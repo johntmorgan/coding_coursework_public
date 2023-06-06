@@ -1,0 +1,9 @@
+Topo Sort
+  Find orderings of elements with dependencies
+    Scheduling, grouping
+    Partial order
+      Can be multiple answers
+  Convert to directed graph
+    If B dependent on A, edge from A to B
+    If also edge B to A, cycling, no order possible
+    

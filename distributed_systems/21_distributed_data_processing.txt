@@ -1,0 +1,376 @@
+Distributed data processing
+Intro
+  Process large amounts of data
+    Impossible/inefficient to process with single machine
+Categories
+  Batch processing
+    Group items into batches
+    Batches are processed one at a time
+    Batches may be very large (all items for day)
+    Goal: high throughput
+    Tradeoff: high latency
+  Stream processing
+    Receive and process data continuously
+    Goal: high latency
+    Tradeoff: throughput, sometimes
+  Microbatch processing
+    Hybrid of approaches
+    Small batches processed
+    Balance throughput and latency
+  Three systems
+    MapReduce
+    Apache Spark
+    Apache Flink
+
+MapReduce
+  Batch processing
+  Developed at Google
+  Incorporated in Apache Hadoop
+  Inspiration
+    From functional programming
+    Many real world computations can be expressed with map & reduce
+    Map
+      Processes key-value pairs, produces another set of key-value pairs
+    Reduce
+      Receives all values for each key, returns a single value
+    Key property
+      Map & reduce easy to parallelize
+      Run across multiple machines for diff parts of data set
+    Application code defines these two methods
+    Framework partitions data
+      Schedules execution across multiple nodes
+      Handles node failures
+      Manages inter-machine computation
+  Typical example
+    Huge collection of docs (webpages)
+    Count number of occurrences for each word
+    Map function takes doc, emits record for each word val 1
+    Reduce counts entries, returns final sum for each wrd
+  Architecture - master-worker
+    Master schedules worker tasks
+    User can also specify number M of map tasks
+      number R of reduce tasks
+      Specify number of input or output file
+      Partitioning function defines how key-value pairs from map partitioned
+      Processed by reduce tasks
+      Hash partitioner
+        Selects reduce tasks using hash(key) mod R
+  Execution
+    Framework divides input into M pieces "input splits"
+      Usually 16-64 MB/split
+    Start master node
+    Start multiple worker node instances on machine cluster
+    Master selects idle worker nodes, assigns map tasks
+    Worker parses key value pairs
+    Entries emitted buffered and written to local disk
+      Partition into R regions using partitioning function
+      When done, send local file location to master
+    Master assigns reduce tasks to worker nodes
+      Worker nodes perform RPCs (remote procedure calls)
+      Read data from local disks
+      Data sorted so all same key grouped together
+      Passed into reduce function
+      If size really large, use external sorting
+    When map & reduce done, user program regains control
+      Output available in R output files
+      Merge or pass along files - may input into separate job
+    Master node tracks workers with heartbeat
+      Reschedule all tasks if failed
+      Completed reduce tasks ok, files stored externally
+      Completed map tasks redo, output was stored locally
+    Network partitions may result in map/reduce reruns
+      Duplicate map tasks deduplicated by master
+      Reduce tasks write output to temp file, atomically renamed at completion
+        But if there are other side effects, no guarantees
+        On app writer to make sure side effects atomic, idempotent
+          Can be re-triggered if re-executed
+  Storage
+    Input/output typically stored in HDFS or GFS
+    MapReduce can use this to optimize
+      Schedule map tasks to worker nodes with replica of input
+      Align input split size to block size of file system
+  Guarantees
+    Intermediate key-value pairs processed in increasing key order
+      Easy to produce sorted output file
+    Code can also provide combine function
+      Run as part of map task
+      Pre-aggregate data locally
+
+Apache Spark
+  Developed Cal
+  Donated Apache
+  In response to limitations of MapReduce
+  MapReduce limitations
+    Good: run very parallel computations on big cluster of machines
+    Bad: every job must read input from disk, run output to disk
+      Lower bound in latency of job execution from disk speeds
+    Not a good fit
+      Iterative computations
+        Execute single job repeatedly
+      Interactive data analysis
+        Run multiple ad hoc queries on same set
+    Spark addresses these use cases
+  Key idea
+    Resilient distributed datasets (RDD)
+  RDD
+    Distributed memory abstraction
+      Used to perform in-memory computations on large clusters of machines
+      Fault-tolerant
+    Read-only, partitioned collection of records
+    Created through operations on data in stable storage or other RDDs
+    Operations performed
+      Transformations
+        Lazy operations, define new RDD
+        Map, filter, join, union
+      Actions
+        Compute to return value to program or write data to storage
+        Count, collect, reduce, save
+      Note filtering happens without execution - calc triggered on action
+        Lineage graph maintained to that point
+  Creating RDD
+    Read data from DFS
+    Process data by calculating new RDDs through transformations
+    Store results in output file
+    Ex.
+      Read log files from HDFS
+      Count number of lines "sale completed"
+    Executed from coordinator process "driver"
+  Architecture
+    Cluster manager node
+    Set of worker nodes
+  Cluster manager
+    Manages worker nodes
+    Allocates resources
+  Worker nodes
+    Wait for apps/jobs to execute
+  Master process
+    Requests resources, makes available to driver
+  Clustering mode
+    Standalone or third-party - YARN, Mesos, Kubernetes
+    Standalone: master & cluster manager same
+    Mesos, YARN: separate processes
+  Driver
+    Requests resources from master
+    Starts Spark agent process on each node that runs for app lifecycle
+      "Executor"
+    Analyses user app code into DAG of stages
+    Partitions associated RDDs
+    Assigns tasks to executors to compute
+    Manages overall execution of application
+      Receives heartbeats from exectors
+      Restarts failed tasks
+  RDD operation - ops used to orchestrate execution
+    partitions(): returns list of partition objects
+    partitioner(): hash/range partitioned
+    preferredLocations(p): list nodes where partition p fast access due to data locality
+    dependencies(): list of dependencies of parent RDDs
+      Narrow: used by at most one partition of child RDD: map, filter, union
+      Wide: multiple child depend on parent: join, groupByKey
+    iterator(p, parentIters): computes elements of partition p given iterators for parent
+
+Spark DAG of Stages
+  Driver examines lineage graph, builds DAG of stages
+  Each stage as many pipelined transforms with one-to-one (narrow) dependencies
+  Boundaries of each stage correspond to wide dependencies (one-to-many)
+  Fault tolerance
+    When executor fails, reschedule on another
+    Wide dependencies much more inefficient
+      Need to redo many parent RDDs
+  Slow recovery
+    Long lineage graphs also slow - many RDD recompute
+  Fast recovery
+    Checkpointing capability
+      Store RDDs from specific tasks to stable storage
+      Read there during recovery
+      Call persist() method
+
+Perks of Spark
+  Graceful degradation
+    If memory not enough, keeps going with reduced performance
+      Recalc partitions on demand when don't fit, or spill to disk
+  Increasing performace
+    Reduce wide dependencies
+    Pre-aggregate data "map-side reduction"
+      Rather than send multiple records of 1 across network
+      Send one record per word containing number of occurrences
+  Handle master failures
+    Zookeeper
+    All masters perform leader election
+    Driver can be restarted by master
+  Data persistence
+    Commit protocol
+    Exactly-once guarantee on job outputs
+    No duplicate or corrupt data
+      In most storage systems
+      Exact method varies
+        e.g. HDFS atomic rename
+    No matter which execute completed
+      Output same as long as deterministic, idempotent operations
+      No guarantee on non-idempotent side effects!
+
+Apache Flink
+  Stream processing
+  Open-source
+  Apache dev/maintained
+  High throughput, low latency
+  Flink processes incoming data as it arrives (unlike Spark)
+    Sub-second latency, down to single-digit ms latency
+      Spark has "Spark Streaming" but still microbatch, latency tradeoff
+  Key constructs
+    Streams
+    Transformations
+  Stream
+    Unbounded flow of data records
+    Flink can also do batch processing - bounded stream
+      Basically works the same, with slight variations
+  Transformations
+    Take 1+ streams as input
+    Produce 1+ streams as output
+    Many different APIs to define, ex:
+      ProcessFunction
+        Low level interface, user imperatively defines trans via code
+      DataStream
+        High-level, declarative, basic operations - map, flatMap, filter, union
+  More constructs
+    Streams can be unbounded - need intermediate, perdioic results
+    Windows
+    Timers
+    Local storage
+      For stateful operators
+    High-level ops
+      Specify windows over which data aggregated
+        Time-driven (intervals)
+        Data-driven (# elements)
+      Register callbacks, executed at specific points in future
+  Data flow
+    Represented as a DAG
+    Nodes = tasks
+    Edges = subscriptions between tasks
+    Also supports cyclic dataflow graphs, for iterative algos etc.
+    Flink translates logical graph to actual physical graph executed
+      Optimizes - combine ops into single task (e.g. consecutive filters)
+      Partition task into instances executed in parallel in different nodes
+  Has 3 main components
+    Flink client
+      Receives code, transforms into graph, sends to job manager
+    Job manager
+      Schedules tasks on task managers
+      Tracks progress
+      Coordinates checkpoints
+      Recovers task failures
+    Task manager
+      Execute 1+ tasks
+      Report status to job manager with heartbeats
+      Long-lived if processing unbounded streams
+        Job manager restart when fail
+  Job manager could be single failure point
+    Run multiple instances in parallel
+    Elected leader via Zookeeper
+    Rest take over in case of leader failure
+      Store key metadata in Zookeeper so accessible to new leaders
+
+Time in Flink
+  Key element to define bounaries in unbounded streams
+  Processing time
+    System time of machine processing data
+    Simple, requires no coords
+    Good performance, low latency
+    But lacks consistency, determinism
+    System clocks of machines differ
+      Data processed at different rates
+      Could assign event to different windows
+  Event time
+    Time event occurred on producer
+    Consistent, deterministic
+    Requires coordination
+    Added latency - may need to wait for late, out of order events
+  Watermarks
+    Track progress in event time
+    Control records part of a datastream, timestamp t
+    Watermark(t) -> event time has reached time t
+    Should be no more elements with time t' <= t
+    Operator advances clock to t when sees watermark
+    Generated in data stream source
+      OR by watermark generator at beginning of pipeline
+    Use for processing and emit downstream as well
+  Generating watermarks
+    BoundedOutOfOrdernessGenerator
+    Assume latest elements for t arrive at most n ms after earliest
+    Could be elements that arrive later
+      "Late elements"
+      Can be discarded or window can be recalculated
+
+Failure recovery
+  Stream processing long-lived
+  Must be able to recover without repeating lots of work
+  Periodically checkpoint operator state & stream position
+  Restart from latest checkpoint if failures
+  Also similar to Chandy-Lamport for dist. snapshots
+    Asynchronous Barrier Snapshotting (ABS)
+  ABS
+    Slightly different acyclic & cyclic - let's focus acyclic
+    Job manager injects control records in stream "stage barriers"
+      Divide stream into stages
+      At end of stage, operator reflects history up to barrier
+        Use for snapshot
+      When source task receives barrier
+        Take snapshot of current state
+        Broadcast barier to all outputs
+      When non-source task receives barrier from inputs
+        Block input until receive barrier from all inputs
+        Then takes snapshot and brodcasts barrier to all outputs
+        Unblocks inputs
+        Checkpoint contains state after proc all elements before barrier
+          None after barrier
+      Note logical snapshot
+        Actual physical snapshot async in background
+        Copy-on-write
+        Reduce duration of blocking phase
+      Once bg copy complete
+        Task acknowledges checkpoint back to job manager
+        Checkpoing complete after ack from all tasks
+        Can then be used for recovery
+        job manager notifies tasks checkpoint is complete
+    Subtle points
+      During recovery, reset tasks to last checkpoint
+      Start again from first element after checkpoint
+      Any state after cpt discarded
+      Process element exactly-once
+    Challenges
+      How is post-cpt state discarded?
+      What about sink tasks interacting with external systems?
+      What if source does not support record replay?
+    Checkpoints have two-phase commit
+      First job manager instructs to create
+      Second job manager informs all created
+      State of operator can be stored
+        In operator memory
+        In embedded key-value store
+        In external data store
+      If datastore supports multiversion concurrency control (MVCC)
+        then all updates to state stored under version -> next checkpoint
+        Updates performed after last checkpoint automatically ignored
+        Reads return version from last checkpoint
+      If no MVCC
+        Store state changes temp in local as write-ahead-log (WAL)
+          Commit to datastore during checkpoint second phase
+  Integration
+    With Kafka, RabbitMQ, etc.
+      Retrive input data from sources, send output to sinks
+    Kafka
+      Offset-based interface
+      Easy to replay records in case of failure recovery
+      Sink task keeps track of offset of each checkpoint
+        Read from offset during recovery
+      Can provide exactly-once guarantee through transactional client
+      RabbitMQ
+        Messages removed from queue only after second checkpoint complete
+      When sink creates checkpoint, flush() as part of it
+      Call Kafka commitTransaction after
+  Guarantees
+    Exactly-once processing even across failures
+      Depending on type of source, sink
+    Can downgrade to at-least-once, increased performance
+    No guarantees on side effects on external systems
+    Does not provide ordering guarantees after repartitioning, broadcasting
+      Dealing with out-of-order up to operator

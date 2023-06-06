@@ -1,0 +1,72 @@
+React Props
+  Props are like arguments you can pass to a function
+  Options passed to a component to customize functionality
+
+  import React from 'react';
+  require('./style.css');
+
+  import ReactDOM from 'react-dom';
+  import App from './app.js';
+
+  ReactDOM.render(
+    <App greeting = "greeting #1" anotherGreeting = "greeting #2"/>,
+    document.getElementById('root')
+  );
+
+  import React from 'react';
+
+  export default class App extends React.Component {
+     getGreeting() {
+      return this.props.greeting;
+    }
+     getOtherGreeting() {
+      return this.props.anotherGreeting;
+    }
+
+    render() {
+      return (
+        <div>
+          <h1> {this.getGreeting()} </h1>
+          <h2> {this.getOtherGreeting()} </h2>
+         </div>
+      );
+    }
+  }
+
+Passing numbers, functions, JS expressions
+
+  import React from 'react';
+  require('./style.css');
+
+  import ReactDOM from 'react-dom';
+  import App from './app.js';
+
+  ReactDOM.render(
+    <App greeting = "greeting #1" anotherGreeting = "greeting #2" num={10}/>,
+    document.getElementById('root')
+  );
+
+
+  import React from 'react';
+
+  export default class App extends React.Component {
+     getGreeting() {
+      return this.props.greeting;
+    }
+     getOtherGreeting() {
+      return this.props.anotherGreeting;
+    }
+    getNumber() {
+      return this.props.num;
+    }
+
+    render() {
+      return (
+        <div>
+          <h1> {this.getGreeting()} </h1>
+          <h2> {this.getOtherGreeting()} </h2>
+          <p> {this.getNumber()} </p>
+         </div>
+      );
+    }
+  }

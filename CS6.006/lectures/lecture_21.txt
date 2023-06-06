@@ -1,0 +1,282 @@
+Last lecture - sum up class and future courses that use material
+  Model
+    Computation/complexity - 6.045, 6.480, 6.841
+    Randomness - 6.842
+    Quantum - 6.845
+    Distributed/message passing - 6.852
+    Multicore/shared memory - 6.816, 6,846
+    Graph & Matrix - 6.890
+    Constant factors/performance - 6.172
+  Application
+    Biology - 6.047
+    Game Theory - 6.853
+    Cryptography - 6.875
+    Vision - 6.819
+    Graphics - 6.837
+    Geometry - 6.850
+    Folding - 6.849
+  Instructors big on graphics/geometry
+  Ku started out in mechanical engineering
+    Passionate about origami (ditto Demaine)
+    Procedures designing models = algorithms
+    Folded structures
+      Spaceflight, deployable bridges and shelters
+    Cellphones
+      Reconfigure bits
+      Exponential number of different programs to write
+      Universal device at electronic level
+      What if could reprogram matter in phone?
+        App folds into next gen iPhone
+          Save cost, eco-friendly
+    Moved into CS, model world and solve problems
+  Today
+    How use algorithms (6.006 and beyond)
+      In research
+      Take 6.849 - folding
+    Origami folding design
+      Crease pattern to write "6.849"
+      Have machines to fold someday
+      Foldability, most problems are NP-hard
+        Bad news
+      Focus a lot on design pattern
+        Can solve with algorithms
+      Can fold everything
+        Any 2d, 2color, or 3d
+        If you take a piece of paper
+          Fold down into narrow strip, wasting most material
+          Zig-zag back and forth over surface
+        Terrible folding though
+          But starting point - late 90s
+          First results in computational origami
+          Now look for better, more efficient algos
+        Origamizer (Tachi)
+          Uses 22% of area which is pretty good
+          But very different folding from more traditional design
+      Vision: any sheet of material can hold crease
+        Steel metal -> steel bunny
+        New way to manufacture objects
+        Collapse flat for transport, or transform
+      Maze folding - Demaine, Ku
+        Have software that outputs crease pattern
+        Design how to fold each type of vertexs
+          degree 4, degree 3 as a T, degree 2 turn straight
+        And then just glue together crease patterns
+        Can fold an arbitrarily complicated maze with a constant scale factor
+        In general trying to understand what makes e.g. lobster "nice shape"
+          Folded with relatively little surface area
+          Don't have general answers to that problem
+      Algoirthmic sculpture
+        Curve creases - fold into pringle shape
+          Structure with dad Martin Demaine
+          Don't even know whether possible to fold in certain way, though getting close to proving it
+      Geometry - 6.850 - folding a branch within that
+      Fold-and-cut problem
+        Swan, angel fish, MIT logo
+          Actually first problem worked on in computational origami
+          Any collection of straight cuts can be made by folding flat and one straight cut
+    DNA/RNA tiles
+      Self-assembly
+        Fold square with danglign ends "glues"
+        Can design own self-assembling system and build a computer
+        Binary counter
+        Have squares with 4 different glues
+          If two tiles with complementary glues, match together
+          Depends how strong glue is and temp of system
+            High temp nothing sticks, low temp everything sticks
+          Tune well
+          Only when first 3 are glued together can last come in
+          Very different model of computation from what we're used to
+          Model of computation is geometric
+          Your program is conglomerate of squares
+          Can prove cool things in model
+            Build any shape by sequence of pours/mixing between tiles
+            Can do in parallel
+            logn number of piles using constant number of different glues
+        Build replicator
+          All tiles attach and build mold
+          Copy in 3d that mold
+            Does in constant time in model
+              Though in reality need to feed machine, take hours and days to run
+          Also miniturizer, magnifier, reflection, other cool stuff
+  6.851 advanced data structures
+    Demaine - geometry, data structures, graph algorithms, "recreational algorithms"
+    All these classes have online lectures - either open courseware or Demaine webpage
+    6.851 extension of 6.006/6.046
+    Example: problem seen in class done better
+      Dynamic ordered set
+        Dynamic
+          Insert, delete
+        Ordered
+          Find_next, find_prev
+      We've seen
+        Dynamic only - hashing
+        But if dynamic and ordered, cannot do consant time per operation
+          Can prove that, very cool
+        Set AVL trees solve everything in O(lgn)
+          Word RAM model (happens to work in stronger model)
+        Can do better O(lgw) - van Emde Boas
+          This is word size - actually pretty good for most ws, unless large
+            But not strictly better
+        O(lgn/lgw) - fusion tree
+          Good if w is larger
+        Can always take min of the two
+          O(sqrt(lgn/lglgn))
+          Quite bit better than the logn of AVL
+            Pretty much optimal in terms of n
+  6.889
+    Graph algorithms - only taught 2011, may not be taught again - but on videos
+    Planar graphs
+      Algos in this class pretty much best for general graphs
+      But if say road network without many overpasses - drawn in plane -> planar
+      Always sparse, |E| = O(|V|)
+        Always linear number of edges
+      Dijkstra |V|log|V| time
+      Can actually get O(|V|) with "Dijkstra" - not that impressive but hey
+      "Bellman-Ford" - O(|V| * lg^2|V| / lglg(|V|)) - almost linear time
+      approximation algorithms (Demain focus)
+        Think of BFS as building rings around single root node
+        Baker 1994 approach - solve NP-hard
+          Run BFS from arbitrary vertex
+          Delete every 4th layer
+            Don't know which to start with but guess and try options
+          For a lot of problems
+            Fire station location for space
+            Only hurts solution by 1 + 1/4
+            Could do it for 10, then within 10% of optimal solution
+            Then your graph is almost like a cycle
+              Solve with very fancy dynamic programming
+              Can do in polynomial time
+        1 + eps approximation for any epsilon
+          2^(O(1/eps)) * n^(O(1)) "PTAS"
+  6.892 "recreational algorithms"
+    Hardness proofs analyzing fun games and puzzles
+      Can prove lots of current games are hard
+      Recurse is undecideable
+        No algo to play perfectly
+    Balloon twisting
+      Octahedron twisted from one balloon
+        What graphs can you make?
+        Some problems are NP-hard
+  Picture hanging problem
+    Hang a picture on 2 nails - remove either, picture falls
+      Classic puzzle but can generalize to more nails
+      "Monotone Boolean function"
+Justin
+  Studies slightly more applied problems in CSAIL
+    Closer to math than theory group in CS - more historical artifact
+  6.837 - annual - intro to computer graphics
+    Worked in an animation studio for a bit, got a movie credit - worked on Up
+      Was born during production
+  6.838 - more theoretical
+    Simplicial complex
+      Usually in 6.006 spend a lot of time thinking about graphs
+      Take a square and subdivide and put edges diagonally
+      In 6.006, just a bunch of nodes connected by edges
+      But also looks a lot like a square
+      G = (V, E, T)
+        T is set of triplets, triangles here
+        Can extend algos in class to this case
+        Ex
+          Want shortest path between vertices
+          Common practice in graphics to run Dijkstra (shameful!)
+            Go across square - fastest across diag edges
+          But other corners, length 4
+          Graphs don't know how to talk to triangles
+            MMP algorithm - extension of Dijkstra
+            Now cottage industry in computer graphics paper - implement and speed up
+      Fast marching
+        Faster, easier and indistinguishable
+    Will talk about lots of algos that look like this class
+      But more geometric flavor
+      Don't worry as much about integers
+        Real numbers, double-precision floating point
+    Two different mindsets
+      Discrete and smooth
+      Think about as approx of smooth surface
+        Area - derivatives
+        -> Discrete differential geometry
+        Build up all of calculus from triangle mesh
+    Students
+      Math and applied - autonomous driving
+        Everything from classic machine learning - identify pedestrians
+          Part machine learning, part algorithms
+          What comes into Lidar is 26k points - time complexity really critical to get right
+          Not compatible with current car hardware, open problem
+        If I give you data, find geometric structure
+          Use words like near and far - find embedding in geometric space
+            Facilitate statistical algorithms we care about
+    How do we apply geometry to practical problems?
+    Key message - this might look "applied" but 6.006 is unavoidable
+      This course is the bread and butter of what everyone does here
+  Ray casting example
+    Algorithms with beautiful images - 10-20 lines of code
+      But very flow
+    Drawing a bunch of shapes on a string
+      For loop over every pixel, discover what pixel - shoot ray from eyeball
+      p = # pixels
+      n = # objects
+      O(pn) to determine which object hits first
+    Stanford Bunny
+      Simplicial complex - triangulated surface
+      69451 triangles *
+      2073600 pixels (1080p rendering)
+      Just to render takes a large amount of time
+        Common test case in class
+        But don't want gray, want colors, millions of triangles, complex materials
+        Secondary/tertiary rays
+      Write your own ray tracer at home - very slow
+    How to get faster?
+      O(pn) -> O(plogn)? - space partitioning trees
+      Take whole bunny in giant cube
+        Ray not touching cube doesn't touch bunny
+        Nice O(1) speedup
+      Now slice box in half
+        Recursive tree structure - get a structure like on screen
+        Traverse tree of objects in scene
+        Devil in the details
+          plogn not always entirely possible
+            On average, often comes out that way - may be easier in practice than theory etc.
+    Data structures are everywhere!
+      Scene graph - directed acyclic graph of objects and transformations
+        Store one instance of chair, instructions how to tile onto screen, transform
+        Will talk about a ton in 6.837
+      Lots of models of computation
+        Graphics card very specific kind of parallel processor
+          Ask it to do more than the one thing it knows how to do - grinds to a halt
+          Single instruction multiple data parallelism - SIMD
+      Numerical algorithms matter a lot for fluid simulation
+        Eyeball sensitive to 29.97 seconds of material
+          Can do one object really well but then lose out on others
+          Balance complexity, runtime of algorithm and perception
+            May not be worth nailing shadow
+  Graph partitioning problem
+    Political redistricting - electing house members
+      Gerrymandering - legislature gets to draw lines
+      Can engineer different results - say cluster minority all into one district
+      But if divide in two, elect two reps
+    Great problem computationally
+      All pick on Iowa - law all has to be built out of countries
+        Grid shift in the middle
+      Only 99 counties, 4 districts
+        Quintillions of ways to divide into contiguous districts
+    Computers seem useful
+      But how is more of a question
+      Likely no single "best" plan
+      Balancing contiguity, population density, etc.
+      Generating best possible plan is NP-hard
+      Note that law doesn't say computers have to draw
+        But not true in parts of Mexico - computer comparison required
+    Research studies analysis of districting plans
+      See possibilities
+      Cluster vertices together
+      Agree should be able to walk from one part to the other
+    Very simple proof
+      The very simplest thing to think of
+        Propose, and be at least as good as random
+        Might be useful to have random draw software
+        Seems innocent, computationally difficult, assuming P != NP
+          Reduces to Hamiltonian cycle, maybe shouldn't trust these tools
+    Sampling problems are hard - what can you do
+    Takeaway
+      6.006 is unavoidable even in far-flung problems
+Bye!

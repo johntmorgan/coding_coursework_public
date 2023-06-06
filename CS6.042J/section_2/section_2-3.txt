@@ -1,0 +1,259 @@
+Euler's Theorem
+Lecture
+  For n > 0, define
+  phi(n) ::= the number of integers in [0,n) that are relatively prime to n
+    "Euler's phi function"
+  phi(7) = 6 because all positive numbers in [0..7) are relatively prime to n
+    Only 0 is not relatively prime to 7
+  phi(12) = 4 (1, 5, 7, 11)
+  If p is prime
+    phi(p) = p - 1
+      every positive number in [0,p) is relatively prime to p
+  When n is composite
+    phi gets complicated (back to it soon)
+  Euler's Thm in terms of convergence
+    if n and k are relatively prime, then
+      k^phi(n) === 1 (mod n)
+  JM tests
+    k = 6, n = 7 k and n are relatively prime
+      6^phi(n) === 1 (mod n)
+      6^6 === 1 (mod 7)
+      46656 = 1 (mod 7) - true checked with google calc
+    k = 7, n = 12
+      7^4 === 1 (mod 12)
+      2401 === 1 (mod 12) yep, can see that easily
+  Cutaway
+    The Riemann hypothesis
+      Formula for sum of infinite geometric series:
+        1 + x + x^2 + x^3 + ... = 1 / (1 - x)
+      Substituting 1/(2^s), 1/(3^s), 1/(5^s) for each prime number
+        1 + 1/(2^s) + 1/(2^2s), 1/(2^3s) + ... = 1 / (1 - 1/2^s)
+        1 + 1/(3^s) + 1/(3^2s), 1/(3^3s) + ... = 1 / (1 - 1/3^s)
+        1 + 1/(5^s) + 1/(5^2s), 1/(5^3s) + ... = 1 / (1 - 1/5^s)
+      Multiplying to together right and left sides
+        sum(n = 1; inf) 1/(n^s) = phi p in primces (1 / (1 - 1/p^s))
+        s is a complex number, left side as a function snake(s)
+        distribution of primes is related to values of s for which snake(s) = 0
+      Riemann hypothesis:
+        Every nontrivial zero of the zeta function snake(s) lies on the line s = 1/2 + ci in the complex plane
+        A proof immediately implies a strong form of the Prime Number Theorem
+          Another $1m prize for this
+  Rephrase Euler's Thm in terms of Zn
+    Let Zn* be the integers in (0..n) that are relatively prime to n
+    Zn* ::= { k in (0..n) | gcd(k, n) = 1 }
+    so phi(n) = |Zn*|
+    Euler's theorem for Zn
+      for all k in Zn*
+        so all relative primes to n - JM
+      k^phi(n) = 1 (Zn)
+        restating of original formula - JM
+    Follows from 2 lemmas
+      First, Zn* is closed under multiplication in Zn
+        if j, k in Zn*, then j *n k in Zn*
+          if 5 and 7 in Z*12, then rem(5 * 7, 12) -> 11 in Zn*
+          if 5 and 11 in Z*12, then rem(5 * 7, 12) -> 7 in Zn*
+          if 7 and 11 in Z*12, then rem(5 * 7, 12) -> 5 in Zn*
+        Lots of easy ways to prove - not in text
+      Definition, for any element k and subset S of Zn, let
+        kS ::= {k *n s | s in S}
+      If k in Zn* and S =C Zn
+        |kS| = |S|
+      Proof
+        Since k in Zn*, it is cancellable
+          [ks = kt(Zn)] implies s = t
+        So multiplying by k in Zn maps all the elements of S to distinct elements of kS
+        Which implies S and kS are the same size
+    Corollary
+      if k in Zn*
+        kZn* = Zn*
+    Proof of Euler's theorem
+      Let P ::= k1 * k2 ... k(phi(n)) (Zn)
+      be the product of all the numbers in Zn*
+      Let Q ::= (k * k1) * (k * k2) ... (k * k(phi(n))) (Zn)
+      for k in Zn*
+      Factoring out ks immediately gives
+        Q = k^(phi(n))P (Zn)
+      But Q is the same as the product of the numbers in kZn* = Zn*
+      So Q is the product of the same numbers of P, just in a different order
+      P = Q = k^phi(n)P = Z(n)
+      P in Zn*, so can be cancelled
+      1 = k^phi(n) (Zn)
+    Another way to find inverses modulo n
+       if k is relatively prime to n
+       k^(phi(n) - 1) is a Zn inverse of k
+       Can compute efficiently via fast exponentiation
+       But must compute phi(n)
+        Easy if we know prime factorization of n
+        But hard to do when n is large
+        Pulverizer remains best approach
+    Fermat's Little Theorem
+      Suppose p is a prime and k is not a multiple of p
+        k^(p - 1) === 1 (mod p)
+    Computing Euler's phi function
+      RSA works using arithmetic modulo the product of two large primes
+      First, how do we compute phi(pq) for primes p and q
+        phi(pq) = (p - 1)(q - 1)
+        for primes p != q
+      Proof:
+        p and q are primes, so any number not relatively prime to pq
+        Must be a multiple of p or a multiple of q.
+        Among the pq numbers in [0..pq)
+          There are q multiples of p and p mulitples of q
+          Since p and q are relatively pirme, only number in [0..pq)
+            that is a multiple of BOTH p and q is 0
+          So there are p + q - 1 numbers in [0..pq) that are NOT relatively prime to n
+        phi(pq) = pq - (p + q - 1)
+                all nums under pq except for multiples of p and q, except for 0 - JM
+                = (p - 1)(q - 1)
+        how to calculate phi(n) for arbitrary n
+          a) if p is a prime then phi(p^k) = p^k - p^k-1 for a k >= 1
+          b) if a and b are relatively prime, phi(ab) = phi(a)phi(b)
+        example
+          phi(300) = phi(2^2 * 3 * 5^2)
+                   = phi(2^2) * phi(3) * phi(5^2)
+                   = (2^2 - 2^1)(3^1 - 3^0)(5^2 - 5^1)
+                   = 2 * 2 * 20
+                   = 80
+        Why?
+          Every pth number among the p^k in [0..p^k) is divisible by p
+            And ONLY these are divisible by p
+            So 1/p of these numbers are divsible by p and the remaining are not
+            phi(p^k) = p^k - 1/p*p^k = p^k - p^(k - 1)
+        Corollary
+          For any number n, if p1, p2,... pj are the distinct prime factors of n
+          phi(n)= n(1 - 1/p1)(1 - 1/p2)...(1 - 1/pj)
+
+Lecture
+  phi(n) ::= #k in 0, 1, ... n - 1 such that k rel prime to n
+  phi(n) ::= #k in [0, 1) s.t. gcd(k, n) = 1
+  Let's define that set of numbers we're interested in
+    gcd1{n} ::= {k in [0,n) | gcd(k, n) = 1}
+  So phi(n) = |gcd1{n}| (some books write n*)
+  gcd1{7} = {1, 2, 3, 4, 5, 6}
+  phi(7) = 6
+  gcd1{12} = {1, 5, 7, 11}
+  phi(12) = 4
+  Calculating phi
+    if p is prime, everything [1, p) is prime to p
+      phi(p) = p - 1
+    phi(9)? rel prime to 9 iff rel.prime to 3
+      {1, 2, 4, 5, 7, 8}
+    phi(9) = 6
+  Calculating phi(p^k)
+    0, 1, ... p ... 2p... p^k - p... p^k - 1
+    p divides every pth number
+    so 1/pth numbers in interval are bad
+    phi(p^k) = p^k - p^k/p
+    phi(p^k) = p^k - p^(k - 1)
+  Calculating phi(a * b) - not a prime
+    If a, b are relatively prime - "multiplicativity" - "Euler's Totient Function"
+    Lemma:
+      phi(a * b) = phi(a) * phi(b)
+      proof is on Pset 5 (another proof way later by "counting")
+    But let's just use this fact
+    phi(12) = phi(3 * 4)
+            = phi(3) * phi(4)
+            = (3 - 1) * (2^2 - 2^(2-1))
+            = 2 * 2 = 4
+  Why are we examining phi?
+    Euler's Theorem
+      If k is relatively prime to n
+      k^(phi(n)) === 1 (mod n)
+  Problem
+    remember they must be relatively prime for multiplicativity to work!
+  The Ring Zn
+    Another way to talk about congruence and arithmetic
+    Work strictly with remainders
+      Don't worry that the product of 2 remainders may be too big to be a remainder
+      Number gets too big? Hit with a remainder operation to bring back in range
+    That's the idea with Ring Zn
+      Ring of integers modulo n
+      The elements of Zn are the remainders - up to but not including n
+    i + j (Zn) ::= rem(i + j, n)
+    i * j (Zn) ::= rem(i * j, n)
+    This makes some things easier to say - talking equality instead of congruence
+    The integer interval [0,n) under + , * (Zn) is called Zn - the ring of integers mod n
+  Zn arithmetic
+    3 + 6 = 2 (Z7) - 3 + 6 = 9, remainder on division by 7 is 2
+    9 * 8 = 6 (Z11)
+  Z versus Zn
+    r(k) abbrevs rem(k, n)
+    r(i + j) = r(i) + r(j) (Zn)
+    r(i * j) = r(i) * r(j) (Zn)
+    "homomorphism relating Z to Zn"
+    i === j (mod n) IFF
+    r(i) = r(j) (Zn)
+  Rules for Zn (don't need to memorize names - will hear in algebra courses)
+    (i + j) + k = i + (j + k) associativity
+    0 + i = i                 identity
+    i + (-i) = 0              inverse
+    i + j = j + i             commutativity
+    (i * j) * k = i * (j * k) associativity
+    1 * i = i                 identity
+    i * j = j * i             commutativity
+                              *no inverses, can't count on that
+    i * (j + k) = i *j + i * k distributivity
+    no cancellation rule
+      3 * 2 = 8 * 2 (Z12)
+      3 != 8 (Z12)
+  Zn* = elements of Zn relatively prime to n
+  i in Zn* IFF
+    gcd(i, n) = 1 IFF
+    i is cancellable in Zn IFF
+    i has an inverse in Zn
+    Give you the sense that Zn* is a robust subset of Zn
+  phi(n) = |Zn*|
+    remember phi(n) - number of relatively prime integers
+    k^phi(n) = 1 Z(n)
+      Raise a number k to the power phi(n) it equals 1 in Zn
+        for k in Zn* (k relatively prime to n)
+    Proof is actually pretty easy
+      Lemma 1. |kS| = |S| for S =C Zn
+        If you have a subset in Zn - multiply by k - same size by S
+          Only true for k in Zn*
+          Multiply by cancellable element - set of the same size
+          s1 != s2 IMPLIES ks1 != ks2
+      Lemma 2. For i, j in Zn
+        i, j in Zn* IFF i * j in Zn*
+        if neither i nor j have a factor in common with n, then their product does not either
+        but their sum is NOT - usually get an element no longer relatively prime to n
+      Corollary
+        Zn* = kZn*
+          for k in Zn* (k is cancellable)
+          you get the same elements, just reordered - multiplication permutes the elements of Zn*
+        Example, permuting Z9
+          phi(9) = 3^2 - 3 = 6
+          Z9* = 1, 2, 4, 5, 7, 8
+          What if multiply them all by 2?
+            2, 4, 8, 1, 5, 7
+          Multiply by 7
+            7, 5, 1, 8, 4, 2
+      Now to prove Euler's Thm
+        product(Zn*) = product(kZn*) // big pi = product (oh - JM)
+        Let's multiply elements on both sides together
+        How many elements are in Zn*? phi(n) - so k^(phi(n))
+        product Zn* = k^phi(n) product(Zn*)
+        product Zn* will be an element in Zn* that is cancellable
+        1 = k^phi(n)
+        QED
+  problems
+    rem(24^78, 79)
+      Use Fermat's little thm
+        79 is prime
+        x^(p - 1) mod 79 = 1
+    phi(175)
+      = phi(7) * phi(5^2)
+      phi(7) = 6
+      phi(5^2) = (5^2 - 5) = 20
+      120
+    rem(22^12001, 175)
+      Hmm. pattern with powers
+        22^2 - 134 (484)
+        22^3 - 148 (10648)
+        22^4 - 106 (234256)
+        22^5 - 57  (5153632)
+        22^6 - 29  (113379904)
+      Didn't work - not surprising, very brute force-y
+      (Had to look at answer)
+      22^12001
+      22^120^100 * 22 = 1^100 * 22 = 22

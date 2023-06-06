@@ -1,0 +1,214 @@
+Amazon Locker Service
+  Amazon allows customers to buy online
+  Amazon Locker to pick up when customer not in location
+    aka Amazon Hub, Amazon Hub Locker
+  Customer chooses location as delivery address
+    Pick up at no additional cost
+    System suggests nearest available locker
+    Order packaged and placed in locker
+    Customer gets notification
+    Customer picks up using code within time period
+
+Questions
+  Locker size:
+    Will every locker be of the same size?
+    Is there any size restriction on what can be kept in locker?
+  Locker selection:
+    How will system ensure multiple customers do not get same locker?
+    Will customer be able to choose locker?
+    Can customer get two lockers for different orders?
+    Will system keep in mind locker and package sizes?
+  Locker status
+    Time constraints on package in locker
+    What if customer does not pick up package in time period?
+  Returning item
+    Can customer return through the service
+    Will they get the same locker as pickup if so?
+    How will locker be assigned when returning an item?
+
+Design approach
+  Start from locker and item
+  Then design bigger
+    Locker location (multiple lockers)
+    Order (multiple items)
+
+Design pattern
+  Strategy design pattern
+  Repository design pattern
+
+Requirements
+  Customer can choose closes location
+  One or more items in each order
+  Different sizes of lockers ~6 from extra small to extra large
+  Locker assigned based on size of order
+  Package must be smaller than size of locker
+  When order delivered, 6 digit code sent to customer
+  Order kept inside locker for 3 days
+  Refund and return if not picked up in 3 days
+  When customer picks up item status changes to closed
+  Multiple lockers at every locker location
+  Customer must pick up while locker center is open
+  Return item to locker if faulty
+    Refund available
+  To return, choose nearest locker location
+
+Use case
+  System
+    Amazon Locker
+  Actors
+    Primary
+      Customer
+        Places order
+        Enters code and gets product
+        Requests return
+        Puts package back at locker
+      Delivery person
+        Enter code, add to locker
+        Pick up returned package from locker
+    Secondary
+      System
+        Delivery and due date notifications
+        Generate code
+        Validate code
+        Choose locker
+        Find locker
+        Open/close locker door
+
+  Customer
+    Enter code
+    Add product
+    Remove product
+    Delivery notification
+    Submit return request
+    Overdue notification
+
+  Delivery guy
+    Enter code
+    Add product
+    Remove product
+    Return notification
+
+  System
+    Validate code
+    Find locker
+    Lock/unlock door
+    Return notification
+    Generate code
+    Issue locker
+    Overdue notification
+    Delivery notification
+
+Includes
+  Enter Code has an include with Validate Code
+  Validate Code has include with Find Locker
+  Find Locker has include with Lock/unlock door
+  Submit return request has include with return notification
+  Request notification has include with generate code
+
+Class diagram
+  Item
+    itemId
+    quantity
+
+  Order
+    orderId
+    items: Item {list}
+    deliveryLocation
+
+  Notification
+    customerId
+    orderId
+    lockerId
+    code
+    send()
+
+  Package
+    packageId
+    packageSize
+    order: Order
+    pack()
+    LockerPackage extends
+      codeValidDays (expires: date? - JM)
+      lockerId
+      packageId
+      code: string
+      packageDeliveryTime
+      isValidCode()
+      verifyCode(string code)
+
+  Locker
+    lockerId
+    lockerSize: LockerSize (enum)
+    locationId
+    lockerState: LockerState
+    addPackage()
+    removePackage()
+
+  LockerLocation
+    locationId
+    lockers: Locker {list}
+    latitude
+    longitude
+    openTime
+    closeTime
+
+  LockerService
+    locations: LockerLocation {list}
+
+  Enumerations
+    LockerSize
+    LockerState
+
+Relations
+  Association
+    Notification 2-way Locker, Order
+
+  Composition
+    LockerService comprises LockerLocation composed of Locker & LockerPackage
+    Package composed of Order composed of Item
+
+  Inheritance
+    LockerPackage extends Package class
+
+Design patterns
+  Strategy design
+    Pick best locker location/size
+  OTP generation
+  Random number generation
+  Locker assignment
+  Locker filtration
+
+  Repository pattern
+    Locker repository
+    Package repository
+
+Sequence
+  Return package
+    Actor: Customer
+    Object: Locker
+
+  Customer requests service to return package
+  If package return approved
+    System requests available locker
+    Locker returned to system
+    System sends OTP code to customer
+    Customer verifies code
+    If verified:
+      System assigns locker
+      Customer places package in locker
+    Else:
+      Customer receives error
+  If package return not approved
+    Inform customer
+
+Activity diagram
+  Customer receives OTP
+  Customer goes to locker
+  Customer enters code
+  Code validation
+    Incorrect
+      End (retry? - JM)
+    Correct
+      Search for locker
+      Open locker
+      Customer picks up product

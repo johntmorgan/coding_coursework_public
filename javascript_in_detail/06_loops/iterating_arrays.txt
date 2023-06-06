@@ -1,0 +1,47 @@
+Iterating arrays
+
+Single dimensional
+  
+  var arr = [10, 25, 7, 100, 20]; // initialise arr
+  // iterate array from start to end
+  for(var i = 0; i < arr.length; i++){
+    console.log(arr[i]);
+  }
+  console.log("indexing complete");
+
+  // reverse order
+
+  var arr = [10, 25, 7, 100, 20]; // initialise arr
+  // iterate array from start to end
+  for(var i = arr.length - 1; i >= 0; i--){
+    console.log(arr[i]);
+  }
+  console.log("indexing complete");
+
+  // odd indices only
+
+  var arr = [10, 25, 7, 100, 20]; // initialise arr
+  // iterate array from start to end
+  for(var i = 1; i < arr.length; i+=2){
+    console.log(arr[i]);
+  }
+  console.log("indexing complete");
+
+Two dimensions
+
+  var arr = [
+             [10, 25, 7],
+             [100, 20, 53],
+             [1, 12, 13]
+            ]; // Initialise arr
+  // iterate each element
+  for(var i = 0; i < arr.length; i++){
+    for (var j = 0;j < arr[i].length; j++){
+      console.log(arr[i][j]);
+    }
+    console.log("row ended.");
+  }
+  console.log("indexing complete");
+
+forEach
+  arr.forEach(x => console.log(x));

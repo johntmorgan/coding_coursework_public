@@ -1,0 +1,47 @@
+1. Display all actors who have acted in 2 or more movies
+  SELECT CONCAT(FirstName, " ", SecondName) AS ActorName, COUNT(*) AS MovieCount
+  FROM Actors
+  INNER JOIN Cast
+  WHERE Id = ActorId
+  GROUP BY Cast.ActorId
+  HAVING MovieCount > 1;
+
+2. Find the cast of Mr and Mrs Smith with no joins
+  SELECT CONCAT(FirstName, " ", SecondName) AS ActorName FROM Actors WHERE Id IN(
+  SELECT ActorId FROM Cast WHERE MovieId IN(
+  SELECT Id FROM Movies WHERE Name = "Mr & Mrs. Smith"));
+
+3 Print a list of movies and the actor(s) who participated in each movie ordered by movie name.
+  SELECT tbl.Name AS Movie_Name,
+  CONCAT(FirstName, " ", SecondName) AS Actor_Name
+  FROM Actors
+  INNER JOIN (SELECT Name, ActorId
+              FROM Movies
+              INNER JOIN Cast
+              On Id = MovieId) AS tbl
+  ON tbl.ActorId = Id
+  ORDER BY tbl.Name ASC;
+
+4. Print the count of actors in each movie
+  SELECT tbl.Name AS Movie_Name,
+  COUNT(*) AS Actor_Count
+  FROM Actors
+  INNER JOIN (SELECT Name, ActorId, MovieId
+              FROM Movies
+              INNER JOIN Cast
+              On Id = MovieId) AS tbl
+  ON tbl.ActorId = Id
+  GROUP BY tbl.MovieId
+  ORDER BY Actor_Count ASC;
+
+5. List the names of Producers who never produced a movie for Tom Cruise.
+  SELECT DISTINCT Producer AS Producer_Never_Worked_With_Tom
+  FROM Movies
+  WHERE Id NOT IN(
+    SELECT MovieId
+    FROM Cast
+    WHERE ActorId IN(
+      SELECT Id
+      FROM Actors
+      WHERE FirstName = "Tom" AND SecondName = "Cruise")
+  ) ORDER BY Producer ASC;

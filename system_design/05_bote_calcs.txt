@@ -1,0 +1,206 @@
+Back of the envelope calculations
+Why
+  Wide variety of available nodes
+  Can be connected in many ways
+  BOTE calcs help ignore nitty-gritty details (during design)
+    Focus on more important aspects
+Examples
+  Number of concurrent TCP a server can support
+  Number of requests per second (RPS)
+    Web, database, cache server
+  Storage requirements
+Being unreasonable = flawed design
+  Need good estimations in many problems
+Key concepts
+  Types of data center servers
+  Realistic access latencies of components
+  Estimation of server RPS
+  Bandwidth, servers, and storage estimation
+Types of data center servers
+  Don't have a single type of server
+  Enterprise use commodity hardware to save and scale
+  Web servers
+    Decoupled from app servers for scale
+    First point of contact after load balancers
+    Data centers with racks full of web servers
+    Handle API calls from clients
+    Mem/storage can be small to medium
+    But require good computational resources
+    ex. FB has used 32 GB RAM, 500 GB storage
+      Also: high-end custom 16-core Intel processor
+    Many numbers here from FB open-source 2011
+      Due to slowing of Moore's law ~2004, not stale
+  App servers
+    Run core application software and business logic
+    Diff with web servers somewhat fuzzy
+    App servers mostly provide dynamic content
+      Web servers mostly static content to client (usually web browser)
+    Can require extensive comp and storage resources
+      Storage can be volatile and non-volatile
+    FB
+      RAM up to 256 GB and two types of storage
+        Trad rotating disks, flash - up to 6.5 TB
+  Storage servers
+    Various types in different units
+    YouTube
+      Blob storage for encoded videos
+      Temporary processing queue storage
+        Hold a few hundred hours uploaded for processing
+      Bigtable
+        Specialized, for thumbnails
+      Relational database management (RDBMS)
+        Users & video metadata (comments, likes etc)
+    Other
+      Hadoop HDFS
+        Analytics
+      Mostly SQL/noSQL
+    Facebook
+      Storage up to 120 TB
+        Exabytes of total data (10^18)
+        Measure storage and network bandwidth base 10
+      RAM of servers only 32 GB
+  More servers
+    Config
+    Monitor
+    Load balance
+    Analytics
+    Accounting
+    Caching
+    etc
+  Typical server in data center today
+    2 sockets
+    Intel Xeon X2686 proc
+      36 cores (72 threads)
+    256 GB ram
+    45 MB L3 Cache
+    15 TB storage
+    (Inspired by Amazon bare-metal server)
+    Can be more or less powerful
+      RAM up to 8 TB
+      Disk storage up to 24 disks with 20 TB each
+      Cache memory up to 120 MB
+
+  Numbers to memorize
+    L1 cache 0.9 ns
+    L2 cache 2.8 ns
+    L3 cache 12.9 ns
+    Main memory 100 ns
+    Compress 1KB Snzip 3 us
+    Read 1 MB from memory 9 us
+    Read 1 MB from SSD 200 us
+    Round trip in data center 500 us
+    Read 1 MB from 1 GB/s SSD 1 ms
+    Disk seek 4 ms
+    Read 1 MB from disk 2 ms
+    Packet SF -> NYC 71 ms
+
+  Queries per second
+    MySQL 1000
+    Key-value store 10000
+    Cache server 100k - 1m
+
+  Very rough approximations
+    Depend heavily on type of query
+    Spec of machine
+    Design of database
+    Indexing
+    etc
+
+  Request estimation
+    Different resources bottleneck depending on type of request
+      CPU-bound
+      Memory-bound
+    RPS for each type of request
+      Assume server typical in table above
+      OS and other aux consume 16 GB RAM
+      Worker consumers 300 MB RAM storage per request
+      Assume CPU obtains data from RAM for simplicity
+        Caching system ensures all content available for serving
+      Each CPU-bound request takes 200 ms
+      Each memory-bound request takes 50 ms
+
+  CPU-bound
+    RPS_CPU = Num_CPU * 1 / task time
+    72 threads (above)
+    RPS_CPU = 72 * 1 / 200
+            = 360 RPS
+
+  Memory-bound
+    RPS_MEM = RAM_size / Worker_mem * 1 / Task_time
+            = 240GB / 300MB * 1 / 50 ms = 16000 RPS
+
+  Service receives both CPU-bound and memory-bound requests
+    360/2 + 16000/2 = 8180 ~ 8000 RPS
+
+  Many other factors come into play
+    Latency if do disk seek if data not in RAM
+      Or request made to DB server
+    Type of query matters
+    Faults, bugs, node failures, power out, network disruption etc.
+
+  Powerful server, only static content from RAM, 500k RPS
+  CPU heavy - image processing - 50 RPS
+
+  Capacity estimation is a hard problem
+    Orgs learn how to improve over years
+    Monitoring system to watch all aspects of infrastructure
+      Early warning about overloading servers
+
+Resource estimation examples
+  Twitter-like service
+    500m DAU
+    20 requests per user daily
+    So 10 B requests/day
+    115k requests/second - 86400 s/day
+    15 servers required
+
+  Number doesn't seem right
+    If 15 commodity servers = 500m daily users
+      Why big services use millions of servers?
+      RPS not enough to estimate number of servers
+      Requests go through multiple servers as well
+      Each server may take different time
+    Approx server number by depicting clients/server per day
+      500m / 8000 = 62,500
+      May not be accurate, but realistic
+      Use this approach in estimating number of servers
+        Will use in rest of course
+
+Storage reqs
+  Twitter again
+    250m DAU (why 1/2? - JM)
+    3 tweets per day
+    10% contain images
+      200 KB
+    5% contain video
+      3 MB
+    Tweet text = 250 bytes
+    187.5 GB tweets
+    15 TB images
+    112.5 TB video
+    128 TB total storage
+    128 * 365 days/year = 46.72 PB storage/year
+
+Bandwidth
+  Estimate daily incoming data
+  Estimate daily outgoing data
+  Bandwidth in Gbps
+    Divide incoming & outgoing by seconds/day
+  Twitter
+    Incoming
+      128 TB of storage/day
+      128 * 10^12 / 86400 * 8 = 12 Gbps
+        Note 8x multiplier - bandwidth is bits not bytes
+    Outgoing
+      View 50 tweets/day
+      Same ratio
+      2.5 tweets video content
+      5 tweets image
+      250m DAU
+      145k tweets/second
+      Tweets - 0.3 Gbps
+      Images - 23.2 Gbps
+      Videos - 174 Gpbs
+      197.5 Gbps
+    Total
+      12 + 197.5 = 209.5 Gbps

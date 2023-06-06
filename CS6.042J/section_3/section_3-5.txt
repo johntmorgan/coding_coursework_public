@@ -1,0 +1,167 @@
+Pigeonhole Principle, Inclusion-Exclusion
+Reading
+  The Pigeonhole principle
+    A drawer in a dark room contains red, green, and blue socks
+    How many must you withdraw to get a matching pair?
+      Picking 3 socks is not enough - can get 1 R, 1 B, 1 G
+    If there are more pigeons than the holes they occupy, 2 must be in the same hole
+    As soon as you pick 4 socks, there must be a pair
+  Rigorous Pigeonhold
+    If |A| > |B|, then for every total function f : A -> B, there exist two different elements of A
+    that are mapped to the same element of B
+    Contrapositive of Mapping Rule injective case
+    Pigeons are set A
+    Pigeonholes are set B
+  Many ingenious applications for Pigeonhole Principle
+    However no set rules for using it
+    But in general try to identify the pigeon and pigeonhole sets
+      Along with the function f for assigning pigeons to holes
+  Generalized Pigeonhole
+    If |A| > k * |B|, then every total function f : A -> B maps at least k + 1 different elements
+    of A to the same element of B
+    However, in the city of Boston, there is a group of 3 peoole with exactly same number of hairs!
+    500k non-bald people in Boston
+    200k hairs on a head
+    |A| > 2|B|
+      Of course we don't know who, but they exist
+  Subsets with the same sum
+    Ninety 25-digit numbers
+      Are there two subsets that have the same sum?
+      May seem silly but these sorts of problems key in many areas
+        From fitting packages into shipping containers
+        To decoding secret messages
+      Hard to find the subset, easy to prove it exists
+      Sum of any subset is at most 90 * 10^25
+      We proved that an n-element set has 2^n different subsets
+      |A| = 2^90 > 1.237 * 10^27
+      On the other hand
+      |B| = 90 * 10^25 + 1 <= 0.9-1 x 10^27
+      Both quantities are enormous
+        However |A| is a bit greater than |B|
+        f maps at least two elements of A to the same element of B
+      Notice this proof gives no indication which two sets have the same sum
+        "Nonconstructive proof"
+      $100 prize for finding it
+        CS major, searched among a reasonably small set of "plausible" sets
+          Sorted by sums
+        Math major - reformulate as a "lattice basis reduction"
+          Quickly found lots of pairs
+      $500 prize for sets with dintct subset sums
+        Construct a set of n positive integers such that all subsets distinct?
+          Powers of two: {1, 2, 4, 8, 16}
+          That approach seems so natural, suspect all sets must involve larger numbers
+          Suprise, smaller examples are possible:
+            {6, 9, 11, 12, 13}
+        Paul Erdos conjectured no such sets involving significantly smaller
+          The largest number in such a set must be greater than c2^n for c > 0
+          $500 to prove or disprove conjecture, problem unsolved
+    Magic trick
+      Send assistant into the audience with 52 cards
+      5 audience members select a card from the deck
+      Assistant gathers and shows 4 to magician
+      Magician names secret 5th card
+      You'd expect some body language signal - but not needed
+        Could choose 4! = 24 permutations of order of 4 shown cards - not enough
+      Choose which of 5 cards to keep hidden
+        Left hand vertices with 52 choose 5 elements
+        Right hand vertices will have 52 * 51 * 50 * 49 elements
+        Just need a matching
+      Left vertex has degreee 5 * 4! = 120
+        5 ways to select card kept secret
+        4! permutations of the remaining cards
+      Right vertex has degree 48
+        48 possibilities for the 4th card
+      Would work with up to 120 cards in the deck!
+      But how does magician remember matching with 52 ch 5 edges?
+      Pick 2 cards with paired suits
+        Communicate number of hops clockwise from first card in suit shown
+        SML - 1
+        SLM = 2
+        MSL = 3
+        MLS = 4
+        LSM = 5
+        LMS = 6
+      There is even a way to do it easily with up to 124 cards
+        But still too involved to get into here
+    Magic trick with 4 cards? No!
+      |X| = 52 choose 4 = 270725
+      |Y| = 52 * 51 * 50 = 132600
+      Assistant must reveal same cards for ceil(270725/132600) = 3 different sets of 4 hands
+
+Lecture
+  Pigeonhole principle - counting principle so obvious you may be using it already without realizing
+  Simple form:
+    If more pigeons than pigeonholes, must have two pigeons in the same hole
+  Mapping rule
+    Total injection from A to B implies |A| <= |B|
+    If |A| > |B|, then there is no total injection from A to B
+  No elaborate uses of it here (like the hair example, or same sum example)
+  Example: 5 card draw
+    Must have two cards of the same suit in a hand
+  10 card draw - how many have the same suit?
+    Must have at least 3 with same suit
+    ceil(10 / 4) = 3
+  Generalized pigeonhole principle
+    If n pigeons and h holes, then some hole has >= ceil(n / h) pigeons
+  Inclusion-Exclusion
+    The final general counting rule for us to examine
+    Straightforward generalization of the sum rule, at least in the case of two sets
+    Sum Rule
+      |A U B| = |A| + |B| for disjoint sets A, B
+    But what if A and B are not disjoint?
+      |A U B| = |A| + |B| - |A int B|
+      Not hard to make the argument for that
+      When you add A, you count elements in intersection once
+      Then when you add B, you count them again
+        So subtract the size of A intersecting B
+    Applied example
+      Digit permutations of [0, 9]
+      0123456789
+      0134256789
+      |permutations of [0,9]| = 10!
+      How many permutations have "60", "04", or "42"?
+        0123456789 - no
+        0134256789 - yes - in P42
+        0624136789 - no
+        1304256789 - yes - in P04 int P 42
+      Px ::= perms with subsequence x
+      |P60 U P04 U P42| = ? these are not disjoint
+      Need inclusion-exclusion for 3 sets not just 2
+      Subtract 2x overlaps, but triple overlap subtracted 3 times
+      |A U B U C| = |A| + |B| + |C| - |A int B| - |A int C| - |B int C| + |A int B int C|
+      Will rigorously prove for arbitrary number of sets in a minute
+      Intersections of even # sets occur negatively
+      Intersections of odd # sets occur positively (including 1)
+      |P60 U P04 U P42| = |P60| + |P04| + |P42| - |P60 int P04| - |P60 int P42| - |P04 int P42| + |P60 int P04 int P42|
+      |P60| = |perms 1, 2, 3, 5, 60, 7, 8, 9|
+            = There are 9 possible permutations of these things
+            = 9! permutations
+      |P60 int P42| = |perms {1, 3, 42, 5, 60, 7, 8, 9}|
+            = 8! permutations
+      |P60 int P04| = |P604| = 8!
+      |P60 int P04 int P42| = |P6042| = 7!
+      So |P60 U P04 U P42| = 3 * 9! - 3 * 8! + 7!
+                           = 193 * 7! = 972720
+                           ~27% of the 10! permutations possible
+  Inclusion-Exclusion 2 set proof
+    Ordinary disjoint sum rule
+    Just break up |A U B| into disjoint sets
+    A U B = A U (B - A) - A and points in B not in A - by sum rule
+          = |A| + |B - A|
+    Lemma
+      |B - A| = |B| - |A int B|
+      B = (B int A) U (B - A) disjoint union, sum rule
+      |B| = |B int A| + |B - A|
+      Proven Lemma, we're done
+  For 3 sets, again:
+    |A U B U C| = |A| + |B| + |C| - |A int B| - |A int C| - |B int C| + |A int B int C|
+  Incl-Excl (n sets):
+    |A1 U A2 U ... U An| = 
+    Sum over every possible subets of indices 1-n that is not empty:
+      |int Ai for i in S| - sum up intersection of Ais in S
+      TIMES -1^(|S| + 1) - so add if odd (incl 1) and subtract if even
+  Proof
+    By induction on n - use 2 set version, already proved and go plus nth sets - not very informative
+    By binomial counting
+    By distributivity
+      Problem in the text

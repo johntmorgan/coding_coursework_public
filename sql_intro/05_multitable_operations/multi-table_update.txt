@@ -1,0 +1,23 @@
+Multi-Table Update
+  Very similar to delete syntax
+
+  Let's convert the FirstName and SecondName strings to upper case for actors on Facebook
+  Also convert Facebook URL to uppercase
+
+  UPDATE
+  Actors INNER JOIN DigitalAssets
+  ON Id = ActorId
+  SET FirstName = UPPER(FirstName), SecondName = UPPER(SecondName), URL = UPPER(URL)
+  WHERE AssetType = "Facebook";
+
+  // Another version with a WHERE clause
+
+  UPDATE Actors, DigitalAssets
+  SET FirstName = UPPER(FirstName), SecondName = UPPER(SecondName), URL = UPPER(URL)
+  WHERE AssetType = "Facebook"
+  AND ActorId = Id;
+
+  // As with delete, cannot update table read from in subquery
+  // ORDER BY and LIMIT also can't be used, again
+    (I think - text actually says delete, think it's a typo - JM)
+    

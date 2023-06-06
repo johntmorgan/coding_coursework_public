@@ -1,0 +1,10 @@
+Javascript Engines
+  V8 - Chrome
+  Rhino - Java apps
+  SpiderMonkey - Firefox
+  JavascriptCore - Swift, Obj-C, C-based apps, Safari
+  Chakra - MS Edge
+  Nashorn - JVM
+  JerryScript - IoT
+
+We will use V8 as the primary engine

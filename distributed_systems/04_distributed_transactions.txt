@@ -1,0 +1,75 @@
+Distributed transactions
+  One of most common problems moving centralized to distributed
+  Performing operations across multiple nodes in an atomic way
+    "Distributed transaction"
+    Focus of next 3 chapters
+      Several solutions, each with some pitfalls
+  Transaction
+    Unit of work performed in database system
+    Change potentially composed of multiple operations
+    Abstraction invented to simplify work
+      Don't have to deal with all possible failures
+        Due to inherent unreliability of hardware
+  ACID sums up major database transaction guarantees
+    Atomicity
+    Consistency
+    Isolation
+    Durability
+  Atomicity
+    Either all operations in transaction complete or none take effect
+    No situations where it partially fails
+  Consistency
+    Transitions from valid state to valid state
+    Maintains all defined invariants
+      Ex. financial app invariant: all account balances positive (or zero? - JM)
+  Isolation
+    Transactions execute concurrently without interfering with each other
+  Durability
+    Once committed, transaction remains (even if say power goes out!)
+  ACID properties transfer some responsibilities from app to DB
+    Simplify app development
+    Reduce potential errors to software bugs or hardware failures
+  Acid in practice
+    Atomicity
+      App does not have to take care of all potential failures
+      Bring database back to consistent state in case of partial failure
+      Roll back operations that should not have occurred
+    Consistency
+      State invariants declaratively
+      Remove redundant code, allow DB to perform checks
+    Isolation
+      Allows apps to leverage concurrency
+      DB prevents any bugs due to concurrent execution
+    Durability
+      Once transaction complete, cannot be reverted
+  Consistency and durability do not require special treatment in distirbuted systems
+    No separate analysis for them
+  Achieving consistency
+    Many DB mechanisms
+    Constraints, cascades, triggers
+    App is responsible for defining constraints via these measures
+    DB responsible for checking conditions, aborting transactions that violate
+  Achieving durability
+    Persist transactions at non-volatile storage
+  Distributed transactions
+    Takes place in 2 or more nodes
+    First variant
+      Same piece of data updated in mulitiple replicas in atomic way
+      Single-master synchronous replication pretty much handles
+    Second variant
+      Different data in different nodes update atomically
+        Say financial app, partitioned database
+          Customer A, node n1
+          Customer B, node n2
+          Transfer money A to B
+          Need to do this atomically
+      Most common use of distributed transactions
+  Atomicity and isolation complex in distributed systems
+    Partial failures make it much harder to guarantee atomicity
+    Concurrency and network asynchrony make it challenging to preserve isolation in diff nodes
+    Far reaching implications for performance and availability of distributed system
+    Note some techniques used internally by DB systems
+      Everything might be hidden behind high-level interface
+        Still important to understand so can choose database wisely
+        May also need to use techs at application level to achieve properties not by DB
+        

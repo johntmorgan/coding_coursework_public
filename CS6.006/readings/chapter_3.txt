@@ -1,0 +1,204 @@
+Growth of functions
+  You can compute exact running time
+    However, the extra precision is usually not worth the computational effort
+  Once input becomes large enough, merge sort theta(nlgn) beats insertion sort theta(n^2)
+    When input sizes large enough to make only order of growth relevant
+      Studying "asymptotic" efficiency of algorithms
+Asymptotic notation
+  Defined in terms of functions whose domains are the set of natural numbers
+    N = {0, 1, 2....}
+    Can also extend to real numbers
+    Or restrict to subset of natural numbers
+  theta-notation
+    theta(g(n)) = { f(n)} : there exist positive constants c1, c2, and n0
+      such that 0 <= c1g(n) <= f(n) <= c2g(n) for all n > n0 }
+    n0 - beyond this point
+      theta: f(n) is inside c1g(n) and c2g(n) - tightly bounded - "sandwiched" - "asymptotic tight bound"
+        (i.e. ~grows in this way, with unknown constants - JM)
+        Must be asymptotically non-negative
+        Lower order terms can be ignored - can be covered by constants
+      O: f(n) is under cg(n) - upper bound
+      omega f(n) is over cg(n) - lower bound
+      could also say f(n) in the set theta(n)
+    theta(1) - constant or constant time variable
+  O notation
+    if f(n) = theta(g(n)) implies f(n) = O(g(n))
+      theta is a stronger notation
+    Distiguishing tight bounds from upper bounds (no claims about tightness)
+      Is common in algorithms literature
+    Because it's upper bound
+      O notation used to bound worst-case bounds all cases
+      However theta(n) on worst-case does not imply bound on every input
+        Insertion sort runs in O(n) time when presorted
+      Abuse to say running time of insertion sort is O(n^2)
+        We mean that the worst-case running time O(n^2)
+  omega-notation
+    Asymptotic lower bound
+    If we say the running time is theta(g(n))
+      We mean the lower bound best-case
+    But it's not contradictory to say the worst-case running time of insertion sort
+      Is omega(n^2)
+      Since there IS an input that causes the algorithm to take omega(n^2) time
+  When asymptotic notation appears in formula
+    standing in for anonymous, unnamed function
+    2n^2 + 3n + 1 = 2n^2 + theta(n) - could say + f(n) where f(n) is in set theta(n)
+    So merge sort T(n) = 2T(n/2) + theta(n)
+      If we're interested in asymptotic behavior of T(n)
+        No point to specifying all the stuff in theta(n)
+    There's no interpretation of O(1) + O(2) + O(3)
+    2n^2 + theta(n) = theta(n^2)
+      No matter how chosen on left, way to choose on right to make valid
+        There is some function g(n) in set theta(n^2)
+        Such that
+          2n^2 + f(n) = g(n)
+  o notation
+    upper bound that is NOT asymptotically tight
+    O notation may or may not be
+      2n^2 = O(n^2)
+      2n = O(n^2)
+    o notation
+      2n^2 != o(n^2)
+      2n = o(n^2)
+  w-notation
+    lower bound that is NOT asymptotically tight
+  Implications
+    Transitivity
+      If fn = theta(g(n)) and g(n) = theta(h(n)) it implies f(n) = theta(h(n))
+    Reflexivity
+      f(n) = theta(f(n)) (also O, omega but NOT o, w)
+    Symmetry
+      f(n) = theta(g(n)) if and only if g(n) = theta(f(n)) (NO others)
+    Transpose symmetry
+      f(n) = O(g(n)) if and only if g(n) = omega(f(n))
+      f(n) = o(g(n)) if and only if g(n) = w(f(n))
+
+  "Asymptotically smaller" f(n) = o(g(n))
+  "Asymptotically larger" f(n) = w(g(n))
+  One property does NOT carry over
+    Trichotomy
+      For any 2 real numbers a and b
+      a > b or a = b or a < b
+    Not all functions are asymptotically comparable
+      n vs n^(1+sin(n))
+      The latter oscillates
+
+Standard notations and common functions
+
+  Monotonicity
+    Monotonically increasing
+      f(n), m <= n implies f(m) <= f(n)
+    Decreasing
+      f(n), m <= n implies f(m) >= f(n)
+    Strictly increasing/decreasing - get rid of equal signs
+    Floor, ceiling - yeah I can't draw these
+      Open top brackets, open bottom brackets
+      Integers:
+      x - 1 < floor(x) <= x <= ceil(x) < x + 1
+      floor(n/2) + ceil(n/2) = n
+      Floor function f(x) = floor(x) is monotonically increasing, ditto ceiling
+
+  Modular math
+    a mod n is the remainder/residue of a/n
+    0 <= amodn < n
+    if amodn = bmodn
+    a===b (mod n) - triple equals sign
+
+  Polynomials
+    Given nonnegative integer d
+      Polynomial n in degree of d
+    p(n) = sum(i=0 to d) ai * n^i
+      a0, a1.... ad are coefficients of polynomial
+      Polynomial asymptotically positive if and only if ad > 0
+      For any real constant a >= 0
+        n^a is monotonically increasing
+      For any real constant a <= 0
+        n^a is monotonically decreasing
+      Function is polynomially bounded
+        if f(ns) = O(n^k) for some constant k
+
+  Exponentials
+    a^0 = 1
+    a^1 = a
+    a^-1 = 1/a
+    (a^m)^n = a^(mn)
+    (a^m)^n = (a^n)^m
+    a^m * a^n = a^(m + n)
+    For all n and a >= 1, a^n is monotonically increasing in n
+    0^0 = 1
+    For all real constants a and b such that a > 1
+    lim n->inf n^b / a^n = 0
+    n^b = o(a^n)
+    So any exponential function with base strictly > 1 grows faster than any polynomial function
+    e = 2.71828...
+    e^x = 1 + x + x^2/2!... = sum(i=0, inf) x^i/i!
+    For all real x
+      e^x >= 1 + x (equality holds when x = 0)
+
+  Logarithms
+    lgn = log2n
+    lnn = logen
+    lg^kn = (lgn)^k
+    lglgn = lg(lgn)
+    lgn + k means (lgn) + k
+
+    a = b^logb(a)
+    logc(ab) = logca + logcb
+    logb(a^n) = nlogb(a)
+    logb(a) = logc(a)/logc(b)
+    logb(1/a) = -logb(a)
+    logba = 1/logab
+    a^logbc = c^logba
+    (all assuming no log base 1)
+
+    Changing base of log from one constant to another
+      Only changes value by constant factor
+      So will often just say "lgn" when don't care about constants, as in say O notation
+      CS generally uses base 2 because so much involves splitting problems into 2 parts
+
+    Series expansion when |x| < 1
+      ln(1+x) = x - x^2/2 + x^3/3 - x^4/4 ...
+
+    For x > -1
+    x / (1 + x) <= ln(1 + x) <= x
+    (equality holds when x = 0)
+
+    Polylogarithmically bounded
+      if f(n) = O(lgkn) for some constant k
+
+      lgbn = o(n^a)
+      Any positive polynomial function grows faster than any polylogarithmic function
+
+  Factorials
+    0! = 1
+    n! = n * (n - 1)!
+
+    weak upper bound:
+    n! <= n^n
+    because each of n terms in factorial is at most n
+    Stirling's approximation
+    n! = sqrt(2 * pi * n) * (n / e)^n * e^an
+
+    where 1/(12n + 1) < an < 1/12n
+
+    n! w(2^n)
+    so 2^n < n! < n^n
+
+    lg(n!) = theta(nlgn) **
+
+  Functional iteration
+   f(i)(n) = n if i = 0
+   f(i)(n) = f(f(i - 1)(n)) if i > 0
+
+  Iterated logarithms
+    lg* n
+
+    lg* 2 = 1
+    lg* 4 = 2
+    lg* 16 = 3
+    lg* 65536 = 4
+    lg* 2^65536 = 5 // way more than observable atoms in the universe
+
+  Fibonacci
+    the ith number is symboli / sqrt(5) rounded to nearest integer
+      Grows exponentially
+      

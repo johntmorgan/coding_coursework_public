@@ -1,0 +1,31 @@
+Foreign Keys
+  Not supported by all storage engines
+  InnoDB = yes, MyISAM = no
+  Example
+    DigitalAssets consists of online accounts of Actors
+    Tables related by ID and ActorID
+    Does not make sense to have row in DigitalAssetss when actor not listed in Actors
+    Any new DigitalAssets row should have a corresponding entry in Actors
+    Delete actor from Actors, delete all DigitalAssets too
+  Enforce with foreign key constraint
+  Relation between the tables is one to many
+    Here actors table is called parent, DigitalAssets child
+
+  // Can declare foreign key in child only if column has index defined on it
+    So must be primary key, unique or key column in parent
+  ALTER TABLE DigitalAssets
+  ADD FOREIGN KEY (ActorId)
+  REFERENCES Actors(Id
+
+  INSERT INTO DigitalAssets
+  VALUES ("www.dummy.url", "instagram", "2030-01-01 00:00:00", 100);
+    > ERROR 1452 (23000): Cannot add or update a child row: a foreign key
+    constraint fails (`MovieIndustry`.`DigitalAssets`,
+    CONSTRAINT `DigitalAssets_ibfk_1` FOREIGN KEY (`ActorId`) REFERENCES `Actors` (`Id`))
+
+  // Can also create foreign key constraint on a table itself
+    Recursive or self-referencing foreign key constraint
+    Ex. Employees table
+      Column identifying manager, but manager is also employee
+    Manager ID references employee ID in same column
+    Employee ID acts as foreign key

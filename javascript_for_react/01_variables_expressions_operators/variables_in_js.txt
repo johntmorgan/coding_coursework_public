@@ -1,0 +1,112 @@
+History
+  var was only way to declare in ES5
+  ES6 = const, let
+  var vs. let vs. const can be confusing in React
+
+Example
+  import React from 'react';
+
+  export default class App extends React.Component {
+    render() {
+      const users = [
+        { name: 'Robin' },
+        { name: 'Markus' },
+      ];
+
+      return (
+        <ul>
+          {users.map(user => <li>{user.name}</li>)}
+        </ul>
+      );
+    }
+  }
+
+  import React from 'react';
+  require('./style.css');
+
+  import ReactDOM from 'react-dom';
+  import App from './app.js';
+
+  ReactDOM.render(
+    <App />,
+    document.getElementById('root')
+  );
+
+  Const variables cannot be reassigned - read-only
+  var scope: function in which variable declared
+  let scope: block in which variable declared
+  const scope: block in which variable declared
+
+  function foo(){
+    for (var i=0; i<5 ; i++){
+      console.log(i);
+    }
+    console.log(i);
+  }
+
+  foo();
+  // prints 5 as well because var set throughout function
+  // but not if you set to let (but then error because i not defined outside block)
+  // const blows the whole thing up, can't increment
+
+Rule of thumb
+  Don't use var, let and const more specific
+  Default to const, cannot be reassigned or declared
+  Use let when want to reassign variable in future
+  Always prefer const over let, let over var
+  let used in for loop incrementing iterator
+  const used for keeping variables unchanged
+
+Operators and Expressions in JS
+  Binary arithmetic
+    As expected
+    7 / 3 = 2.3333
+    Math.floor(7 / 3) = 2
+  Assigment
+    +=, -=, *=, /= as expected
+  Logical operators
+    &&, ||, !
+    1 || 1 = 1
+    1 || 0 = 1
+    0 || 0 = 0
+    1 && 1 = 1
+    1 && 0 = 0
+    0 && 0 = 0
+    !true = false
+    !1 = false
+    !false = true
+    !0 = true
+  Comma operator
+    Evaluate left to right
+    Return value of rightmost operand
+    var a = 4;
+    a = (a++, a);
+    console.log(a) // returns 5
+  Comparison operators
+    As expected
+  Bitwise operators
+    As expected
+    5 & 1 // returns 1
+    5 | 1 // returns 5
+    5 ^ 1 // returns 4
+  String operators
+    Use + for string concatenation
+  Conditional operators
+    var num_of_months = 13
+    var ans = num_of_months > 12 ? "Invalid" : "Valid"
+
+Unary operators
+  typeof - returns type of operand
+  delete - deltes object, object's attribute, or instance in an array
+  void - specifies that expression does not return anything
+  ++, -- = Increment/decrement
+  === - deep equals
+  '1' == 1 returns true - will always try to convert to match types
+  '1' === 1 returns false
+
+Expressions
+  this points to current object
+  super calls methods on object's parent - call parent's constructor
+  function - define function
+  function* - define generator function
+  async function - define async function

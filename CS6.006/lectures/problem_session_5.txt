@@ -1,0 +1,201 @@
+PS5 - graph theory, BFS, DFS
+  PS from last year with a few revision
+1) Measurements on a graph
+  For some reason in CS, graph theory and networks, two different communities
+  Graph community
+    Is it spread out like a line graph (chain? - JM) or compact like a star
+  Undirected graph
+    Given vertex v in V, eccentricity of v ecc(v) = max w in V of delta(w, v)
+    Radius of graph R(G) is the min over all of the different vertices u ecc(u)
+    Say we have a circle
+      Draw a point in the circle
+      What is the eccentricity? - length to farthest point at edge of circle
+      Take the minimum, you wind up in the center of the circle
+        Minimizes max distance to the edge of the circle
+        "Minimax problem"
+          Shows up in game theory
+  1a
+    Algorithm for computing radius of graph
+    Given G, it's connected, compute radius R(G) in O(|V|*|E|)
+    There's an algorithm that writes itself for computing radius
+    Simple: loop over vertices, compute distance to all other vertices
+      for u in V compute shortest path distance to w for all w in V
+      take maxw delta(v, w)
+      If this number is smaller than current radius, then keep
+    Challenge is proving runtime
+      Have a loop over vertices |V|
+      Graph is unweighted, BFS to compute shortest path
+      BFS takes |V| + |E| time
+      O(|V| * (|V| + |E|) time), oops that's too slow
+      But the graph is connected, so the number of edges generally dwarfs vertices
+        Or at most number of vertices = edges
+        |V| <= |E|/2 according to instructor - being conservative, |V| ~= |E|
+        |V| = O(|E|)
+      O(|V||E|) okay
+  1b
+    Approximate radius R*, but smaller time budget, O(|E|)
+    R(G) <= R* < = 2R(G)
+    Upper bound, suggest how to solve, radius is a min
+      Return another one, radius will lower bound
+    Literally choose any vertex, return its eccentricity, that's actually good enough
+    1) Choose any u in V
+    2) Return R* = eps(u) via BFS
+      Is this actually a good bound?
+      Claim: radius of graph R(G) <= R* <= 2R(G)
+      Two inequalities to prove here
+      1) R(G) is the min over all possible u of eps(u)
+        R(G) <= eps(u) because min
+      2) Everything in this course is finite
+        So min is actually achievable - "arg min"
+        R(G) := min over u of eps(u)
+          u0 := arg min u of u in V eps(u) // fancy notation for "give me vertex that makes value as small as possible"
+          Let's say we actually did that, find the vertex that gives radius
+          v0 := arg max over v in V of delta(u0, v)
+          So in circle, u0 would be center, v0 would be on edge of circle
+          But in reality algorithm just picked one at random
+          v := arg max over v-bar in V of delta(u, v-bar)
+        R* = delta(u, v)
+        Favorite inequality, triangle inequality
+        R* <= delta(u, u0) + delta(v0, v)
+        But R(G) = delta(u0, v0)
+                >= delta(u0, v) for all v
+                <= 2R(G)
+  2 Look very closely at homework before doing current one - basic tricks in here
+    Internet investigation
+    Latency proportional to length of cable
+    r routers
+      some are marked as "entry points"
+    bidirectional wires wi each has length li in N (positive integer)
+      no weighted graphs on homework yet, not actually a weighted graph problem
+    latency proportional to shortest path to entry point
+    two key assumptions we need
+      1) latency of every vertex < infinity (so everything is connected to an entry point)
+      2) <= 100r feet of wire
+    Compute sum over all rounters of latency in that router
+      Writing in bullet points, very helpful
+    Problem screams out graph theory
+      But there's a catch, which is runtime is O(r)
+      That's where things get a little funky
+      Don't want to iterate over every single router and get path between every pair
+      Have to be more sneaky than that
+        Canonical trick in graph theory
+        Want linear search time
+    Make a graph
+      instead of having 10 ft of wires, 10 1-foot wires
+        l12 = 3, put 3 len-1 edges in between, connect with chains of li edges for each wire
+      how many vertices in graph?
+        # vertices <= r + 100r (conservatively, less than that due to endpoints)
+                   = O(r)
+        # edges = 100r = O(r)
+        If you do BFS on graph, it's sort of ok
+      Braindead algo:
+        For all routers r
+          For all entry points j
+            Compute delta(r, j)
+          add min of values together
+        Two for loops, worst possible case -> omega(r^2) // not good
+    Prototypical trick
+      Put all the entry points on the left, non-entry on right, because can
+      Think about entry points as one giant node
+      Add one more node to graph, supernode S
+        Connect to every entry point
+          Length 1
+      For every router i, delta(i, S) - 1
+      Don't do inner loop over entry points
+      Calculate shortest distance from supernode to every node in graph, then use that as output
+    Algorithm
+      1) Construct graph (chains of edges between pairs of routers, supernode)
+        Notice supernode does not disturb order of V, E
+      2) Use BFS for shortest path from S to all other vertices in O(r) time
+      3) Sum over routers in i values of delta(S, i) - 1
+  3) Harry Potter labyrinth
+    n rooms, at most 4 doors, build graph out of rooms
+      degree of any vertex is at most 4
+    All doors start closed
+    Some doors are enchanted
+      other doors can be opened for free
+      given map with rooms and connected
+    Find min # of enchantments
+    This problem is kind of sneaky
+      Don't add weights on your graph
+      Shortest paths are actually irrelevant
+    A few things are different about this than typical graph theory
+      Don't pay money again once doors open
+        Keeps this from being a traveling salesman
+      Free to walk through every disenchanted door
+      Here's the sneaky trick, what does this smell like?
+        Connected component problem
+        Remove connected doors
+    So step 1, construct G where nodes are rooms
+      Edges are non-enchanted doors
+    Step 2, compute connected components of G
+      Either full BFS or full DFS, both take linear time in size of graph
+      Thanks to degree bound, both # vertices and edges are O(n)
+    Step 3, return |CC| - 1
+  4) Airline
+    Book itinerary home city, 3 other cities
+    Minimize total number of connections
+    Feels like it would be n-factorial which would be bad news
+      But not, "fixed parameter tractable"
+      Only visiting 3 cities - only 3! (6) different orderings
+    In each case going from source city to second one, etc
+      Want cost of flying from every city you've specified to every other city interested in
+      We have c cities and f flights, but only care about 4
+      2 * 4 ch 2 = 12 = O(1) pairs of cities for itinerary purposes
+      Compute the 12 shortest paths that matter in the graph
+    Construct a graph G with 1 vertex per city and one edge per flight
+      For every pair in {S, A, B, C} compute delta in G
+      12 * O(|c| + |f|) = O(c + f)
+    If you had m cities to visit, would be a very different problem
+    Iterate over every permutation {A, B, C}
+      Add together + compute cost of trip + return trip
+    For loop takes O(6) -> O(1)
+    Entire algorithm in O(c + f) time
+      If 17 cities, 17!, 17 ch 2... still constants
+      Once you go to "m" then need to think more carefully
+  5) Mini Rubik's cube, 2x2x2
+    3 faces - f0, f1, f2 (normal vectors)
+    Fix one corner of cube - can grab top, side, front and rotate clockwise or counter-clockwise
+    20-30 years ago, AI was about solving board games via algorithms
+      Search configuration space
+    Think of every face of cube as painted with color
+      Vertex for each state of the cube
+    Calculate shortest path from current configuration to state with all colors same on each side
+      Approach that happens all over the place in puzzle solving
+    a) number of distinct configurations < 12m
+      A number computers can actually cope with
+      How many corners are in a cube? 8
+      Every time I rotate, sticking corner of cube in another place
+        7 corners of cube can move
+        If being conservative (not worried about unachievable configs)
+        <= 7! config of corners
+        Each corner can rotate 3 ways
+        3^7 * 7! different configs upper bound = 11022480
+    b) There are no configs where different moves are available - always 6 moves
+      So 6 degrees on every vertex
+    c) Gives you code, BFS on graph, super slow
+      Prof ran it on laptop
+      Generates a plot, look at total number of configs it explores
+        Explores about 1/3 of configurations of cube
+      Fun fact, 2x2x2 Rubik's Cube, 3 connected components
+        3 different cubes you can make, regarding 3 different corner rotations
+    d) Max number of moves to solve any Rubik's cube
+      Most vertices are approx distance 11 from start
+      Entire graph is explored at 14 moves away
+        The most annoying 2x2 can be solved in 14 steps
+        Fancy term for the diameter of your graph (radius in first problem)
+      Huge vertical axis on graph (1m at 11) - that's why the BFS code is so slow
+    e) (low on time)
+      How can we go faster?
+      Total of n configurations for Rubik's cube
+      Shorest sequence of move to solve any pocket cube in a number of steps that looks like
+      2N(ceil(W/2)) Ni = # reachable configurations in i moves
+      Basic trick here
+        BFS so far computes level sets until reaches destination
+        Turns out can do this in only 7 moves
+        Run BFS in parallel for 2 vertices
+          Current start state
+          Finish state
+        Intersect at midpoint
+        Never compute a level set more than half the length of the shortest path
+        Another standard trick in board games

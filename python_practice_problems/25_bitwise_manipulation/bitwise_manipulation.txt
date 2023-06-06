@@ -1,0 +1,13 @@
+Bitwise Manipulation
+  & - if both bits are 1, return 1, otherwise 0
+  ~ - flip all bits from 0 to 1 and vice versa
+  | - if either bit is 1, return 1
+  ^ - if both bits are same, return 0, otherwise 1
+
+Swap two numbers without using a temp variable
+  x ^ y = x
+  x ^ y = y
+  x ^ y = x
+
+Compare character of two strings
+  x ^ y - return bits where different

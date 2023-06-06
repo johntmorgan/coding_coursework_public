@@ -1,0 +1,464 @@
+Complexity
+  Covering an entire field in one lecture
+  Algorithms
+    How to solve problems well
+    Showing you can solve a problem well
+  Complexity
+    More about the lower bound side
+    Proving you can't solve a problem very well
+    You can't find a good algo to solve itß
+  We've seen a bit about lower bounds
+    Search and sorting lower bounds proven
+      In bounded branching decision tree model
+    But these are much stronger notions of badness
+    This is not about n vs logn vs content
+      But polynomial vs exponential
+    This class is heavily about getting polynomial
+      Exponential is usually pretty trivial to get
+  Talking about different complexity classes
+  Different ways to prove hardness
+  Pretty high level lecture
+    Not expected to prove
+    But get a flavor for what it's like
+    Pretty much at end of 6.006
+      Talk about what else might study
+    One result to prove today:
+      Most problems actually have no algorithm
+        Kind of shocking!
+      And lots of other fun things
+P
+  Set of all problems solvable in polynomial time
+  P = {problems solvable in polynomial time}
+  We talked about polynomial time and what it means a lot last time
+    Recall polynomial means polynomial in problem size
+      Denote as "n" here
+      The number of words in your input
+    n^(O(1))
+EXP
+  {problems solvable in exponential time}
+  Exponential -> 2^n^(O(1))
+  Every problem we've talked about so far in this class
+    Can be solved in exponential time rather easily
+  Algorithms in some sense about distingushing these two
+    What's in P vs. say EXP - P
+Let's draw a picture
+  Simplification for this class but works
+  An axis of difficulty
+    Easiest on left
+  P is all the way on the left
+  EXP is bigger and includes P
+    P is nested inside EXP
+      These are just upper bounds
+    P C= EXP
+      C!= really
+        They are known to be different from each other
+        Problems can be solved in EXP but not P
+  Example of EXP but not P
+    n x n chess
+      is in EXP - P
+    What is problem
+      Chessboard with white and black pieces, up to n^2 in number
+      Want to know, does white win from this position
+      Can be solved in exponential by exploring the entire tree of possible games
+        But can prove it cannot be solved in polynomial time
+    More positive example (morally, lol)
+      Negative-weight cycle detection in P
+        Directed graph, does it have a cycle
+        Polynomial solution - Bellman-Ford on augmented graph
+        Example of a problem we know how to solve
+          Whole class is full of them
+          But this is a nice non-trivial one that's succinct to phrase
+    Tetris in EXP
+      Perfect information Tetris
+      Give you a board, garbage leftover from past (or starting)
+      Sequence of n pieces to come - can you survive?
+        Can be solved in exponential time
+        But *don't know* whether can be solved in polynomial time
+        It's a problem that very likely is not in P but cannot prove yet
+R
+  {all problems that can be solved in finite time on any computer}
+  R stands for recursive
+    Dates back to early days of computing
+      Recursion was the only approach
+      Now we have loops but they're all effectively recursion in the end
+  Should include everything we care about
+  Bigger than EXP
+  P C= EXP C= R
+    P != EXP != R
+  There's of course many classes in between
+    Say double A exponential time
+    There's many in between, we'll talk about one
+    But first let's talk about R
+Not in R, out beyond R
+  Halting problem
+    Take 6.045 if you're interested
+      (6.046 is the natural successor to this class)
+    Will NOT prove today, takes a whole lecture
+    Given a computer program, does it ever terminate?
+    Great if we knew how to solve, infinite loop detector
+      Tell user there is a bug in your program
+    Impossible, no algorithm that solves this problem
+    Maybe given one program with zero lines of code
+      Could say yeah that one terminates
+    But there's no one algorithm that solves all inputs
+    Call such problems "uncomputable"
+      Another word for being not in R
+  Most decision problems are uncomputable
+    (sketch proof)
+    Decision problems - answer yes or no
+      Special kind of problem
+    Almost all of those cannot be solved
+    Halting is one, cannot be solved
+    Strange and a lil depressing
+  To argue: lil informal about what is computer program, what is decision problem
+    Roughly, count how many are there
+    What is a program?
+      Ultimately a finite string of bits
+        Can translate that into a number
+          A non-negative integer N
+          {0, 1, 2,...}
+    Now what about decision problems?
+      A specification of what we want to solve
+      For every input is the answer yes or no?
+        But what is an input?
+          Think of it as a string of bits also, file
+      decision problem ~= function inputs -> {YES, NO}
+        string of bits associate with a number in n
+    There are infinitely many possible inputs
+      infinite string of bits
+    Every infinite string of bits corresponds to one decision problem
+    Mathematics has well studied this problem
+      Infinitely many integers, infinitely many strings of bits
+      Programs and integers are countably infinite
+    Infinite strings of bits are uncountable
+      Intuitive way to see
+        If put a decimal in front, encodes real number between 0 and 1
+        1:1 bijection with decision problem
+        Bad news: real numbers are uncountable, natural numbers are countable
+      Informally
+        |N| << |R|
+    Every program solves exactly one decision problem
+      Multiple programs do in fact
+        Add extra lines of code
+        Run Bellman-Ford repeatedly for no reason etc
+      Only |N| programs, |R| decision problems not enough to go around
+  No assignment of programs to problems, too many problems
+    When first saw this result, shocked and dismayed
+    Luckily it seems like most problems we care about *can* be solved
+    In fact most problems really hard to solve like n x n chess
+      Where we can prove it takes exponential time
+      There is an algorithm, it's just really slow
+    So it's not all bad
+    "Luckily most problems we care about are in R"
+      Dunno why, mystery of life, but good news
+  General result
+    If you have a general question about a program itself, hard to solve it
+  One more class
+NP
+  In between P and EXP
+  P C= NP C= EXP
+    Do *not* know if P == NP or NP == EXP
+      Probably not but can't prove it
+  But what is this class?
+  Couple of ways to define it - find one or the other more intuitive
+  {decision problems solvable in polynomial time
+    via a "lucky" algorithm}
+    Relates to idea of "guessing" in dynamic programming
+      There you effectively try everything and take max/min/or/etc
+    But simulating a lucky algorithm
+      Always makes the right guess
+      Can't buy such a computer unfortunately
+      Unlike DP ONLY spends time on the lucky guess
+  Non-deterministic model of computation
+    N in non-deterministic -> NP
+    algorithm makes guesses, and then in the end output yes or no
+    Say exploring a maze
+      Turn left, then right, yes if exit/goal, no if dead end
+    Lucky guesses are guaranteed to lead to YES if there is one
+      If there isn't one, I dunno what they do, doesn't matter
+        Wind up at a dead end and say no every time
+  Pretty magical computer!
+    Does not exist in real life
+    Great to program on, very powerful
+    Q: If you have a magical computer, why doesn't it just answer YES/NO?
+      Good check
+      Problem
+      An algorithm that tries to cheat will always just answer YES
+        Does not solve a very interesting problem
+    Q:
+      Exponential number of choices is ok
+      Can only guess one bit at a time
+      Can guess exponential but not more than exponential
+Tetris
+  Claim is in NP
+  There is a lucky algorithm that can solve the game
+  Given a board, sequence of pieces, can you survive?
+  For each piece, guess how to place it
+    Return no if can't place
+    Only need to do a linear number of guesses for each piece
+    And in end return yes if survive
+  Check rules of game
+    If survive, return yes
+    If violate rules, return no
+  Model guarantees will find any way to get to yes
+    Very easy to lose, hard to survive
+  There's an asymmetry in this definition of yes or no
+    Always finds yes answers if possible, not NO answers
+    So it *can* answer "can I survive"
+    Cannot answer "Is it impossible to survive"
+       Not in NP - probably
+Another definition of NP
+  Erik prefers, most people do not
+  NP
+    {decision problems with YES solutions
+      that can be checked in polynomial time}
+    This actually came up in last lecture - subset sum
+      Prove integer can be represented as sum of numbers from set
+      That is a solution that can be checked for a YES example
+      Easy - here's the numbers
+      No instances
+        Only knew because brute forced
+        No succinct way to prove
+Tetris again
+  A certificate for a YES input of Tetris
+    is a sequence of moves for the pieces
+    Can prove by playing game and surviving
+  NO answers... hard to prove can't survive
+  Exactly the same thing guessed in beginning of algorithm
+  "Verification algorithm"
+    Given a problem input + a certificate
+    There is a polynomial time vertification algorithm that satisfies two properties
+      1) for all YES inputs, there exists a certificate
+        Such that the verifier says YES
+      2) for all NO inputs, for all certificate, verifier says NO
+    So if it says NO
+      Maybe you got certificate wrong
+      But if it says YES, then you're good
+  So NP is some additional structure about YES inputs in problem
+  A lot of decision problems are NP
+    Tetris, subset sum
+  Have some tools for talking about problems being *hard* with respect to NP
+P != NP ?
+  Many people conjecture this is true
+  But do not know how to prove
+  Clearly NP does not equal BOTH P and EXP
+    Probably does not equal both
+    But if it equals one, do not know
+  If you could prove or disprove P = NP
+    Win a million dollars and be famous for rest of time
+    Every year there's a crackpot proof that fails
+      Erik has to review some of them
+    Very hard problem, core problem
+  But for the most part just assume it
+    What does that mean?
+    Cannot engineer luck
+    NP can be solved by lucky algo
+    P can be solved by regular ol' algo
+    So if P == NP then luck doesn't buy you anything which seems weird
+    Magically guessing right seems super powerful
+      Way more powerful than when you have to brute force all choices
+    Another phrasing
+      "Harder to come up with proofs than to check them"
+NP hardness
+  Claim: if P != NP
+    Then Tetris is not in P
+    Lot of theorems based on P != NP
+  Why?
+    Tetris is NP-hard
+  Informally
+    Tetris is "as hard as" all problems in NP
+      There is also EXP-hard
+    Problem being in NP is a positive result
+      You're in NP or P
+    NP-hard is a lower bound
+      You are at high end of NP if not more
+      EXP-hard is the same with EXP
+  Intersection of NP and NP-hard is called NP-complete
+  Probably have heard of this
+    In NP, so have certificates, can be verified
+    But also at the hardest end of NP
+      Among them is Tetris
+      Many others, to be listed in a bit
+  If you assume P != NP
+    Tetris must NOT be in P
+    Because the most hard boundary of NP must not be in P
+    Any NP-complete problem is not in P
+  But what does "as hard as" mean?
+    This is our good friend reductions
+    We talked about reductions a lot in this class
+    Easy way to use algorithms
+      Take problem, reduce to problem you already know how to solve
+    A input -> B input (say SSSP) that you already have an algo for solving
+            -> B solution -> A solution
+      When say "solution" mean "certificate" from earlier
+  Reductions we've already seen
+    If unweighted shortest paths on left, can reduce to weighted shortest paths
+      Set all weights to 1
+      Now we know a log faster way to solve,
+        But not a huge deal by poly vs exponential standards
+    Integer weights on right -> subdivide into w edges of no weight on right
+    Longest path in a graph -> shortest path by negating weights
+  Turns out same tool can prove negative results too
+    Take problem cannot be solved and reduce to problem solved, great
+    If can reduce A to B, solving A is at least as easy as solving B
+      A is at least as easy as B
+    B is at least as hard as A
+    This is "at least as hard as" in NP-hardness
+  Every problem in NP can be reduced to Tetris
+    Which is kind of funny
+    If poly algo for Tetris, algo for all problems in NP
+    Take arbitrary problem in NP and reduce to Tetris
+      Luckily not as hard as it sounds, already done once
+      Reduction from all problems to some problem
+        Turing machine simulating lucky algorithms?
+  Briely show some examples of that
+    Start out with problem assume NP-complete
+    3 partition
+    Give you n integers, divide them up into n/3 groups of size 3
+      Such that each group of size 3 has the same sum
+    Give you sticks of varying lengths, group up like on right diagram
+      Total length of each group is same
+      Believe this is NP-complete - won't show that
+      Want to show reduction to jigsaw puzzle solving
+    You might think jigsaw puzzles are easy
+      But in fact if you have a jigsaw puzzle where some matches are ambiguous
+      Represent 3-partition problem by building little sticks
+      Represent that by 
+        Forced joining left and right
+        Blue tabs and pockets all identical
+        Pack rectangles into it that's exactly 3-partition problem
+        Grouping them into 3
+        Demaine paper 2007
+        Jigsaw puzzles are NP-hard
+    Tetris reduction
+      Strange board - columns where can put pieces
+        Repeating set of 3 pieces with initiator and finish to win
+      If solution to 3-partition, can place pieces correctly to survive
+        If not you are guaranteed to lose
+        Proves Tetris is NP-hard
+EXP-completeness
+  n x n chess
+    Know requires exponential time - among hardest problems in exp
+      Two-player makes extra hard
+But most problems NP-complete
+  Subset sum in fact has no poly assuming P = NP (not equal?? - JM)
+    Pseudopoly time best you can hope for subset
+    Related notion "weakly NP-hard" which will not get into here
+      3-partition is one we saw
+  LCS with n sequences
+    NP-complete
+  Longest simple path in a graph
+    NP-complete
+  Traveling salesman
+    Shortest path to visit all vertices in a graph
+      Decision version: min <= x?
+  3-coloring in a given graph
+  Largest clique in given graph
+    Useful for social networks
+  Shortest path s->t in 3D
+    Erik likes as geometer
+    Polynomial in 2D
+      Reduce to graph shortest paths
+  SAT:
+    Given boolean (and, or, not)
+      Is it EVER true if it has some vars not assigned
+  Minesweeper
+  Sudoku
+  Basically every paper & pencil puzzle played
+    There is a paper out there proving NP-Hard
+  Super Mario Bros, Legend of Zelda, Pokemon
+    Actually some probably a little harder in a class called P-space
+      Won't go into (again lol - JM)
+    But if interested in stuff, whole class online
+      6.892
+      Lots of fun examples of NP-hardness
+
+Recitation
+  0-1 Knapsack revisited
+    Input knapsack with volume S, fill with items with size si and value vi
+    Output subset of items (0/1 of each) with sum of si < S maximizing sum of vi
+    Solvable in O(nS) via dynamic programming
+  How does running time compare to input?
+    What is size of input? If number in binary, input size O(nlogS) bits
+      O(nS) runs in exponential time compared to input
+    If numbers polynomially bounded, S = n^O(1), dynamic program is polynomial
+      Pseudopolynomial time algorithm
+    Is 0-1 Knapsack solvable in polynomial time when numbers NOT polynomially bounded?
+      Not unless P == NP What does this mean?
+        More computational complexity in 6.045 and 6.046
+  Decision problems
+    Assignment of inputs to No (0) or Yes (1)
+    Inputs are either No instance or Yes instances (satisfying instances)
+      s-t Shortest Path - does a given G contain a path from s to t with weight at most d?
+      Negative Cycle - does a given G contain a negative weight cycle?
+      Longest Path - does a given G contain a simple path with weight at least d?
+      Subset Sum - does a given set of integers A contain a subset with sum S?
+      Tetris - can you survive a given set of pieces?
+      Chess - can a player force a win from a given board?
+      Halting problem - does a given computer program terminate for a given input?
+    Algorithm/Program
+      Constant length code (working on a word-RAM with omega(logn)-bit words)
+        to solve a problem, i.e. produces correct output for every input, length of code independent of file size
+      Problem is decidable if there exists a program to solve the problem in finite time
+    Decidability
+      Program is finite string of bits, problem is function p : N -> {0, 1}, i.e. infinite string of bits
+      # of programs |N| countably infinite, # of problems |R| uncountably infinite
+        Proof by Cantor's diagonal argument, covered in 6.042
+      Proves that most decision problems are not solvable by any program (undecidable)
+        The halting problem is undecidable (may proofs in 6.045)
+      Fortunately most problems we think of are algorithmic in structure and decidable
+    Decidable problem classes
+      R
+        Decidable in finite time (R from recusrive languages)
+      EXP
+        Decidable in exponential time 2^n^O(1)
+      P
+        Problems decidable in polynomial time n^O(1)
+      These sets are distinct
+        P C= EXP C= R
+        P != EXP != R
+  Nondeterministic polynomial time (NP)
+    P is the set of decision problems for which there is an algorithm A such that for every instance I of size n,
+      A on I runs in poly(n) time and solves I correctly
+    NP is the set of decision problems for which there is an algorithm V, a "verifier"
+      that takes a specific instance I of the problem, and a "certificate" bit string of length polynomial in the size of I
+      so that:
+        V always runs in time polynomial in the size of I
+        If I is a YES-instance, then there is some certificate c so that V on input (I, c) returns YES
+        If I is a NO-instance, then no matter what c is given to V with I, V will always output NO on (I, c)
+      Think of certificate as proof that I is a YES-instance
+      If I is actually a NO-instance, then no proof should work
+    s-t Shortest Path, Cert: path P from s to t, Ver: add weights on P and checks if <= d
+    Tetris, Cert: sequence of moves, Ver: checks that the moves allow survival
+    P C NP
+    Does P == NP, NP == EXP? open question
+    People generally think P != NP and NP probably != EXP, i.e. generating solutions harder than checking
+      Prove either way, $1m Millenium Prize
+    Why do we care
+      If we show a problem is hardest problem in NP, then cannot be solved polynomial if P != NP
+      How do we relate difficulty of problems? Reductions
+  Reductions
+    Suppose you want to solve problem A
+    Covert problem A into problem B you know how to solve
+    Solve using algo for A B and compute solution to A
+    This is caled a reduction from problem A to problem B (A -> B)
+      Because B can be used to solve A, B is at least as hard (A <= B)
+      General algo strategy: reduce to problem you know how to solve
+    Unweighted shortest path -> weighted shortest path by giving all equal weights
+    Product weighted shortest path -> logarithms -> Sum weighted shortest path
+    Sum weighted shortest path -> exponents -> Product weighted shortest path
+  Problem A is NP-Hard is every problem in NP is polynomially reducible at A
+    A is at least as hard as (can be used to solve) every problem in NP
+      X <= A for X in NP
+    NP-Complete = NP intersect NP-Hard
+    All NP-complete problems are equivalent, i.e. reducible to each other
+    First NP-Complete? every decision problem reducible to satisfying a logical circuit
+    Longest Path and Tetris are NP-complete, Chess is EXP-complete
+  0-1 Knapsack is NP-Hard
+    Reduce known NP-Hard Problem to 0-1 Knapsack: Partition
+      Input: list of n numbers ai
+      Output: does there exist a partition into two sets with equal some
+    Reduction: si = vi - ai, S = 1/2 sum ai
+    0-1 Knapsack at least as hard as Partition
+      Since partition is NP-Hard, so is 0-1 Knapsack
+      0-1 Knapsack in NP, so also NP-complete

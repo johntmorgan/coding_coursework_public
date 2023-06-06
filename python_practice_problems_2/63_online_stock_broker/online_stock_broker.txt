@@ -1,0 +1,288 @@
+Online Stock Brokerage
+  Buyer/seller intermediary
+  Users carry out transactions
+    Monitor
+  Displays performance graphs
+  Protects client transactions
+  Notifications when stock reaches certain levels
+
+Questions
+  How will members search stocks?
+  How will the search surface results?
+  Can everyone see all stock positions at all times?
+  What kinds of orders can users place?
+    Market order
+    Loss order
+    etc.
+  Multiplicity
+    Can members have multiple watchlists?
+    Watchlist with multiple quotes?
+    Can buy same stock repeatedly at different times?
+
+Start small
+  Stock
+  Stock position
+
+Then bigger
+  Order
+  Stock inventory
+
+Design patterns
+  Singleton
+  Observer
+
+Requirements
+  Allow user to easily buy & sell stock
+  Users may have many watchlists with stock quotes
+  Users may own different lots of same stock
+    System needs to be able to distinguish lots
+  Notify users when trade order carried out
+  Order trades:
+    Market order: at current price
+    Limit order: at price set by user
+    Stop-loss order
+    Stop-limit order: restrict limit price
+  Allow user to deposit and withdraw
+    Check
+    Wire transfer
+    EBT
+
+Use Case
+  System
+    Stock Brokerage
+  Actors
+    Primary
+      Member
+    Secondary
+      Admin
+      System
+
+  Member
+    Create account
+    Cancel membership
+    Login/logout
+    Update account
+    Place order
+    Cancel order
+    View stock positions
+    Add to wishlist
+    Create/update wishlist
+    Search stock inventory
+    Deposit/withdraw money
+
+  Admin
+    Create account
+    Cancel membership
+    Update account
+    Login/Logout
+    Block/unblock member
+
+  System
+    Fetch quotes
+    Send order status notification
+    Send deposit/withdrawal notification
+
+Relationships
+  Generalization
+    EBT, Wire Transfer, Check Transfer generalization with Transaction
+    Market Order, Limit Order, Stop-Loss, Stop-Limit with Place Order
+
+  Include
+    Deposit/Withdraw include with Transaction
+
+Classes
+  Account - abstract
+    id
+    password
+    accountStatus: AccountStatus
+    address: Address
+    email
+    phoneNumber
+    resetPassword()
+    Admin extends
+      blockMember()
+      unblockMember()
+      cancelMembership()
+    Member extends
+      availableFundsForTrading
+      membershipDate
+      stockPositions: HashMap<string, StockPosition>
+      activeOrders: HashMap<integer, Order>
+      placeBuyLimitOrder()
+      callbackStockExchange()
+
+  Watchlist
+    name
+    stocks: Stock {list}
+    getStocks()
+
+  Stock
+    symbol
+    price
+
+  StockInventory
+    inventoryName
+    lastUpdated
+    implements Search interface
+      searchSymbol()
+
+  StockPosition
+    symbol
+    quantity
+
+  StockLot
+    lotNumber
+    buyingOrder: Order
+    getBuyingPrice()
+
+  Order
+    orderNumber
+    isBuyOrder
+    orderStatus: OrderStatus
+    timeEnforcement: TimeEnforcementType
+    creationDate
+    setStatus()
+    saveInDatabase()
+    addOrderParts()
+    StopLossOrder extends
+      priceLimit: double
+    LimitOrder extends
+      priceLimit: double
+    StopLimitOrder extends
+      priceLimit: double
+    MarketOrder extends
+      princeLimit: double
+
+  OrderPart (multiple may be needed)
+    price
+    quantity
+    executedAt
+
+  DepositMoney
+    transactionId
+
+  WithdrawMoney
+    transactionId
+
+  TransferMoney
+    id
+    amount
+    creationDate
+    fromAccount
+    toAccount
+    initiateTransaction()
+    ElectronicBank extends
+      bankName
+    Wire
+      wireId
+    Check
+      number
+      (routing number? - JM)
+
+  Notification abstract
+    notificationId
+    createdOn
+    content
+    send()
+    EmailNotification extends
+      email
+    SMSNotification extends
+      phoneNumber
+
+  StockExchange
+    placeOrder()
+
+Enums
+  OrderStatus
+    Open
+    Filled
+    PartiallFilled
+    Cancelled
+  TimeEnforcementType
+    GoodTillCancelled
+    FillOrKill
+    ImmediateOrCancel
+    OnTheOpen
+    OnTheClose
+  AccountStatus
+    Active
+    Closed
+    Canceled
+    Blacklisted
+    None
+
+Custom Data Types
+  Address
+    zipCode
+    streetAddress
+    city
+    state
+    country
+
+Relationships
+  Association
+    One-way
+      StockInventory one-way Watchlist, StockExchange
+      Order one-way Stock, StockExchange, StockLot
+      Account one-way Order, DepositMoney, WithdrawMoney
+      StockPosition one-way Order
+    Two-way
+      Notification two-way Order
+      WatchList, StockPosition, two-way Account
+
+  Composition
+    Order composed of OrderPart
+    StockInvetory composed of Stock
+    StockPosition composed of StockLot
+
+  Inheritance
+    Admin and Member extend Account
+    MarketOrder, LimitOrder, StopLimitOrder, StopLossOrder extend Order
+    EBT, WireTransfer, CreditCard extend TransferMoney
+    SMSNotification, EmailNotification extend Notification
+    StockInventory implements Search interface
+
+Design patterns
+  Singleton - stock exchange
+  Observer - buy and sell at limit
+
+Sequence diagram: sell a stock
+  Actor
+    Member
+  Objects
+    StockInventory
+    StockExchange
+
+  Member selects stock and order params
+    Order type, stock quantity, price limit, time enforcement
+  If stock available
+    Stock deducted from inventory
+    Order details sent to exchanage
+    Exchange acknowledges
+    Member notified
+  If not available
+    Member notified
+
+Activity diagram: buy a stock
+  Initial state: select a stock to buy
+  Final state:
+    Stock purchased
+    Member informed insufficient funds
+
+  Member selects stock to buy
+  Member selects order type
+    Market
+    Limit
+    Stop Loss
+    Stop Limit
+  Member selects quantity
+  Member selects time price limit
+  Member selects time enforcement
+  Is enough deposit available?
+    No:
+      Show error message -> done
+  Deduct funds
+  Send order to exchange
+  Receive acknowledgement
+  Notify member
+

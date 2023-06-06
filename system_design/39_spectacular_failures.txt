@@ -1,0 +1,283 @@
+Spectacular Failures
+  How do carefully designed services with years of polish fail?
+  Factors causing failures
+    Need to keep updating with new features & services
+      New users = more requirements
+    Complex systems
+      Emergent properties, sum more complex than parts
+  In distributed systems
+    Design to contain failures
+      Localize for some users
+    System failure
+      Hardware, software
+      Contents in primary memory lost
+      Data in secondary storage, replicas not lost
+      System reboots
+    Method failure
+      Suspend working of system
+      System can execute processes incorrectly
+      System can enter deadlock state
+    Communication medium failure
+      One component can't reach the others
+    Secondary storage
+      Storage/replicas down
+      Data becomes inaccessible
+      Primary needs to generate another replica
+  Vantage points
+    Something is always failing in large services
+      Good to have graceful degradation
+      Only small portion of users are impacted
+        Only for a short time
+    Globally dispersed vantage points to check system status
+    Independent services
+      e.g. Downdetector
+      Crowd-sourced problem reporting
+      If you look at apps... someone always having a problem
+  Independent ISPs are important
+    Internet design goal to provide resilience
+    Handful of service providers in last decade
+      Centralized -> failure impact increases
+    Company monitoring can be taken out by failure as well
+  Handling
+    Communicate to customers on Twitter etc.
+    Independent third-party services available
+  Broader concept
+    Independent failure domain
+    Anything outside a domain/network shouldn't be affected
+    Domains independent if outside each other's "blast radius"
+  This chapter: failures
+    Well-known services, giant companies
+    Causes
+    Mitigation techniques to avoid
+    Great way to learn
+      But of course best to prevent!
+
+Facebook, WhatsApp, Insta, Oculus outage
+  October 2021
+  6 hours
+  Cost $100m in revenue losses
+  Cost billions in stock losses
+
+  Sequence of events
+    Routine maintenance
+    Find spare capacity on FB backbone
+    Config error in maintenance system
+      Automated config review tool failed
+    All data centers on backbone network disconnected from each other
+    Facebook authoritative DNS health check rule:
+      If can't reach internal data centers, withdraw routes
+    All cached mapping of names to IPs timed out at all public DNS resolvers
+
+  Analysis
+    Common action -> catastrophe
+      Withdrawing/adding network route relatively common
+      Confluence of bugs triggered chain of events
+      Cascading failures
+    Slow restoration
+      Why 6 hours?
+      Can't you just reannounce routes?
+      Little done manually at FB scale
+      Internal tools relied on DNS infrastructure
+      Manual intervention necessary
+      Manually bootstrapping system = hard
+        Physical & digital security mechanisms in place to slow down
+    Low probability
+      Very rare for no data centers to be available!
+    Pitfalls of automation
+      FB early advocate of automated network config changes
+      Software runs network better than humans
+        Humans more prone to errors
+        But software can also have bugs!
+
+  Lessons
+    Ready operations team
+      There can always be a hidden SPOF in your system
+      Have the team ready for this
+      Need to think clearly under high stress
+    Simple system design
+      Big system -> complex
+      Emergent behaviors
+      Need to understand more than just components
+      Cascading failures possible
+      Keep designs as simple as possible
+      Evolve designs slowly
+      No perfect solution
+      Accept possibility of failure
+      Continuous monitoring
+    Contingency plan
+      Third-party services unable to use single sign-on
+        Hidden SPOF for them
+    Host DNS to independent third-party
+      DNS very robust, ~perfected over time
+      People start assuming always 100% available
+      Hosting DNS to third-party one way to guard
+      DNS allows multiple auth servers
+      Although DNS at FB scale not simple
+        Tightly connected to infrastructure
+        Changes frequently
+      Delegation could be expensive
+        Reveal internal service details
+    Tradeoffs
+      Surprising
+      Data security vs. fast manual repair
+      Hope need for repairs is rare
+    Surge in load
+      Third-party public resolvers - Google, Cloudflare
+    Resuming service
+      Restarting large service not just flipping a switch
+      May be a multi-megawatt uptick in power usage
+        Electric grid can even have issues
+  How to safeguard against?
+    Network verification - may catch bugs early
+    Multiple layers of auditing
+      Simulator of config changes?
+    Reduce scope of config changes as much as possible
+    Critical infrastructure auto-return to last known good state
+      Easier said than done across many components
+
+AWS Kinesis outage
+  Amazon Kinesis
+    Aggregate process, analyze real-time streaming data
+    Captures GBs of data from 100k+ sources/second
+    Frontend
+      Auth, throttling, workloads -> cluster via sharding
+    10/25/2020
+      Disrupted in US-East-1
+      Took out large portion of internet services
+
+  Sequence
+    Add a small capacity to AWS front-end servers late at night
+    New capacity caused all servers to exceed max threads allowed
+      Limited by OS config
+    Cache construction failed to complete
+      Front-end servers useless shard maps
+      Cannot route requests to back-end servers
+    Amazon Cognito, CloudWatch also down
+      Cognito uses Kinesis Data Streams to gather & analyze API usage patterns
+      Hidden error in buffering code caused Cognito web servers to block
+      Cognito customers had increased API failures
+        Latency for Cognito user & identity pools up
+      External users cannot auth or receive temp AWS credentials
+      Cloudwatch uses KDS to process metrics and log data
+        High error rate, latency
+        Alerts set to INSUFFICIENT DATA
+        Most metrics cannot be processed
+          Both internal and external clients
+    Cloudwatch impacted more services
+      Autoscaling based on CloudWatch had delays
+      Lambda should buffer data locally if CloudWatch unavailable
+    Increasing API failures & event processing hit CloudWatch Events, Event Bridge
+      Cluster provisioning, existing cluster scaling, task deprovisioning
+    Amazon delays in service status comms to customers
+      Service Health Dashboard depended on Cognito
+    Ripple effect
+      Adobe SPark, Acorns, Coinbase, WaPo
+
+  Analysis
+    Enhancing scalability complex
+      Horizontal scalability emphasized in design problems
+      In practice adding more capacity to cluster can be challenging
+    Trained team
+      Worth it, expedited recovery
+    Reading from authoritative servers during bootstrap
+      Good idea, rather than front-end servers
+    Automated processes needed to identify faults in early stages
+    Proper testing
+      Potential bug should have been caught earlier
+      Need a simulator to test all cases
+    Fix potential bugs before planned events
+      Cognito bug emerged due to KDS
+    Automated processes for resource allocation
+      Cognito team attempted to manually increase capacity for buffering
+      SHould be automated system
+
+  Lessons learned
+    Testing
+      Important
+      Realize number of threads exceed a maximum limit
+    Ready operations team
+      Production team should be trained and ready
+    Reducing number of servers
+      To get more room in thread count, move to more powerful servers
+      Amazon is adding fine-grained alarming for thread consumption
+    Front-end fleet changes
+      Radically improve cold start time
+      Move front-end server cache to dedicated fleet
+    Avoid recurrent failures
+      Extensive services should be moved to partitioned front-end fleet
+
+  What should Amazon have done?
+    Partition region into independent failure domains
+      Reduce blast radius
+      Make it easier for production team to recover
+    System like Facebook Resource Allowance
+      For capacity reservation at time of planned & unplanned events
+    Customers build apps across multiple clouds, AWS regions
+    Uncouple services to an extreme extent
+      Eliminate cross-dependency issues
+    Failures are inevitable
+      Key services like status dashboard should be on different servers
+        Either separate inside service, or third-party
+
+AWS widespread outage
+  12/7/2021 7:35 AM PST
+  Several Amazon services, many depending on them
+  Emphasized need for decentralized internet
+    80% of cloud market handled by just 5 companies
+    Amazon is 41% of cloud computing
+
+  Sequence
+    Automated action to expand capacity of an AWS service near AWS netowrk
+    Unusual behavior from a number of internal network customers
+    Significant increase in connection activity
+    Networking equipment swamped
+      Connecting internal network to main AWS
+    Communication became delayed
+    Latency and failures increased for services interacting between networks
+    Rise in retries and ping requests
+    Devices connecting networks overloaded, performance difficulties
+    Overload instantly affected AWS internal real-time monitoring
+      Could not identify cause of congestion easily
+    Operators had to look at logs
+      Observed heightened internal DNS failures first
+
+  Analysis
+    AWS services hampered
+      Affected customers
+      Primary AWS network unaffected
+        Some clients relatively ok
+      AWS users like Amazon RDS, EMR, Workspaces no new resources
+        Could not launch new EC2 instances
+    Impaired control plane
+      Control planes for establishing/managing AWS resources affected
+      EC2 instances not affected
+      EC2 APIs increased latency, error rates
+    Slow restoration
+      Operators focused on moving internal DNS traffic away from congestion
+      However monitoring services unavailable
+        Identify and disable major traffic sources manually
+    Elastic load balancers
+      Current ones unaffected
+      Rising API error rates & latencies for APIs -> long provisioning times
+
+  Lessons learned
+    Independent communication system
+      Internal network separate from main is a good idea
+      However networks were not truly independent
+      Key to identify dependencies
+    Contingency plan
+      AWS takes measure to prepare for surges
+      However failure was unusually severe
+      Invest in more planning
+    Ready operations team
+    Multiple cloud computing providers
+      Orgs can replicate operations across many providers
+      Easier said than done
+      At least employ different regions of same provider
+    Testing
+      Test and identify bugs
+
+  Safeguarding across faults
+    End-to-end transparency at each layer
+    Build app across multiple clouds or at least AWS regions
+    Uncouple services to extreme extent, avoid cross-dependency

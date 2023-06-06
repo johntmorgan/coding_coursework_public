@@ -1,0 +1,635 @@
+Async.io
+  Concurrency: dealing with multiple things at once
+    Single CPU?
+      Can run several processes or threads, but not parallel
+    Concurrency creates illusion of parallel execution
+      Even if only one thread/process running at a time
+  Parallel: execut multiple things at once
+    Can only be achieved with multiple CPUs
+  What if 4 cores, 100 processes?
+    Both parallel and concurrent
+    But mostly concurrent
+    Can only do 4 things at once
+
+Async.io
+  Asynchronous input output
+  Programming paradigm
+  High concurrency using single thread or event loop
+  Not novel to Python
+    Most prominent: NodeJS
+  Example
+    Single waiter in restaurant
+    Three customers show up
+      Take different amount of time to decide meal
+    If you took the slowest one first, it would be slow
+      Fast deciders wait a long time
+    Take the fastest one first, all get served with zero wait
+  This is very similar to how NodeJS works
+    Single-threaded event loop serving all requests
+
+Iterables
+  Iteration: repetition or process or utterance
+  In Python iterable = object whose member elements can be looped over with for loop
+    Iterable capable of returning members one by one
+  Common iterables are sequences
+    Lists, strings, tuples
+    Support efficient access via indexing
+    getitem() returns member at specified index
+    length() returns length
+  Not every type in Python is a sequence
+    Dictionaries
+    Sets
+    File objects
+    Generators
+    Not indexable but iterable
+  Infinite iterables: generators (coming soon!)
+  To qualify as iterable, must define 1 of 2:
+    __iter__()
+    __getitem__()
+  Container objects need __iter__() to support
+    Returns iterator for object
+
+Iterator
+  Object used to sequentially access elements of Iterable object
+  Exposes __next__() method in Py3 and next() in Py2
+  Must support
+    __iter__()
+    __next__()
+  Iterator object returns itself for __iter__() method
+    Use iterator and iterable in for loop
+  When end of iteration reached
+    next() throws StopIteration exception
+  The above rules = "iterator protocol"
+  __iter__() can also return a generator
+    Also an iterator
+
+Yield
+  Both produces values and gives way
+  Replace return with yield
+  Returns generator object
+  To yield the string, invoke next() on it
+  Or can say for item in returned, e.g. print(item)
+  Yielding multiple adds to same generator
+  If you call next() after iterating through, get a StopIteration exception
+  Yield and return together
+    Return is now value of StopIteration
+      Can display via try/except
+
+Suspending state
+  True power of yield
+  Return sequence or list from method but without computing up front
+  Say you want to grab prime numbers
+    But you don't know how many you will need
+    Don't just precompute 1m primes!
+  Generator function resumes on next() call
+    Set gen equal to function
+      Which yields rather than printing/returning
+    Then keep printing next(gen)
+
+Generator
+  Functions containing yield compiled as generators
+  Using a yield in function body = generator
+  Return object that support iteration protocol methods
+  Can invoke gen.__next()__ instead of next(gen) - direct
+  Iter(gen) is gen return true
+  Confirming generator returns iterator object
+  Keys:
+    Procrastinate computing expensive values
+      Only compute when required
+      Memory & compute efficient
+    When suspended retain the code location, which is last yield executed
+      And entire local scope
+      Resume exactly where left off
+    Generator objects = iterators
+    Generator function != generator object
+      Often used interchangeably
+      Generator function when invoked returns generator object
+      next() invoked on objec to run code in generator function
+    Generators are methods but can be paused and returned later
+  yield is syntactic sugar
+    Tells Py interpreter to generate iterable object
+    Pause function, save local state
+
+Generator states
+  GEN_CREATED - generator object returned, iteration not started
+  GEN_RUNNING - next() has been invoked
+  GEN_SUSPENDED - suspended at a yield
+  GEN_CLOSED - completed execution or been closed (coming)
+    iter.close()
+  Return state with:
+    import inspect
+    iter = iter_function()
+    inspect.getgeneratorstate(iter)
+  Why doesn't for loop show StopIteration exception?
+    for loop caches StopIteration, ends loop
+
+Generator methods
+  throw()
+  send()
+  close()
+
+  close()
+    Invoked by interpreter, generator is garbage collected
+    Can also invoke manually - makes unavailable
+    Intent to clean up before exits
+    Creates GeneratorException
+    Can also catch GeneratorException in the generator function
+
+send()
+  Pass data to generator
+  Can also receive value via item = yield
+  Run next to gen generator set to receive yield
+    Can also send(None)
+  send() assigns in generator and returns next value yielded
+    If no value yielded, StopIteration exception raised
+  What if multiple yields?
+    Can freeze after first yield
+    next() or send() advances
+      But send() is not immediately received
+      "Noop send"
+
+  Single yield also possible, and without noops needed
+    k = (yield i)
+    k gets assigned expression
+    expression itself is yield i
+    Generator yields variable back to caller
+    Then generator receives value from caller
+    Start generator with next() or sending None
+    Outside
+      item = generator.send(55 + i)
+
+    But usually do *not* mix iteration and sending
+      Not advised by Python experts
+      Use generators to generate values
+      Use coroutines to consume values
+        Another type of generator
+
+Coroutines
+  Systems achieve concurrency by context switching threads for CPU time
+  Threads taken off CPU if I/O call or exhaust time slice
+    OS pre-empts thread, forcing off
+  Cooperative multitasking - thread gives up
+    When logically blocked
+      Waiting for user input
+      Initiated a network request
+    Process scheduler requires cooperation
+      Cooperative
+      Non-preemptive multitasking
+  Coroutines enable cooperative multitasking
+    Programmer must schedule reliably
+    Misbehaving process can hog CPU, starve others
+  General concept found in many languages
+    Special function that gives up control to caller
+      Does not lose state
+  Methods or functions we are used to
+    Do lose state between invocation
+    Actually specialization of coroutine - "subroutine"
+  Generators are basically iterators, but look like functions
+    Are not coroutines
+    Generators yield value to invoker
+      Coroutine yields control to another coroutine
+        Resumes from location it gave up control
+    Generator can't accept arguments once started, coroutine can
+    Generators simplify writing iterators
+      Type of coroutine - or semicoroutine
+  Native coroutine support introduced in Py3.5
+    Before were implemented using generators
+    Objects of both are of type generator
+  History
+    Generators added in Py2.2
+    Generators only iterators until Py 2.5
+      Now can close with close(), send with send(), throw execption with throw()
+      Now called coroutine
+        Print classname, still shows generator object
+      Yield elevated from statement to expression
+    Syntax yield from added in Py3.3
+      Refactoring generators easier, chaining coroutines like unix command piping
+    Module asyncio implemented Py3.4
+      Introduces event loop for async programming
+      Coroutines with yield from defined as generator based coroutines
+    Coroutines core language feature Py3.5
+      Now defined with keyword async def
+      Generator & native coroutines different objects
+  Respond to send() and next()
+    Just creating does not execute
+    Executing next() to advance to first yield = "priming"
+  A coroutine is a control flow device
+    Implement cooperative multitasking
+    Yields control to central scheduler for others
+  Different than a thread!
+    Does not use as much memory
+    Does not require OS support or invoke system calls
+    Does not need to worry about synch access to shared data structures
+      Mutexes, semaphores, etc. not required
+    Concurrent but not parallel
+
+Event Loop
+  Wait for events to happen
+  Dispatch to event handler
+  Events
+    User clicking UI button
+    Process initiating file download
+  At the core of asynchronous programming
+  Common use case: web servers
+    Wait for HTTP request to arrive
+    Return matching resource
+  NodeJS works the same way
+    Run event loop
+    Receive requests in single thread
+    Much better than webserver
+      Create new thread or worse fork process for each request
+    Async event loop may outperform multithreaded servers
+  Rationale
+    Ryan Dahl - NodeJS creator
+    If 3 CPU cycles = 1 second
+    Then network I/O = 2.5 years
+    If disk and network I/O are synch, waste a ton of CPU cycles
+    How to making synchronous blocking I/O non-blocking?
+      Use threads to make blocking calls OR
+      Convert blocking to non-blocking async calls
+    Threads are expensive
+      Creating, maintaining, tearing down
+    Apache uses threads
+    NGINX uses event loop
+      Way better memory usage under high load
+  Python
+    Rarely need to access directly
+      Unless working on low level libraries, functionality
+
+    import asyncio
+
+    loop = asyncio.get_event_loop()
+    print(str(loop))
+
+  To run
+    From Python 3.7, use asyncio.run()
+    Blocking until passed-in coroutine finishes
+
+    async def do_something_important():
+        await asyncio.sleep(10)
+
+    if __name__ == "__main__":
+      asyncio.run(do_something_important())
+
+    If Python 3.5 or earlier, asyncio.run() not available
+    Explicitly retrieve with asyncio.get_event_loop()
+    Run with run_until_complete()
+
+  Multiple event loops
+    Should never start event loop yourself
+    Use higher level APIs to submit coroutines
+
+  Invoking callbacks
+    Schedule regular functions on event loops
+    asyncio.call_soon()
+      Schedules for next iteration
+    asyncio.call_later()
+      Takes delay parameter
+
+  Can block event loop with e.g. time.sleep()
+    While asyncio.sleep(10) does not block loop
+      Keeps printing monitor for 10s while sleeping
+      While time.sleep results in interruption, loop hogged
+
+  Two types of event loops
+    SelectorEventLoop
+      Based on selectors module
+      Default on all platforms
+      poll() and select() APIs
+    ProactorEventLoop
+      Use Windows I/O Completion Ports
+        Only supported on Windows
+    No more details here
+      But type and *policy* control event loop behavior
+
+Yield From
+  Introduced recently
+  Enables refactoring of code with yield more easily
+  Expects an iterable on its right, runs to exhaustion
+  Don't need to loop re-yield when passing through nested expressions
+    Just yield from
+  Inner level = subgenerator
+  Mid level = delegating generator - yield from goes here
+  But main motivation is to make easier to work with coroutines
+    Exceptions pass through as well
+    Generator states pass through as well
+  Can be thought of as creating transparent bidirectional comm between caller, subgenerator
+  Can also receive value returned by subgenerator
+    Via return
+  Native coroutines (more later)
+    await keyword
+      Suspend execution until result of await argument (coroutine) becomes available
+      Similar to yield_From
+        Borrows most implementation
+      Legacy code can't use await
+        Can only be used inside asyn function
+        Use yield_from to await
+
+      @asyncio.coroutine
+      def gen_based_coro():
+        yield from asyncio.sleep(1)
+
+  Futures
+    Make iterable with addition of __iter__()
+    f = Future()
+    it = f.__iter__()
+
+  Task objects
+    Also, as task is subclass of Future
+
+  Basically any class that implements iteration protocol can appear right of yield from
+
+Generator based coroutines
+  Legacy section
+  Python created distinction between generatores and generators used as coroutines
+    Decorate with @asyncio.coroutine but not strictly enforced
+    Decorator enables async def compatibility, and documents
+  Use yield from instead of yield
+  Can
+    Yield from another coroutine
+    Yield from a future
+    Return an expression
+    Raise an exception
+  Overall
+    Use yield from, becomes coroutine, require @asyncio.coroutine decorator
+    If doesn't use yield from, decorator makes coroutine
+  Coroutine function is the actual function
+    Coroutine object is what is recevied by calling the function
+  Generators and generator based coroutines are both coroutines outside Python
+    inspect.isawaitable() distinguishes
+  Predate newer async/await syntax
+  asyncio.sleep() is itself a coroutine
+  Can run several sleep operations (1, 2, 3 seconds) all in 3 seconds
+    When blocking operation is encountered, passes control back to event loop
+    (Note use of asyncio.gather(coroutine(1), coroutine(2) etc) to run multiple subroutines)
+    Change to time.sleep and now it takes 6 seconds - completely serial
+
+Native Coroutines
+  @asyncio.coroutine will be deprecated in Py3.10
+  Now define with async/await syntax
+  Simple
+    async def coro():
+      await asyncio.sleep(1)
+
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(coro())
+
+  async def automatically turns into native coroutine
+    inspect.iscoroutine(coro) returns true
+    yield and yield from cannot appear in body of async def method - syntax error
+  await used to obtain result of coro object execution
+    Must be awaitable object to right
+      Implementing __await__() method which returns iterator
+        Under hood borrows implementation from yield from
+    Awaitable objects
+      Native coroutine object from native coroutine function
+      Generator based coroutine - generator decorated with:
+        @types.coroutine
+        @asyncio.coroutine
+        Do not have an __await__() method, but still work
+      Future object
+      Task object (subclass of Future)
+      Defined in CPython C API with tp_as_async.am_await()
+        Returns iterator similar to __await__()
+    await must appear inside async def method, or syntax error
+  Messy syntax history reference chart:
+    https://www.educative.io/module/lesson/concurrency-python/qAAVRZX3jAG
+  Outside Python:
+    Generators are specialzed case of coroutines
+  In Python:
+    Started with vanilla generators
+    Then enhanced
+    Generator object receiving values from outside = coroutine
+      Even though same class as generator
+    Then yield from was a generator-based coroutine
+    Finally native coroutines
+  Python now:
+    Generators produce values only
+    Vanilla coroutines receive values only
+    Generator-based coroutines yield from
+    Native coroutines async/await
+
+    Coroutine/generator test returns:
+      https://www.educative.io/module/lesson/concurrency-python/mE24W2v62lG
+
+Mixing native and generator based coroutines
+  Native
+    Don't implement __iter__() and __next__()
+    Can't be iterated upon
+  Generator based
+    Can't yield from native coroutine
+      Syntax error:
+        def gen_based_coro():
+          yield from asyncio.sleep(10)
+      But ok with decorator:
+        @asyncio.coroutine
+        def gen_based_coro():
+          yield from asyncio.sleep(10)
+  inspect.isgenerator() and inspect.isgeneratorfunction()
+    False for native coroutine
+    True for generator-based coroutine objects and functions
+  Decorator also allows generator-based coroutine to be awaited in native
+    import asyncio
+
+    @asyncio.coroutine
+    def gen_based_coro():
+        return 10
+
+    async def main():
+        rcvd = await gen_based_coro()
+        print("native coroutine received: " + str(rcvd))
+
+    if __name__ == "__main__":
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(main())
+
+  Decorator will be removed in Py3.10!
+  @types.coroutine
+    Does basically the same job
+    But does not turn ordinary function into coroutine
+      @asyncio.coroutine tests true for asyncio.iscoroutinefunction()
+      @types.coroutine tests false
+
+Chaining coroutines
+  Prominent use
+  Chain to process data pipelines
+    Similar to piping Unix commands in a shell
+  Idea
+    Input passes through coroutine 1 - may perform some actions
+    Then passed to coroutine 2 - more actions
+    etc.
+    Last coroutine yields to original caller
+
+Future & Tasks
+  Future
+    Computation in progress or will be scheduled in future
+    Special low-level awaitable object
+      Represents eventual result of asynchronous operation
+      Can be used with yield from
+    Do not confuse with threading.Future
+      That is part of threading, does not have __iter__() defined on it
+    Generally should not need to deal with directly
+      Exposed by libraries and asyncio APIs
+      But can create via Future()
+  Task
+    Subclass of Future
+    Very much like Future
+    To create
+      asyncio.create_task()
+        Py3.7, preferred
+        Accepts coroutines, wraps as tasks
+      loop.create_task()
+        Only accepts coroutines
+      asyncio.ensure_future()
+        Accepts Futures, coroutines, any awaitable
+    Wrap coroutines, run in event loops
+    If coroutine awaits on Future, Task suspends execution of coroutine
+      Waits for Future to complete
+      When Future is done, execution resumes
+    One task is run at a time, cooperative scheduling
+    While waiting for Future, event loop
+      Runs other tasks
+      Runs callbacks
+      Performs IO
+    Tasks can be cancelled
+
+Web Crawler example
+  asyncio is great for blocking operations
+    Network I/O
+    Disk I/O
+  Let's do a crawler that fetches HTML for list of URLs
+    Pass HTML into consumer that performs indexing
+  Use aiohttp module for async REST GET calls
+  Create coroutine for each URL and then submit to event loop for execution
+  (Examples in .py files)
+  Note event loop and multiprocessing fastest
+    Far faster than serial
+
+Async Sleep
+  asyncio.sleep() is an asyncio API
+    Commonly used in intro examples
+  Let's make our own
+  Common interview problem
+    Can do in an hour
+    Tricky to test thought process
+  Don't use time.sleep() to wait out
+    Blocking
+    Can't use on main thread
+    Can use on another thread
+  Create future object, await in asleep() coroutine
+    Resolve future after sleep_for seconds have elapsed
+    Actually hangs because Future is not thread-safe
+      asyncio provides method to fix
+      run_coroutine_threadsafe()
+    But need to run in another coroutine since only takes in coroutines
+    Define nested coroutine sleep_future_resolver
+      Resolves Future object
+      sync_sleep now takes event loop as param
+    Works!
+    Submit 5 times, only takes 5 seconds total to run
+  Can also just do plain sync sleep
+    What if submit on 5 different threads?
+    Still only 5 seconds!
+    Scheduler sees each thread about to block and swaps it out
+
+Chat Server
+  Either multithreaded or single-threaded asyncio
+    Let's do both and compare at the end
+  Only allows 3 operations, received as commands
+    register
+      Send comma separated command string "register, <username>"
+    list
+      Retrieve list of other clients "list,friends"
+      Return comma-separated string of usernames
+        Own included
+    chat
+      Send chat message to friend "chat,<username>"
+  Making some simplifications here to focus on concurrency paradigm differences
+    Ignoring networking, stability issues
+  Also focusing on happy path
+
+  Multithreaded
+    Main thread listens for incoming connections
+    Client connects: spawn worker thread
+      Maintain persistent client connection
+      Handle all future requests
+      This is how web servers normally handle
+        Can fork
+        Or can hand off to pool
+      Worker thread passed in all details to handle client comm
+        Chat just sends "hi" message to keep implementation simple
+        Uses dictionary self.clients, self.sockets
+          self.clients is username-to-socket mapping
+            Find socket to send message to another user
+        Lock object to guard self.clients
+          One thread at a time
+
+  Client implementation
+    Connect and register siwht server
+    Add delay to allow others to connect and register
+    Request list of friends from server
+    Spawn perpetual thread to receive incoming chat messages
+    Enter loop
+      Randomly select friend and send chat message
+
+  Limited so far
+    Friends list never refreshes
+    User doesn't disconnect gracefully
+    No self.clients cleanup
+  But it gets the general idea across
+    Chat server is multiple threads
+      Main thread listening for incoming connections
+      Hands off to others handling individual clients
+      Shared state (self.clients) needs to be guarded
+  Pitfalls
+    More load = more threads
+      Lots of creating, managing, tearing down
+    High contention for shared data structures
+    Deadlocks possible due to logical errors/bugs
+
+  Example with 4 users (see Python code)
+    Uses daemon threads extensively
+      When main program exits, all threads killed
+      Code widget does not time out
+
+Async chat server
+  Event loop, asyncio
+  Use asyncio start_server() coroutine
+    Takes in server hostname, port to listen for incoming connections
+    Once client connects, coroutine invokes user-specified callback
+    Callback includes details to read and write from connected client
+
+  server_port = random.randint(10000, 65000)
+  server_host = "127.0.0.1"
+  chat_server = ChatServer(server_port)
+  server = await asyncio.start_server(chat_server.run_server, server_host, server_port)
+  await server.serve_forever()
+
+  Need to await to make start_server coroutine run
+  run_server is callback whenever new client connects
+  awaiting returns Server object called server
+  Run serve_forever() to run perpetually
+  run_server() is a coroutine as well
+  Passed writer and writer objects
+    Read from connected client
+    Send to client
+    Accepts command from client, decodes, passes off to coroutine handle_client
+
+  Notes
+    No locks, all execution in same thread
+    Can combine run_server() and handle_clients into one
+      Keep separate for multithreaded comparison
+    All blocking receives and sends replaced with non-blocking coroutines awaited
+    Another reader-to-name dictionary
+      Can't store in variable user, which was thread-local
+
+  Users
+    Run in same event loop as server
+    Replace all blocking method with awaited coroutines
+      run_client() becomes a coroutine
+
+  Final code
+    Will timeout as no graceful shutdown of event loop
+    Note that thread name is always MainThread
+    Can run forever with no blocking on a single thread!
+      Magic of asyncio

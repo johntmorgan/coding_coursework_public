@@ -1,0 +1,202 @@
+Simple Graphs
+Reading
+  Simple graphs model symmetric relationships
+    Being married, speaking same language, not speaking same language
+    Occurring during overlapping time, being connected by a conducting wire
+    Come up:
+      Scheduling, constraint satisfaction, computer graphics, communications
+    Example today:
+      Sexual behavior
+      Who has more opposite-gender partners, men or women
+      U Chicago: men have 74% more
+      ABC: 20 avg men, 6 avg women, 233% more
+      NYT: 7 men, 4 women
+      What's more accurate? Trick question! None can be true
+        (Yep, they have to be equal if you're just averaging, maybe the clustering could be different - JM)
+  Vertex Adjacency and Degrees
+    Simple = digraph with undirected edges
+    Connect two vertices without pointing in either direction
+      <v-w> instead of <v -> w>
+    A simple graph G consists of a nonempty set V(G) called the vertices of G
+      And a set E(G) called the edges of G
+      An element of V(G) is called a vertext
+      An element of E(G) is an undirected edge or simply edge
+      Undirected edge has two vertices u != v called its endpoints
+      Can be represeted as {u, v} or <u-v>
+      Both <u-v> and <v-u> define the same undirected edge
+    Vertices are "adjacent" iff they are endpoints of the same edge
+    An edge is "incident" to each of its endpoints
+    Number of edges indicent to a vertex is the "degree" of the vertex deg(v)
+      So number of adjacent vertices also = deg(v)
+      Vertex may have degree 0, not adjacent to any others
+    Graph G need not have any edges at all
+      |E(G)| can be zero
+    Must have at least 1 vertex
+      |V(G)| required to be at least one
+    Edge with same endpoint is a self-loop
+      Self-loops are *not* allowed in simple graphs
+        Only in more general class of graphs called multigraphs
+        Every edge is uniquely determined by two endpoints
+    Simple graphs are sometimes called networks
+      Edges are sometimes called arcs
+  Sexual Demographics in America
+    Let G be the graph with vertices V of all people in America
+    Split into 2 subsets - M and F
+      Put an edge if they are partners
+    Tough graph - enormous - US pop 300m
+      |V| ~= 300m
+      50.8% F, 49.2% M
+      |M| ~= 147.6, |F| ~=152.4
+      And we have no trustworthy estimates of edge number
+      But just need to get an average
+    Remember every edge has an M vertex endpoint
+      Sum of degrees of M vertices = number of edges
+      Likewise for F
+    sum x in M deg(x) = sum y in F deg(y)
+    Avg deg in M = |F| / |M| * Avg deg. in F
+    Average number of female partners of males in the population determined solely by relative number of M and F in pop
+    |F|/|M| = 1.035, so we know men have 3.5% more partners
+      Tells us nothing about behavior
+      And all the studies are wrong (as I've said before lol - JM)
+      Perhaps men exaggerate, or women underreport
+      Principal author of NCHS (NYT study) knew it was wrong but reported it anyway
+    Same issue has caused problems in other studies
+      Minority students study with non-minority students more often
+      "Remarkable phenomenon"
+      But actually just means that there are fewer minority students, which is what the term means
+    Handshaking Lemma
+      The sum of the degrees of the vertices in a (simple) graph equals twice the number of edges
+  Common Graphs
+    Come up so frequently they have names
+    Complete Graph
+      A complete graph Kn has n vertices and an edge between every two vertices for total of n(n - 1) / 2 edges
+    Empty Graph
+      No edges at all
+    Line Graph Ln
+      An n-node graph containing n-1 edges in sequence
+      V(Ln) = {v1, v2, ... , vn}
+      E(Ln) = {<v1-v2>, <v2-v3>, ... <v(n - 1)-v(n)>}
+      Can also make a one-way infinite line graph Linf
+        Let all nonneg ints be vertices with edges <k-<k+1> for all k in N
+    Length-n Cycle
+      Add one edge connecting back line graph
+  Isomorphism
+    Graphs that look different can be formally the same
+      Same vertex and age number, just rotated
+    An isomorpism between graphs G and H is a biject f: V(G) -> V(H) such that
+      <u-v> in E(G) iff <f(u)-f(v)> in E(H) for all u, v in V(G)
+    A 5 point star and a pentagon are actually isomorphic - just drawn very differently
+      One edge between two vertices iff there is an edge between corresponding vertices on the other
+    If f is an isomorphism between G and H, then f^-1 is an isomorphism between H and G
+      Isomorphism is transitive
+      Composition of isomorphisms is an isomorphism
+      Isomorphism is an equivalence relation in fact
+    Isomorphic graphs
+      Must have the same number of vertices
+      Every vertex adjacent to v in the first graph must be adjacent to f(v) in the isomorphic graph
+      v and f(v) must have same degree
+      Number of vertices with each degree must be the same between graphs
+    Determining if isomorphic
+      Look for preserved properties
+      Nobody has found a procedure for determining whether isomorphic
+        Guaranteed to run in polynomial time on all pairs of graphs
+          (For graphs, n is the number of vertices)
+      Would be super cool if they did
+        Can easily search for a molecule in a database knowing molecular bonds
+      But also super cool if they can't
+        Secure protocols from encryption and remote auth built on hypothesis that graph isomorphism is computationally exhausting
+    Bijection and isomorphism apply to infinite as well as finite graphs
+      Graph theory mostly focuses on finite though
+      For the rest of the chapter we'll assume finite
+  Bipartite graphs
+    Two kinds of vertices, the sexual demographics example
+    A bipartite graph is a graph G whose vertices can be partitioned - cut up into non-empty pieces
+    - into two sets L(G) and R(G) such that every edge has an endpoint in L(G) and an endpoint in R(G)
+    Bipartite matching problem
+      Oops this is in the next section
+
+Lecture
+  Simple Graphs
+  Have been talking about directed graphs - arrows have beginning and end
+  Simple graphs are simpler - no edge direction, just mutual symmetric connection
+    Only one edge between a pair of vertices
+    No self-loops
+    There are multi-graphs, but we don't need those, let's not get complicated
+  Def
+    A simple graph G has a nonempty set V of vertices, and a set E of edges such that
+    Each edge has two endpoints in V
+      Can be represented as set of endpoints {u, v}
+        Order does not matter
+  Vertices connected by edge are adjacent
+  Edge is said to be incident
+  Degree of vertex is the number of incident edges
+    Is there a graph with vertex degrees (2, 2, 1)?
+      Nope 1 -> 2 -> 2 ??
+      Figured out by ad hoc reasoning
+  Handshaking Lemma
+    Sum of degrees is 2x number of edges
+    2|E| = sum over v in V of deg(v)
+      Each edge on right is counted 2x
+    Application - men more promiscuous?
+      Study claims: men average many more partners than women
+      Graph theory shows this is nonsense
+        (Note that study statistician knew it was junk, but reported data)
+    Bipartite graph
+      Set of vertices, M and F
+      Edges going between M and F precisely when partnered
+      sum over m in M of deg(m) = |E| = sum over f in F of deg(f)
+      divide both sides over |M|
+      sum(deg(M))/|M| = |F|/|M| = sum(deg(F))/|F|
+      Left and right average degree of M and F
+      avg(deg(M)) = |F|/|M| * avg(deg(F))
+      So averages differ solely by ratio of females to males
+      (= 1.035)
+      No big difference, nothing to do with promiscuity
+        Why are there big differences in studies? People are lying
+          We don't know if men overstate or women understate or what else
+  Isomorphism
+    Briefly looked in the context of digraphs
+    Can draw the same graph in 2 very different ways
+      (claw and hourglass imo - JM)
+      Same vertices and same edges
+      Don't confuse drawing with graph itself
+    Can also draw same layout, same shape
+      Vertices different - renamed vertices - different labels
+        One is integers, one is names
+        Those are isomorphic
+      All that matters is the connections
+      Same connections? Isomorphic
+    More precise
+      When there is an edge-preserving matching (bijection) of their vertices
+    Showing example
+      f(Dog) = Beef, f(Cat) = Tuna, f(Cow) = Hay, f(Pig) = Corn
+      Check edges preserved
+      And check nonedges too - it's an IFF relation
+    Formal
+      G1 isomorphic to G2 means edge-preserving vertex matching:
+      There exists a bijection f: V1 -> V2 with u-v in E1 IFF f(u)-f(v) in E2
+  Non-isomorphism
+    How do you show it?
+      Show isomorphism by showing bijection, check if edges there
+    Well lots of bijections possible
+      See degrees of vertices, see if comparable
+        Not equivalent in example
+        Have to map to same degree
+      If any property preserved by isomorphism differs for 2 graphs, then they're not isomorphic
+        # nodes, # edges, degree distributions...
+  Finding an isomorphism?
+    Many possible mappings, large search - if say 200 or 1k vertices
+    Hard to do exhaustively
+      Look for properties preserved - e.g. deg 4 vertex adjacent to deg 3 vertex
+      But even so...
+        You do a couple very large graphs (communication network)
+        How would you figure out?
+    Like NP-complete problems
+      No known procedure known to be efficient and run in polynomial time
+      However there are technical reasons that graph isomorphism is NOT an NP-complete problem
+        So that's distinguishing
+        In practice there are really good isomorphism programs around, will figure out in many cases
+          Roughly linear to graph size
+        Pragmatically seems to be a manageable problems
+        But theoretically can't be sure won't blow up sometimes
+          All known procedures blow up exponentially on some example or another (edge case? - JM)

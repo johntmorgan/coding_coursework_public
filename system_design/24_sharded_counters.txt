@@ -1,0 +1,158 @@
+Sharded Counters
+
+Problem
+  High user traffic e.g. FB, TW, YT
+  Users interact with app
+    View, like, comment
+    Might be easy to count for one image
+    But what about thousands?
+  "Heavy hitters problem"
+    YouTube
+      100m views for a video in 24h
+      (Example inaccurate - videos are top ever, not in 1 day - JM)
+    Twitter
+      6k Tweets/second
+      500m Tweets/day
+      Billions of likes
+  Core challenge
+    Writing slower than reading
+    Concurrent activity makes even harder
+      Lock contention increases non-linearly
+        Could wind up spending most time on it
+
+High-Level Design
+  Requires many counters on many nodes
+  Need high performance, scalability
+  Serialize likes for a tweet in a queue?
+    Consistent, but added delay
+    Not good for millions of users
+  Sharded counter
+    Run on different computational units in parallel
+    Improve performance
+    Reduce contention
+  Write request forwarded to specified counter
+    Choose available shard to increment
+    N + 1 shards per counter
+    Choose N according to needs
+  Ex. New Youtube video on popular channel
+    Many worldwide video views
+    Server receives burst of writes
+    New counter initiates
+    Server forwards to counter
+    Counter chooses shard and updates randomly
+    Read request sums values of all shards of counter
+
+API design
+  Will discuss in context of Twitter
+  createCounter(counter_id, number_of_shards)
+    Use data store for metadata
+      Counter IDs
+      Number of shards
+      Mapping of shards to physical machines
+    Call when user posts Tweet
+    content_type determines number of counters
+      Need view counter if video clip
+    counter_id from tweet_id on Twitter
+    To calculate number_of_shards
+      followers_count of user
+      post_type parameter - public/protected
+  writeCounter(counter_id, action_type)
+    counter_id: unique identifier
+    action_type: increment or decrement
+  readCounter(counter_id)
+    System fetches info from datastore
+    System collects value from all shards
+
+Detailed design
+  Sharded counter creation
+    ex. Twitter
+      Tweet like counter
+      Tweet reply counter
+      Tweet retweet counter
+      Tweet view counter - if video (or 2023 Twitter - JM)
+      Counter for hashtag in Tweet
+    Number of shards critical for good performance
+      Too few shards = high write contention
+      Too many = unnecessarily high read overhead
+    Slow reading
+      Shards may be on diff nodes in diff data centers
+      Read cost rises linearly with # of shards
+    Try to predict write load
+      Follower count
+    Dynamic scaling
+      Usually writes die down on long tail
+      Sometimes underbudget, need to scale up
+      Sometimes non-celeb has a post go viral
+  Monitor write load for all shards
+    Possibly via load balancers
+  How to assign writes to shards
+    Round-robin
+      Does not consider current load
+      Load variability common because nodes often used for other stuff too
+      Typically overloads/under-utilizes resources as a result
+      But if all requests similar, is simple
+    Random
+      Similar issues as round-robin
+    Metrics-based
+      Read shard status
+        Which data centers have capacity available, etc.
+  Read requests
+    Aggregate value of all shards every time?
+      Low read throughput, high read latency
+    When should system sum?
+      If high write traffic, value constantly changes
+    Periodically read shards and cache
+    Eventual consistency
+    Need to be slower if strong consistency needed
+      Read-then-write
+        Need accurate value
+        Transaction support needed
+  Top K problem
+    Ex. calculating K top trends for Twitter
+    Huge challenge to manage millions of hashtag counts
+    Sharded counter for each hashtag
+      Global counter
+      Region-wise hashtag counts
+      Time window = amount of time during which posted
+      When counts reach say 10k, start showing
+    Top K tweets in user homepage
+      Accounts user following
+      Tweets user like
+      Retweets of accounts user follows
+        Priority based on follower count, time
+        Also show promoted tweets and some unfollowed
+          Depending on popularity, location
+  Where to place sharded counters
+    Should they be on
+      Application server nodes
+      Dedicated nodes in same center
+      CDN at edge of network?
+      Depends on use case
+    Twitter places near user
+  Lock all shards before accumulating values?
+    No, is terrible for write performance
+    Maybe in a specific use case when read frequency low
+  Reading counters
+    Store recently computed values in appropriate data stores
+      Cassandra used often
+    When users create timeline
+      Read requests to nearest servers
+        Use persisted store to respond
+        Ditto with Top K trends
+    App server also sorts region-wise Top K for global Top K
+  Storage for sharded counters
+    Redis or Memcached servers
+      Tweet/unique ID is key
+      Value is counter ID, or list of counter IDs
+      Each counter ID has own key value store
+        Key = ID
+        Value = list of assigned shards
+
+Evaluation
+  Availability
+    Run many shards on counter
+  Scalability
+    Add shards as needed
+  Reliability
+    No requests waiting in queue
+    Save computed counts in stable storage, e.g. Cassandra

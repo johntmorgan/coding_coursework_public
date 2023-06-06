@@ -1,0 +1,38 @@
+Operators
+  Five main types
+    Arithmetic
+    Comparison
+    Logical
+    Assignment
+    Conditional
+
+  Arithmetic
+    +, - , *, /, %
+    ** exponentiation
+    ++ increment
+    -- decrement
+
+    Numbers are primitives and immutable
+    ++ and -- create a new value and assign to same variable
+
+  Comparison
+    == regardless of type
+    !- regardless of type
+    === "strict equal" must have same type
+    !== "strict not equal" must have same type
+    >, < , >=, <=
+    Do not do => , this is fat arrow notation used to declare function
+
+  Logical
+    &&, ||, !
+
+  Assignment
+     = assigns left to right
+     += assigns value sum of left and right to left
+     -=
+     *=
+     /=
+     %=
+
+  Conditional/ternary
+    var var1 = <condition> ? <value if true> : <value if false>

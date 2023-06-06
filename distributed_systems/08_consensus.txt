@@ -1,0 +1,370 @@
+Consensus
+
+The consensus problem
+  Most problems in distributed systems share a common trait
+    Nodes in a system trying to agree on something
+      Transaction - committed?
+      Message - delivered?
+  Formal def
+    Assume system with k nodes (n1, n2, ... nk)
+    Each can propse different value vi
+    Consensus is problem of making nodes agree on single value v
+    Must also satisfy:
+      Termination: all non-faulty nodes must decide eventually
+      Agreement: final decision of every non-faulty must be identical
+      Validity: agreed value must have been proposed by node
+  Use cases
+    Leader election
+      Which node coordinates?
+      Ex single-master replication scheme
+        Need to select primary node
+    Distributed locking
+      Receive multiple concurrent requests
+      Need to perform concurrency control to prevent data inconsistencies
+      One method of control is locking
+        Lot of edge cases that add risks
+      Which node holds the lock?
+    Atomic broadcast
+      Allowing set of nodes to concurrently broadcast
+      Ensure all destinations consistently deliver in same sequence
+        Despite possible presence of faulty nodes
+
+FLP impossibility
+  Many consensus problem sol'ns found
+  Important constraints that limit
+  Several different system models
+    Asynchronous closest to real-life
+    In asyncrhronous, where can be at least one faulty node
+      Any possible consensus algo will be unable to terminate sometimes
+    "FLP impossiblity" - from initials of paper authors
+    Proof is complicated, but two key parts
+      Always possible initial state ->
+        nodes reach different decisions depending on msg order
+        "bivalent configuration"
+      From such a state, always possible to end up in another bivalent state
+        Just introduce delays in some messages
+  What do we do?
+    Develop algos that minimize possibility
+
+Paxos algorithm
+  Arguably could use 2-phase as soln
+    Coord drives voting process
+    Very limited fault tolerance - coord failure = system halt
+  Next step: allow multiple nodes to inherit coordinator
+    Might be multiple masters, conflicting results
+      (see: multi-master replication, 3-phase commit)
+    How to solve safely? Paxos algo
+  Guarantees system comes to agreement on single value
+    and tolerates failure of any number of nodes (even all of them)
+    Requires more than 1/2 nodes work properly at any time
+    Invented during attempt to prove impossible
+  Parliamentary procedure on fictional island of Paxos
+  Three different roles
+    Proposers
+    Acceptors
+    Learners
+  Every node can play different roles
+  Proposer proposes values, potentially from client, to acceptors
+  Acceptor responsible for receiving values, replying with decision
+  Learner learns outcome of consensus, stores in replicated fashion
+    Potentially acts on it - notifies clients, performs actions
+  Two phases, each with 2 parts
+    1a. proposer selects number N
+      sends prepare(N) to at least majority of acceptors
+      N is the round identifier
+        Must be bigger than any previously used - increment counter
+      Append node number to counter
+        cat(i++, node_number)
+    1b.
+      If has responded to higher number, rejects
+      If has not responded to higher number
+        Promises not to accept proposals less than N
+        Returns highest-numbered proposal accepted
+    2a
+      If receives response to prepare(N) from majority of acceptors
+        Then sends accept(N, v) for proposal numbered N with value v
+        Value selected according to following logic
+          If acceptor already accepted and included in response
+            Use highest-numbered proposal among responses
+          If no acceptors accepted any, select any desired value
+            value usually based on client requests
+    2b
+      If acceptor receives accept(N, v) for proposal N, accepts
+        Unless has alrady responded to prepare(k) of higher number
+      As acceptors accept, announce to learners
+        When learner hears from majority of acceptors, value chosen
+  Nodes may play multiple roles
+    Proposers may be learners
+  Proposal number N must be unique to maintain correctness properties
+    Acceptors need to be able to compare two prepare messages
+    Compose N out of two parts - integer and IP address of node say
+  Proposer that receives from majority of acceptors elected as current temp leader
+    Value it proposes chosen unless majority acceptors have failed
+  Basic ingredient
+    Quorum - specifically majority quorum
+      k + 1 in system of 2k nodes
+  Protocol guarantees can't be two different proposers that complete both phases concurrently
+    Majority quorum required to proceed
+
+Intricacies of Paxos
+  Paxos considered difficult to understand by many
+  Consensus problem inherently complex
+  Let's talk some edge cases
+    Not covering all of them
+    Goal to help understand protocol basics
+      and starting point for exploring more edge cases
+  Assume all nodes play all roles
+    Realistic, many implementations do this
+  Solving leader election
+    Allows multiple leaders to be elected
+    Still has to guarantee single decision despite multiple different propositions
+  When proposer receives response to prepare from majority
+    Considers self temporary leader
+    Proceeds with proposal
+      If nobody else became leader, accepted
+      If another proposer became leader, accept requests rejected
+  Dueling proposers
+    Can continuously duel
+    One node sends accept after other sends prepare and so on back and forth
+    How to handle?
+      Force random proposer delays on rejection
+      Force exponenetial back-off on rejection
+  Partial failures
+    Say only some messages are delivered due to node failures or network issues
+    Extreme case
+      Multiple proposers
+      Only one accept message gets delivered to acceptors
+      Can wind up with several different values
+    Once more than half back online, then in business
+
+Paxos IRL
+  Need to be able to continuously select values
+    Run multiple instances of Paxos
+      Can run independently and in parallel, must also be numbered
+    Can be other rules depending on functionality needed
+      e.g. do not return result to client unless all other previous completed
+  Returning state of system
+    Of course clients learn chosen values, could keep track of state
+    Always cases where some clients need to retrieve some of the values chosen in the past
+      Clients just brought into operation
+  Read operation
+    Return decisions of previously completed instances
+      Alongside write operations that start new instances
+    Route to current leader of system
+      Essentially node that completed successsfully last proposal
+        Cannot reply to client using local copy
+          Another node might have proposed in meantime
+          Read-write consensus operations not linearizable
+        Node must perform a read from majority of nodes
+          Reads can become quite slow - must execute in two phases
+  Master leases
+    A node can take a lease by running a Paxos instance
+      Considered to be leader until point in time
+      Can then serve read operations locally
+      One must take clock skew into account
+        Safe only if upper bound on this
+  Problem while using multiple instances
+    Degrades performance significantly under normal conditions with few failures
+      True!
+  Multi-Paxos
+    Mitigates issue
+    Node that performed last successful proposal is current distinguished proposer
+      Can perform full instance of Paxos, right to second phase for subsequent
+        Use same proposal number as previous
+      Other nodes know leader based on last successful proposal
+        Perform periodic health checks
+        Initiate prepare if believe node has crashed
+    Protocol much more efficient under stable conditions
+      Has only one phase
+      When failures occur, fall back to plain Paxos
+  Dynamically updating nodes
+    Update nodes members of system
+      Propagate member info as new Paxos proposal
+    When node considered dead
+      One of nodes identifying can trigger a new Paxos instance
+      As soon as completes, all instances use updated list
+
+Replicated State Machine via Consensus
+  All problems can be modeled as a state machine to some extent
+    Why easier to solve in centralized setting
+    Much harder in distributed setting to increase availability
+  Using a consensus algo, can build a replicated state machine
+    If all nodes use same state machine
+    Just make sure they receive same inputs in same order
+      Make same transitions
+    Distributed server looks similar to single server from outside
+    Achieve all benefits of distributd system while maintaining simple programming model
+    Top layer receives requests from clients
+      Creates proposals for the consensus layer
+      Cons. layer coordinates system nodes, propagates chosen values to lower layer
+      Lower layer receives as inputs, executes necessary state transitions
+    Using Paxos at consensus layer
+      Clients send regular requests to system, depending on system domain
+      Requests either commands to system or requests to inspect system internals
+      Requests dispatched to current leader based on previous instances
+        Non-leaders provide IP address of leader, client re-routes
+      Multiple consensus instances can be run in parallel
+        However serialization must be performed in some places to ensure correctness
+        Lower layer process only when has processed all previous instances
+      Leader should wait and reply only after all previous instances completed
+      When current leader unstable
+        Increased contention, significant delays in instances completing after
+        Dummy value can be proposed, basically rejecting client's operation
+
+Distributed transactions vs. consensus
+  Fundamental conflict between dist trans and Paxos?
+  Core characteristic of dist trans is atomicity
+    Perform update in all nodes or none
+  Paxos relies on majority quorum to decide on value
+  Consensus requires every non-faulty node to reach same decision
+  Atomic commit requires every node - faulty or not - to reach same decision
+  Atomic commit problem imposes stricter relationships between votes/proposals and final decision
+  In consensus, value must have been proposed by at least one node
+  Atomic commit, all votes must be positive
+    And decision must be positive if this is true
+  What does Paxos offer in area of distributed transactions?
+    Communicates resource managers results back to transaction manager
+      Requires successful comm from all not just majority
+    True value storing and transmitting transaction result back to resource managers
+      Done in fault-tolerant way
+      Failure of single node (transaction manager) does not block system
+    Simple way to achieve goal in 2PC protocol
+      Leverage consensus algorithm
+      Have transaction manager start Paxos instance, propose value for transaction result
+      Proposal commit or abort
+      Adjustment makes 2-phase resilient against transaction manager failure
+        Another node can take on role
+          Read result of transaction from any existing instance
+          If no decision, abort
+      Works great but requires adding another messaging round
+        Can remove round by trading simplicity for performance
+    Removing additional message
+      Weave several instances of Paxos
+      Practically obviate need for transaction manager completely
+      Resource managers send response to first phase of set of acceptors
+        Instead of sending to transaction manager
+        Create a separate Paxos instance for every resource manager involved
+        Acceptors propagate chosen values to resource manageres directly
+          Rather than indirectly via transaction manager
+      Resource managers must check all Paxos instances from others had a positive result to commit
+        2-phase commit is a special cases of Paxos commit with zero node failure tolerance
+
+Raft
+  Paxos canonical solution to consensus
+    Initial specification did not cover aspects crucial to implementing in practice
+    Considered hard to understand
+  Raft etablishes concept of replicated state machine and assoc replicated command log
+    as first-class citizens
+  Supports by default multiple consecutive rounds of consensus
+  Set of nodes forms consensus group "Raft cluster"
+  Each node in 1/3 states
+    Leader
+    Follower
+    Candidate
+  One node is elected to be leader
+    Receives log entries from clients (proposals)
+    Replicates to other follower nodes to reach consensus
+    Leader is responsible for sending heartbeats to maintain leadership
+    Any node that hasn't heard from leader in a while assumes crashed
+      Enter candidate state, try to become leader triggering election
+    If previous node identifies other gained leadership falls back to follower
+  Prevent two leaders concurrently
+    Concept of terms
+    Time divided into terms, numbered consec ints
+    Each term begins with election
+      Candidate gets votes from majority nodes -> leader
+      Each node votes for at most one node per term
+        First come, first served
+      At most one node can win election
+    If candidate wins election
+      Serves as leader for rest of term
+    If no candidates get majority of votes, term ends with no leader
+      New term begins immediately
+
+Comms between Raft Nodes
+  Nodes communicate via remote procedure calls (RPCs)
+  Raft has two basic RPC types
+    RequestVote: sent by candidates during election
+    AppendEntries: sent by leaders to replicate log entries and provide heartbeat form
+    Commands stored in log replicated to all nodes of cluster
+    Log entries numbered sequentially
+      Contain term in which created and command
+    Raft guarantees entries durable and eventually executed by all
+      Also guaranteeing no etnry committed for same index
+      Essentially signals consensus
+  When leader gets command from client
+    Appends entry to own log
+    Sends AppendEntries in parallel to other nodes
+      Retry if no timely response
+    When leader receives response from majority, entry committed
+    Leader applies command to state machine
+      Informs followers to do the same
+      Piggybacks info about committed entries in subsequent AppendEntries
+    This is the happy path
+  During leader and follower failures, nodes may diverge
+    Follower might crash and miss committed entries
+    Might receive non-committed entries
+    Or both things might happen
+  Resolving divergence
+    More elements to resolve
+    Any elected leader should contain any entries committed up to term leader
+      Leader helps followers with conflicting logs adjust to converge
+      Note leader only appends entries, never updates
+    During election, RequestVote RPC contains info about candidate logs
+      Can only vote for candidate if voter log not more up to date
+        Compare index and term of last entries in logs
+        Candidate must receive votes from majority of cluster to be elected
+        If candidate's log at least as up to date as any in majority, holds all committed
+    When sending AppendEntries RPC
+      Leader includes index and term of immediately preceding entry
+        Followers reject if log differs
+        Leader discovers nidex where logs disagree, sends entries after to log
+          Follower discards entries, adds leader to log
+  What if leader crashes before commit?
+    If subsequent leaders have received, will attempt to finish replicating
+    But a subsequent leader cannot safely conclude entry from previous term committed
+      once stored on majority of nodes
+      Edge case - future leaders can still replace entry even if stored on majority
+        see paper
+    Leaders can safely conclude entry from previous term committed by replicating
+      and then replicating new entry from term on top of it
+      If new entry replicated to majority, can safely consider committed
+    So leader guaranteed to have all committed entries at start of term
+      But it doesn't know which ones
+      To find out, commit an entry from own term
+        If idle, commit no-op command
+
+Raft implementation
+  Cluster membership changes can be performed using same mechanisms
+    Store cluster members like regular data
+  Transition Cold -> Cnew must be done via intermediate Cjoint
+    Cjoint contains both old and new
+      Prevent 2 leaders elected for same term
+    Any node from either can serve as leader
+    Requires majority from both old and new
+    After Cjoint committed, cluster switches to Cnew
+    Log can grow infinitely - don't want to run out of storage
+  Avoid running out of storage
+    Log compaction
+    Snapshot current state on stable storage
+    Remove old entries
+  When handling read requests, leader must send heartbeats to ensure still leader
+    Guarantee linearizability of reads
+    Leaders can rely on heartbeat mech to provide some form of lease
+      Assumes bounded clock skew to be safe
+    Leader might also fail after applying committed entry to state machine
+      but before replying to client
+      In these cases, clients retry new leader
+    If requests tagged with unique serial numbers
+      Raft nodes identify commands already executed and reply to clients
+        Don't execute request twice
+
+Shoulders of giants
+  Have examined small details of consensus algorithms
+  Useful when thinking about how to design system
+    What kind of guarantees required, edge cases
+  Problems very complicated
+    Creating algo to solve or even translating is a big undertaking
+    Consider using existing solution rather than rolling your own
+      Mature, battle-tested
+      True in many other problems inherent to distributed systems

@@ -1,0 +1,43 @@
+Static vs Dynamic Typing
+  Two different strategies for dealing with type
+  Static
+    Each variable must be assigned a type
+    Language expect to know type of variable
+      Uses info at compile time to constrain vals assigned to variable
+    Different languages different reqs
+      Java require all types to be stated at declaration
+      TS allows for type inference
+        let x = "hello"
+      TS infers that x is a string
+        If you say x = 3 later, compiler flags error
+    Some languages allow infer string -> array of string
+      Some it needs to be defined
+      Some require upfront null declaration, others do not
+  Dynamic
+    Ruby, plain JS
+    Assign types at runtime
+    Never need to declare type in code
+    Types still have a meaning
+      2 + "3" is an error in Ruby
+        But happens at runtime, not compile time
+
+TS is statically typed
+  TS turns JS into statically typed language
+    Good? Hard to answer objectively
+    Endless debates
+  Something of consensus
+    Static language will catch compilation errors that would be uncaught
+    Static languages are more verbose
+      Sometimes time cost in getting compiler to do something valid
+      Type inference minimizes verbosity in modern languages
+    Dynamic languages are more flexible
+      Easier to write code in, at least small programs
+    Static languages provide more info to code analysis tools
+      Editor and tool support easier to create
+      More meta-info in general
+        Good for comms on large teams
+  Idea is that in good static typing...
+    Benefits of tool support, comms, error prevention outweighs
+      Yelling at compiler lol
+  Plenty of room for debate
+    In case of TS vs JS, net benefit generally in author's opinion

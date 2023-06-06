@@ -1,0 +1,152 @@
+Heaps
+
+Advanced data structures, useful for:
+  Sorting
+  Priority queues
+
+Regular binary trees, with two special properties
+  They must be complete
+    Each node has at most two children
+    Nodes at all levels full except leaf nodes
+    All leaves at depth d or depth d - 1
+    Leaves at depth d to left of leaves of depth d - 1
+    At most one node with just one child
+    If singular child exists, left child of parent
+    If singular child exists, rightmost node at depth d
+  Heap order
+    Two kinds
+      Min heap
+      Max heap
+    Max Heap
+      All parent node keys must be greater than or equal to child
+      Root contains largest element
+    Min heam
+      All aprent node keys less than or equal to child
+      Root contains smallest element
+
+Why use a heap?
+  Return smallest or largest element
+    Time complexity is O(1)
+  Priority queues
+  Famous algorithms using
+    Prim's Algorithm
+      Greedy also
+      Minimum spanning tree for weighted undirected graph
+    Dijkstra's algorithm
+    Heap sort algorithm
+
+Heap in lists
+  Implement with arrays or lists
+  Parent values in first half of list
+  Leaves in second half of list
+  Left child of node at k is at 2k + 1
+  Right child of node at k is at 2k + 2
+
+Misconceptions
+  Sometimes called "binary heaps"
+    Are in fact binary trees
+  Heap data structure != heap memory
+  Elements of heaps are NOT sorted
+    Just smallest/largest at top
+
+Max Heap
+  Implement with either lists or node/tree classes
+  Usually with lists/arrays
+    More space efficient
+  Building
+    Start empty, insert elems one at a time
+
+Inserting in max-heap
+  Create new child node at end of heap
+  Place key at new node
+  Swap parent and child values if parent is smaller
+    "Percolating up"
+    ("Bubbling up"? - JM)
+  Continue until heap property restored
+
+Remove max in max-heap
+  Delete root node
+  Move key of last child node at last level to root
+  Compare key with children
+  If smaller, swap with biggest child
+  'Max heapifying'
+    ("Bubbling down"? - JM)
+
+Max Heap implementation
+  class MaxHeap:
+    def __init__(self):
+        self.heap = []
+
+    def insert(self, val):
+        self.heap.append(val)
+        self.__percolateUp(len(self.heap)-1)
+
+    def getMax(self):
+        if self.heap:
+            return self.heap[0]
+        return None
+
+    def removeMax(self):
+        if len(self.heap) > 1:
+            max = self.heap[0]
+            self.heap[0] = self.heap[-1]
+            del self.heap[-1]
+            self.__maxHeapify(0)
+            return max
+        elif len(self.heap) == 1:
+            max = self.heap[0]
+            del self.heap[0]
+            return max
+        else:
+            return None
+
+    def __percolateUp(self, index):
+        parent = (index-1)//2
+        if index <= 0:
+            return
+        elif self.heap[parent] < self.heap[index]:
+            tmp = self.heap[parent]
+            self.heap[parent] = self.heap[index]
+            self.heap[index] = tmp
+            self.__percolateUp(parent)
+
+    def __maxHeapify(self, index):
+        left = (index * 2) + 1
+        right = (index * 2) + 2
+        largest = index
+        if len(self.heap) > left and self.heap[largest] < self.heap[left]:
+            largest = left
+        if len(self.heap) > right and self.heap[largest] < self.heap[right]:
+            largest = right
+        if largest != index:
+            tmp = self.heap[largest]
+            self.heap[largest] = self.heap[index]
+            self.heap[index] = tmp
+            self.__maxHeapify(largest)
+
+    def buildHeap(self, arr):
+        self.heap = arr
+        for i in range(len(arr)-1, -1, -1):
+            self.__maxHeapify(i)
+
+  max_heapify takes O(log(n))
+  percolate_up takes O(log(n))
+  build_heap takes O(n)
+    Comparisons at height h is O(h)
+    Nodes at height 0 is at most n/2
+    Height 1 is n/4
+    Nodes at h is n / 2^(h + 1)
+    T(h) = n * sum (i == 0 to inf i / 2^i)
+
+Min heap
+  Basically the same as max heap, but comparisons reversed
+
+  Insertion
+    Place new child at end of heap
+    Percolate up until reach root node
+
+  Remove min
+    Delete root node
+    Move key of last child to root
+    Percolate down
+    Repeat until reach last node

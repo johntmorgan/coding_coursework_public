@@ -1,0 +1,8 @@
+Hash Maps
+  Store key-value
+  Look up in expected O(1) time
+
+Pattern matching
+  Need repeated fast access to data
+  Store relationship between two sets of data
+

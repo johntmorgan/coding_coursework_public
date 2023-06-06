@@ -1,0 +1,102 @@
+How it all fits together
+  Transactions must provide guarantees for apps to benefit from them
+  Distributed transactions must provide similar guarantees
+  ACID acronym
+  Consistency and durability pretty similar in distributed setting
+    For durability, enough for data to be stored in non-volatile storage
+  Distributed durability
+    Store data in more than one replica before acknowledging
+  Distributed consistency
+    Introduce additional read & write ops in transaction context to guarantee
+      May automatically generate
+        Referential integrity constraints from foreign keys or cascades
+      May be defined by application via triggers
+  Atomicity and isolation guarantees
+    More challenging
+    Examined algorithms
+  Combining algorithms
+    Most guarantee ACID
+    Some easier to implment in practice
+      2-phase locking very similar to two-phase commit
+        Easy to understand how to combine
+        Spanner is a system that uses them
+    Complexity
+      Some algos introduce brittleness (2-phase commit)
+      Or a lot of additional complexity (quorum-based commit)
+  Algos for both system
+    Isolation can be used both centralized and distributed
+      Use distributed has more implications
+      2-phase locking = use of distributed locks, not trivial
+    Optmistic techniques like snapshot isolation
+      Require a lot of data transfer between nodes
+        Adverse effects on performance
+  Overall using transactions in a distributed system comes at a higher cost
+    Systems without a strong need for distributed designed to operate safely without
+    Many distributed databases do not fully support ACID or force opt-in
+
+Long-lived transactions & sagas
+  Complete isolation is relatively expensive
+    Maintain locks and block other transactions
+    Or abort some transactions to maintain safety
+    Long-duration = big impact
+    Using mechanisms -> longer transactions -> more impact
+      Positive feedback cycle
+  Long-lived transactions (LLT)
+    Naturally long duration - hours or even days (vs ms)
+      Processes lots of data
+      Requires human input
+      Communicates with slow third-party
+    Ex
+      Batch jobs calc reports on big datasets
+      Claims at insurance company req. human input
+      Online order spanning days order to delivery
+    Don't want to run using comment concurrent mechanisms
+      Sometimes do not require full isolation
+      But still need to be atomic
+    Saga - new concept
+  Saga
+    Sequence of transactions T1, T2,... TN can be interleaved with other transactions
+    Guaranteed either all succeed or none
+    Each transaction Ti associated with compensating transaction Ci
+      Ci executed in case rollback needed
+    Sometimes good to use saga transaction instead of distributed
+      Satisfy business reqs
+      Keep systems loosely coupled
+        Good availability and performance
+      Ex
+        E-commerce app
+        Order requires several steps
+          CC auth
+          Check inventory
+          Item ship
+          Invoice create
+          Delivery
+        Failure of single component could grind to halt
+        Instead in saga
+          Debiting bank -> compensating that gives refund
+          Rollback transactions if one fails
+    Might still be cases where some form of isolation is needed
+      Orders from different customers of same product
+        A gets last item at warehouse
+        B fails and is rejected because zero inventory
+        Then A fails because not enough money
+          Compensating transaction runs, returning item to warehouse
+        Order was rejected where could be processed normally
+        No severe consequences here
+          Big deal if charged and no procut
+    Isolating at app layer
+      Semantic lock
+      Signal some data items currently in process
+        Final transaction of saga takes care of releasing lock and resetting to normal
+    Commutative updates
+      Same effect regardless of execution order
+      Mitigate lost update phenomena
+    Reordering saga structure
+      Pivot transaction
+        Boundary between transactions that can fail and ones that can't
+        Increasing account balance - could have serious consequences
+        Move after pivot
+    Apply techniques selectively
+      Introduce complexity
+      Put some burden back on app developers
+      Consider tradeoffs

@@ -1,0 +1,94 @@
+Async/Await
+  Promises avoids pyramid of dom
+    Still not that neat though
+  Async/Await makes even cleaner
+
+Async
+  async token lets you declare a special function that always returns a promise
+
+    var func = async function() {
+      // add tasks
+    }
+
+  Anonymous functions
+    var func = async () => {
+
+    }
+
+  Approach is same for these functions
+    Just prepend async token
+
+    var func1 = async function (){
+      return 1;
+    }
+    console.log(func1); // async function
+    console.log(func1()); // promise
+    func1().then(val => { // invoke promise
+      console.log(val); // get value
+    })
+
+    > [AsyncFunction: func1]
+    > Promise { 1 }
+    > 1
+
+  Async function will return a promise even when returned value is 1
+
+Await
+  Only used inside async
+
+  await somePromise;
+  var someVar = await somePromise;
+
+  var func = async function (){
+    let promise1 = new Promise((resolve, reject)=>{
+      setTimeout(()=>{
+        console.log('timeout1 for 3 seconds');
+        resolve('done');
+      }, 3000);
+    })
+
+    await promise1;
+    console.log('promise compelete');
+  }
+  func();
+
+  > timeout1 for 3 seconds
+  > promise compelete
+
+  With await token, nothing after happens until promise resolves
+
+    var func = async function (){
+      let promise1 = new Promise((resolve, reject)=>{
+        setTimeout(()=>{
+          console.log('timeout1 for 3 seconds');
+          resolve('done');
+        }, 3000);
+      })
+
+      await promise1;
+
+      let promise2 = new Promise((resolve, reject)=>{
+        setTimeout(()=>{
+          console.log('timeout2 for 5 seconds');
+          resolve('done');
+        }, 5000);
+      })
+
+      await promise2;
+
+      let promise3 = new Promise((resolve, reject)=>{
+        setTimeout(()=>{
+          console.log('timeout3 for 1 seconds');
+          resolve('done');
+        }, 1000);
+      })
+
+      await promise3;
+
+    }
+
+    func();
+
+  Everything happens in order here
+    Remove await tokens and executions all async
+    Callbacks trigger as any each finishes

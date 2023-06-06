@@ -1,0 +1,179 @@
+Binary Trees
+  Have seen in the past
+    Lower bound tool in decision tree model
+  Next two lectures
+    Build one data structure superior to almost any seen
+    Can do almost anything really fast
+  First recall what we've seen so far
+    Interface: Sequence, Set
+    Structure: Array, linked list, dynamic array, hash table
+  We haven't seen ANY good data structures for insert/delete in middle of list
+    First/last sure, but not middle
+    Linked list - can't even get there in < O(n)
+    Array - can get there instantly but expensive shift
+  By next lecture - for first time will see ALL operations efficient
+    Where efficient means logn
+    Sequence
+      build(A) - n
+      get_at(i)/set_at(i, x) - logn
+      insert_first(x)/delete_first() - logn
+      insert_last(x)/delete_last() - logn
+      insert_at(i, x)/delete_at(i) - logn
+      Not quite as good
+        At inserting and deleting at the ends - where other structures O(1) - linked list, dynamic array, hash table
+    Set
+      build(A) - nlogn
+      find(k) - logn
+      insert(x)/delete(k) - logn
+      find_min()/find_max() - logn
+      find_prev(k)/find_next(k) - logn
+      Not quite as good
+        For exact searches by key compared to hash tables
+      But way way better at find_prev/find_next
+        Only structure at logn so far is sorted array
+          But terrible for dynamic operations - O(n)
+    In some sense, next two lectures
+      Binary trees let us represent a sorted order/order of items dynamically
+      And still allow us to do get_at and find_prev very quickly
+    Won't do all of it today
+      First get the height of the tree
+      Then finish in the next lecture
+  What is a binary tree?
+    Mathematicians: rooted binary tree
+    Circles - nodes
+    Letters - items at nodes
+    Links between them - like linked lists
+      Node will have a parent pointer
+        A left child pointer
+        A right child pointer
+        Item
+    Node A
+      A.parent, A.left, A.right, A.item
+    Root node A
+      No parent
+      Left B
+      Right C
+    Node B
+      Parent A
+      Left D
+      Right E
+    Node C
+      Parent A
+    etc.
+    Connections are bidirectional, draw undirected lines
+    node.left.parent == node
+    node.right.parent == node
+  Inspired by linked list
+    Think about the limits of linked list
+      One pointer per node, can only build list
+      Node is going to have depth linear in singly linked list
+      Double link and tail pointer? Well still n/2 to get to middle, still linear
+  With binary trees
+    With two types of pointers, left and right
+    Trees can have logarithmic height
+    Get anywhere in logn traversals
+  Today: height of a tree
+  Terminology
+    Tree decomposes into subtrees with their own roots
+      Subtree includes all descendents of new root
+    Ancestors - parent, grandparent, etc.
+      Doesn't quite correspond to familial tree - only 1 parent, or 0 parents for root
+    Leaves
+      Nodes with no children
+    Descendents
+      All children, grandchildren within subtree
+    subtree(node(X)) = node(x) and its descendents, where node(x) is root
+    depth(node(X)) = number of ancestors = number of edges in path from x up to the root
+      Every node has a unique path up
+    height(node(X)) = number of edges in the longest downward path from node X
+      Same thing as max depth of node in subtree(node(X))
+      All leaves have height 0
+    h = height(root) = height(tree)
+  Today
+    All operations in O(h)
+    Next lecture guarantee that h = logn *always*
+      Then get logn time
+    Of course there are trees that are really bad - high h
+      Only right pointers? Just a linked list
+        Want to avoid that
+  How to use trees for sequence and set?
+  Traversal order of nodes/items
+    Define recursively
+    Root in middle
+      Everything left before
+      Everything right after
+    For every node(X)
+    The nodes in node(X).left are before node(X)
+    The nodes in node(X).right come after node(X)
+      "In-order" traversal
+    Simple algorithm for computing
+      iter(node(X)):
+        iter(node(x).left)
+        output(node(X))
+        iter(node(x).right)
+    For sets
+      That order is the sorted order of keys, increasing
+      But before we get into it
+  Traversal operations:
+    subtree_first(node): defines a subtree
+      Of all nodes in subtree, which comes first in traversal order?
+        Looking for leftmost leaf
+      Go left as much as possible
+        node = node.left until we would fall off the tree (node = None)
+      If root has no left children, then root is first
+      subtree_last same thing
+    successor(node): what is the next after node in the overall tree traversal order
+      Every node has a unique successor
+      - if node.right: return subtree_first of right child
+      - else:
+          walk up tree (node = node.parent) until you go up a left branch (node == node.parent.left)
+            then that parent is what you are looking for
+    How long do these operations take?
+      subtree_first/last - O(h)
+      successor - O(h)
+        If h is small, say logn, almost instantaneous
+        These are queries - next/previous
+    subtree_insert_after(node.new) - place after node (before almost identical)
+      no right child
+        stick it there
+        (insert before, no left child - stick it there)
+      else:
+        insert at subtree first of right child
+          guaranteed to not have a left child
+          add node to its left
+          again takes O(h) time
+    subtree_delete(node):
+      if no children, just delete
+        detach from parent
+      if root of tree
+        will split tree!
+        find predecessor of A - that's E
+        put E after A, move down in tree
+        swap A with G, now A is down to leaf, erase it
+          so bubble down
+      if node.left
+        swap item with predecessor's item
+        recursively delete predecessor
+      if node.right:
+        then swap with successor
+        recursively delete successor
+      keep walking down tree -> time spent O(h)
+  How to implement set/sequence?
+  Sequence
+    traversal order = order we're trying to represent
+    rest: tougher, will do next time
+  Set
+    traversal order = ordered by increasing item key
+    find(key)
+      corresponds to binary search - BST property
+      start at root, go left/right at each node with comparison
+        if need to go left/right and no node there, return none
+      time spent = O(h)
+    find_prev/next
+      find_prev, go until fall off tree and go back one node
+      find_next, compute successor - already know how to do
+
+Recitation
+  Every node in the left subtree of a node comes before it in the traversal order
+  Every node in the right subtree comes after it in order
+  List nodes in <A>'s subtree by recursively listing nodes in <A>'s left tree, then A, then A's right tree

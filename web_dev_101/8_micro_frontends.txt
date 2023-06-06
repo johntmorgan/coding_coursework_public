@@ -1,0 +1,79 @@
+Micro frontends
+  Loosely coupled components of user interface
+  Developed applying microservices concept to frontend
+  Not a tech
+  An architectural design decision, development approach
+  Same upsides as on the backend
+    Loosely coupled
+    Fault isolation
+    Each team picks their tech stack
+  Typically frontend is a monolith
+    Developed by dedicated frontend team
+    Even if backend is microservices
+  Split application into vertical slices
+    Single slice end to end from interface to database
+    Each slice owned by team
+      Ex
+        Product search UI
+        Game category UI
+        Cart checkout UI
+        Payment UI
+    Avoids need for centralized UI team
+      Every micro frontend team -> more fullstack
+  Example
+    Micro frontend e-commerce
+    (Approach pretty popular in e-commerce)
+    Game store delivers video games for desktops and console
+    Search component
+      Search bar, filter results - price, type of console, game genre, etc.
+    Game category
+      Displayes popular and widely searched games for different categories
+    Add to cart, checkout component
+      Recommend games as upsells, put in coupons and gift cards
+    Payment
+    Micro team may own extensive component, checkout page
+    Or may own particular component
+      Game category
+      "Fragment"
+    May own multiple componenets
+  Upsides
+    Easy frontend/backend coordination
+      Work on same team
+      Communication quick, informal
+    Leverage right technology
+      Tons of existing frontend technologies
+      Waves of new JS frameworks every year (yup lol - JM)
+      Can use plain JS/CSS/HTML for one feature
+      React, Angular, Vue for others
+      Easy library upgrades
+  Downsides
+    Only fit for med to large sites
+    Overkill, complicated for simple use cases
+    Using multiple techs in project = architectural, maintenance complexities
+    Write additional code to combine components with hetero tech backing
+      Compatibility, performance issues
+
+Integration
+  Can happen on either client or server end
+  Client-side
+    Naive way: render with links - click to navigate
+    Integrate on specific page with Iframes
+      More like the 90s way of building websites
+      Iframes cannot be bookmarked
+      Bad for SEO
+      Stability and performance issues
+      Obsolete in current landscape
+    Recommended: Web Components, frameworks like Single SPA
+    Single SPA
+      JS framework for frontend microservices
+  Server side
+    Complete pre-built webpage is delivered
+    Faster loading on client, browser does not have to do heavy lifting
+    Write additional logic on server to integrate
+    Frameworks
+      Project Mosaic, Open Components, Podium
+    Server Side Includes SSI
+      Server-side scripting language
+    Ex Zalando
+      European fashion e-commerce
+      Leverages SSI to build micro frontends

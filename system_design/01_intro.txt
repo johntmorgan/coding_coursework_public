@@ -1,0 +1,101 @@
+Introduction
+What is system design
+  Defining components and their integration, APIs, and data models to build large-scale systems
+    Meet specified set of functional and non-functional requirements
+  Use computer networking, parallel computing, distributed systems
+    Craft systems that scale well and are performant
+    Distributed systems inherently scale well
+      However are also inherently complex
+        Tame complexity, get the work done
+  System goals: reliable, effective, maintainable
+    Reliable: handle faults, failures, errors
+    Effective: meet all user needs and business reqs
+    Maintainable: flexible, scale up and down
+      Add new features easily
+
+Building block setup
+  Separate out 16 core building blocks
+    e.g. load balancers
+    Discuss in detail, mini-design problems
+  Then refer to them in design problems later in the course
+    Concentrate on problem-specific aspects
+    Mention building blocks and how to use
+
+Goal to build systems
+  Scale with increasing users
+  Remain available under faults
+  Meet functional goals with good performance
+
+Real-world
+  Iterative process
+    Start with reasonably good design
+    Measure performance
+    Improve design in next iteration
+
+Course goal
+  Teach concepts rather than boilerplate designs
+  Don't just provide a formula to attack a specific problem
+    Don't just memorize, understand and devise solution
+    System design is not formulaic, or wouldn't need people for it
+    Art as much as science, attack from first principles
+  Go deep and broad
+    Tackle traditional problems but go more in-depth
+    Proper rationale for components despite tradeoffs
+      Explain why use a particular database, caching system, or load balancing technique
+    Address new design problems
+      Scalability
+      Availability
+      Maintainability
+      Consistency
+      Fault tolerance
+    Real systems are complex
+      Need to make assumptions to scope system
+      Cover problems in detail
+  Iterative process
+    In reality systems improve over iteration
+      Start simple, adjust when bottlenecks arise
+    In some problems:
+      Make one design, identify bottlenecks, imrpvoe
+    Working under time constraints might not permit iterations
+      But still recommended
+      First take 80% of time to come up with design
+      Then second iteration for improvements
+      Change things as figure out new insights
+      Always discover new details as spend more time with problem
+  Interactive learning
+    Some guide through many steps
+    Also have a few examples designing end to end without any guided steps
+    Lots of questions and quizzes
+
+Who is course for
+  Any software engineer who wants to advance
+  Important part of interviews lately
+    Elaborate guide on prep in second chapter
+  Software developers
+    Primarily for back-end, become principal engineer or solution architect
+    These engineers handle actual user data
+      Once submited to backend by frontend, successful handling makes app successful
+    Full stack and front-end may want to learn to improve work
+    Support engineers (SRE) working on-call in prod environment
+      Effectively find the root causes of complex problems
+  Product/project managers
+    Build systems that scale well and perform effectively over time
+      Can steer design of systems
+
+Course structure
+  Forty chapters, four sections
+  Intro section
+    Course and features
+    How to prep for system design interview
+    Different types of abstractions
+    Non-functional characteristics
+    Back of the envelope calculations
+  Building blocks
+    16 chapters + conclusion
+  Design problems
+    13 problems
+    Meat of course
+  Epilogue
+    Spectacular failures
+      Small mistakes bringing down large & successful apps
+    Concluding remarks

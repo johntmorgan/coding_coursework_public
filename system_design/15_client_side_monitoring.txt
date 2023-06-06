@@ -1,0 +1,89 @@
+Client-side monitoring
+Client-side errors
+  Clients access via HTTP, often
+  Server side pretty easy
+    Monitor if request fails to process
+      Observe spike in error 500 (internal error)
+  Client-side hard
+    Little to no insight into client's system
+    Can look for a dip in load
+      Tricky!
+      Can have false positives and negatives
+        Unexpectedly variable load
+        Only mall portion of clients may be affected
+  Reasons clients can't reach server
+    DNS name resolution failure
+    Routing failure between client, service
+    Third party failures
+      Middleboxes (? - JM)
+      CDNs
+  Routing bugs
+    Ex. Google peer ISP announced bad routes
+      Google customers routing through unintended ISPs
+    Happens pretty regularly still
+      Autonomous services (AS) announce BGP prefixes
+  Even if service can't see errors, just as frustrating for customers
+    May report via Tweets - slow feedback loop
+
+Design
+  Act as client
+  Perform reachabilty and health checks
+  Need multiple vantage points around globe
+  Run service "prober"
+    Send requests to check availability
+  Prober problems
+    May not cover all autonomous systems
+      100k on internet as of 2021
+    Country/ISP regulations
+    Periodic maintenance needed
+    May not imitate user behaviors well
+  Improving probers
+    Embed into actual application
+      "Agent"
+      Send service reports about failures
+    Collector
+      Independent of primary service
+      Summarize error reports from collectors
+      Look for spikes in error graph
+  Collectors
+    Hierarchy of big data processing systems
+    Place near client network
+    Accumulate stats from localized sites
+    Use online stream processing to make near real-time
+      Can usually tolerate loss of ~1% of reports
+        Mostly looking for summary stats
+      If can't tolerate any loss... more expensive
+  Activate and deactivate reports
+    Use custom HTML header to send info to collectors
+      Browser should know about feature and be able to handle
+      Major orgs have incorporated, standardized
+    Can also use client-side app service controls
+  Reaching collectors under faulty conditions
+    Need to be in different failure domain from web service monitored
+      Client can try various collectors in diff domains until one works
+      Pattern = "being outside the blast radius of a fault"
+        To see IP reachability, host service on different IP
+        Monitor availability of domain, host collector on different domain
+        Detect if autonomous system route hijacked, host on different AS
+    For last-mile errors
+      Not much service provier can do
+      Accumulate events at client side
+      Report when connectivity is back
+  Protecting user privacy
+    Human user should know exactly what data sent & collected each reqeuest
+      Reactivate/deactivate any time they want
+    Browser-based client
+      Do not include traceroute hops, akin to collecting location info
+      Do not include DNS resolver used, location leak
+      Do not include RTT and packet loss info
+      Generally collect as little info as possible
+        Only for specific purpose w/permission
+      Ideally only collect info in weblog when successful request
+      Do not use active probing except to test service functionality
+      Encrypt so intermediary (ISP, middlebox) can't change/add/remove
+        Ensure data only goes to designated collectors
+
+Summary
+  Hard to detect & respond to client-side errors
+  Handle errors using agent that sends service reports to collector
+  Collectors should be independent of primary service in infrastructure, deployment

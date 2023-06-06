@@ -1,0 +1,334 @@
+Creating Threads
+  In Python, use the Thread class
+  Constructor
+    Thread(group=None, target=None, name=None, args={}, kwargs={}, *, daemon=None)
+      Group reserved for future extenstions
+      Target is code that thread is created to execute
+        Can be any callable object
+          Function or object of class with __call__ method
+      Tuple args pass arguments to target
+      Kwargs pass as dictionary of key-value pairs
+      Daemon boolean specifying if should be treated as daemon thread
+  See code for thread
+    Invoke via start() method
+    Wait for completion via join()
+  There must be another thread to create new thread
+    Called the "main thread"
+    Main is thread from which Python interpreter started
+      Debugger in PyCharm reveals MainThread
+        Along with demoThread since named that
+
+Subclassing Thread
+  Another way to create threads
+  Key caveats
+    Can only override run() method and Thread class constructor
+    Thread.__init__() must be invoked if subclass overrides constructor
+    args & kwargs not passed to run method
+
+Daemon Thread
+  Greek mythology: supernatural being between gods and humans
+  CS: computer program that runs as a background process
+    Not under direct control of user
+  Python program may exit while daemon thread still running
+    Similar in Java
+  Mark a thread as daemon in class's constructor
+  Daemon threads are shut down abruptly
+    Open files, DB connections may not be shut down properly
+    Daemon threads a poor choice for such tasks
+  If you do not specify daemon property, inherited from current thread
+
+Lock
+  Python's mutex
+  Most basic/primitive synch construct
+  Two methods: acquire(), release()
+  Can only be in 2 states: locked or unlocked
+  Always initialized in an unlocked state
+  Any thread can invoke acquire() to lock
+    Can only be invoked by 1 thread at a time
+      GIL ensures only one thread executed by interpreter
+      Other languages with more robust threading = significant issue
+  If a lock object is already locked and one tries to acquire()
+    It will be blocked until lock released
+    Can pass floating point timeout to acquire to not be blocked indefinitely
+    Method returns true if lock acquired
+  Release() changes lock to unlocked
+    If multiple threads blocked on acquire(), arbitrarily choose one
+  Thread cannot release lock it has not locked
+    Trying to release an unacquired lock will result in an exception
+
+  Deadlock scenario
+    from threading import *
+    import time
+
+    def thread_one(lock1, lock2):
+        lock1.acquire()
+        time.sleep(1)
+        lock2.release()
+
+    def thread_two(lock1, lock2):
+        lock2.acquire()
+        time.sleep(1)
+        lock1.release()
+
+    if __name__ == "__main__":
+        lock1 = Lock()
+        lock2 = Lock()
+
+        t1 = Thread(target=thread_one, args=(lock1, lock2))
+        t2 = Thread(target=thread_one, args=(lock1, lock2))
+
+        t1.start()
+        t2.start()
+
+        t1.join()
+        t2.join()
+
+RLock
+  Re-entrant lock
+  Lock that can be reacquired by same thread
+    As many times as needed
+  Must release as many times as acquired
+    Otherwise lock remains locked
+    Other threads get blocked
+    Tracked internally by recursion level
+      Incremented on every acquire
+      Decremented on every release
+  Only owner thread can release
+    Non-owner release() invoke = RuntimeError
+
+Condition variables
+  Wait for another thread to do something as well as mutually exclude
+  Very similar to Java again
+  Just locks aren't enough to coordinate threads
+    Say 2 working together to find primes
+    One finds, another prints
+    Naive: have printer do busy wait and keep polling for boolean found value
+
+    from threading import Thread
+    import time
+
+    def printer_thread_func():
+        global prime_holder
+        global found_prime
+
+        while not exit_prog:
+            while not found_prime and not exit_prog:
+                time.sleep(0.1)
+
+            if not exit_prog:
+                print(prime_holder)
+
+                prime_holder = None
+                found_prime = False
+
+    def is_prime(num):
+        if num == 2 or num == 3:
+            return True
+
+        div = 2
+
+        while div <= num / 2:
+            if num % div == 0:
+                return False
+            div += 1
+
+        return True
+
+    def finder_thread_func():
+        global prime_holder
+        global found_prime
+
+        i = 1
+
+        while not exit_prog:
+            while not is_prime(i):
+                i += 1
+            prime_holder = i
+            found_prime = True
+            while found_prime and not exit_prog:
+                time.sleep(0.1)
+            i += 1
+
+    found_prime = False
+    prime_holder = None
+    exit_prog = False
+
+    printer_thread = Thread(target=printer_thread_func)
+    printer_thread.start()
+
+    finder_thread = Thread(target=finder_thread_func)
+    finder_thread.start()
+
+    # Let the threads run for 5 seconds
+    time.sleep(3)
+
+    # Let the threads exit
+    exit_prog = True
+
+    printer_thread.join()
+    finder_thread.join()
+
+  Not using any synch primitives
+    Not even locks to guard writes to shared variables
+    Works because only 2 threads involved
+    But will fail with >2 threads
+    Would also fail completely in Java
+      Need to mark shared variables as volatile
+  Basically a producer-consumer problem
+    Printer is consumer
+    Finder is producer
+    Printer needs to be signaled that prime discovered
+      Condition is boolean found_prime
+  Problem, printer continuously polling in while loop
+    Busy waiting
+    Highly discouraged, wastes CPU cyles
+    Printer thread needs to go to sleep
+
+Creating condition variables
+  cond_var = Condition()
+  Key methods: wait(), notify()
+  Always associated with lock
+  Lock can be RLock or vanilla Lock
+
+  lock = Lock()
+  cond_var = Condition(lock)
+  cond_var.acquire()
+  cond_var.wait()
+
+  cond_var = Condition()
+  cond_var.acquire()
+  cond_var.wait()
+
+  def printer_thread_func():
+    global prime_holder
+    global found_prime
+
+    while not exit_prog:
+      cond_var.acquire()
+      while not found_prime and not exit_prog:
+          cond_var.wait()
+      cond_var.release()
+
+      if not exit_prog:
+        print(prime_holder)
+        prime_holder = None
+
+        # acquire lock before modifying shared variable
+        cond_var.acquire()
+        found_prime = False
+        # remember to wake up the other thread
+        cond_var.notify()
+        cond_var.release()
+
+  Got rid of busy wait loop this way
+  When finder thread invokes notify() on cond_var, printer wakes up
+  But if printer acquires lock on cond_var, how does finder acquire for notify?
+    When wait() invoked, lock given up
+    Reacquires on notify() wake up
+  Can found_prime change once printer wakes up?
+    Not if use while loop
+    And will execute everything between wait() and release while holding lock
+
+Spurious wakeups
+  May want to not use while loop if only one printer thread
+    But can be woken up even if no notification
+    Specifically allowed by POSIX standard
+      Allows more efficient implementations of condition variables
+  Must always check for conditions in loop and wait() inside it
+
+Can you use separate condition variables to signal and reset found_prime?
+  Yes but makes things much more brittle
+  Change code structure = difficult bugs
+    Bad design/implementation decision
+
+What if need multiple printer threads for business reasons?
+  Use notifyAll() instead of notify()
+    Printer must make sure to wake up finder thread as well as other printer
+      Or you may get a deadlock
+  Move printer release to end of all logic
+    That way only a single printer thread prints
+
+wait(n)
+  Wait n seconds to be notified
+  Thread wakes up after n seconds even without notification
+  No longer testing for condition in a while loop
+
+notify_all()
+  Used when more than one thread waiting on condition variable
+  Can also be used for just single thread though
+  You must release after calling, or waiting threads can't acquire
+  Thread selected to acquire lock is random
+    Not in the order in which invoked wait()
+  First thread to wake up releases
+    Then one by one other threads acquire
+
+notify(n)
+  Wakes up n threads
+  If have 5 threads and notify(3), wake up 3 of 5
+
+Semaphores
+  One of oldest synch primitives
+  Invented by Dijkstra
+  Atomic counter
+    Decremented by one when acquire() invoked
+    Incremented by one when release() invoked
+  Initialized at 1 unless otherwise specified
+
+  semaphore = Semaphore()
+  semaphore = Semaphore(5)
+
+  If count greater than zero, acquire calls return instantly
+  If count is zero acquire calls get blocked until increment
+  When release, increment by one
+    Unblocked thread arbitrary if multiple
+
+  Semaphores used to signal among threads working towards common goal
+
+Events
+  One of the simplest synch primitives
+  Boolean flag with set(), clear()
+  Check with is_set()
+  Expose wait() method, threads wait for it to become true
+    All waiting unblocked when true
+  Convenience class over condition with boolean predicate
+  Different from semaphore
+    Semaphore counter can increment constantly
+    Event just flips between set and unset
+    Thread never gets blocked on wait() no matter how man times invoked
+
+Timer
+  Callable after time has elapsed
+  Takes floating point number = seconds to wait before execution
+    May be slightly more when actually executed
+  Can also cancel with cancel()
+
+Barrier
+  Wait for certain number of threads to reach point in code
+  Each invokes wait() and then gets blocked until all invoked wait()
+  Barrier also will take a callable argument for action when threads released
+    Only one thread will invoke, at random
+  Can also abort() to break deadlocks
+    Threads will experience BrokenBarrierError
+
+With
+  Resources besides CPU time
+    Local disks, network sockets, databases
+  Usually try-except-finally block
+    Cleanup in finally
+  with is an alternative to this boilerplate
+    Wraps execution fo block of statements in context
+      Defined by context manager object
+    __enter__()
+      Returns object assigned to variable
+      By default returned object is None and is optional
+      Can return self and keep functionality required within class
+    __exit__()
+      Called on original Context Manager object
+        Not the object returned by enter
+        Unless __enter__ returned itself
+  If error in __init__ or __enter__ then __exit__ not called
+  Once code block entered, __exit__ always called
+    Even if exception raised in code block
+  Classes like Lock suppport context management
+    Use with the with statement
+      Don't need to explicitly acquire() and release()

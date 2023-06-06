@@ -1,0 +1,64 @@
+Named & Default Exports
+  Adding a default keyword makes it a default to export
+    Export and import a single functionality from a module
+    Highlight main functionalty of exported API of module
+    Have a fallback import functionality
+
+  export default class_name {....}
+
+  import class_name from module_name;
+
+  const robin = {
+  firstname: 'Robin',
+  lastname: 'Wieruch',
+  };
+
+  export default robin;
+
+  // Leave out curly braces to import default export
+  import developer from './myfile.js';
+
+  export default class App extends React.Component {
+    render() {
+      return (
+        <p>Hello, {developer.firstname}!</p>
+      );
+    }
+  }
+
+
+  const firstname = 'Robin';
+  const lastname = 'Wieruch';
+
+  const person = {
+    firstname,
+    lastname,
+  };
+
+  export {
+    firstname,
+    lastname,
+  };
+
+  export default person;
+
+  import React from 'react';
+  import developer, { firstname, lastname } from './myfile.js';
+
+  export default class App extends React.Component {
+    render() {
+      return (
+        <p>Hello, {firstname}!</p>
+      );
+    }
+  }
+
+  // Import name differ from exported default name
+
+
+  Can also export directly for named exports
+  export const firstname = 'Robin';
+  export const lastname = 'Wieruch';
+
+  // Import combination of named and default objects
+  import React, {Component} from 'react';

@@ -1,0 +1,293 @@
+Web Crawler
+  Scour www for content
+  Start from pool of seed URLs
+  Store data for future use
+  First step of search engines
+    Stored data used for indexing & ranking
+      These will not be covered in this section
+  Other benefits
+    Web page testing - test links
+    Web page monitoring - check for updates
+    Site mirroring
+    Copyright infringement check
+
+Requirements
+  Functional
+    Crawling
+      Where are seed URLs from?
+        Manually create
+        Scan IP addresses for web server presence
+        Quality is important
+          Low-quality and you may miss some of the www graph
+      How to select seeds? Several options
+        Location-based
+        Category-based
+        Popularity-based
+          Most common approach
+          Can do hot topics in an area, combining
+    Storing
+      Extract and store URL content in blob store
+    Scheduling
+      Regularly update blob store records
+  Non-functional
+    Scalability
+      Need to cover hundreds of millions of documents
+        (I thought it was a few billion globally now? - JM)
+    Extensibility
+      Supports http(s) comms
+      Extend to other protocols
+      Process & store various file formats
+    Consistency
+      Multiple workers, consistency critical
+    Performance
+      Limit crawling to domain  
+        By time spent
+        By counting visited URLs
+        "self-throttling"
+        Read the robots.txt file
+          (Course has "robot.txt" typo - JM)
+    User interface
+      Perform non-routine custom crawling set via user
+
+Resource estimation
+  Storage
+    5 billion web pages
+    2070 KB text per page (based on a study)
+    500 Bytes metadata per page
+    5 B * (2070 KB + 500 B) = 10.35 PB
+  Traversal Time
+    60ms per webpage
+    5B pages
+    = 0.3 B seconds = 9.5 years = 3468 days
+    Going to need multi-worker architecture
+    Want to finish in one day
+    Assume one worker/server
+    3468 servers
+      Maybe can have 10 threads/server, divide by 10, ~300 servers
+  Bandwidth
+    10.35 PB/day
+    10.35 PB / 86400 = 120 GB/sec = 950 Gbps
+    Divide among 3468 servers
+    277 Mb/sec per server
+
+Building blocks
+  Scheduler to schedule crawling events
+  DNS to get IP of web pages
+  Cache to store documents for processing modules
+  Blob store for storing everything
+  More components
+    HTML fetcher
+      Establishes connection between crawler and web hosts
+    Service host
+      Manages crawling operation among workers
+    Extractor
+      Extracts URL and document from webpage
+    Duplicate eliminator
+      Dedup testing on incoming URLs and documents
+
+Design
+  Components
+    Scheduler
+      Priority queue (URL frontier)
+        Priority
+        Update frequency
+      Relational database
+        Stores all URLs with those params
+        Populated via user added URLs
+          Seed
+          Runtime
+        Also populated by crawler extracted URLs
+      What is size of popularity queue
+        Size of URL frontier
+        Say URL frontier 1m
+        1m * 2048 Bytes = 2.048 GB
+      May not need a distributed mechanism due to size
+        However limited read/write bandwidth
+        SPOF
+      Sub queue for each worker best approach
+        All workers can draw from same queue
+          Especially high priority/frequent crawls like news websites
+        Good for increasing queue size
+      Single queue good for dedup, conserves resources
+        Overall need dist though, for reasons to be explained soon
+      How to handle URL frontier?
+        Map to specific workers
+        Each worker has own sub-queue
+    DNS resolver
+      Map hostnames to IP addresses for content fetching
+      DNS lookup is slow
+      Create custom resolver
+      Cache frequently used IP addresses with TTL
+    HTML fetcher
+      Initiates comms with server hosting URLs
+      Downloads file content
+        Based on comm protocol
+        Focus on HTTP protocol for text
+        Extensible to other protocols
+    How to handle URLs with variable priorities?
+      Need to differentiate at each stage
+      Queue placement automatically handles
+      Can also have different queues for different priorities
+        Really depends on crawler scale, goals
+    Service host
+      Brain of crawler
+      Worker instances
+      Will refer to as "crawler" - both whole thing and one instance
+      Hnadles multi-worker architecture
+        Dequeues next available URL for crawling
+        Acquires DNS resolution from resolver
+        Sends DNS info to HTML fetcher
+    Extractor
+      Extract URLs and content from page
+        Send URLs directly to duplicate eliminator
+        Send content via document input stream (DIS)
+          DIS is a cache used to store document
+            Redis a good choice
+            Advanced data structure functionality
+      Then send URL to task schedule with URL frontier
+      Store content in blob storage
+    Duplicate eliminator
+      Calculate checksum value of extracted URl
+      Check agains URL checksum datastore
+        Add new entries to database
+      Same process for document checksum
+      What if URL uses redirection?
+        Passes dedup test
+        However content deduplication blocks
+      What if just one Byte is changed?
+        Then it comes out different
+    Blob store
+      Store large volumes of unstructured data
+
+Workflow
+  Crawler loads URL from URL frontier priority queue
+  Crawler assigns URL to available worker
+  Worker sends URL to DNS resolver
+    DNS resolver checks cache, then determines IP address if needed
+    Stores in cache if not already stored
+  Note that URL approach is BFS, not DFS
+    Dequeue URL, then enqueue extracted URLs at end
+      Effectively going one level at a time
+    Should you ever use DFS?
+      To traverse all pages on a specific domain
+      Avoid time waste from repeated website connections
+  Worker forwards to URL to HTML fetcher
+  HTML fetcher initiates communication
+  Worker extracts URLs and HTML document
+  Worker places document in cache for processing
+  Worker sends URLs and document for dedup testing
+  Dedup eliminator calcs & compares checksum
+    Discards in case of a match
+    Places new values in data stores if no match
+      Then allows extractor to store content
+  URLs to scheduler
+  Scheduler stores in database
+  Scheduler sets values for priority & recrawl frequency
+  Extractor writes new document into database
+  Recrawling
+    Crawler starts over until URL frontier empty
+    New URLs enqueued based on priority & periodicity
+  Note
+    Make use of client-side load balancing
+      Multiple instances of all architecture pieces
+
+  How often to recrawl?
+    Let's say 2 weeks on average for standard priority
+    Can change depending on needs
+      Can predict frequency of changes by analyzing past changes
+      Could get as short as 5 minutes for a news website
+
+Design improvements
+  1. Functionality
+  2. Security - avoiding crawler traps
+  Only supports HTTP, extracts text content so far
+    Can easily extend design to other protocols like FTP
+    Workflow adds a step where crawler invokes proper comm module
+    Extractor adds modules to process other media types
+      Already using a blob store
+  How does multi-worker concept function?
+    Every worker needs URL from priority queue
+    Different websites take different lengths of time
+    Worker dequeues when available again
+    Several approaches to splitting up URLs
+      Domain level log
+        Assign one whole domain to a worker
+        All URLs branches must be covered
+        Cache hash of hostname against worker ID
+        Avoids redundant crawling of domain pages by worker
+        Good for reverse URL indexing
+          URL storing efficiency
+          Prevent heavy string matching for dedupe
+      Range division
+        Distribute range of URLs to avoid calshes
+        Hash the range associated with each worker
+      Per URL crawling
+        One URL at a time
+  Crawler traps
+    Cause indefinite crawler resource exhaustion
+    Mostly cause of poor website structure
+      URLs with query params
+        Can hold immense number of values
+        Generate lots of useless web pages
+      URLs with internal links
+        Infinite redirect cycle
+      Infinite calendar pages
+      Dynamic content generation
+      Repeated cyclic directories
+        http://www.abc.com/first/second/first/second/...
+    Can also be placed intentionally
+      Exhaust crawler bandwidth
+      Badly hurt site SEO though
+    How to identify
+      Analyze URL scheme
+      Analyze total number of web pages/domain
+        Impossibly huge in URL frontier = indicator
+        Limit crawl at domain
+    Implement app-layer logic
+      Catch according to rules (above)
+      Store URL as no-go in the future
+    Fetch robots.txt
+      Access key domain pages even if overall domain crawling limited
+      Should also have revisit frequency instructions
+        Popular website may want many revisits
+        Low traffic website may want to save resources
+        "Robots Exclusion Protocol"
+      Note this does not protect from deliberate malicious traps
+    Adjust crawl speed based on TTFB (Time to First Byte)
+      High TTFB = slow server
+        Don't crawl too fast - timeouts, incomplete crawling
+
+Evaluation
+  Scalability
+    Handles ever-increasing number of URLs
+    All elements scalable
+      Schedulers, web crawler workers, HTML fetcher, extractors, blob store
+    Distributed URL frontier
+      Use consistent hashing to distribute hostnames
+        Easy to add/remove hostnames
+  Extensibility
+    Design focused on HTTP
+    Easy to add more protocols like FTP
+      Add additional modules to HTML fetcher
+    Can also extend functionality for other MIME types
+      MIME: multipurpose internet mail extension
+        Describes contents of internet files based on formats
+  Consistency
+    Checksums of URLs and documents compared with existing
+      In URL and document checksum data stores
+    Checkpoint states to backup service
+      Amazon S3 works
+      Offline disk also
+  Performance
+    Add workers to crawl mmore
+    Blob storage for content
+      High throughput for unstructured data
+    Efficient implementation
+      Follow robots.txt
+    Self-throttling
+      Don't exhaust website host servers
+  Scheduling
+    Determine frequency of recrawling
+      Assign default or specific
+      Higher frequency to high priority
+    Can also have separate queues for various priority URLs

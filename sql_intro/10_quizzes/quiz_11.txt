@@ -1,0 +1,20 @@
+1. Print views in database
+  SELECT * FROM information_schema.tables
+  WHERE table_type='VIEW';
+
+2. Privilege needed to drop a routine
+  ALTER ROUTINE
+
+3. Same queries
+  SELECT name FROM student WHERE course = 'MySQL';
+  SELECT name FROM student WHERE course IN ('MySQL');
+
+4. Database white box testing
+  Referential integrity rules
+  Database consistency and ACID properties
+  Decision coverage, condition coverage, statement coverage
+
+5. Database black box testing
+  Equivalence Partitioning and Boundary Value Analysis (BVA)
+  Data Mapping
+  Data stored and retrieved

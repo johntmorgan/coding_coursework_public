@@ -1,0 +1,197 @@
+Chapter 4 - Data
+  Procedural abstractions hide process complexity beneath a procedure call
+    Like lots of the pseudocode in the book
+  Data abstractions hide details of data-handling processes
+  Define data types by the operations that can be performed on them
+    Split in positional characters, converted to upper and lower case, have chars appended to? String.
+    Receives and, not, xor, and can be inverted? Boolean.
+    Summed, divided, subtracted? Number.
+  Abstract Data Type (ADT)
+    Specification of a group of operations that make sense for a specific data type
+      e.g. List ADT
+      Don't have to manipulate computer memory directly
+    Advantages
+      Simplicity - focus on big picture, algorithm problem solving
+      Flexibility - easily change between how data stored depending on problem
+      Resuability - write once, use in lots of places
+      Organization - keep code dealing with the same logical aspect in one place "separation of concerns"
+        Without it, spaghetti code
+      Bug-fixing - using a bug-free ADT, don't have to worry about it
+        If it's bugged, fixing the bug fixes it everywhere
+  Primitive data types
+    Built into language, always include:
+      integers, floating points, basic mathematical operations
+    Usually include
+      storing text, booleans
+  Key ADTs
+    Stack
+      push, pop
+      often: isEmpty, size
+      LIFO
+      How to implement backtracking without recursion
+        As I just saw in this last assignment
+    Queue
+      enqueue, dequeue
+      FIFO
+    Priority Queue (PQueue)
+      enqueue(e, p)
+      dequeue
+      Operating systems use this too - only one/few CPUs
+        Dequeue, run for a bit, enqueue again if not finished
+        Keyboard input is very high priority
+          If your keyboard stopped responding, you'd restart the computer
+    List (slash array, vector)
+      insert(n, e) insert e at position n
+      remove(n) remove item at position n
+      get(n) get item at position n
+      sort
+      slice(start, end)
+      reverse()
+      Very commonly used
+      But prefer stack/queue if you don't need the flexibility
+    Sorted list
+      Always guaranteed to be sorted
+      insert(item)
+      get(index)
+      remove(index)
+    Map/Dictionary
+      set(key, value)
+      get(key)
+      delete(key)
+    Set
+      Unordered group of unique items
+      Used when order is meaningless
+      Or you must ensure no item stored more than once
+      (Can also be naturally ordered with binary tree backing though... - JM)
+      add(e)
+      list
+      delete(e)
+      (no intersect, union, subtract, contains? - JM)
+  How ADTs are backed
+    Array
+      Allocate sequential space in memory
+      Write items sequentially
+      Special NULL token at end
+      Each object occupies same amount of space in memory
+      Advantages:
+        Therefore instant access to any object
+          Computer looks at start + size * index
+        Great for Stack
+        Also used for Queues and Lists
+      Disadvantages:
+        Can be impractical to allocate huge amount of sequential memory
+          May not be enough free space nearby if it grows
+        Removing an item?
+          Need to shift all object, or mark space as "dead"
+        Adding an item?
+          Again, need to shift everything
+    Linked List
+      Objects stored in a chain that does NOT need to be sequential
+      Allocate memory as needed
+      Pointer to next object in chain
+      Can also be used for stacks, queues, lists
+      Advantages:
+        No problem growing the list
+        Create lists as big as free memory
+        Easy to insert items by changing cell pointers
+      Disadvantages:
+        Can't easily reach nth item of list
+        Can't easily remove single cell given pointer to
+        Can't easily move backwards
+    Double linked list
+      Same benefits as linked list
+      Advantages
+        Now we can easily go backwards
+        Can easily delete single cell from address
+      But
+        Still no way to easily access nth item
+        Takes more memory
+        More code complexity
+  Many programming languages come with built in List, Queue, Stack and more
+    Often have a default implementation
+      Might even switch during runtime depending on how data accessed
+    Fine not to worry when performance is not an issue
+    But you do need to worry when it is, or when working with a lower-level language
+  Linked Lists > Arrays when
+    Need fast insert/delete
+    Don't need random, unordered data access
+    Insert/delete middle of list
+    Can't evaluate exact size of list
+      (Although doubling array capacity and copying occasionally really isn't usually *that* big a deal right? - JM)
+  Arrays > Linked Lists when
+    Frequently need random, unordered data access
+    Need extreme performance on access
+    Number of items doesn't change during execution
+  Trees
+    Pointers to cells, but in a tree structure not a linear structure
+    Great for hierarchical data
+      File structure
+      Command system of army
+    Nodes, edges connecting them
+    Root node: no parent
+    Every other node must have exactly one parent
+      Parent, grandparent, etc. = ancestors
+      Children, grandchildren etc = descendants
+      No children = leaf node
+      Path = way to get from one node to another
+      Level = size of path to root
+      Height = level of deepest node
+      Forest = set of nodes (that's new - JM)
+  Binary Search Tree (BST)
+    Special type of tree that can be easily searched
+    At most two children per parent
+    Nodes positioned by value/key
+      Child left of parent smaller, right larger
+    Important to keep balanced
+      Otherwise you wind up with a ~linked list
+      A perfectly balanced tree will have minimum possible height
+    Assuming balanced
+      Height of tree with n nodes is log2(n)
+      Therefore searching among n items is O(log n)
+      Often chosen to back Sets and Maps
+        Sets - requires checking if item is already present
+        Maps - requires finding key-values
+    But tree balancing is expensive
+      In practice, trees are often rebalanced after several insertions
+      But only reasonable when trees are rarely changed
+    Self-balancing binary trees therefore invented
+      Red-Black tree is a famous type of self-balancing tree (that I'll be learning about soon - JM)
+        Colors nodes red or black for its balancing strategy
+        Can be heavily edited in an efficient way
+    AVL tree
+      Another way of doing self-balancing (touched on it - JM)
+      Require more insertion/deletion time
+      However generally stay better balanced than red-black
+        Faster for retrieval
+        Therefore used more in heavy read scenarios (while red-black used for heavy write/edit)
+  B-Tree
+    A generalization of binary trees
+    May have more than 2 children, contain more than 1 item
+    Efficient to operate with data in big chunks
+      How things are usually read from magnetic disks
+    Used commonly in database systems
+  Binary Heap
+    Another special type of BST
+    Min/max item stored at root, read instantly
+    Good for PQueue backing
+    Searching/inserting still O(logn)
+    Parent node greater/lesser than BOTH child nodes
+    Use when heavily working with min/max item of set
+  Graph
+    Similar to tree, but freely arranged
+    No root node
+    Any node can have any number of incoming/outgoing edges
+    Social graph very common
+  HashTable
+    Find items in O(1) time
+    Preallocate large chunk of contiguous memory like Array
+    Position of object given by hash function
+    Same memory position for two objects = hash collision
+      Store at same address with e.g. linked list
+      Extra overhead of CPU and memory, try to avoid
+    Need about 50% of space free to avoid frequent collisions
+      (~0.7 items/bucket rule in CS106B - JM)
+    Also used frequently for maps and sets
+      But require large block of contiguous memory
+      
+

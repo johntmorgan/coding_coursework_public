@@ -1,0 +1,102 @@
+Functions
+  Organized instructions used to carry out a task
+  Modular way to reuse code anywhere in the program
+
+Functions in JS have
+  Arguments
+    Can be anything, optional
+  Program block
+    Executed on function invocation
+  Output
+    Returned after function finishes execution
+
+Basic syntax
+
+  function functionName(<arguments>) {
+    statement;
+  }
+
+  Start with a function token, then the name of the function
+  Args in parens
+  Instructions in brackets, incl. return statement
+    Anything after return does not execute
+
+  function sum(a, b) {
+    console.log("You're in the function now");
+    var ans = a + b;
+    return ans;
+  }
+
+Function invocation
+  Executed when invoked or called
+
+  function sum(a, b) {
+    console.log("You're in the function now");
+    var ans = a + b;
+    return ans;
+  }
+
+  var var1 = 5;
+  var var2 = 6;
+  var var3 = sum(var1, var2);
+  console.log(var3);
+
+Assigning a variable to the function declaration
+  JS lets you create a function and assign it directly to a variable
+  Do NOT need to give a name to the function
+    "Anonymous function"
+
+  var var1 = 5;
+  var var2 = 6;
+  var var3 = function (a, b) {
+    console.log("You're in the function now");
+    var ans = a + b;
+    return ans;
+  }
+  console.log(var3(var1, var2))
+
+Can also invoke a function immediately after declaration
+
+  var var1 = 5;
+  var var2 = 6;
+  var var3 = function (a , b){
+      console.log('Taking sum in the function');
+      var ans = a + b;
+      return ans;
+  }(var1, var2);
+  console.log(var3);
+
+No arguments, declare with empty parens
+  If you invoke without args when args are required, args set to undefined
+
+  function getName(){
+    console.log('getName function executed');
+    return 'Jack';
+  }
+
+  var var3 = getName();
+  console.log(var3);
+
+No return statement
+
+  function printName(name){
+      console.log('printName function executed');
+      console.log('name:',name);
+  }
+
+  function printAge(age){
+      console.log('printAge function executed');
+      console.log('age:',age);
+      return;
+  }
+
+  var var1 = 'John';
+  var var2 = 12;
+  var var3 = printName(var1); // assign printName output to var3
+  console.log(var3); // undefined
+  var var3 = printAge(var2); // assign printAge output to var3
+  console.log(var3); // undefined
+
+Functions in JS are of type object
+  But unique chars allow us to refer to them as type function
+    Will use interchangeably

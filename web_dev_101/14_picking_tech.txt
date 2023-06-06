@@ -1,0 +1,106 @@
+Picking the Right Tech
+  No rule of thumb that for use case X always pick tech Y
+    Always depends on business requirements
+    Every use case has unique needs
+    No perfect tech
+  That said, let's talk general/standard scenarios
+
+  Real-time data interaction
+    Ex
+      Messaging app
+      Browser-based MMO
+      Collaborative text editor
+      Audio/video streaming - Spotify, Netflix
+    Need a persistent connection between client and server
+    Non-blocking tech
+    Popular
+      NodeJS
+      Python Tornado framework
+      Java Spring Reactor, Play, Akka
+    Uber used NodeJS to write core trip execution engine
+      Can manage large number of concurrent connections without fuss
+
+  Peer-to-peer
+    Distributed search engine, Live TV radio service
+    JS protocols like DAT and IPFS
+    FreedomJS
+      Framework for building in modern web browsers
+
+  CRUD-based regular app
+    Tax filing
+    Employee management/attendance
+    Most common these days
+    Online booking portal
+    App collecting user data
+    Social site
+    MVC architecture
+    Techs
+      Spring MVC
+      Python Django
+      Ruby on Rails
+      PHP Laravel
+      ASP .NET MVC
+
+  Simple small scale apps
+    Limited complexity
+      Blog
+      Wordpress plugin
+      Simple online form
+      App integrated with social media platforms within IFrame of site
+        e.g. web-browser based strategy airline, football manager games
+    PHP
+    Maybe also
+      Spring boot
+      Ruby on Rails
+    Cut down on verbosity, config, development time
+    PHP hosting is much cheaper
+
+  CPU-intensive applications
+    Big Data, parallel processing, monitoring and analytics on a lot of data
+    C++ for low-level memory maniuplation
+      Most cryptocurrencies written in C++
+    Rust
+      Similar to C++
+      High performance and safe concurrency
+      Gaining a lot of popularity lately
+    Java
+      Most large-scale enterprise systems
+      Elasticsearch
+    Scala
+    Erlang
+      Built-in support for concurrency, fault-tolerance, distribution
+      Massively scalable systems
+    Go
+      Written by Google
+      Multi-core machines handling a large amount of dta
+    Julia
+      Dynamically programmed langauge for high performance, running computations, numerical analytics
+
+  What to think about
+    Thorough requirements
+      Know what you are going to build
+      Will database store relational data? Document-oriented? Semi-structured? Unstructured?
+      Will data grow exponentially?
+      Will monolithic work well? Need to split up app into different modules?
+        Splitting up helps bail out if particular tech does not work out
+    Does what we already know meet requirements?
+      Avoid steep learning curve on new tech
+    Active community?
+      How is documentation and support?
+        Check GitHub, StackOverflow
+      Official support available?
+    Used by big guns in production?
+      Battle-tested
+      No inherent scalability, security, or other design-related issues
+      Codebase continually patched and updated
+    Open source license?
+      Write own features if needed
+        Don't have to rely on creator to write
+      Not liable to pay fee for product
+      Larger communities, generally
+    Availability of skilled resources
+      Easy to find MySQL admin, Java dev
+
+  This concludes the bulk of the course. Next?
+    Case studies
+    Mobile apps

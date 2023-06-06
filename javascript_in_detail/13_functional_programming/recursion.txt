@@ -1,0 +1,37 @@
+Recursion
+  Calling the same function within its body
+  Direct recursion
+    Function calls itself directly in its body or definition
+  Indirect recursion
+    Two or more functions call themselves indirectly from each other
+
+Composition of recursive function
+  Base case - where exits
+  Recursive case - where calls self again
+
+Main idea
+  Solving a subproblem
+    Size of subproblem up to you
+
+    function power(base, power)
+    {
+        if(power === 0){
+            return 1;
+        }
+        else if(power === 1){
+            return base;
+        }
+        else{
+            var sub_solution = power_helper(base, power -1);
+            var solution =  sub_solution * base;
+            return solution;
+        }
+    }
+
+Visualization
+  Every function invocation is costly
+    Pushed onto call stack
+  Stack error when stack limit exceeded
+  Recursion is clean, but can cause stack error
+    Look into trampoline & tail-call with lots of data
+  

@@ -1,0 +1,66 @@
+Tree Depth-First Search
+  Tree:
+    Graph
+    Undirected
+    Acyclic
+    Single connected component
+  Multiple ways to explore
+  DFS reduces loops
+  Usually explore recursively
+  Can also explore iteratively with stack
+  Travel as far as possible on single branch before exploring others
+  Three main methods to solving:
+    Preorder
+    Inorder
+    Postorder
+
+Preorder:
+  Root
+  Preorder on left child (recursive)
+  Preorder on right child (recursive)
+  Most common
+  Main one you'll use
+
+Inorder
+  Inorder on left child (recursive)
+  Root
+  Inorder on right child (recursive)
+  Use when have to find elements smaller than root
+
+Post order
+  Postorder on left child (recursive)
+  Postorder on right child (recursive)
+  Root
+  Rarest
+  Use: deleting tree
+    Delete left and right sides before root
+    Else, can't delete all - memory leak
+
+Why DFS:
+  Don't start from the root over and over to reach each node
+    O(n^2)
+  DFS = O(n) unless other major constraints
+
+BFS vs. DFS:
+  DFS good if destination near leaf
+  BFS good if likely near root
+
+Pattern matching
+  Yes:
+    Solution near leaves of tree
+    Components of solution along paths from root to leaves
+      Height finding classic example
+
+  No:
+    Input data is not in tree form
+      Transforming into tree expensive
+    Solution requires looking at one level of tree at a time
+
+Real world
+  Find products in price range
+    Convert into BST
+    Preorder traversal - is root in range? Then go from there
+  Finding routes
+    Between start and destination point
+  Solving mazes
+    

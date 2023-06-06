@@ -1,0 +1,246 @@
+The pub-sub Abstraction
+Publish-subscribe messaging
+  "Pub-sub"
+  Asynchronous service to service comm
+  Popular in serverless, microservices architectures
+  All services subscribed receive message
+  Ex. Twitter
+    C. Ronaldo posts
+    All followers are updated
+    Ronaldo = publisher
+    Tweet = message
+    Followers = subscribers
+
+Why
+  Dist systems can have millions of machines
+  Using pub-sub increases scalability
+  Producers and consumers operate independently
+    Add and remove components without affecting others
+
+Use cases
+  Improved performance
+    Push-based distribution
+    Recipients don't need to check regularly
+    Fast response times
+    Low delivery latency
+  Log ingestion
+    Ingest large amounts of data
+    Deliver to any analytical system
+    Log details while also completing user requests
+    e.g. Meta
+      System: "Scribe"
+      Know who needs what data
+      Remove or archive processed/unwanted data
+      Manage huge amounts of data
+  Real-time monitoring
+    Raw or processed messages provided to multiple monitor apps
+  Replicating data
+    Distribute changes
+      Leader-follower protocol
+        Followers can update asynch
+      Distributed caches refresh by receiving modifications
+    Multiple views
+      e.g. WhatsApp
+        See same convo on mobile, computer browser
+
+Like a queue?
+  Deliver info from producer to consumer
+  But multiple consumers in pub-sub, only one in queue
+
+Decoupling
+  Producers not affected by:
+    Slow consumers
+    Number of consumers
+    Failure of consumers
+  Scale independently!
+
+Requirements
+  Functional
+    Producer creates a topic
+    Producer writes messages to topic
+    Consumer subscribes to topic
+    Consumer reads messages from topic
+    Consumers specify retention time, message deleted
+      (Which consumer? Hmm - JM)
+    Delete messages
+      After retention period as defined by system user
+  Non-functional
+    Scalable
+      More topics
+      More producers writing more
+      More consumers reading more
+    Available
+      Producers, consumers use at all times
+    Durable
+      Don't lose producer messages
+      Make sure consumers get messages
+    Fault tolerance
+      Keep working when failures
+    Concurent
+      Handle concurrent reads/writes
+
+API design
+  Let's ignore producer/consumer identifier
+  Create topic
+    create(topic_ID, topic_name)
+      Ack if created
+      Error if not created
+  Write message
+    write(topic_ID, message)
+    Each message 1 MB max (why exactly this limit? - JM)
+    Return ack if placed
+    Error if fail
+  Read message
+    read(topic_ID)
+    Return object containing message
+  Subscribe
+    subscribe(topic_ID)
+    Add consumer as subscriber
+  Unsubscribe
+    unsubscribe(topic_ID)
+    Remove consumer as subscriber
+  Delete
+    delete_topic(topic_ID)
+
+Building blocks
+  Database for sub details
+  Dist MQ to storage messages
+  Key-value to hold info about consumers
+
+Design #1
+  Components
+    Topic queue
+      Dist message queue
+      Producers write to queue
+    Database
+      Relational database with subscription details
+        Need to store which consumer subbed to which topic
+        Relational because data is structured, need to ensure integrity
+    Message director
+      Read message from topic queue
+      Fetch consumers from database
+      Send message to consumer queue
+    Consumer queue
+      Each consumer has a distributed MQ
+    Subscriber
+      Adds entry to sub database when consumer requests subscription
+    Use failover services for message director, subscriber
+  Pretty simple design using dist MQ
+  Huge number of queues needed though
+  Millions of subs for thousands of topics = millions of queues
+    Copy message in all sub queues
+  Workaround
+    Let's add a counter on each message
+      Decrement when subscriber consumes
+      Delete when counter reaches zero
+    Problem
+      Bottleneck - if one consumer slow, others must wait
+    Solution
+      Need to track what each consumer has consumed
+        Delete when consumed by all
+        Resembles reference count mechanism
+
+Design #2
+  Broker
+    Server handles messages
+    Store messages from producer
+    Allow consumers to read
+  Cluster manager
+    Supervise broker servers
+    Scale brokers if needed
+    Notify if broker fails
+  Storage
+    Relational database
+      Subscription info
+      Retention period
+  Consumer manager
+    Make sure authorized to read from tpic
+  Functioning
+    Ack to notify producers message stored
+    Wait for ack from consumer if successfully consumed
+  Retention time
+    Consumers can specify
+      Default 7 days
+        Banks may require 14 days, business req
+        Analytics app may not need at all after consumptions
+
+Broker
+  Core component
+  Handle reads & wrotes
+  Multiple topics
+    Each can have multiple partitions
+      Store in local storage for persistence
+      Improves availability
+    Partitions contains messages in segments
+      Segments identify start and end of message
+        Using offset address
+  Topic
+    Persistent sequnence of messages
+    Once data added, no modifications
+    Split into partitions because reads & writes challenging
+    Can use round robin, weighted-round robin to distribute to partitions
+  Strict ordering
+    Assign partition IDs
+    Producer
+      write(topic_ID, partition_ID, message)
+  Vulnerability
+    Don't keep partitions on a single broker, spread out
+  Why not store on blob like S3?
+    Not optimized for writing & reading short data
+    Even worse if data georeplicated
+  How to write
+    Append-based writing in server local persistent store
+    Hard disks tune to provide good contiguous write performance
+      Read throughput and latency also good for contiguous
+        Extensive data caching
+  How to read
+    Keep metadata on exactly which partition has what
+  Identify segments
+    Using offsets
+    Immutable records
+    Readers are independent, can read messages from anywhere in file
+      Use API functions
+  Overall
+    Broker solves problems
+      Avoid large number of queues
+      Parallelism using partitions to avoid bottlenecks in consuming
+
+Cluster manager
+  Registry of brokers and topics
+  Manage replication
+    Use leader-follower approach
+    If broker fails, decide next leader
+    If follower fails, add new broker and make sure it gets updated
+    Update metadata accordingly
+    Keep 3 replicas of each parittion on different brokers
+
+Consumer manager
+  Fetch data from database
+  Verify consumers allowed to read
+    Permission
+    Retention time rules
+  Gets data to consumers
+    Can push, but may overload consumers
+    If pull, consumers may not know about message immediately when published
+    May allow both techniques, consumer can choose
+      Store info in relational database
+  Allow multiple reads
+    Store offset info of each consumer
+      Use key-value store
+        Fast fetching
+        High consumer availability
+    If Consumer 1 reads from offset 0 & ack, store that
+      When consumer wants to read again, give next offset
+
+Conclusion
+  Saw two designs
+    Queues
+    Custom storage optimized for read/write small-sized data
+      ("Brokers"? - JM)
+  Numerous uses
+    Producer/consumer decoupling
+      Scales dynamically
+      Failures well contained
+    Proper accounting of data consumption
+      Good for large system with huge data
+      Determine exactly what data needed & not needed

@@ -1,0 +1,10 @@
+Trie
+  Store and locate keys from set
+  Keys usually strings stored char by char
+  Char order represented by edges between nodes
+
+Pattern match
+  Compare two strings for partial match
+    Based on initial chars
+  Optimize space to store dictionary of words
+

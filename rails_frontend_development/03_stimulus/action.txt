@@ -1,0 +1,65 @@
+Creating an Action
+  Action connects DOM event to controller code to execute
+  Add the attribute to the DOM element whose events you want to watch
+
+  <div
+      data-action="click->day-toggle#toggle">
+    <span> Hide </span>
+  </div>
+
+  data-action signals to Stimulus that action is being defined
+    Value is a little mini-language to define connection between event and code
+      "Action descriptor"
+      Name of event being watched for "click", can be any DOM event
+      ->
+      Name of controller day-toggle# (ends with hash)
+      Name of method to be called when event happens
+        Usually camelCase
+        Here it's toggle
+
+    When Stimulus sees a data-attribute method, it sets up a listener on the event
+      Executes named method on controller when event fires
+    If multiple instances of controllers withn name, closest ancestor executes
+
+  Default events (aside)
+    You can leave off the event name for "default" event - not recommended
+      if a, button, input[type="submit"], default is click
+        So you can just write day-toggle#toggle
+      if input(other), select, textarea
+        change
+      if form
+        submit
+    But generally good to keep the event around, not that much extra typing
+
+  Back in the controller
+
+    import { Controller } from "stimulus"
+
+    export default class DayToggleController extends Controller {
+      toggle() {
+        console.log("Click!")
+      }
+    }
+
+Now to identify the exact DOM element to hide
+  Can use DOM IDs
+  But shortcut: Stimulus Action Names
+
+Stimulus Action Names
+  Event name in action descriptor can be anything you want, incl. custom events
+  Custom events can be a useful way to communicate between controllers
+  Can also grab global events
+    @window, @document (ready@document)
+
+  const event = new CustomEvent("update-image")
+  window.dispatchEvent(event)
+
+  data-action="update-image@window->images#updateImage"
+
+  As with controllers, add multiple actions on same DOM element by adding multiple event descriptors
+    Very common
+    Great way to split up behavior into small controllers and methods
+  Stimulus does pass one argument to methods called
+    Of type CustomEvent
+    Allows access to the target, the element that hosted the event
+    Allows access to currentTarget, element that contains data-action attribute

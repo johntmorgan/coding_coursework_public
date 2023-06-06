@@ -1,0 +1,115 @@
+More topics
+  Trees
+    The fact that we didn't cover them in this book... - JM
+    BST
+      Search, insert, delete all O(logN)
+        Don't need to shuffle everything for insert, delete
+        Searching about equivalent with binary search strategy
+      Downside: no random access
+        And you need to make sure the tree is balanced!
+  Inverted indices
+    How a search engine works
+    Hash table word -> pages
+  Fourier transform
+    Can separate a song into individual frequenciess
+    Can also compress music
+      Break audio into notes
+      Fourier transform tells you what isn't important
+      That's how MP3 format works
+    Build Shazam
+    Also Jpeg compression
+    Earthquake prediction
+    DNA analysis
+  Parallel algorithms
+    At the end of computers getting faster
+    Now it's about more cores
+    Need to change algorithms to run on all cores at once
+    Best you can do with a sort is ~O(nlogn)
+      But parallel Quicksort can get to O(n)!
+        (hope that's in the MIT course - JM)
+    Hard to design
+      Hard to make sure they work right
+      Hard to figure out speed boost
+    Gains are not linear
+      2 cores does not mean 2x as fast
+        Managing parallelism requires overhead
+          e.g. split array for processing? Merge at end
+        Load balancing
+          May not distribute work evenly to cores
+  MapReduce
+    Run on hundreds of cores across many machines
+      Apache Hadoop
+    Table with billions or trillions of rows
+      MySQL struggles after a few billion
+    Map function
+      Apply same function to each item in array
+      arr1 = [1, 2, 3, 4, 5]
+      arr2 = map(lambda x: 2 * x, arr 1)
+      [2, 4, 6, 8, 10]
+      That's fast enough on machine
+      But what if you want to store URL page contents in an array?
+      Spread out across 100 machines!
+    Reduce function
+      Reduce array down to a single item, giving you an answer quickly
+      arr1 = [1, 2, 3, 4, 5]
+      reduce(lambda x,y: x+y, arr1)
+  Bloom filters, HyperLogLog
+    See if link has been posted before on Reddit
+    Crawl page that hasn't been crawled before
+    Don't shorten a link to a malicious website
+    All cases where you have a huge set
+      And want to see if new item belongs in it
+      You could do this quickly with a hash
+        But your hash will need to be HUGE
+    Bloom filters are probabilistic data structures
+      Answer COULD be wrong but is PROBABLY right
+        False positives are possible
+          You may think you already crawled the site
+        False negatives are NOT possible
+          If it says you haven't crawled the site, you haven't
+      Takes very little space
+      Great when you don't need an exact answer
+        Can always recrawl site later, warn user site might be malicious
+    HyperLogLog
+      Another algorithm
+        Count number of searches on Google in a day
+        But the log would be massive!
+      Approximates number of unique items in a set
+        No exact answer, but very close
+        Uses a small fraction of memory
+  SHA algorithms
+    Secure hash algorithm
+    Creates a string from another string (instead of a bucket/slot number)
+      Can tell you if two files match
+      Also good for passwords, Google only stores the SHA hash
+      It's a one-way hash - can't get the original back out
+    Whole family of algorithms
+      SHA-0 and SHA-1 have weaknesses
+      Use SHA-2 or SHA-3
+      Gold standard is bcrypt (wonder if it's updated since then, have heard nothing - JM)
+    SHA is also locality insensitive
+      Change one character, hash is totally different
+      Important, hacker can't see if getting close to cracking
+    What if you want a locality sensitive hash?
+      Simhash
+      Used to detect ~duplicates by Google
+      Can use to detect an essay copy
+      Used by Scribd to block copyrighted content
+  Diffie-Hellman key exchange
+    How to encrypt a message so only person you are sending to to can read it?
+    Simple ciphers are easy to crack
+      (See: Enigma, WWII - tougher but still cracked)
+    Have a public key and a private key
+      Post the public key anywhere
+      Someone encrypts their message with the public key
+      But can only be decrypted with the private key
+    RSA
+      Successor to Diffie-Hellman
+  Linear programming
+    How to maximize given multiple constraints
+    Can make 2 items, different prices and different ingredients
+      You have x/y ingredients, what do you make?
+    All graph problems can be solved this way
+      Graph algorithms are a subset
+    Uses Simplex algorithm
+      Complex algorithms

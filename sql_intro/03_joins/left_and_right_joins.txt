@@ -1,0 +1,26 @@
+Left and right joins
+
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  LEFT JOIN DigitalAssets
+  ON Actors.Id = DigitalAssets.ActorID;
+
+  // This changes it
+  // Actors without digital assets are left out
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM DigitalAssets
+  LEFT JOIN Actors
+  ON Actors.Id = DigitalAssets.ActorID;
+
+  // Very similar result - the same as the second query
+  // Like doing a left join on digital assets
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  RIGHT JOIN DigitalAssets
+  ON Actors.Id = DigitalAssets.ActorID;
+
+  // Can also say LEFT OUTER JOIN and RIGHT OUTER JOIN
+  // Makes absolutely no difference in result - just another syntax option

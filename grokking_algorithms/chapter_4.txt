@@ -1,0 +1,51 @@
+Quicksort
+  Divide and conquer
+    Dividing up farmland example
+    Rectangular box, want square plots
+    Go ahead and make squares
+    Then cut up leftover land at end
+    Eventually find a rectangle where squares work
+    That's the largest size that will work for the whole plot
+      Euclid's algorithm - proof a bit beyond book
+    (Example of recursion to sum numbers in an array)
+  Functional programming sneak peek
+    Functional programming languages (e.g. Haskell) don't have loops
+      You must use recursion
+    Here is sum in Haskell:
+      sum[] = 0
+      sum(x:xs) = x + (sum xs)
+      Looks like two definitions of function... first definition runs at base case
+      Can also use an if statement:
+      sum arr = if arr == []
+        then 0
+        else (head arr) + (sum (tail arr))
+      However the first version is easier to read
+        "If you like recursion, check out Haskell"
+  Quicksort
+    C stdlib has qsort function
+    Empty arrays and arrays with 1 item are your base case
+      No sorting needed
+    Pick pivot
+      Subdivide until down to 2 items
+    Inductive proofs
+      If the base case works, then one bigger, then one bigger, whole thing works
+    (Code for quicksort)
+    Quicksort is unique because speed depends on pivot
+      Average case O(nlogn)
+      Worst case O(n^2)
+      Why not use merge sort (always O(nlogn))
+        Quicksort has a smaller constant
+          Doesn't matter in a lot of cases (simple vs binary search)
+        But does matter here
+        And quicksort performs average case much more than worst case
+        Quicksort worst-case scenario? List already sorted
+          And that's pretty common, not inconsiderable - JM
+      Anyway each level of quicksort takes O(n) - have to touch every element to place on side
+        And there are log(n) levels on average, assuming decent splits
+        So O(nlogn)
+        If you just choose a random element, you will basically always hit this case
+  Questions
+    Print all elements in array - O(n)
+    Double all elements in array - O(n)
+    Double first elem in arr - O(1)
+    Multiply each elem by all elems in arr - O(n^2)

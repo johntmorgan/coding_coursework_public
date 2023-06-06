@@ -1,0 +1,207 @@
+Quiz 2
+  Quiz 1 fair game but not emphasized
+  Concentrating on 6 graph lectures
+    2 unweighted, 4 weighted
+    PS 5 and 6
+      Covering just 2 PS of material, normally 3 (due to COVID? - JM)
+  Small number of graph algorithms but solve a lot of different problems
+    Graph reachability - BFS/DFS in O(|E|) time
+      Can only search a connected component from me
+      Number of vertices asymptotically upper bounded by number of edges
+    Graph exploration & connected component size & count via Full-BFS and Full-DFS
+      Trying to explore whole graph, how many things are reachable from each other
+      Basically putting loop around graph reachability algorithm
+      When finish component, find unexplored vertex and start again
+      Linear time, |V| + |E|
+    Special graphs
+      Directed acyclic graphs
+        Run full-DFS on graph, get topological sort
+          Also detect cycles if not a DAG
+          Check whether topological sort order, any back edge -> cycle
+    Bellman-Ford
+      Detect negative-weight cycles in graph
+    SSSP and APSP focus
+      First unweighted context
+      Then weighted context for most lectures
+  Algorithms, increasing generality
+    BFS: Unweighted graph, |V| + |E|
+    DAG relaxation: DAG, |V| + |E|
+    Dijkstra: non-negative graph, |V|log|V| + |E|
+    Any graph: Bellman-Ford, |V| * |E|
+  Generally want to pick algorithms higher on list
+    But of course sometimes it doesn't apply
+      Wrong algorithm worse than inefficient points-wise
+        If used B-F for every shortest path - correct but often inefficient
+  APSP
+    Run SSSP algorithm |V| times
+    Johnson's solves APSP with negative weights in O(|V|^2 * log|V| + |V||E|)
+      Find if negative cycles
+      If not then non-negative reweighting preserving shortest paths is possible
+That's the content
+Review what algos do
+  DAG Relaxation
+    Finds topo sort order using DFS, reverse of finishing times
+    Relax edges forward in that order
+  BFS
+    Explores in levels, increasing in number of edges as go out
+  Dijkstra
+    Generalizes notion, don't know things in same level
+      But using clever data structure, find next one to process for shortest paths
+      When weights non-negative
+      When reach from short distance, never have to update again
+  Bellman-Ford
+    Duplicates graph, reflect reaching graph in at most a certain number of edges
+    Duplicated graph is a DAG, run DAG relaxation
+When approaching problems
+  Might not see a graph in problem - quiz 2 you know it's there
+    Might give you an array or something instead
+  Defining graph is important aspect of problem-solving
+    Have not emphasized in lecture, but done in problem sets, will appear on quiz
+  Convert problem into finding shortest path, connected component, topo sort, etc.
+  If you see a word problem
+    See if you can state cleanly abstract problem that will solve word problem
+    Map to graph with certain properties
+  May help to duplicate graph vertices to encode additional information
+    Help store state - different vertex for every possible set at vertex
+  May help to add auxiliary vertices/edges to graph
+    Add a supernode to graph
+  May help to pre-process graph
+    Some edges may be forbidden, traverse in one direction only
+      Could break up connected graph into disconnected components
+      Make cyclic graph acyclic
+      Prune something you don't want to explore
+  This unit in particular is "let's reduce to powerful black box"
+    So to introduce complexity, make graph non-obvious
+      Given graph may be different to what you want to use
+  Rest of this review will be application to a few problems
+  Common ways people lose points
+    Given a word problem, don't define a graph
+    Tell us how many vertices and edges, cyclic or acyclic, weighted or not
+  Instead of just applying algorithm, clearly state problem you are solving
+  Analyze runtime - is size of graph not too large
+  Arguing correctness - just argue constructed graph -> shortest paths
+    But mostly relying on correctness of algo already proved in class, don't need to do much
+Problems from S18 Quiz 2, slightly modified (pre-wrote my solutions on paper - JM)
+Problem 1
+  n x m grid
+  White pixels - in same blob if share adjacent edge
+  Black pixels - not in any blob
+  Transitivity argument - several pixels in same blob
+  Describe O(nm) algorithm
+    This is linear time - every pixel in grid
+  A little underspecified as a problem, prof admits
+  Model as graph
+    G = (V, E)
+    V = vertex for each white pixel
+    E = edge for any 2 white pixels that share an edge
+  Calculate connected components O(|V| + |E|) -> O(nm)
+    Full BFS or Full DFS
+Problem 2
+  A little funky
+  Given a connected undirected graph G = (V, E) with strictly positive edge weights
+    where |E| = |V|
+  Describe O(|V|) time algorithm to determine a path from vertex s to vertex t of minimum weight
+  Idea 1: could just run Dijkstra, of course
+    |V|log|V| + |V| - running time too slow, off by a logarithmic factor
+  Weighted context
+    Doesn't seem to be a condition where get linear time
+    BFS transform? No, we don't have a constraint that weights are linear in size of graph
+    Undirected, definitely contains cycles - can't easily use DAG shortest paths
+  What does graph look like?
+    How many edges does a tree have?
+      |V| - 1
+    So this has one more edge than a tree
+      Basically a tree with one more connection
+  (If negative, what would you do?
+    Go to one edge and loop forever, SP is infinite. Not the case here)
+  If you had a tree what would you do?
+    There's only one shortest path between any pair of vertices in a tree
+    Just run a reachability algorithm
+  But now we have an extra edge
+    There could be 2 simple paths to t
+    But there's only one cycle
+      Paths around it are edge disjoint
+    Find entry and exit point on cycle, S' and T'
+      remove edge and run reach
+      remove other edge and run reach
+    How to find S'
+      Run SSR unweighted from S using BFS/DFS
+      Find edge (u, v) not in P Parent tree
+      Last point in common between (u, v) and parent coming from source
+      Once have s'
+        Remove one edge and test path
+        Remove other edge and test path
+      See which is shorter
+        Or if same, then t before s'
+  Runs in linear time - SSR run a constant number of times on graph size |V|
+Problem 3
+  Simpsons theme
+  From p to h
+  Cannot drive within k of donut shop
+  n locations
+  degree bound of 5
+  d donut shop locations
+  O(nlogn) running time bound constraint
+  Distances are positive, not explicitly stated (would be now) but can assume
+  Maybe can use Dijkstra
+    G = (V, E)
+    V = set of locations O(n)
+    E = roads, weight = driving distance
+      <= 5|V| -> O(V) = O(n)
+    Time = O(nlogn)
+    But hasn't solved staying outside of distance k
+      Can't visit any vertex
+  Idea:
+    Run Dijkstra from each of d donut shops
+    Find vertices within distance k
+    Remove from graph
+    But have to run Dijkstra d times
+    O(dnlogn)
+    No bound on d, could be n -> n^2 * log(n^2)
+    But, like in problem session, can use a supernode
+      Connect to all shops with directed 0 weight edges via directed edge
+      (need to convert undirected edges to two-way directed edges in graph)
+    Find all nodes within distance k
+      Could make it harder, generalize
+        What if he drives farther to some shops than others?
+        Weight directed edges into graph
+  Another rec for exam
+    Almost any problem can get 80-90% of points by writing like 3 lines
+      Maybe not some of the data structures problems
+Problem 4
+  Long shortest paths
+  Directed graph with arbitrary edge weights
+  Two vertices in s, t in V
+  Describe an O(|V|^3) time algorithm to find minimum weight of any path from s to t containing at least V edges
+  Trying to optimize two different quantities
+  At least |V| edges
+    Kind of sounds like Bellman-Ford - at most K edges
+  Some prefix of path uses |V| edges
+  What about exactly |V| edges
+  G, any weights, |E| = omega(|V|^2)
+  Using at least |V| edges, path cannot be simple
+  What if there's a negative weight cycle in my graph?
+    -inf is the distance, uses infinite number of edges
+    Run Bellman-Ford
+      E upper bounded by V^2
+    Done
+  But if no negative weight cycles
+    Shortest path is going to be simple
+    But doesn't apply, need a non-simple path
+  Version of vertex layers tracking how many vertices have gone through
+    Start at level 0 to level |V|
+    Now connections point down a level
+      Here we *have* to traverse an edge
+    Notice this encodes non-simple paths as well
+    But this is a DAG
+    |V'| = |V| * |V + 1| = O(|V|^2)
+    |E'| = O(|V|||E)
+    Graph has size O(|V|^3)
+    Go from S0 and find everything reachable down to layer |V|
+      Path s0 to tV
+    DAG relaxation linear in size of graph
+    Only have to go V more layers at most
+    Or find shortest path to exactly |V| edges in DAG structure
+      Then continue edges in original graph - projection from supernode length of projections down
+      The run Bellman-Ford
+        But can't run on huge duplicated graph

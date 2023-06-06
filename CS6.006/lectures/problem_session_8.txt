@@ -1,0 +1,276 @@
+Dynamic Programming 1 (of 2)
+  People good at this are disjoint from people good at other parts of the class
+    Could be good news
+      (But I liked the other parts of the class - JM)
+  Follow more or less the same template
+  Bit of review, then a bunch of sample problems
+  Kind of a funny outlier
+    In the data structure - trees, arrays - things you can code
+    Dynamic programming less so
+    More meta, problem solving approach
+    Not "I'm going to apply dynamic programming to this problem"
+      Big class of things follow similar template
+      The last couple lectures you've seen
+        Just wrote down sample problems
+        More of a way of life than any particular algorithm
+        Pattern you see a lot in advanced algorithms
+        In profs world numerical analysis, ADM algorithm, useless
+          What matters is apply to problem
+          More mature, grownup way to think about things
+          General purpose stuff tends to disperse into different patterns
+  Laid out steps, useful problem-solving approach
+    Today: translate from template to writing code to implement
+    But on homework, follow template letter for letter
+      Remaining glue to write code not terribly exciting
+    Lot of problems that can be written recursively
+    You might as well remember what you saw the last time you did that input
+  Fibonacci sequence
+    Good example
+    But also misleading
+      Runtime kinda weird to think about
+    f(k) = f(k - 1) + f(k - 2)
+    (review)
+Homework problems from last year
+Sunny Studies
+  Tim the Beaver (MIT) looks at weather outside
+  Warmer temperature, happier he gets
+  Temp t
+    Go outside, happiness increases by t
+    Stay inside, happiness decreases by t - never mind
+      It did NOT say that in the problem writeup - JM - fixed
+    Fix: happiness stays the same
+  n days until final exam
+  never go outside more than 2 days in a row
+  Maximize happiness
+    Sometimes called minimizing regret in machine learning
+  How do we solve this problem?
+    Following SORTBT paradigm
+  Subproblem staring you in the face
+    Figure out happiness from i to the last day
+      Suffix version of problem
+    t(i) = temperature on day i
+    x(i) = maximum happiness for i,...,n
+  Can we come up with a recursive algorithm?
+    In the absence of a smarter idea, let's just try to write problem in terms of other ones
+  Tim wakes up on day i
+    He can stay inside
+    Or he can go outside
+  Recursion
+    1 - Stay in x(i) = x(i + 1)
+    2 - Go out  x(i) = x(i + 1) + ti - NO not good enough
+      Where gets tricky, can't go out 3 days in a row
+      Two subcases
+        Go out today, stay in tomorrow
+          x(i) = t(i) + x(i + 2)
+        Go out today and tomorrow
+          x(i) = t(i) + t(i + 1) + x(i + 3)
+  Topo
+    x(i) only depends on larger is
+      Acyclic graph
+  Base case
+    Calling future indices, base case at end of array
+    x(n) = max(0, t(n))
+    x(n + 1) = 0
+    x(n + 2) = 0
+  Original problem
+    x(1) - happiness on day 1
+      No, wants to know actual plan
+      Make a second array - did you take option 1, option 2a, option 2b
+        Reconstruct plan very easily
+  Time
+    Number of subproblems * time of subproblem (one exception on this pset - precomputation)
+    Time of subproblem - O(1), just max of 3
+    Number of subproblems n + 2 - O(n)
+    Multiply O(n)
+  Notes from solution
+    x(i) = max(x(i + 1), t(i) + x(i + 2), ti + t(i + 1) + x(i + 3))
+  Prof question
+    Base case is kind of complicated looking
+      Is it truly necessary?
+      Can you get rid of x(n) case and add a third day x(n + 3) = 0
+        Yes you can
+        Or just say if i > n return 0 in your code
+Diffing Data
+  File = sequence of strings len <= k
+  Strings are lines of different files
+  Can change file:
+    1: add line - expensive
+    2: remove line - expensive
+    3: swap - cheap, lines already exist
+      Must be adjacent
+  Given files A and B with n lines each, transform with low cost
+  Critical hint in this problem runtime O(kn + n^2)
+    Prof is going to do something wrong and then fix
+    First thing to notice: there's a k here
+      Need to compare strings
+      If we don't incur a factor of k, must have done something wrong
+  This one was annoying - not actually annoying
+    Relatively easy instance of well known dynamic programming algorithm
+      Plus a bit of additional stuff - edit distance
+        If looking for intuition on this problem, google first
+  Solution works from the last line of the file downwards
+  Prof will solve from the other direction, SRTBOT
+  What are our subproblems?
+    A little funky
+  Let's think about the problem a bit
+    What does it mean to edit a file?
+  Typical annoyance in dynamic programming
+    Order of documents suggests more combinatorially difficult
+      Can't jump all over document, tracking edit history
+    Big recursive leap of faith
+      Dividing into subproblems is the real challenge here (yep - JM)
+  If organized, do linearly
+    And always do an operation that improves stuff
+  Subproblems (slightly different from solution)
+    x(i, j) = min work to convert A[i:] into B[j:]
+    If reach end of one document and still have some in the other
+      Need to add lines to first document, or delete rest from other
+  Relate
+    Do a bunch of different cases - edits to line i and line j
+      Can only edit document A
+    If line i matches line j of document
+      Can match them with zero cost
+    1 If A[i] = B[j]
+      x(i,j) = x(i + 1, j + 1)
+    2 Delete line A[i]
+      x(i, j) = x(i + 1, j) + 1
+    3 Insert line A[i] - still have to deal with A[i], but not B[j]
+      x(i, j) = x(i, j + 1) + 1
+    If you stopped here, edit distance
+    4 Swapping
+      Can you always swap? - Only swap if it helps you
+        Can't swap and delete because of the way the problem is written - swap must be useful
+      If A[i + 1] = B[j] and A[i] = B[j]
+      x(i, j) = x(i + 2, j + 2)
+    And you want to get the min of these conditions
+  Topo
+    A little trickier than normal, 2D array
+    x(i, j) only depends on other x(i, j) with higher i + j
+  Base // here suffix is a little more annoying
+    x(i, n + 1) = n + 1 - i
+    x(n + 1, j) = n + 1 - j
+  Original
+    x(1, 1)
+  Time
+    (n + 1)^2 subproblems -> O(n^2)
+    Each with constant work
+  That is the toughest problem (maybe - JM)
+Stacking Blocks
+  Making a tower out of blocks
+  Block bi has width wi x height hi x length li
+  Has at least 3 of each type of block
+    Key detail - so can rotate however she wants
+  Want max height with strict support
+    Can't do anything crazy with balancing on edge
+  This is a dynamic programming problem
+    Not totally obvious how, like many things in lecture
+    Can imagine universe where 2^n things she could do
+    Each block decide whether to put in stack
+  What we have to do, common to problems
+    Place some order on things
+  Has a lot in common with longest increasing subsequence
+  Here's some observations about problem that are going to help
+  1 When stack blocks, might as well align shorter side with shorter underneath
+    Never a case where don't put long side parallel to long side
+    Can any one configuration appear more than once?
+      No because of strict support condition
+  2. Only 3 orientations
+    Each can appear <= 1 time
+      Problem tells us >= 3 of each type
+        Can throw away the rest
+  Both long and short side need to decrease every time
+  Without loss of generality
+    wi <= hi <= li
+  Ordered set third axis points up
+  Make new list of blocks
+    (wi, hi, li)
+    (wi, li, hi)
+    (hi, li, wi)
+  All the ways you can go with condition 1
+  Sort that list lexicographically
+    Length is 3n
+    So takes O(nlogn) time
+    Remove duplicates
+      O(n) time
+        Make second array, add when not seen before
+  Now stack blocks from right in list
+    Stacking from top down
+  Looks like a subsequence problem now
+  S
+    x(i) = max height using block i + any of 1,...,i - 1
+    How to do recursively
+  R
+    v(i) = 3rd coord in sorted
+    x(i) = v(i) + max(0, x(j) in j in 1... i - 1 + stack on top)
+      Iterate through and check stacking condition for each block
+    Now in recursive scenario we want
+      j is smaller than i
+  T
+    That's the topo ordering we want
+  B
+    x(1) = v(1)
+  O
+    Were forcing block - need to iterate
+    max over x(i)
+  T
+    Lil trickier than previous runtime
+    How many subproblems? O(n)
+    How much time/subproblem? O(n)
+      Have to loop over all blocks each time
+    Total O(n^2) time
+  Implement
+    Recursive call table initialized to NaN
+    Or for loop 1 to n and build up 1 at a time
+      Same from a running time perspective
+  Hard part of problem is not dynamic programming
+    Rather it's the observations to get there
+Mushroom paths
+  Simpler logic even though 2 dynamic programs in 1
+  Start to finish in grid
+  Path is quick, can only traverse 2n - 1 grid squares
+  Accumulate as many mushrooms as possible
+  Among paths, pick up a lot of mushrooms
+    Do not walk through trees
+  Problem is not saying shortest path
+    What is number of paths she can take with max mushrooms
+  Quick paths basically give no slack at all
+    Has to make 2n - 2 moves
+    Has to go down or right every time
+    Touches 2n - 1 squares
+    Can never move up or to the left
+      Main thing you need to solve this problem
+    Every path moving down and right quick path
+  Have a table looking at you on blackboard right now
+    Ordering down and to right is acyclic
+  k = max mushrooms she can get
+  Annoyance is there's two different numbers we don't know
+  First thing to do is just compute k
+    k(i,j) = max number of mushrooms can get on quick path to i,j
+    can we compute the number of mushrooms we need?
+    she has to come from up or to the left
+    if there's a tree, can't even get there
+      k(i, j) = -inf
+    else
+      always picks up a mushroom if it's there
+      m(i, j) = indicator(exists mush at (i,j))
+      k(i, j) = m(i, j) + max(k(i - 1, j), k(i, j - 1))
+    this fills in table of k values
+  Now know how many mushrooms should have
+  Can solve for this k matrix first, unlike written solution
+  Now number of paths needed to collect that many mushrooms
+    x(i, j) = # of quick paths that end at (i, j) with k(i, j) mushrooms
+    Case 1 tree:
+      x(i, j) = 0
+    Case 2 no tree:
+      x(i, j) = 0 - no paths get k(i, j mushrooms)
+      m(i, j) - 1 if mushroom, 0 if not
+      path can come from left or up
+      if k(i - 1, j) + m(i, j) = k(i, j), x(i, j) += x(i - 1, j)
+      if k(i, j - 1) + m(i, j) = k(i, j), x(i, j) += x(i, j - 1)
+  Base cases
+    Need a positive number to start with here!
+    k(1, 1) = 0
+    x(1, 1) = 1
+  Notice recursion steps adding 1 to itself several times
+  Look at code in problem solution!
+    Unrolls this nicely

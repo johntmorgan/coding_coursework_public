@@ -1,0 +1,14 @@
+Limit
+  // Return X number of rows
+  SELECT FirstName, SecondName from Actors ORDER BY NetWorthInMillions DESC LIMIT 3;
+
+  // Use an offset, starts with 4th actor
+  SELECT FirstName, SecondName from Actors ORDER BY NetWorthInMillions DESC LIMIT 4 OFFSET 3;
+
+  // Alternative syntax - offset 3, number of rows to print 4
+  SELECT FirstName, SecondName from Actors ORDER BY NetWorthInMillions DESC LIMIT 3,4;
+
+  // Can ask for big numbers! Max is 18446744073709551615 - max value that fits MySQL unsigned BIGINT
+  SELECT FirstName, SecondName from Actors ORDER BY NetWorthInMillions DESC LIMIT 1000 OFFSET 3;
+  // Do more and error
+    > ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near '18446744073709551616' at line 1

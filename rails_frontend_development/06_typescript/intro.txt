@@ -1,0 +1,61 @@
+Typescript
+  Type of data indicates set of values valid for data
+  Some languages, wrong type = compiler error
+    Others = incorrect, unspecified runtime behavior
+  All high-level languages use type to determine behavior in some way
+  TS is a superset of JS
+    Add annotations to the code to specify type information
+    Includes compilation script that enforces type consistency
+      Converts valid TS to JS suitable for browsers
+  TS makes inferences about types if not explicitly provided
+  Goal is to reduce code errors
+    Prevent type mismatches
+    Making invalid states into compiler-time errors
+      Impossible to achieve at runtime
+  This chapter
+    Basic syntax and semantics
+    Glimpse at advanced features
+
+Basic TS types
+  Annotate variable declaration using : <type>
+    as in let x: number
+  Four basic types
+    boolean, true or false
+    number, JS only has one numeric type
+      TS supports floating point and integer literals
+        Also hex literals (0xab32), octal literals (0o1234), binary literals (0b10010)
+    string, allows single or double quotes
+      also backquote ``` for template strings
+    object, anything that is not one of above types
+      including all instances of classes
+      normally use a more specific type annotation (see below)
+    also: null, undefined
+      can say let z: null = null
+        Not clear why you'd want to though
+  TS allows null and undefined to be assigned to vars of any type
+    (Unlike e.g. Elm, Rust, Swift)
+      Would make dealing with external JS libraries very complicated
+      Hard to gradually add TS to code base
+    Compiler option --strictNullChecks that will prohibit
+  Any type can beused as basis of array with two syntaxes
+    string[] or Array<string>
+    Latter syntax is more general TS feature "generic types"
+      Array can have different internal type, still have same behavior
+  Generic types allow type checking in cases where consistent type is more important than exact type
+  Data structures common use for generic types
+    Want first elem of list
+    W/o generics
+      function getFirst(list: AStringList): string
+      function getFirst(list: ANumberList): number
+      function getFirst(list: AUserList): User
+      etc.
+    w/generics (can use anything in place of T, single letters is convention to distinguish)
+      function getFirst(list: AList<T>): T
+  Elements of TS array must all be of same type
+    If you don't want that... think about if you really don't
+      Maybe you want a class instead
+    But if you do want it
+      let myTuple: [string, number, string] = ["Jennifer", 8, "Lee"]
+      Accessing an element, return value inferred from tuple declaration
+      Go beyond index of these... don't do that
+        inferred type of return is "union type", member of 1+ basic types

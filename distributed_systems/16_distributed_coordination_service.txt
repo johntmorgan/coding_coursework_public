@@ -1,0 +1,169 @@
+Distributed Coordination Services
+Coordination central aspect of distributed systems
+Coordination as an API
+  Coord can be complicated with many edge cases
+    Implementing from scratch = inefficient, high risk of bugs
+  Several systems to do it
+    Chubby
+      Google internal
+    Zookeeper
+      Inspired by Chubby, dev Yahoo, then Apache
+      Used by many companies, including some in Hadoop
+    etcd
+      Similar coord primitives
+      Basis of Kubernetes control pane
+  Many similarities between systems
+    Differ slightly
+    Going to focus on Zookeeper
+
+Zookeeper API
+  Hierarchical namespace similar to filesystem
+    Chubby: hierarchical
+    etcd: key-value
+  Every name is a sequence of path elements separated by a slash
+  Every name represents a data node "znode"
+    Can contain metadata and children nodes
+    /a/b considered child of /a
+  Basic ops:
+    Create nodes
+    Delete nodes
+    Check if node exists
+    List children of node
+    Read or set data of node
+  Node types
+    Regular nodes
+      Created and deleted explicitly by clients
+    Ephemeral nodes
+      Removed by system when session that created them expires
+  API benefits
+    When client creates node, set a sequential flag
+      Nodes with flag have value of monotonically increasing counter appended to prefix
+    Allow clients to receive notifs for changes w/o polling "watches"
+    On read, clients set a watch flag
+      System notifies when information returned has changed
+    Client connects to zookeeper initiating session
+      Session maintained open by sending heartbeats to assoc server
+      If ZK does not receive from client for set time, terminates session
+        Deletes ephemeral nodes, unregisters any watches
+    Update operations take expected version number
+      Enables implemented conditional updates to resolve any conflicts from concurrent updates
+
+Zookeeper ensemble
+  Nodes form a cluster
+  One node is the leader
+  Other nodes are followers
+
+ZK protocol
+  Uses atomic broadcast protocol "Zab"
+    Elects leader and replicates writes to followers
+      Chubby uses Paxos
+      etcd uses Raft
+  Each node has copy of Zookeeper state in memory
+    Changes recorded in durable, write-ahead log used for recovery
+    Nodes serve read requests using local database
+    Followers forward any write requests to leader node
+      Wait until request replicated and broadcasted
+      Then respond to client
+    Reads served locally without node comms, extremeley fast
+
+ZK Sync
+  If follower lagging behind leader node
+  Client reads may not reflect latest write
+    No linearizability
+  Sync reduces possibility of stale data
+    Operation to current leader
+      Put at tail end of queue that contains pending requests
+    Follower waits for completion of any sync before replying to more read ops
+    Sync does not need to go through broadcast and reach quorum
+      Forwarded only to assoc follower
+    Chubby
+      Read and write both directed to master
+      Better consistency
+      Decreased throughput
+      Clients cache extensively
+      Master responsible for invalidating cache before writes
+      More sensitive to client failures
+  Read operations not linearizable with respect to write ops even if sync used first
+
+ZK guarantees
+  Formal consistency between sequential consistency and linearizability
+    "Ordered sequential consistency"
+  Safety
+    Linearizable writes
+      Respect precedence
+      Write takes effect atomically between client request and response received
+      A bit meaningless - need read ops to notice effects
+    Sequentially consistent reads
+      Will take effect in sequential order that respects order of client operations
+    FIFO client order
+      Execute client reqeusts in order sent
+    Ordering guarantee
+      If client waiting for change, will see notif before new state of system
+      When client gets notif and performs read, will reflect all writes up to one that triggered notif
+  Liveness and durability
+    If majority of servers active & comm, service available
+    If service responds successfully to change request
+      Will persist across any number of failures
+      As long as quorum of servers eventually able to recover
+
+ZAB Protocol
+  Used to agree on leader in ensemble
+    Synchronize replicas
+    Manage broadcast of update transactions
+    Recover from crashed state to valid state
+  Shares characteristics with Paxos/Rift
+  Transactions identified by zxid
+    Two parts < e, c >
+    e is the epoch number of leader that generates transaction
+    c is integer acting as counter for epoch
+    c incremented when new transaction introduced
+    e incremented when new leader becomes active
+  Four basic phases
+    1. Leader election - terminates when quorum votes for leader
+      Leader prospective, only established at end of third phase
+    2. Discovery - communicate with followers, discover most up to date seq of transactions
+      Establish new epoch
+    3. Synch
+      Synchronize replicas using updated history, become established leader
+    4. Broadcast
+      Receives write requests, performs broadcasts of assoc transactions
+      Lasts until loses leadership (maintained via heartbeats to followers)
+  Leader election
+    Fast Leader Election (FLE) algo
+    Try to elect most up to date history from quorum of processes
+    Minimize data exchange between leader & followers during Discovery phase
+
+Powerful ZK primitives
+  Config management
+    Publish node with config info
+    Create znode zc and write config as znode's data
+    Other nodes obtain config by reading zc
+    Register watch, informed when config changes
+    If happens, perform new read to get latest config
+  Group membership
+    Node zg represents group
+    Node joining group creates ephemeral child node under zg
+    If each node has unique name/id, used as name of child node
+    Nodes can also use sequential flag to obtain unique name assign from ZK
+    Nodes can also contain metadata for group members - addresses, ports etc.
+    Nodes can obtain members of group by listing zg children
+    Node can register watch to get changes in membership
+    When nodes fail, ephemeral nodes automatically removed
+  Simple locks
+    Use lock file represented by znode
+    To acquire lock, client tries to creates znode with ephemeral flag
+      If succeeds, holds lock
+      Else watch to notify created node
+      When lock released, trie to reacquire
+    Lock released when client deletes znode or it dies
+  Locks without herd effect
+    If many clients waiting for lock, all notified simultaneously
+      Clients compete for lock file
+      Create sequential ephemeral node with same prefix
+      Client with smallest sequence number acquires lock
+      When notified, check if now lowest sequence number
+      If so, acquire lock
+      If not, register new watch for next znode with lower sequence number
+  Many more primitives can be build in same pattern
+    Read/write locks, barriers, etc.
+    Called "recipes" usually

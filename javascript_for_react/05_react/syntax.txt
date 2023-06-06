@@ -1,0 +1,73 @@
+React Component Syntax
+  Evolution
+    Was: React.createClass()
+    Now, not used - with rise of JS ES6, React component syntax became default
+
+  import React from 'react';
+
+  export default class Counter extends React.Component {
+    constructor(props) {
+      super(props);
+
+      this.state = {
+        counter: 0,
+      };
+
+      this.onIncrement = this.onIncrement.bind(this);
+      this.onDecrement = this.onDecrement.bind(this);
+    }
+
+    onIncrement() {
+      this.setState(state => ({ counter: state.counter + 1 }));
+    }
+
+    onDecrement() {
+      this.setState(state => ({ counter: state.counter - 1 }));
+    }
+
+    render() {
+      return (
+        <div>
+          <p>{this.state.counter}</p>
+
+          <button onClick={this.onIncrement} type="button">Increment</button>
+          <button onClick={this.onDecrement} type="button">Decrement</button>
+        </div>
+
+      );
+    }
+  }
+
+Shorthand to avoid binding class methods in constructor
+  And having constructor in first place
+  Use JS arrow functions to auto-bind class methods without having to bind in constructor
+  Leave constructor out when not using props
+  Define state directly as class property
+
+  import React from 'react';
+
+  export default class Counter extends React.Component {
+    state = {
+      counter: 0,
+    };
+
+    onIncrement = () => {
+      this.setState(state => ({ counter: state.counter + 1 }));
+    }
+
+    onDecrement = () => {
+      this.setState(state => ({ counter: state.counter - 1 }));
+    }
+
+    render() {
+      return (
+        <div>
+          <p>{this.state.counter}</p>
+
+          <button onClick={this.onIncrement} type="button">Increment</button>
+          <button onClick={this.onDecrement} type="button">Decrement</button>
+        </div>
+
+      );
+    }
+  }

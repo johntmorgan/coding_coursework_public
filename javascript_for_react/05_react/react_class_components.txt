@@ -1,0 +1,85 @@
+React class components
+  Components are the building blocks of websites
+    Example: FB like button
+  Let's code
+
+  import React from 'react'; // Import React library
+  require('./style.css');
+
+  import ReactDOM from 'react-dom';
+  import App from './app.js';
+
+  ReactDOM.render(
+    <App />,
+    document.getElementById('root')
+  );
+
+  import React from 'react'; // Import react library
+
+  // Create default export App class that inherits React.Component
+  export default class App extends React.Component {
+    // render function displays content onto screen
+    // mandatory in React class components
+    // requires extension from React.Component
+    // life cycle method
+    render() {
+      return (
+        // Just prints "This is a component"
+        <div> This is a component </div>
+      );
+    }
+  }
+
+  To use component, write name in tags
+
+  import React from 'react';
+
+  export default class App extends React.Component {
+    getGreeting() {
+      return 'Welcome to React';
+    }
+
+    // Note this only returns ONE JSX/HTML element, usually <div>...,</div>
+    // Everything must be nested within it
+    // Try to return more than one element and you'll get an error
+    render() {
+      return (
+        <div>
+          <h1>{this.getGreeting()}</h1>
+        </div>
+      );
+    }
+  }
+
+Using components within components
+  Ex. Use OtherApp within App
+  Note all components need to start with a capital letter
+
+  import React from 'react';
+  import OtherApp from './otherApp';
+
+  export default class App extends React.Component {
+    render() {
+      return (
+        <div>
+            <OtherApp/>
+         </div>
+      );
+    }
+  }
+
+  import React from 'react';
+
+  export default class OtherApp extends React.Component {
+    render() {
+      return (
+        <h1> other app </h1>
+      );
+    }
+  }
+
+Caveats
+  JS classes welcome using inheritance in React
+  NOT the desired outcome
+  React favors composition over inheritance
+  The ONLY class you should extend from for react components is the official React Component

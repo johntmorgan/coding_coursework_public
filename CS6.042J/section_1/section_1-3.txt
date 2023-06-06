@@ -1,0 +1,164 @@
+Well ordering principle
+  Every nonempty set of non-negative integers has a smallest element
+  Very important proof rule
+    Took for granted in proving sqrt(2) rational
+    Assumed for any positive integers m and n
+    m/n can be written in lowest terms
+    That is m'/n' where m' and n' positive integers with no common prime factors
+    How do we know possible?
+  Suppose to contrary
+    m/n cannot be written in lowest terms
+    C positive integers that are numerators
+    Then m EE C so C is non-empty
+    There must be a smallest integer m0 EE C
+    There is an integer n0 > 0 such that m0/n0 cannot be written in lowest terms
+    So m0 and n0 must have a common prime factor, p > 1.
+    But (m0 / p) / (n0 / p) = m0 / n0
+    So (m0 / p) / (n0 / p) cannot be written in lowest terms either
+    So m0/p is in C
+    But m0/p is in C, contradicting m0 being smallest in C
+    So C must be empty
+    So no numerators that can't be written in lowest terms
+    Therefore no such fractions at all
+  Well ordering template
+    P(n) - proposition
+    N - non-negative integer
+    Prove that P(n) is true for all n EE N using well ordering
+    C ::= n EE N NOT(P(n)) is true
+    Assume for proof by contradiction that C is non-empty
+      I.e. assume there is a non-negative integer where NOT P(n) true
+    There will be a smallest element n0 in C
+      Reach a contradiction somehow
+        Show that P(n0) is actually true
+        Show another member of C is smaller than n
+    Conclude that C must be empty
+    That is, no counterexamples exist
+  Let's prove:
+    1 + 2 + 3... + n = n(n + 1) / 2
+    First address ambiguous special cases
+    If n = 1... only term so sum is just "1"
+    If n = 0... no terms, by convention sum is 0
+    Always be careful when you see ellipses!
+    Sum(i = 1; n) i
+    OR
+    Sum(1 <= i <= n) i
+    Sum of no numbers = 0 by convention
+    Makes it clear how to handle n = 1
+  Anyway, assume
+    Sum(i = 1; n) i = n(n + 1) / 2 is false
+    Some non-negative integers must serve as a counter example
+    Let's collect them in a set C
+    C must have a minimum element c
+    1 + 2 + 3... + n = n(n + 1) / 2
+      is False when n = c
+      but also true for all n < c
+      so it is true for c - 1 (here comes the induction - JM)
+      1 + 2 + 3... c - 1 = (c - 1)c / 2
+      BUT add c to both sides
+      1 + 2 + 3... c - 1 + c = (c - 1)c / 2 + c = (c^2 - c + 2c) / 2 = c(c + 1) / 2
+      Which means it holds for c after all
+      Contradiction, we're done
+  Factoring into primes
+    Prime Factorization Theorem has been taken for granted
+      Every integer greater than 1 has a unique expression as a product of prime numbers
+    Let C be the set of all integers greater than 1 that cannot be factored as prime product
+    C is not empty
+    If C is not empty, there is a least element n by well ordering
+    The n can't be prime because a prime b itself is a length one product of primes
+    So n must be a product of two integers a and b where 1 < a, b < n
+    a and b cannot be in C
+    a is a product of primes
+    b is a product of primes
+    but therefore n is a product of the a and b subprimes
+    Therefore n cannot be in C
+
+Lecture
+  Well ordering
+    So obvious in math that you hardly notice it
+  Every nonempty set of nonnegative integeres has a least element
+  Familiar? Now you mention it, yes
+  Obvious, yes
+  Trivial? yes, but watch out!
+    What if you replace integers with rationals?
+      NO
+    There's a least non-negative rational, 0
+    But not every non-negative set of rationals has a least element
+      If well-ordering, least positive p/q
+      But you can always make it smaller by doing p/2q
+    Is there a least negative integer?
+      No! -1, -2, etc. it keeps going
+  We take for granted well ordering
+    What is the youngest age of a MIT graduate
+      Would not wonder if that exists
+    Smallest # of neurons in an animal
+      Would not wonder if it exists
+    Smallest # of coins = $1.17
+  For rest of this talk
+    Number means non-negative integer N with diagonal double bar
+      "natural numbers" - is 0 natural or not though - so does NOT use this
+  Sqrt(2) proof used well ordering
+    Why every fraction can be expressed in lowest terms
+    sqrt(2) = m / n
+    m has got to be in lowest terms
+    then (m0 / c) / (n0 / c) - contradicts way m0 was chosen in first place
+  Let's look at 2 examples of using well ordering
+  Prove every integer greater than 1 is a product of primes
+    Proof by contradiction
+    { nonproducts is non empty }
+    Must be m > 1 that is a non product
+    If m itself is a prime, by convention it fits (considered to be 1 * m)
+      So we know m itself is NOT a prime
+    So m must be a product of two numbers j, k > 1 and < m
+    j, k < m
+    So both are prime products
+    Because they're smaller than m
+    m = jk = j primes & k primes
+    m is a prime product, a contradiction
+    No counterexamples, QED
+  More interesting example
+    Reasoning about postage
+    3c and 5c stamps (Fizzbuzz nums - JM)
+    What postage can you make out of this?
+    n is postal if can make (n + 8)c postage from 3c and 5c stamps
+    Theorem: every number is postal
+    Can make every amount of postage from 8c or more
+    Apply WOP, suppose NOT
+    Number that is not postal
+    m is the least counterexample
+    Any number k smaller than m is postal
+    0 is postal -> 8 = 3 + 5
+      so m != 0
+    1 is postal -> 9 = 3 * 3
+    2 -> 10 = 2 * 5
+    m >= 3
+    Now m - 3 is a number < m, so is postal
+    But m - 3 + 3 = m so m is postal too
+    Contradiction
+    So every number is postal
+
+  Part III
+    Theorem application, one we care about
+    1 + r + r^2 + r^3 + r^n = (r^(n+1) - 1) / (r - 1)
+    Holds for all non-negative integers n
+    And for all real numbers r that aren't 1
+      Which would make the denominator 0
+    Prove by WOP. Let m be smallest n where it doesn't work
+    But equal for n = 0, so m is > 0
+    So m must be positive
+    And therefore m - 1 must make equality hold
+    ... r^(m - 1) = (r^((m - 1) + 1) - 1) / r - 1
+    ... r^(m - 1) = r^m - 1 / r - 1
+          ... r^m = (r^m - 1) / r - 1 + r^m
+                  = (r^m - 1 + r^(m+1) - r^m) / r - 1
+                  = (r^(m + 1) - 1) / (r - 1)
+    So equal at m, contradicting
+      Holds for all values of n
+    Let's organize
+      For all n in N .P(n) using WOP
+    Define set of counterexamples
+    Assume C is not empty, must be minimum element m in C
+    Reach a contradiction somehow
+      This is where the template goes out the window
+      But usually you want to find a number c in C less than m
+      OR
+      By proving P(m) actually works, not a counterexample

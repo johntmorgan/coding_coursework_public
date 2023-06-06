@@ -1,0 +1,101 @@
+Relational vs. non-relational
+  Let's explain some jargon
+
+Data
+  Plural of datum
+  Distinct pieces of information
+    Numbers, text, byes, IG pics, YT vids
+  Usually interpreted in a context
+  3 broad categories
+    Structured
+    Unstructured
+    Semi-structured
+
+Structured Data
+  Has predefined organizational property
+    Easily searchable and analyzable
+  Data backed by model that dictates the size of each field of the data
+    Type
+    Length
+    Restrictions
+  Data stored in SQL DBs is structured
+    Schema formally specifies, usually
+  Working with any variant of SQL almost always = structured
+
+Unstructured
+  Lack of organization
+  Data model describes structure of single record or attributes of any individual fields in record
+  Ex
+    Video
+    Audio
+    Blogs
+    Log files
+    Social media posts
+
+Semi-structured
+  Cross between structured and unstructured
+  No explicit data model or structure definition
+    One may be implied
+  Contains semantic tags
+  Does not conform to the structure assoc. with trad. relational databases
+  Ex.
+    JSON
+    XML
+    Video & audio file metadata
+    Medical scan metadata
+      Most unstructured data has metadata these days!
+      What's the diff between semi-structured and unstructured
+        Even "unstructured" like social media posts often semi-structured
+
+DBMS
+  MySQL, PostgreSQL
+  Software to create, maintain, delete multiple databases
+
+Database
+  Organized and structured collection of data
+  Store and retrieve electronically
+  Structure helps in efficient retrieval
+  Broadly 2 types
+    Relational/SQL - our focus here
+    Non-Relational/NoQSQL
+
+Relational/SQL
+  Data stored as rows in tables
+  Columns follow rigidly defined schema
+    Type and size of data
+  Schema
+    Blueprint of what each row should look like
+  Usually have column as key
+    Uniquely identify each row in table
+    Relationship between two tables defined by a column or a set of columns that occur in both the tables
+  Popular techs
+    Oracle
+    DB2
+    MS SQL Server
+    PostgreSQL
+    MySQL
+
+Non-relational/NoSQL
+  Rose with Web 2.0
+  Data sets ever bigger
+  Come in different forms for use cases
+    Key-Value
+      Redis
+      Amazon Dynamo DB
+    Column stores
+      HBase
+      Cassandra
+    Document stores
+      Mongo DB
+      Couchbase
+    Graph DBs
+      Neo4J
+    Search engines
+      Solr
+      ElasticSearch
+      Splunk
+  No rigid schema
+
+Big Data
+  NoSQL, unstructured, semi-structured
+  "Big" is an evolving target with software and hardware capacities

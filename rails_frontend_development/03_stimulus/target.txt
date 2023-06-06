@@ -1,0 +1,57 @@
+Adding a target
+  Common in client-side coding to have to mark a DOM element as of interest to code
+    Read DOM element state to determine what to do
+    Change DOM element state as result of some other event
+      Here we want to add DOM class is-hidden
+      Eventually change button text itself
+        In jQuery or no-framework, identify elements using DOM ID or DOM class
+          But can be confusing since also used to manage CSS styling
+  Stimulus: mark item of interest as target
+    data-<controller name>-target
+      (Stimulus 1.0: data-target=<controller name>.targetName)
+    Target element is element we want to hide
+      Identified as having DOM class js--day-text, let's add a target
+
+    <section data-day-toggle-target="thingToHide">
+
+    // TypeScript approach
+    import { Controller } from "stimulus"
+
+    export default class DayToggleController extends Controller {
+      static targets = ["thingToHide"]
+
+      thingToHideTarget: HTMLElement
+
+      toggle() {
+        this.thingToHideTarget.classList.toggle("is-hidden")
+      }
+    }
+
+  // Any targets in use must be declared by controller in static variable targets
+    Then 3 properties on controller can be used
+      targetNameTarget (thingToHideTarget)
+        Returns first DOM element in the scope of the controller that declares this target
+          Exception if no such element
+      targetNameTargets (thingToHideTargets)
+        Returns array of all DOM elements in controller scope declaring target
+      hasTargetNameTarget (hasThingToHideTarget)
+        Returns boolean, true if there is a thingToHideTarget, otherwise false
+        Typically use to avoid exception raised by targetNameTarget
+  DOM element can declare multiple target descriptors (space separation)
+  Multiple DOM elements can declare the same target name
+    Use pluaral to access all of them
+  Iff TypeScript
+    Need to declare properties so TypeScript compiler knows what they are
+      Pain, removes some convenience
+
+    thingToHideTarget: HTMLElement
+  If not TypeScript
+    Need to be using JS + Babel version that allows static class props
+      On track to be implemented in JS, can be switched on with Babel for now
+  Rest of controller implements toggle()
+    Uses thingToHideTarget and changes class list to swap in and out is-hidden Bulma CSS class
+
+Stimulus is cool
+  Only a few lines of code to represent that mess of spaghetti from last chapter
+    No event listeners
+    No doing anything special for each button

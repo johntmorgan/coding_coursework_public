@@ -1,0 +1,101 @@
+Case Studies
+Google Maps
+  Not a system design lesson here
+    Doesn't contain database design, traffic estimations, code
+  Discuss fundamental architectural aspects of service
+  Satellite imagery, route planning, real-time traffic
+    API for map-based games like Pokémon Go
+  Started as desktop-based C++
+  Read-heavy application
+    New users are NOT generating new content
+      May mark locations
+      But writes negligible relative to reads
+      Data can be largely cached
+  Data Type: Spatial
+    Dedicated spatial databases
+    MySQL, MongoDB, Neo4J, Redis, Google Big Query GIS support persisting spatial data
+      Have additional plugins
+  Database
+    Coordinates persisted in database
+    Run a search, coords fetch from database
+    Numbers converted into map image
+    Surge in traffic during peak office hours, festivals, events in city
+      Instance autoscaling (horizontally) to manage spikes
+    More inclined to pick non-relational noSQL
+      Map data doesn't contain many relationships
+      Inherently horizontally scalable
+      NoSQL graph database fits best
+    Relational database
+      Also scales well with caching
+      Application is read-heavy
+      But in real-time cases with lots of updates, bit of a challenge
+        Live traffic, alternative route suggestions
+  Architecture
+    Client-server, P2P no good here
+  Backend
+    Java, Scala, Python, Go
+      Any mature backend technology will do
+      Java performant, heavily used for writing scalable
+  Monolith or microservice
+    Core feature map search
+    Plan routes for different modes of travel
+    Alternative routes in real time
+    Adjust to user's location
+    APIs
+      Direction API
+      Distance Matrix
+      Geocoding
+      Places
+      Roads
+      Elevation
+      Time Zone
+      Custom Search
+      Gaming
+    Need microservices for so many different functions
+      May not do all in first release of course
+  Server-side rendering of map tiles
+    Cache rendered image for future requests
+      Static content, same for all users
+    Map broken down into tiles, generate only part of map interact with
+      Smaller tiles for zoom in, zoom out
+  User interface
+    Javascript, HTML5
+    Vanilla JS good for simple requirements
+    Can also look into React, Angular, Vue framework
+    OpenLayers
+      Popular open-source UI library for making maps work with web browsers
+  Real-time features
+    Cool, but very resource-intensive
+      Only use when really required
+
+Baseball game ticket booking
+  Database
+    Need a foolproof payment system
+    Transactions and strong consistency vital
+      ACID compliant
+    Relational
+  Concurrency
+    Handle a large number of concurrent connections (thinking of recent events, yep - JM)
+    Message queue, FIFO
+    Database locks
+      Use correct transaction isolation level
+        Only implemented with transactional ACID-compliant database
+      Number of tickets shown is not quite accurate
+        Typical on e-commerce, travel booking
+        Only when moves to purchase does system poll database and lock resource
+          Hence disappearing tickets -> frustrated users, ahem - JM
+      Caching
+        Redis, Memcached, Hazelcast
+  Backend
+    Java, Scala, Python, Go, etc.
+    Notifications to users
+      RabbitMQ or Kafka
+  UI
+    Don't really need a persistent connection
+    CRUD-based app
+    Simple Ajax queries work well
+    Make the UI responsive
+      Fans will access it from different devices
+      From the groundup - CSS3
+        Or leverage e.g. Bootstrap JS
+        Can use React, Angular, Vue again

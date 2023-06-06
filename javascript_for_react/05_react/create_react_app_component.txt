@@ -1,0 +1,37 @@
+The Create-react-app component
+  Modules
+    Import React line 1 as default and component as named
+    Import logo from logo.svg
+      Exported as default already
+    Export App as default
+      Import from any other file w/o curly braces
+
+  Class component
+    Class App inherits Component
+    render() function returns *one* JSX/HTML div
+
+  JSX
+    Create div called App
+    Creates header with imported logo
+
+  import React, { Component } from 'react';
+  import logo from './logo.svg';
+  import './App.css';
+
+  class App extends Component {
+    render() {
+      return (
+        <div className="App">
+          <header className="App-header">
+            <img src={logo} className="App-logo" alt="logo" />
+            <h1 className="App-title">Welcome to React</h1>
+          </header>
+          <p className="App-intro">
+            To get started, edit <code>src/App.js</code> and save to reload.
+          </p>
+        </div>
+      );
+    }
+  }
+
+  export default App;

@@ -1,0 +1,252 @@
+Course Review
+We've covered all of the testable material on quiz 3 and the final
+Now putting into context all we've learned
+  High level and where we can go from here
+  Most things in department related to this material
+    It's a foundational course
+Four main goals, 3 really (?? - JM)
+  1. Solve "hard" computational problems
+    "Let's make an algorithm"
+    Hard in quotes because saw in last lecture may be things no algo for
+  2. Argue correctness (this class = applied 6.042)
+    Thing doing to inputs always leads to correct output
+      Input size can grow arbitrarily large
+  3. Argue efficiency - "good"
+    What does that mean? Hard to know at start
+    Set up model of computation, determine how good or bad
+      Say what can do in constant time, build off of that
+    Plus asymptotics
+    This is about scalability compared to input size
+    How does algorithm perform vs. rate problem size grows
+    Don't tend to talk about constant size problems in this class
+  ~4. Communication
+    If you can always write good code, good for you
+    But that might mean you can be a competent independent programmer
+      But limited in what you can do if you're only able to rely on yourself
+    If write down Python script for correct algorithm on quiz
+      Won't get full credit unless understood
+How does complexity fit in?
+  What we proved in the last lecture, most problems cannot be solved "good"
+    Cannot be solved in polynomial time
+    But many problems we think about, can be either:
+      Checked in polynomial time
+        Give you a certificate that proves to you that yes this thing is correct -> NP
+        Show you a path in a graph that's a length
+        Show you a subset that sums to a value
+      Solved by brute force in EXP time
+        Over possible space of combinatorial outputs of poly length and check if they're correct
+      But most problems we think of fall into these categories
+        So there are algorithms to solve most problems we think of
+        Even if most random problems - random bit strings - are not solvable
+      In a sense, the problems we think about are not random
+        Have a structure where they can be checked
+  For the final
+    Be able to see on practice problems (which I don't get - JM)
+    Will be in terms of these definitions
+      Do you understand what NP is? What EXP is? How they relate?
+        EXP is a superset and they probably are not equal
+      If you have a problem A and a problem B
+        And you know A is difficult by some measure - say NP-hard
+        If you want to know B and prove A can be reduced to B, then B can't be solved poly
+          Kind of argument usually in a true-false question
+        To understand the basic high level definitions that were talked about
+        Hardness - the most difficult problems of these classes
+        Completeness - in the set but at least as hard as anything else in it
+  When we don't have a "good" algorithm, can prove it... in future classes
+Overview of content covered in 6.006 - 3 units, 2 subunits
+  Q1, Q2 - showing you some nice black boxes
+  Q1 - data structures for finding things in non-constant size database
+    When storing, support queries
+      Maintain extrinsic order - sequence
+      Look up is this thing there with key - set (intrinsic query order)
+        Hash table doesn't maintain order on keys, but supports query
+        But saw other data structures supporting intrinsic order, easily see larger/smaller in set
+    Not going to go into Quiz 1 review here, but
+    Sequence
+      If we have a sequence, being able to push and pop at end of list pretty good
+        That's why Python list most fundamental data structure
+          Put at end of list, swap down if needed
+      Sequence AVL
+        Useful but not as ubiquitous as a dynamic array
+    Set side
+      Build, find, insert/delete - is it there
+      find_min, find_max and find_prev, find_next - order operation
+      Hash table super good for dictionary operations
+      But when you need to maintain order dynamically set AVL way to go
+      But find_min, find_max, sorted array good enough!
+      Used data structures to get faster sorting in different contexts
+    Sorting (application)
+      Make a data structure, exploit for better run time (except merge sort)
+      Insertion/selection
+        Priority queue - sorted array or array -> n^2
+          Down to nlogn using a heap
+      But also interesting sort using AVL tree
+      But then exploiting a direct access array to sort in linear time for small poly bounded numbers
+        Counting sort, Radix sort - amplified
+  Q2 - Now you know how to find things in a set
+    But in a sense a graph is special kind of data structure
+    Relates things in your input
+    If have a bunch of vertices, relations that are edges
+      Super useful in talking about discrete systems
+      Vertex = state, transition = edge
+      Graphs are awesome because model so many things in world
+        Not just road networks, but say playing favorite turn-based game
+      Talked about lots of problems you could solve
+        Focus solving single source shortest paths
+        Presented multiple ones
+        Tradeoff generality of graph contrasted with running time
+        DAG most restrictive, no cycles - linear time
+        But if do have cycles, better if bound on weights
+          BFS - linear
+          Dijkstra - non-negative bound, |V|log|V| + |E|
+  Q3 - Kind of applying graph material to a recursive framework dynamic programming SRTBOT
+    You can actually think of Q3 as really an application of the graph material
+    What are we doing in SRTBOT - set of subproblems
+      Set of vertices in graph
+      Relation defining edges of a graph
+      Topo order and base cases, what problem solve on graph & how do I compute
+        And how compute for things with no outgoing edges
+  Q1 + Q2 - useful black boxes
+    Bundle up, stick in input, put out output, you're good
+  Q3 - different
+    Have to construct that graph, creative process constructing vertices
+    Give sequence, construct subproblems related in a recursive way to solve problem
+    A lot more creativity, harder (agree - JM)
+      Just like doing graph transformations to solve is tougher - what should it be?
+      That's the entire difficulty with solving recursively
+    Have only given a taste of solving recursively (6.046 follows)
+      6.046 is design and analysis of algorithms
+        More difficult
+          Hsere have left it to use what we gave you
+          OR make things via this cookbook we gave you
+          It's very useful
+          But while in dynamic programming, combining subproblems is almost trivial
+            In other situations, not the case
+            For example in greedy algorithm looking at locally best and recursively going forward
+              Not brute forcing, harder paradigm to operate under
+  So that's a really fast 6.006 overview
+  Like structure of how class laid out
+    How people store stuff on computer ->
+    How you solve problems computationally and argue correct and efficient
+  If you like this stuff, go to 6.046
+    First class prof took as grad student
+      Was hard for him
+    Hard to look at these problems and think computationally, esp not having taken 6.006
+  6.046 content - 2 ways to think
+    1 Extension of this class
+      Data structures - not core, but do touch on with more complicated analyses
+        Stating what the algorithm is doing is not so hard
+        But arguing correct and efficient, that's where the complexity comes in
+        Analysis quite a bit more complicated
+        Union-Find - much more formal amortization via potential analysis
+          Prove that average cost is small if do expensive operation infrequently
+        U-F data structure is a set-type thing, make a set of a single element
+          Take 2 sets, merge together, make union, which set am I part of
+            Elect leader in set, return pointer to that one
+            Good in maintaining connected components in dynamically changing graph
+            Get near-constant performance for a lot of these queries - not quite, but pretty close
+      Graphs:
+        Minimum spanning tree - find the spanning tree with minimum total weight
+          Fundamental problem in weighted graph algos solved with greedy algo
+        Network flows & cuts - given a weighted graph, each of the weights to capacity
+          Source and sink vertex, shove water through source vertex along edges
+            Get some amount of water on the other end - source
+          What is the most water can push through?
+            Can do experimentally
+            But you want to look at numbers and tell what gets through - max flow
+              Polynomial time algos
+              Incremental like Dijkstra and Bellman-Ford
+              Update estimates and improve over time
+      Design paradigms
+        Divide & conquer algorithms
+        More involved dynamic programming
+        Greedy algorithms
+        Go a lot more in depth how to design than we do in this class
+      Complexity
+        Only touched on in this class
+        6.046 will only touch too - very big field
+        But give you tools to prove NP-Hard
+        Where we just say "oh there's a reduction"
+          Did not give any reduction problems, you'll do that here
+    2 Change definition of what it means to be correct or efficient
+      We've already done this a little in 6.006
+      Randomized algorithms - big part of 6.046 - non-deterministic
+        Not guaranteed to do same computations every time
+        Mostly have not touched on it except in hashing
+          Changed definition of correct vs efficient
+            Said ok that sometimes algorithm slower than expectation
+            Relaxing idea of efficient, but still good because usually good
+        Las Vegas algorithms: always correct, but probably efficient
+          In a sense that's what hashing is
+        Monte Carlo: always efficient, but only probably correct
+          Could define a hash table that has these mechanics
+            Only stores first two collisions
+            That will always be efficient - constant time
+            But sometimes will be wrong, not storing everything in chain
+          Maybe can afford to be wrong if need speed
+            In practice actually sometimes a good tradeoff
+        Generally can do better if allow randomization
+        Requires a lot more analysis - randomness and probability
+      Numerical algorithms/Continuous optimization - not discrete
+        Have largely restricted to integers in this class
+          Can't even store a real number on a computer...
+        How do we do on computer that's a discrete system?
+          Say "I know you can't return me a real number"
+        Usually about computing not completely but to some bounded precision
+          But pay for that precision with time
+          Ex division: long division
+            That's an algorithm
+            Pay time to get more digits
+      Approximation algorithms, optimization problems
+        Numerical algos/continuous optimization kind of approximating outputs
+        But here, there's a lot of problems can't solve efficiently
+          NP-hard, EXP, or even harder
+          But maybe I'm ok with not getting the optimal solution
+        Most dynamic & shortest path are optimization problems
+          Outputs ranked in some way, there's an optimal one (min, max, etc)
+        Optimization problem
+          Hard to give shortest path in say traveling salesman
+            But maybe that's ok
+            Engineering spidey-sense - within 10% is fine
+            Can I guarantee within a certain distance from optimal
+          Constant-factor approx with low constant
+            Or maybe even have to deal with worse sometimes
+      Changing the model of computation
+        Future classes more than 6.046
+        Put in other situation - more/less power
+        We've been talking in terms of Word-RAM
+        Essentially says I can do arithmetic and look up stuff on constant time
+          But if allocate certain amount have to pay certain amount
+          But in actuality, your real computers
+            Easier to read memory in a register than going out to hard disk
+              Scanning out on CD-ROM drive
+        Add complexity to model to better account for costs on machine
+          Cache model - basically a hierarchy of memory
+          L1 cache, close to CPU, then L2, L3, etc. out to RAM then solid-state drive
+          Put cost associated with all
+          Instead of having all operations constant
+            Have to pay different amounts
+        Quantum operations
+          Exploiting entanglement and superposition of different atoms
+          Operations on data provably stronger than classical models in some sense
+          A huge reason why lots of work being done in industry research facilities
+            Figuring out models
+            Make a big enough quantum computer break encryption in poly time? NSA...
+          Artificial intelligence
+            Brain might be doing things a classical computer cannot
+            Computers aren't exploiting those operations, how can we ever get intelligence
+        Parallel computing
+          Virtually all these days have multiple cores
+          Cheap to make more CPUs, 2x computers working -> 2x speed
+          100x CPU -> 100x speedup
+            Makes a big difference in real life!
+            But for some problems it's not possible
+              k CPU -> k factor speedup
+          Lots of interesting theory going on
+            Lots of complications there
+            Multicore setup, computers accessing same bank of memory
+              Don't know state, get collisions, have to really think about here
+            Maybe have a bunch of nanoflies going around
+              Very small brains, can talk to each other, no central memory
+              Distributed parallel system
+                Work together to learn information about system

@@ -1,0 +1,21 @@
+Static and dynamic type checking
+  Static type checking
+    Most generic
+    Occurs before code is run
+      C++, Go
+    JS cannot use this technique
+      TypeScript or Flow used instead
+  Dynamic
+    Checked and assigned during run time
+    Interpreted/JIT compiler
+
+  var a = 1 + "1"; // works fine
+
+  Works not because dynamic type checking, but because weakly-typed
+
+  Weakly-typed
+    Make conversions between unrelated types implicitly
+
+  Strongly-typed
+    Does not allow implicit conversions
+      Python would throw a type mismatch error

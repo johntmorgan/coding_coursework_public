@@ -1,0 +1,450 @@
+Database
+What is it?
+  Component in application architecture required to persist data
+  Data can be in many forms
+    Structured
+    Unstructured
+    Semi-structured
+    User state data
+  Data classifications
+    Structured
+      Conforms to certain structure
+      Stored in normalized fashion
+      Easy to work with
+        No data prep needed before interaction
+      Ex.
+        Customer details in database row
+          Customer ID of integer type
+          Name of string type with char limit
+          Age of integer type
+      Every column of row has pre-defined rules for data
+        We know what we're dealing with
+        Customer name is a string
+          Run string operations, no worrying about errors or exceptions
+      Managed by a query language such as SQL
+    Unstructured
+      No definite structure
+      Heterogeneous data
+        text, image files, videos, multimedia files, pdfs, blob objects, word docs, machine-gen data
+      Deal with this kind of data when running data analytics
+        Data streams in from IoT devices, social nets, web portals, industry sensors etc
+      Cannot directly interact
+        Initial data collected is pretty raw
+        Segregate based on business logic
+        Run analytics algorithms to extract meaningful info
+    Semi-strucutred
+      Mix of structured and unstructured
+      Often stored in data transport formats - XML, JSON
+    User state
+      Contains info about user activity on the site
+        What products they viewed, saved to wishlist, etc
+      Helps businesses improve user browsing and conversion rate
+        User persist from where last when log in again
+
+  Relational databases
+    Data with relationships
+    One to one, one to many, many to many, many to one
+    Most widely used in web development
+    Relational data model
+      Data organized in tables with rows and columns
+    SQL primary data language used to interact
+      MySQL is an example (so is postgres - JM)
+    Relationships
+      Customer with 5 books
+        One to many
+      Simple form
+        One table contains customer details
+        Another table contains inventory details
+        One row in customer table corresponds to multiple rows in product inventory table
+        Pull customer, find books easily
+    Data consistency
+      Data is stored in normalized fashion
+      Entity only occurs in one place/table in simplest and atomic form
+        Is NOT spread throughout database
+    ACID
+      atomicity, consistency, isolation, durability
+      If transaction occurs
+        Executed perfectely
+        Does not affect any other transactions
+        After: new state, durable and consistent
+      Anything bad during transaction?
+        Roll the whole system back
+      State A -> State B
+      Relational database ensures system in either State A or State B at all times
+        There is no middle state
+        If anything fails, roll back to A
+
+  Why relational databases?
+    Strong consistency, transactions, or relationships
+      Stock trading, personal banking, etc.
+      Common in apps like Facebook, LinkedIn
+    Anything to do with money or numbers that make transactions
+      ACID and data consistency are super important
+    Have been around for ages and are battle-tested
+    Large community
+      Lots of engineers have used them for a long time
+    Storing relationships
+      What friends of yours are in a given city
+      Built to store stuff like that
+      Facebook uses relational as main user-facing DB
+    Popular relational
+      MySQL - written in C, C++, start 1995, open source
+      PostgreSQL - written in C, open source
+      Microsoft SQL - proprietary, written in C and C++
+      MariaDB
+      Amazon Aurora
+      Google Cloud SQL
+
+  NoSQL
+    More like JSON-based databases built for Web 2.0
+    Built for high-frequency read-writes
+      Microblogging
+      Real-time sports apps
+      Online MMORPGs
+    Scalable
+      Scaling relational databases not trivial
+        Shared, replicated to make run smoothly on a cluster
+          Lots of planning, human intervention, specific skill set
+      NoSQL can add new server nodes on fly, scale without any human intervention
+      Super fast read-writes
+        Billions of users on modern social networks
+    Runs on clusters intelligently
+      Minimal human intervention
+      Today server nodes even have self-healing capabilties
+        System can recover from faults
+    But sacrifice strong consistency, ACID transactions, and more for this scaling
+      Data is "eventually consistent" not "strongly consistent"
+
+  NoSQL features
+    Developer friendly
+    Lower learning curve
+      Don't have to worry about minimizing joins, setting up tables & relationships perfectly etc
+    Do not need to be so focused on avoiding future issues
+    No strictly enforced schemas
+      Work with data however you want
+      Change stuff and move things around anytime
+      Entities have not relationships
+
+  NoSQL cons
+    Inconsistency
+      Non-normalized data
+      Entity spread through database need to be updated at all locations
+        Need to remember all its locations
+        Fail to do so and data becomes inconsistent
+    No support for ACID transactions
+      A few do claim to support, but not at global deployment level
+        Limited to certain entity hierarchy or small deployment region
+          Lock down nodes to update them
+
+  Popular NoSQL
+    MongoDB
+    Elasticsearch
+    Google Cloud Datastore
+    Redis
+    Neo4J
+    Cassandra
+    Memcache
+
+  How NoSQL works
+    Very easy to learn
+      No managing joins, relationships, n + 1 query issues
+    Just fetch object using key in O(1)
+
+  When NoSQL?
+    Large number of read-write operations
+    Handle big data with minimal latency
+      Willing to give up on strong consistency
+    Flexibility with data modeling
+      Early development, not sure where project is going get
+    Eventual consistency
+      Not a big deal with say Twitter
+        Does it matter if a like count fluctuates a bit on a hit Tweet for a while?
+      Geographically distributed nodes take time to reach a global consensus
+        Consistent after a bit - "eventual consistency"
+      This does not mean any data loss!
+      Just means the data takes a little while to become consistent
+      Why see a video with 10 views and 15 likes on YouTube
+        (I thought that was mostly due to early view counts being frozen to count properly, discard bots - JM)
+    Running data analytics
+      Deal with influx of massive amounts of data
+      Dedicated databases for specific use cases in this area
+        Time-series databases
+        Wide-column
+        Document-oriented
+
+  Performance
+    Is NoSQL more performant than SQL? No!
+    It's more about how you design your system using the technology
+    Both have their use cases
+    But why do popular tech stacks always pick NoSQL?
+      MEAN - MongoDB, ExpressJS, Angular/ReactJS, NodeJS
+      Those tech stacks cover standard use cases
+      Also commercial reasons
+        Lots of tutorials available online
+        Mass promotion of popular tech stacks
+        Easy for beignners to pick up and write applications
+    Performance depends most on:
+      Application architecture
+      Database design
+      Bottlenecks
+      Network latency
+    Multiple joins = slow (yes I've experienced that - JM)
+      Remove all joins, relational DB as fast as NoSQL
+    Facebook uses MySQL for it's social graph with millions of users
+      Did change DB engine and make some tweaks
+    Quora uses MySQL
+      Partitions data at the application level
+    A well designed SQL data store will always be more performant than a poorly designed NoSQL store
+    WHat about using both?
+      Most large-scale services actually do use a mix to achieve desired behavior
+      "Polyglot persistence"
+
+  Polyglot persistence
+    Using several distinct persistence technologies together
+      MySQL, MongoDB, Memcache, Cassandra
+    Facebook
+      Relational
+        Store friends of user, friends of friends, food preferences
+          MySQL, or graph database like Neo4J
+      Key-value store
+        Low-latency access to frequently accessed data
+          Redis, Memcached
+        Store user sessions in distributed system achieving consistent state across clusters
+      Wide column database
+        Analytics system to analyze big data generated by users
+          Cassandra, HBase
+      ACID
+        Payment system for ads - relationals system again
+      Graph database
+        Recommend latest content to users to keep them engaged
+      Document oriented store
+        Search for other users, business pages, groups etc. on platform
+        Elasticsearch
+    Complexity
+      Making all these work together in a distributed environment is tough!
+      A lot of effort to build, manage, and monitor
+
+  Multi-model databases
+    Support multiple models all in one database
+      Graph, document-oriented, relational, etc.
+      No need to manage multiple persistence technologies in a single service
+      Reduce operational complexity
+      Leverage different data models via single API
+    ArangoDB
+    CosmosDB
+    OrientDB
+    Couchbase
+
+  Eventual Consistency
+    Enables data stores to be highly available
+    "Optimistic replication"
+    Ex
+      Microblogging site deployed in different world regions
+      Each zone has multiple clusters with numerous server nodes
+        Application server, message queue, database
+      Many nodes running, no single point of failure
+        Even if a few nodes go down, persistence service is still up
+      Say someone in Japan likes a Tweet
+        User in America still sees it as 100
+        Takes time to move from Japan to America & update server nodes running there
+        Reaches a consistent state globally
+      What if JP and US like tweet, EU views it?
+        All will have different counts
+    Upside
+      Add new nodes on the fly
+      Continuous write operations with no locking
+    More use cases
+      Counting concurrent users watching live video stream
+      Dealing with massive analytics data
+
+  Strong Consistency
+    All server nodes in world must have same value at all points in time
+      Only way to get this is lock down nodes as updated
+    Only one user at a time can update tweet counter
+      Not desirable for social applications
+      But very desirable for a stock market applicatoin
+        Don't want to see different prices of same stock at one point in time
+    Queue all write requests
+      Implementation beyond course, but more in message queue chapter
+
+  CAP Theorem
+    Consistency, availability, partition tolerance
+    Consistency, availability already covered
+    Partition tolerance
+      How tolerant of failures or partitions
+      Can system keep working even when a few nodes go offline?
+    Many definitions of this theorem
+      "Pick two of three" is the standard
+      Author wants to try to explain more simply
+    In case of a system failure, when a few system nodes down
+      Pick between availability and consistency
+      Availability: other nodes available to write, system left inconsistent
+        Down nodes not updated with data
+      Consistency:
+        Lock down all nodes for further writes until down nodes back online
+
+  Database types
+    Numerous types available, specific use cases
+    Document-oriented
+    Key-value datastore
+    Wide-column database
+    Relational database
+    Graph database
+    Time-series database
+    Database for mobile apps
+
+  Document-oriented
+    Leading NoSQL type
+    Store data in independent documents
+      Typically semi-structured, JSON-like format
+    Go well with Agile software development approaches
+      Easy to change things with evolving demands
+      No formal relationship or anything though
+    Popular names
+      MongoDB, CouchDB, OrientDB, Google Cloud Datastore, Amazon DocumentDB
+    Good for
+      Semi-structured data
+      Flexible schema that changes often
+      Arent't sure about schema yet - new app
+      Scale fast
+      High availability
+    Use cases
+      Real-time feeds
+      Live sports apps
+      Writing product catalogues
+      Inventory management
+      Storing user comments
+      Web-based multiplayer games
+    Horizontally scalable
+    Performant read-writes
+    Cater to CRUD use cases
+      Where there is little complex relational logic involved
+        Just need quick persistance and and data retrieval
+    Real life
+      SEGA MongoDB for mobile gaming
+      Coinbase MongoDB 15k requests/min -> 1.2m requests/min
+
+  Graph database
+    Another NoSQL
+    Store data in nodes/vertics and edges in the form of relatoinships
+    Each node represents an entity
+      Person, place, business
+    Each edge represents a relationship
+    Why use a graph database when we already have relational databases?
+      Complex relationships can become slow to query
+        Lots of joins to fetch data
+      Less fighting the database in production
+        Data accessed with low latency
+    Best fit for modelling real-world use cases where entities have complex relationships
+    Real world
+      Facebook graph search
+      Link not only friends but users to restaurants, foods, sports teams etc
+        Power recommendations for dining, travel, new friends
+    Two primary ways of representing graphs
+      Adjacency list
+      Adjacency matrix
+    Pick between list and matrix depending on type of operation
+      Matrix helps figure out if relationship between two nodes exist in O(1)
+        But space intensive
+        Used if graph is dense (lots of edges)
+      If sparse, use List
+    Social network case
+      2 billion nodes
+      500 friends/edges per user
+      Use a list, matrix would waste memory
+      If edges in billions, then matrix
+    Traversing graph
+      Depth-first and breadth-first search
+        Stack and queue data structures respectively
+      DFS to find paths and connectivity between nodes, detect cycles
+      BFS to find shortest path between nodes
+    Relationships are stored differently in graph databases
+      Faster because relationships not calculated at query time
+        Persisted in datastore as edges, just fetch them, no computation
+    Google maps is one big graph
+    Cab booking apps - Uber, Lyft, Ola (haven't heard of that one? - JM)
+    Flight networks
+    Different algos for shortest path
+      Dijkstra, Bellman-Ford, Floyd-Warshall, Johnson, A* search, Viterbi
+    Google page rank built on graph theory
+      Nodes with weights = authority
+      (Explained wrong how nodes are weighted)
+        It's about who links to you, not who you link to...
+    When graph?
+      Social, knowledge, network graphs
+      AI-based apps
+      Recommendation engines
+      Fraud analysis apps
+      Genetic data
+    Examples
+      Walmart product recommendations - Neo4J
+      Nasa lessons learned stored - Neo4J
+
+  Key-value database
+    Also NoSQL
+    Simple key-value pairing method
+      Return in constant O(1) time
+    Used to cache application data
+      Value can be anything from string to a complex graph
+    No query language required to fetch data, just key
+      Minimum latency
+    Popular techs
+      Redis, Hazelcast, Riak, Voldemort, Memcached
+    When to use
+      Fetch data really fast with minimum fuss
+      Caching
+      Persisting user state
+      Persisting user sessions
+      Managing real-time data
+      Implementing queues
+      Leaderboards in online games, web apps
+      Implementing pub-sub system (?? - JM)
+    Real-live
+      Inovonics Redis - real-time analytics on millions of sensors
+      Microsoft Redis - handle traffic spike on platforms
+      Google Cloud Memcached - for caching on cloud platform
+
+  Time series database
+    Optimized for tracking and persisting data continually read and written in system over time
+    Why store time-series data
+      Track behavior of system as whole
+      Study user patterns
+      Identify anomalies
+      Identify changes over time
+      Mostly used for running analytics and reaching conclusions
+      Helps stakeholders make future business decisions
+    Regular databases not built to handle time-series data
+    Time-series getting more popular with growth of IoT
+    Popular
+      Influx DB
+      Timescale DB
+      Prometheus
+    Use cases
+      Monitoring and analytics
+      Dealing with changing stock prices in real time
+    Real life
+      IBM Influx DB - real-time cognitive fraud detection
+      Spiio Influx DB - remotely monitor vertical lining green walls, plant installations
+
+  Wide column database
+    NoSQL again
+    Handle massive amounts of data - Big Data
+    Perfect for analytical use cases
+    High performance
+    Scalable architetuer
+    Store data in record with dynamic number of columns
+    Record can hold billions of columns
+    Popular
+      Cassandra
+      HBase
+      Google BigTable
+      ScyllaDB
+    When
+      Big Data
+        scalability, performance, high availability
+    Real-life
+      Netflix Cassandra - analytics
+      Adobe HBase - processing lots of data
+      (Reddit Cassandra for main site, interestingly - JM)
+
+  

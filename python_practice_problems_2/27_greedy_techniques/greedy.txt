@@ -1,0 +1,22 @@
+Greedy Techniques
+  Build up solution piece by piece
+  Make locally optimal choice
+    Hope leads to globally optimal solution
+  Optimization problems
+  Can get stuck in local optima
+    Generally do not return global best solution
+
+Pattern
+  Yes
+    Select local optima then construct global solution
+  No
+    Local greedy choices clearly = sub-optimal solution
+    No local optima
+    Not an optimization problem
+
+Real-world
+  CPU scheduling
+  LAN networks
+    Find MST to ensure minimum packet transmission
+  Social networking
+    Recommend list of people via dijkstra

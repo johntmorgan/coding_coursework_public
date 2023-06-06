@@ -1,0 +1,14 @@
+Deleting data
+  DELETE FROM Actors WHERE FirstName="priyanka";
+    // Note this is case insensitive
+  
+  DELETE FROM Actors WHERE Gender="Male";
+
+  // Combine with ORDER BY
+  DELETE FROM Actors ORDER BY NetWorthInMillions DESC LIMIT 3;
+
+  // Delete ALL rows!
+  DELETE FROM Actors;
+    > Still returns an empty set after if you do SELECT * FROM Actors;
+
+  

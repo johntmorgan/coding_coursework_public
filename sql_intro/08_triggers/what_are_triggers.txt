@@ -1,0 +1,30 @@
+What are Triggers?
+  MySQL programs automatically executed in response to an event
+  Associated with tables
+    Invoked when table contents change
+      INSERT, UPDATE, DELETE
+    Can happen before or after
+  Two types
+    Row-level
+      If 25 inserts, invoked 25 times
+    Statement-level
+      If 25 inserts, invoked once
+  MySQL only supports row-level triggers
+
+Why triggers?
+  Prevent invalid DML statements from executing
+  Handle errors from DB layer ensuring data integrity
+  Alternative to scheduled events
+    Happen whenever DML statement executed
+  Good for auditing changes, keeping a log of changes
+
+Limitations
+  Increased server overhead
+  Difficult to debug
+    Run automatically at DB layer
+    Not possible to apply breakpoints and see step by step execution
+  Do not provide all validations needed at app layer
+  Can only be associated with
+    INSERT, UPDATE, DELETE
+    e.g. TRUNCATE will not invoke a DELETE trigger
+

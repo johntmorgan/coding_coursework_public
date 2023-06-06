@@ -1,0 +1,50 @@
+Inner Joins
+  Made another table DigtalAssets
+    Has actor social media
+    ActorId column
+    URL is primary key - guaranteed unique
+    Col names in two tables are different
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  INNER JOIN DigitalAssets
+  ON Actors.Id = DigitalAssets.ActorID;
+
+  // If both had the same col name for actor ID then
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  INNER JOIN DigitalAssets
+  USING(Id);
+
+  // Note all col names are distinct
+  // If not then need to disambiguate with table name
+    Actors.FirstName I assume - JM
+
+  // Don't need to do inner join clause to get inner join
+  // Use WHERE clause for same effect
+  // No difference in performance, just a matter of taste
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors, DigitalAssets
+  WHERE ActorId=Id;
+
+  // Cartesian product - two syntaxes
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors, DigitalAssets;
+
+  SELECT FirstName, SecondName, AssetType, URL
+  FROM Actors
+  INNER JOIN DigitalAssets;
+
+  // Can join any two columns with same type
+  // Or which can be converted into each other with data loss
+  // This example is non-sensical and returns no results
+  SELECT *
+  FROM Actors
+  INNER JOIN DigitalAssets ON URL = FirstName;
+
+  // Also no results
+  SELECT *
+  FROM Actors
+  INNER JOIN DigitalAssets
+  ON NetWorthInMillions = ActorId;

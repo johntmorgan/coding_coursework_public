@@ -1,0 +1,188 @@
+Tries
+
+What is a Trie?
+  Tree-like structure
+  For efficient solving of problems related to strings
+  aka "Prefix Tree"
+  Derived from "retrieval"
+
+Used in
+  Dictionary word searches
+  Search engine autosuggestion
+  IP routing
+
+Real-world
+  Word autocomplete
+  Spellcheck
+  Search for phone conact
+    Can also be done with hash table, but not as efficient
+
+Properties
+  Similar to graphs
+    Combo of nodes
+    Each node represents unique letter
+  Each node can point to None or children
+  Size of trie depends on # of characters
+    In English, 26 chars so only 26 unique nodes
+  Depth of trie
+    Depends on longest word stored
+  Same path for words with common prefix
+    There, their -> same path to first e
+
+Node class
+  To insert "hello", add 5 nodes, one for each letter
+  Typical node in trie consists of three data members
+    char: stores character in node
+    children: array of pointers to children nodes
+      Depends on size of alphabet, 26 for English
+    is_end_word: boolean flag, False by default
+
+  class TrieNode:
+    def __init__(self, char=''):
+      self.children = [None] * 25
+      self.is_end_word = False
+      self.char = char
+
+  trie_node = TrieNode('a')
+  print(trie_node.char)
+
+Trie class
+  Implemented via TrieNode
+  Root at top contains 26 pointers
+  Root similar to head_node from linked lists
+  All words stored in top-bottom mannter
+  Always set is_end_word when storing last char
+
+  class Trie:
+      def __init__(self):
+          self.root = TrieNode()  # Root node
+
+      # Function to insert a key in the Trie
+      def insert(self, key):
+          pass
+
+      # Function to search a given key in Trie
+      def search(self, key):
+          return False
+
+      # Function to delete given key from Trie
+      def delete(self, key):
+          pass
+
+Trie insertion
+  For each char, check if exists
+    If not, insert corresponding node
+  While inserting last node, set value of isEndWord to true
+  Case 1: no common prefix
+    Create nodes for each character
+  Case 2: common prefix
+    Portion of starting characters in word already in trie
+    Path through existing characters, then start inserting ndoes
+  Case 3: word exists
+    Substring of existing word in trie
+    Mark new isEndWord
+
+  def get_index(self, t):
+    return ord(t) - ord('a')
+
+  def insert(self, key):
+    if key is None:
+        return False
+    key = key.lower()  
+    current = self.root
+    for letter in key:
+        index = self.get_index(letter)
+        if current.children[index] is None:
+            current.children[index] = TrieNode(letter)
+            print(letter, "inserted")
+        current = current.children[index]
+    current.is_end_word = True
+    print("'" + key + "' inserted")
+
+    Time complexity: worst-case O(n), making n iterations
+
+Search
+  Trace path through Trie
+  Logic isn't too complex
+  If word does not exist
+    Find None before last character of word
+  If word exists as substring, but isendword not false
+    Get to last letter but isEndWord set to False
+  Word exists
+    Get to node of last char, marked as isEndWord
+
+  def search(self, key):
+      if key is None:
+          return False
+      key = key.lower()
+      current = self.root
+      for letter in key:
+          index = self.get_index(letter)
+          if current.children[index] is None:
+              return False
+          current = current.children[index]
+      if current is not None and current.is_end_word:
+          return True
+      return False
+
+    Time complexity O(h), where h is length of word
+
+Deletion
+  Concern: could be further child branches
+  Case 1: word with no suffix or prefix
+    Delete all chars
+  Case 2: word is a prefix of another word
+    Set is_end_word to false
+  Case 3: word has a common prefix
+    Delete end node and all parent nodes that do not have children, are not end chars
+
+  def delete_helper(self, key, current, length, level):
+      deleted_self = False
+      if current is None:
+          print("Key does not exist")
+          return deleted_self
+      if level is length:
+          print("Level is length, we are at the end")
+          if current.children.count(None) == len(current.children):
+              print("- Node", current.char, ": has no children, delete it")
+              current = None
+              deleted_self = True
+          else:
+              print("- Node", current.char, ": has children, don't delete \
+              it")
+              current.is_end_word = False
+              deleted_self = False
+      else:
+          index = self.get_index(key[level])
+          print("Traverse to", key[level])
+          child_node = current.children[index]
+          child_deleted = self.delete_helper(
+              key, child_node, length, level + 1)
+          if child_deleted:
+              current.children[index] = None
+              if current.is_end_word:
+                  print("- - Don't delete node", current.char, ": word end")
+                  deleted_self = False
+              elif current.children.count(None) != len(current.children):
+                  print("- - Don't delete node", current.char, ": has \
+                  children")
+                  deleted_self = False
+              else:
+                  print("- - Delete node", current.char, ": has no children")
+                  current = None
+                  deleted_self = True
+          else:
+              deleted_self = False
+      return deleted_self
+
+  def delete(self, key):
+      if self.root is None or key is None:
+          print("None key or empty trie error")
+          return
+      print("\nDeleting:", key)
+      self.delete_helper(key, self.root, len(key), 0)
+
+  Time complexity: O(h)
+    Have to look at h consecutive levels
+    Presence or absence determined in O(1)
+      Size of alphabet is fixed

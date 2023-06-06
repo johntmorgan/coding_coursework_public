@@ -1,0 +1,21 @@
+Modified Binary Search
+  Uses binary search to find target in array
+  Divide array in half through start, end, middle pointers
+  O(log(n)) time
+    Better than brute-force O(n) search
+
+Pattern match
+  Yes:
+    Find target value (or first/last occurrence)
+      Sorted list
+        or sequential range
+      Array may have 2 different sorted sections, etc.
+  No:
+    Data is not sorted in relevant fashion
+    Not searching for value in data
+
+Real world
+  Dictionary: alphabetically sorted words
+  Debugging: Divide code by line numbers
+  Student docs: Sort by roll number
+

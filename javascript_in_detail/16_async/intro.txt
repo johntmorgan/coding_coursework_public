@@ -1,0 +1,34 @@
+What is Async?
+  JS is single-threaded
+    Only one instruction processed
+    Only uses one processor at a time
+  But what if
+    Function executes without processor
+    Instruction in function waiting for network data or disk read
+    Do work while waiting
+
+Asynchronicity
+  Handle multiple tasks without waiting for blocking code
+  Blocking code
+    Waiting for network to fetch data
+    Waiting for disk to handle data transaction
+    Calling sleep in program
+    Waiting for user to input data
+
+  function complete(){
+    console.log("function completed!");
+    return;
+  }
+  setTimeout(complete, 2000.0); // 2000 = 2 seconds of idle time
+
+  JS is asynchronous
+  Will NOT wait for blocking code!
+
+  function complete(){
+    console.log("function completed!");
+    return;
+  }
+  setTimeout(complete, 2000.0); // 2000 = 2 seconds of idle time
+  console.log("Calling after setTimeout");
+    > Calling after setTimeout
+    > function completed!

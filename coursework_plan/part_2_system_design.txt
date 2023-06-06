@@ -1,0 +1,226 @@
+https://youtu.be/9N2S3JZffeg
+
+Mostly applicable after a few years of experience
+Prevalent in web and distributed system
+  Used for leveling as well
+
+System design vague, subjective
+No optimal solution!
+Fall on a gradient between great and horrible
+  Interviewers love these questions because of this
+  Get a lot of signal about the candidate
+  Candidates do not like
+But it's not about right or wrong
+  It's more a problem-solving conversation between two engineers
+  And a discussion of the tradeoffs involved
+  The interview can go in literally any direction
+Cramming system design in 3-6 months is not advisable
+  Spend a full year or more (well, I can't do that!)
+
+Recommended books
+  For midlevel
+    Web Scalability for Startup Engineers
+    System Design Inverview (Alex Xu, second edition)
+  For senior
+    Designing data-intensive applications
+    Building microservices
+
+Educative has an advanced system design course for seniors as well
+  10% off: educative.io/engineeringwithutsav
+  1. Web Application & Software architecture 101
+    This should be good for juniors 0-2 years
+  2. Grokking the System Design Interview
+    2-5 years of experience
+    Even recommended when he interviewed with Facebook
+  3. Grokking the Advanced System Design Interview
+    Seniors
+
+Experienced vs. inexperienced
+  How specific - are you talking about NoSQL, or are you talking about specific technologies
+
+Only after ~6 months of reading and review move on to interview prep (!?)
+Six-step system - another 6 months
+  1. Understand how the interview should be structured in 4 key sections
+  2. Catalog the interview questions
+  3. Practice individual sections
+  4. Identify and invest on your strengths and interests
+  5. Build a few systems end to end
+  6. Practice under a timed setting
+
+How is interview structured?
+  Vague question - design YouTube, or Facebook, or Google Docs
+  The goal is not to fully design the site
+  It's more about how you can tackle a vague problem
+  Come up with a reasonable starting point in an hour
+
+Section 1. Simplify the functional requirements, 5 minutes
+  Let's verify what designing Facebook means
+  People friends, post media (simple = text), feed so users can see
+  Skip Marketplace, Gaming, etc.
+  Usually interviewer will agree with you on most of these points
+  Great - you've broken it down into a few simple parts that are feasible to discuss in a short period of time
+  API signatures for adding or removing a post, friending and unfriending, creating the feed
+
+Section 2. Identify the constraints, non-functional requirements, 5 minutes
+  Traffic and usage assumptions
+  How many users are we talking about?
+    Storage size
+  Are they geographically distributed
+    Consistency and latency challenges
+  What are their activity patterns
+    Bandwidth and throughput peaks
+    So 100m users, but only 20% active, almost all in mornings and evenings
+      = very different scenario than all 100m users are active all the time
+    Typical user activity level
+      3 pages of feed scrolling
+      1 status update per day
+    Based on this, come up with storage requirements
+      Per-day
+      Long-term
+    Read & write query per second requirements
+    Math in this section is napkin math
+      Being a little off is ok
+      Just don't be off by multiple orders of magnitude
+      Estimate reasonably without getting lost
+    Junior engineers may ask for numbers from interviewer
+    Senior engineers are expected to assert what is reasonable
+
+  Section 3. High-level design and key challenges, 15 minutes
+    Now you lay out the main components necessary to complete this design
+    Simple block diagrams to represent databases, caches, message queue, app server, web server, load balancer, maybe client device
+    Pick out core technologies - SQL or NoSQL
+    What sort of replication or redundancy?
+    Will the queue be simple or distributed?
+    What type of load balancing are you thinking of?
+    Would rate-limiting be required?
+      What sort of bucketing or window are you thinking of?
+    What are key pain points with system?
+      Throughput, bandwith, latency, consistency?
+      For example, Facebook key challenge = fan-out problem
+        What if someone's following a ton of people?
+        "Pull"ing from everyone (how Sparkmesh does it) can be slow past a certain point
+        But you could also "push" to all their followers
+          But then what about celebs who are followed by millions?
+        Maybe a hybrid model is ideal? Pull for the average joe, push for celebs?
+      Data hotspots
+        Everyone likes a celebrity post
+          Split into multiple counters
+          Sacrifice consistency?
+          Special data types like CRDTs (supported by Cassandra)
+
+  Section 4. Deep dive into 1 or more components, 15 minutes
+    If you have experience with data stores, e.g. talk about hot spots w/Cassandra etc.
+    If experienced with queues, talk about queues and asynchronous messaging
+    If middleware, talk about feed API and how to effectively fetch feeds
+    Handle pagination, versioning, data compression
+    Mobile engineer - battery life, low-bandwidth third-world countries
+    Drive the conversations to areas you're experienced in
+
+Step 2. Catalogue interview questions
+  Only a small number of systems you're likely to be asked to design
+  Good news: only a limited set of categories
+  Once you've designed one system in a category, the rest are pretty similar
+  If you know how to design Facebook
+    You basically know how to design Twitter, Insta, LinkedIn, etc.
+    They have some differences, but design basically the same
+  WhatsApp = Slack, Teams, Vibr, etc.
+  Utsav's list:
+  https://www.notion.so/ecd9bcc2246c4e7897664e04fbc83903?v=aca97835ab5745f3950ad73f6c33f438
+  Spatial Data
+    Uber
+    Yelp Nearby Places
+    Google Maps
+    Facebook Nearby Friends
+    Facebook Suggested Friends
+  Search & Indexing
+    Log Search
+    Facebook Translator
+    Autocomplete
+    Clone a Domain
+    Facebook Search
+    Web Crawler
+  Event Processing & Time Search
+    Metric Counter & Histogram Service
+    Trending Topics (Top-k)
+    Stock Trading
+    Recommendation System
+    Amazon Sales Ranking
+    Time Series DB
+  Social: Feeds & Fanouts
+    Twitter
+    Instagram Auction
+    Facebook Newsfeed
+    LinkedIn
+    Social Gaming
+    Instagram
+  Video Upload & Streaming
+    Netflix
+    YouTube
+    Facebook Video
+    Facebook Live
+  Distributed Data Structures
+    Distributed Hash Table
+    CRDT
+    Distributed Cache
+  Distributed Storage
+    Dropbox
+    Azure Blob Storage
+  Messaging
+    Facebook Messenger
+    Slack
+    WhatsApp
+  Concurrent Phase
+    Amazon (eCommerce)
+    Ticketmaster
+    Facebook Pay
+  Everything Else
+    URL Shortener
+    UUID Service
+    Google Calendar
+    Pastebin
+    Rate Limiter
+    Mint.com
+
+Step 3.
+  Work through the problems 1 section at a time
+  Design Facebook, WhatsApp, GoogleDocs
+  Only work on the first section - simplify requirements
+    What features would you need for Facebook
+    Don't worry if it takes an hour, just think about it
+    Then visit the site - did you meet the requirements?
+  Then work on only section 2, 3, 4
+    It's ok if you're slow, speed will improve with practice
+  Go one section at a time for repetition
+    Build muscle memory
+    As you work on each section you'll get better
+
+Step 4.
+  You will notice you lean towards specific components
+    Interest, existing knowledge, comfort
+    That area is your strength
+    Data, caching, etc.
+    Invest more on your strengths, actually
+    If you always wanna deep dive on data, don't just always use SQL
+
+Step 5.
+  Build systems end-to-end if senior
+  If junior, theoretical is kinda ok
+  If you're short on time, build one
+  Recommended: 3 different systems
+
+Step 6. 10-11 months in
+  Practice under timed setting, 10-15 questions
+  Should be fairly simple if you're done all the prior steps
+  Hopefully will have taught you more about scalable systems
+    Will fail some interviews, don't worry
+    Things break under load, it happens
+
+Your performance on this interview tends to be opposite how you feel after
+  Too easy? Probably didn't go well
+  Had to dig deep? Not necessarily a bad thing
+
+
+
+
+
+

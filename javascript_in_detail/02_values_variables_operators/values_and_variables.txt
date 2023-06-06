@@ -1,0 +1,32 @@
+Values
+  All data or chunks of data
+  Some are mutable some are not
+  Most are object type, but there are others
+
+"Hello" - string
+[1,2,3] - array
+function run(a, b) - object
+true - boolean
+{"a": 1, "b": 2, "c": 3} - object
+100000 - number
+
+Variables allow users to point to and refer to values in space
+  var variable;
+  console.log(variable);
+
+  Declared with reserved keyword var
+  Initially point to no value, will be assigned undefined
+  Assign value using = operator
+
+  var a = 5000;
+
+  Can name it anything, just not any JS reserved keywords
+  Can assign without using var
+    Deprecated
+    Declares as global variable
+
+    variable_1 = 1;
+
+  Can also assign with let and const
+    Function like var
+    However scope is very different

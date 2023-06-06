@@ -1,0 +1,99 @@
+Book 3.5 - Newton-Raphson
+  Most famous approximation algorithm
+  When attempting to determine a root
+  Guess - p(guess)/p'(guess) - p' is first derivative
+    Is a better approximation
+  The first derivative of x^2 - k is 2x
+  So your next guess should be y - (y^2 - k) / 2y
+  This is called successive approximation
+    Much more efficient - 4 steps vs. 9 steps via bisection, coded both up
+
+  Recap of last time
+    Talked about strings
+    Introduced new concepts
+      Branching if/elif/else
+      Loops - while/for
+  Today
+    More about strings
+    3 algorithms
+      Guess and check
+      Approximate
+      Bisection
+
+  Strings
+    Can do more than concatenate or compare
+    Introducing the idea of a function (more next lecture)
+      Someone already wrote this
+    len(string) gives you the length of a string
+      .length or .length() in ruby
+    Get character at position - indexing
+      s = "abc"
+      s[0] = "a"
+      s[-1] = "c"
+      Go beyond limits?
+        Index out of range
+        Error tells you the problematic code
+    Maybe you want a substring
+      That's slicing
+      [start:stop:step] - just like range
+      s = "abcdefgh"
+      Up to stop -1
+        Ruby s[0..2] and again, inclusive
+      s[3:6] = "def"
+      s[3:6:2] = "df"
+      s[::] = "abcdefgh", same as s[0:len(s):1]
+      s[::-1] = "hgfedcba"
+      s[4:1:-2] = "ec"
+    Strings are immutable
+      Once you create a string, you cannot modify it
+      s = "hello"
+      s[0] = "y" # gives an error
+      s = "y" + s[1:len(s)]
+      Python breaks bond with "hello"
+      Creates new object and binds to it
+    For loop recap
+      for var in range(4)
+      for var in "abcdefgh"
+        rails use each_char or .split()
+    These two snippets do the same thing:
+      s = "abcdefgh"
+      for index in range(len(s))
+        if s[index] == "i" or s[index] == "u"
+          print("There is an i or u")
+      for char in s
+        if char == "i" or char == "u"
+          print("There is an i or u")
+      Bottom is closer to English
+      Bottom is more "pythonic"
+    Robot cheerleaders
+      an_letters = "aefhilmnorsxAEFHILMNORSX"
+      Replacing while loop with for loop
+    3 different part of algorithms
+      Not complicated, need to think a bit about them
+      Guess and check, bisection, approximation
+      All finding the cube root
+    Guess and check
+      Exhaustive enumeration
+      Systematically guess each value
+      (Coded it)
+      Stop when your guesses cubed are greater than input
+      But not very user friendly!
+      What if the user wants the cube root of 9?
+      Well you can tell them it doesn't work
+      Or increment guess by a small value
+        Increment by .001
+      Guess if not close enough - "epsilon"
+      More accurate if step very small - but slower
+      Fails when the number gets big enough and the steps need to be small
+        Infinite loop if steps not small enough
+    Bisection search
+      Guessing game 0..100
+      The larger the space, the better bisection search is
+      First guess N/2
+      Second guess N/4
+      At kth guess
+        Search space is N/2^k
+      Guess converges on the order of log2N steps
+      Code only works for positive cubes > 1
+        Modify for negative
+        Modify for < 1

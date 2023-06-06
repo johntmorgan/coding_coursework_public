@@ -1,0 +1,164 @@
+Message Queues
+  Routes messages from source to destination
+  FIFO policy
+    Message added first delivered first
+  Also support priority-based message delivery
+  Facilitate asyncrhonous behavior
+    Communicate in background
+  Facilitate cross-module communication
+    Key in service-oriented and microservices architecture
+    Provide temporary storage until processed and consumed
+  Real-world
+    Email service
+    Sender and receiver don't need to be online at same time
+    Stored on message server until recipient comes online
+  Run background processes, tasks, batch jobs
+  Example
+    Confirmation email
+      Can navigate to homepage right away to prevent bouncing off
+    So confirmation email assigned to async background queue
+    Also used in notification systems
+  Example
+    Batch job in stock trading game discussed before
+  Message sender = "producer"
+  Message receiver = "consumer"
+    Don't need to be on same machine, obviously
+  Can define rules
+    Priority
+    Message acknowledgments
+    Retrying failed messages
+  How big can queue get?
+    No definite size
+    Can be infinite buffer depending on business resources
+
+  Publish-subscribe model (oh pub-sub from earlier - JM)
+    Single or multiple producers broadcast to multiple users
+      One-to-many
+    Analogy: newspaper service
+    Message queues ahve exchanges that push messages to queue 
+      depending on exchange type and set rules
+    Different types of exchanges
+      Direct
+      Topic
+      Headers
+      Fanout
+    Each has a specific functionality and use case
+    Fanout
+      Best for pub-sub
+      Push messages to queue
+      Then consumers receive message broadcast
+      "Binding" relationship between exchange and queue
+      Responsible for:
+        Real-time news
+        Updates
+        Notifications on social apps to end users
+          Follow pages, receive content updates continually
+
+  Point-to-point
+    Message from producer consumed by only one consumer
+      One-to-one
+    Can set up multiple combinations in the model
+      May be multiple producers and consumers in queue
+      However only one consumer receives a message sent producer
+      Entity-to-entity, not broadcast
+
+  Messaging protocols
+    AMQP
+      Advanced Message Queue Protocol
+    STOMP Simple
+      Streaming Text Oriented Message Protocol
+
+  Techs
+    RabbitMQ
+    ActiveMQ
+    Apache Kafka
+
+  Notification systems
+    Complex in modern Web 2.0 apps
+      Understand user behavior
+      Recommend new and relevant content
+      Ingest data from different sources
+      Match user behavior with dta
+      Leverage machine learning for effectiveness
+    Not going to get into all of this
+    Use case - simple
+      Facebook - relational database
+      Message queue for async behavior
+      User has many followers and friends
+        Many to many behavior
+          Has many friends, friends of many other users
+      User creates a post
+        User table, post table
+          One to many - one user has many posts
+        Need to show info posted to friends and followers, even sent notifications
+        How?
+      Pull-based approach
+        No message queue
+        Have every user poll database at short intervals for any updates with friends/followers
+        Query all connections
+        Then check all connections one by one
+        Query pulls all new posts
+        Display on home page
+        Send notifications if requested
+          Track notifications with boolean counter column in user table
+          Add AJAX poll query from client for new notifications
+        When query finds new posts, changes new notification counter to true
+          When counter is true, sends notification to user that you have recent posts
+        Straightforward, but
+          Expensive - high bandwidth, high DB load
+          User posts don't display in real-time, only when DB polled
+            May assume as real time, but is not really
+      Push-based approach
+        Use a message queue
+        New post created
+        Distributed transaction
+        One transaction updates database
+        Another sends post payload to message queue
+        On recieving message, queue asynchronously and immediately pushes post to online connections
+          No need for them to poll the databaase regularly
+        Use temporary storage with TTL for storing payload
+          When new user connections come online, push the updates to them
+        Separate key-value database to store user details required to push notifications to their connections
+          Avert need to poll database
+        Much better performance
+        Much less resource consumption
+    How to handle distributed transactions
+      Can still work as a single unit
+      If DB persistence fails, app rolls back entire transaction
+        No message push to message queue
+      What if message queue push fails, DB succeeds?
+        Up to you... how do you want the system to behave?
+        Message is not lost, persisted in database
+        Can poll database for new updates as a backup
+        Can totally roll back transaction
+          Two-phase commit, don't actually persist
+      Can write custom code to manage
+      Can leverage distributed transaction managers that come with frameworks
+    Other common events
+      Liking a post, photo, video
+      Watching a live stream
+      etc.
+    No perfect or best solution in system design
+      Solution should serve wel
+      Fulfill business requirements
+      Simultaneously maintain costs
+    Application maintenance and optimization are evolutionary
+      Don't sweat in initial development cycles
+      Get the skeleton in place and optimize notch by notch
+
+  Concurrent request handling
+    When millions of users update an entity around world concurrently (Tweet likes)
+      Queue all update requests in high throughput message queue
+        Process FIFO
+      Enable system to be highly available and open to updates
+      Remains consistent
+      Implementation not as simple as it sounds
+        But anything in distributed, real-time environment not so trivial
+    Ex Facebook again
+      Handling concurrent user requests on live video streaming
+      When popular person goes live, surge in user requests on server
+        Use cache to intercept traffic
+        However since streamed live, cache often not populated with real-time data before
+          Naturally would result in cache miss
+        Instead FB queues all user requests, fetches data, populates cache, then servers from cache
+      

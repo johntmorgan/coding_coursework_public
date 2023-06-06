@@ -1,0 +1,329 @@
+Distributed Search
+
+Why?
+  Search bar on website
+    Otherwise scroll through many pages
+  Billions of videos on YouTube
+    Would take months to navigate!
+  Search engines
+    Internet would be useless
+    Basically filters for massive amount of available data
+
+What?
+  Takes text input from user
+  Returns relevant content within a few seconds
+
+Components
+  Crawler
+    Fetches content, creates documents
+    Covered in detail in separate design chapter
+  Indexer
+    Builds searchable index
+  Searcher
+    Responds to queries by running on index
+
+Requirements
+  Functional
+    Search
+      Return relevant content based on query
+  Non-functional
+    Availability
+    Scalability with increasing data
+    Fast search on big data
+    Reduced cost
+
+  Resource estimation
+    Once again, YouTube as example
+    3m active users searching concurrently
+    Server can handle 1k requests at a time
+    3K servers needed
+
+  Storage estimation
+    Video metadata as JSON doc
+      Unique by video ID
+    Metadata contains
+      Video title
+      Description
+      Channel name
+      Transcript
+    JSON doc = 200 KB
+    Number of terms/keys per doc = 1000
+    Storage per term = 100 B
+    300 KB storage per video
+    6k videos uploaded per day on YouTube (actually 3.7m est now - JM)
+    1.8 GB per day (Obviously 50x that in reality - JM)
+  Bandwidth
+    Incoming
+      150m search requests/day
+      100 byte search query size
+      1736.11 RPS
+      1.39 MB/s
+    Outgoing
+      Return 80 videos
+      Size of suggestion 50 Bytes
+        (assume thumbnails on CDN? - JM)
+        Assuming text results for near real-time results
+      Response size 4 KB
+      55.56 MB/s
+    Total
+      56.95 Mbps
+
+Building blocks
+  Blob storage for indexed data, index
+    Will call "distributed storage"
+
+Indexing
+  Organize and manipulate data for fast retrieval
+  Build searchable index - simple start
+    Assign unique ID to each doc and store in table
+    Real world: docs large, table huge
+    Have to traverse every doc every search
+  Fuzzy search
+    Pattern matching
+    Many strings in docs somehow match searched string
+    Single out most approx matched string
+      Find occurrence of most matched string in each doc
+  Response time depends on
+    Data organization strategy
+    Size of data
+    Processing speed and RAM of machine
+  Search queries on billions of doc-level indexed docs
+    Very slow
+      Minutes, even hours
+  Inverted index
+    HashMap like data structure
+    Employs document-term matrix
+    Split docs into individual words
+    Identify unique words
+    Discard frequent words like "the" and "is"
+      "Terms"
+    "Term-level index"
+      List of docs where term appeared
+      Freq with which term appears in doc
+      Position of term in doc
+        2d list, multiple positions
+      Note: can use tuples instead of lists
+    Popular, used for document retrieval
+      Efficient implementation of boolean, extended boolean, proximity, relevance
+        Extended boolean
+          Like boolean, but with term weights and partial matching
+        Proximity
+          Find 2+ term occurrences within certain # words of each other
+    Advantages
+      Facilitates full-text search
+      Don't count occurrences at runtime, already have mapping
+    Disadvantages
+      Storage overhead beyond actual documents
+      Maintenance costs when document added, updated, deleted
+    Term can appear in millions of documents
+      List returned can be very long
+      Sort based on query relevance, return top results
+  Index design
+    How much memory and RAM required?
+      Keep index in RAM
+    Search speed
+      How quickly find word
+    Maintenance
+      How easy to update if add/remove
+    Fault tolerance
+      Index corruption
+      What to do with invalid data
+      Defective hardware
+      Partitioning
+      Replication
+    Resilience
+      Guard agains SEO schemes
+
+Centralized search
+  On single node
+  High CPU power
+  Converts docs into inverted index
+    Store as binary file
+  Query processing interprets binary file
+    Computes intersection of inverted lists
+      Return search results
+  Problems
+    SPOF
+    Server overload
+    Large index size
+  Real world
+    Hundreds of billions of web pages as of 2022
+    100 PB data
+      Can't practically scale to this, or even 1B web pages
+  Also
+    Attacks on centralized indexing work better than if distributed
+    Bottlenecks more likely
+
+Distributed search
+  High-level design
+    Two phases
+      Offline
+        Data crawling
+        Indexing
+      Online
+        User searching for results against query
+    Crawler
+      Crawls content from resource
+      YouTube crawler goes through all videos
+        Extract textual content
+          Title
+          Description
+          Channel name
+          Video annotation (maybe)
+      Format in JSON file
+      Store in distributed storage
+    Indexer
+      Fetches from distributed storage
+      Indexes using MapReduce
+        Run on distributed cluster of commodity machines
+        MapReduce for parallel, distributed index construction
+      Constructed table stored in storage
+    Distributed storage
+      Stores documents, index
+    User
+      Enters search string
+    Searcher
+      Parses search string
+      Search for mapping in distributed storage
+      Returns most matched to user
+        Map incorrectly spelled to close words
+      Ranks documents with all words
+  API design
+    search(query)
+    That's it!
+  Detail - distributed index and search
+    Divide documents among large number of nodes based on resources
+      Typically x86 proc, 2-4 GB RAM/machine
+      Should be comparable, but don't need to be same
+        MapReduce smart enough to give more work to stronger machines
+    Numerous small nodes = cost efficient
+    How do we partition during index?
+      By term
+        Seems good
+        Search query goes to nodes with query terms
+        Good concurrency
+        Different terms served by different nodes
+        But hard in practice
+        Multiword queries = send lists between nodes for merge
+          More expensive than benefits from increased concurrency
+      By document
+        Must distribute query across all nodes
+        Merge results before showing to user
+        Less internode communication needed
+    Indexing, again
+      Have document set from crawler
+      Cluster manager splits into N number of partitions
+        Depends on data size, computation, memory limits, nodes in cluster
+        All nodes may not be available
+        Cluster manager monitors node health
+          Periodic heartbeats
+        Assign docs via hashing function
+      After partitions, run indexing algorithms on all simultaneously
+        Each produces tiny inverted index
+        Stored on node's local storage
+    Searching, again
+      Run parallel searches on each tiny inverted index
+      Merger aggregates mapping list from these searches
+      Merger sorts docus based on freq of term in doc
+      Sorted list returned to user as a search result
+    Searching + indexing on same node = "colocation"
+    Replicate design across globe in various data centers
+      No SPOF
+      Latency for all users stays small
+      Maintainance and upgrade in single center ok, others take load
+      Scalability improves
+  Replication
+    Make R replicas of indexing nodes
+      Expand or shrink based on request number
+      Each group of nodes has all partitions to answer
+      Use load balancer to spread queries across node sets & retry if error
+    What should R be?
+      Usually 3 is enough
+        One primary, two replicas
+      Can have a node act as primary for one, replica for two others
+    Indexing
+      Each partition forwarded to each replica for index computation
+        Index will not suffer if primary fails
+    Searching
+      Load balancer chooses one of 3 copies of each partition
+
+Problems with design so far
+  Colocated indexing and searching
+    Both are resource intensive
+    Each affects performance of the other
+    Doesn't scale well with varying index/search demands
+  Index recomputation
+    Each replica computes individually
+      Resource intensive
+      May have hundreds of stages
+    More logical:
+      Compuute index once and replicated it
+
+Alternative approach
+  Compute index on primary only
+  Communicate binary/blob to replicas
+  Do not duplicate CPU and memory usage for indexing on replicas
+  Problems here
+    Latency to transfer index to replicas
+    Replica needs to fetch new versions when updated
+  These days
+    Networking, virtualization tech
+    100 Gbps bandwidth available
+    Scalable distributed storage
+  Modern setup allows for strong indexing/search separation
+    Many nodes produce inverted indices
+    Store as binary files locally
+    Cache blob files for performance
+    Push to distributed storage
+    When failure/addition, copy retrieved from distributed storage
+    Search nodes maintain cache of frequent queries, serve data from RAM
+
+How does indexing work?
+  MapReduce framework
+    Implement with cluster manager
+    Set of worker nodes
+      Map phase
+      Reduction phase
+    Input is number of partitions, or set of documents
+    Output is aggregated inverted index
+  Components
+    Cluster manager
+      Assigns partitions to mappers
+      Assigns mapper output to reducers
+      Ensures nodes efficiently utilized
+    Mappers
+      Extracts and filters terms from partitions
+        Output inverted indices in parallel
+        Input to reducers
+    Reducers
+      Combine mappings for terms to generate summarized index
+  Built to work under partial failures
+    If node fails, cluster manager reschedules
+    Reducers cannot start while Mappers are working
+    So node can be Mapper and then reused as Reducer
+  This is still a simplified version of what happens in practice
+    But same fundamental principles
+
+Evaluation
+  Availability
+    Distributed storage
+      Documents crawled by indexer
+      Inverted indexes generated by indexing nodes
+    Replicate across multiple regions in distributed storage
+    Cluster of indexing and search nodes in diff availability zones
+    Failed node easily replaced within cluster
+    Indexing offline, not on user's critical path
+    Reply to search with current indexes
+      Don't update instantly
+      Do update once replicated in all groups of indexing nodes
+      And downloaded by all search nodes
+  Scalability
+    Partitioning is key
+      Add more partitions = scale indexing and querying
+    Strong isolation of indexing and search processes
+  Fast search on big data
+    Yep
+  Reduced cost
+    Use cheap machines
+    Don't have to recompute whole index if a node fails
+      Just index some docs again

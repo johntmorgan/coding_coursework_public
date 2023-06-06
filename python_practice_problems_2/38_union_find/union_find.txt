@@ -1,0 +1,69 @@
+Union find
+  Group elements into sets based on property
+  Each set is non-overlapping
+    Unique elements not in other set
+  Disjoint data structure such as array to track set membership
+  Each set forms a tree data structure
+    Representative element at root
+      Parent pointer points to self
+    Pick any element in set, follow parent pointers
+      Always reach set representative
+  Two operations
+    find(x): find representatitve of set containing x
+    union(x, y): merge x and y sets into one
+  Time complexity
+    O(n) find - may need to traverse entire tree
+      Improve via union by rank
+        Larger tree = higher rank
+        Always attach lower rank to higher rank
+        Each element has shortest path to root
+        Time complexitiy O(logn) worst case
+  Path compression
+    During each find, update parent to point to root
+    Again O(logn) worst case
+    Amortized O(alpha(n)) - small constant
+      alpha = inverse Ackerman function
+    Faster than any naive approach to merging subsets
+      Would all take O(n) or more
+  Performing m union find operations
+    O(m(alpha(n)))
+
+Pattern matching
+  Yes
+    Arrange elements with property into groups
+      Or connected components
+    Elements in separate sets to start
+      Need to merge or
+      Need to find if belong to same set
+    Problem data best organized as graph
+      Yet provided data not in adjacency list/matriix
+  No
+    Do not need to consider input data as graph
+    Graph has already been provided - adj list/matrix
+      No new edges need to be added
+        Just use BFS/DFS
+
+Real world
+  Image segmentation through region agglomeration
+    Divide image into regions of similar colors
+    Each pixel = region
+    Merge adjacent regions with similar color
+    Union find to show region pixel belongs to
+    Update info when merged
+  Image manipulation
+    Locate objects within image
+    Grab objects
+    Select regions by color
+    Differentiate background from rest of image
+  Network connectivity
+    Connect devices to each other
+    Is there a path connecting one device to another
+  Percolation
+    Identify percolation threshold through filter
+    Randomize n * n grid - blocked and open sites
+    Connect open sites together
+    If connected component of open sites present top to bottom, liquid can percolate
+  Hex (game)
+    Connect pieces of same color to identify if player has won
+
+  

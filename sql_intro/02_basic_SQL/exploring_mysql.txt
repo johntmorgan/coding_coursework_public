@@ -1,0 +1,88 @@
+Exploring MySQL
+
+Installation state
+  DBMS does not contain any databases
+  Connect to terminal
+  Paste: ./DataJek/Lessons/1lesson.sh
+  mysql > // blank
+  SHOW DATABASES;
+  > +--------------------+
+    | Database           |
+    +--------------------+
+    | information_schema |
+    | mysql              |
+    | performance_schema |
+    | sys                |
+    +--------------------+
+    4 rows in set (0.00 sec)
+
+  // Four databases used by system
+  // Query only shows databases you have privilege to view
+  // Let's pick existing MySQL database
+
+  use mysql;
+  > Reading table information for completion of table and column names
+    You can turn off this feature to get a quicker startup with -A
+
+    Database changed
+  // use statements allow us to tell mysql which db to interact with
+  // all queries directed to this db
+
+  SHOW CREATE DATABASE mysql;
+  > +----------+------------------------------------------------------------------+
+    | Database | Create Database                                                  |
+    +----------+------------------------------------------------------------------+
+    | mysql    | CREATE DATABASE `mysql` /*!40100 DEFAULT CHARACTER SET latin1 */ |
+    +----------+------------------------------------------------------------------+
+    1 row in set (0.00 sec)
+
+  // Comment /*!40100 DEFAULT CHARACTER SET latin1 */
+  // Encloses MySQL extensions to the SQL standard
+    40100 = minimum version of MySQL that can process the query
+
+  SHOW TABLES;
+  > +---------------------------+
+    | Tables_in_mysql           |
+    +---------------------------+
+    | columns_priv              |
+    | db                        |
+    | engine_cost               |
+    | event                     |
+    | func                      |
+    | general_log               |
+    | gtid_executed             |
+    | help_category             |
+    | help_keyword              |
+    | help_relation             |
+    | help_topic                |
+    | innodb_index_stats        |
+    | innodb_table_stats        |
+    | ndb_binlog_index          |
+    | plugin                    |
+    | proc                      |
+    | procs_priv                |
+    | proxies_priv              |
+    | server_cost               |
+    | servers                   |
+    | slave_master_info         |
+    | slave_relay_log_info      |
+    | slave_worker_info         |
+    | slow_log                  |
+    | tables_priv               |
+    | time_zone                 |
+    | time_zone_leap_second     |
+    | time_zone_name            |
+    | time_zone_transition      |
+    | time_zone_transition_type |
+    | user                      |
+    +---------------------------+
+    31 rows in set (0.00 sec)
+
+  DESCRIBE user;
+  > (huge table with field, type, null, key, default)
+
+  SHOW CREATE TABLE servers;
+    // Shows how table was created
+
+  SHOW COLUMNS FROM servers;
+    // Shows columns for specific table

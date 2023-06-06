@@ -1,0 +1,179 @@
+Pool Executors
+  Managing threads, processes is taxing
+  Python provides an interface to abstract away
+  concurrent.futures package
+  Executor interface
+    ThreadPoolExecutor
+    ProcessPoolExecutor
+  Tasks can be submitted sync or async for execution
+
+ThreadPoolExecutor
+  Create pool with threads set by max_workers
+  First argument to submit is callable
+  Tasks executed by different threadss
+  Submit calls return future
+    Represents execution of callable
+  Note that future.result() is blocking
+    Can call right after submit, then execution serial
+      Not the pattern we want to use (generally)
+      Gets rid of parallel processing
+  Goal: process tasks in parallel
+    Query progress using future object
+      E.g. download several files at once
+      Copy several files from source to destination
+  Invoke shutdown() at finish
+  Executor waits for all futures to complete & resources freed
+    Task submission after shutdown = exception
+      Unless wait=False, then non-blocking
+      But Python still runs until all futures done
+
+  Example
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import current_thread
+
+    def say_hi(item):
+      print("\nhi " + str(item) + " executed in thread id " + current_thread().name, flush=True)
+
+    if __name__ == '__main__':
+        executor = ThreadPoolExecutor(max_workers=10)
+        lst = list()
+        for i in range(1, 10):
+            lst.append(executor.submit(say_hi, "guest" + str(i)))
+
+        for future in lst:
+            future.result()
+
+        executor.shutdown()
+
+  map()
+    Returns iterator over results of applying function to list
+    Both function and values passed into map()
+
+    Ex.
+      executor = ThreadPoolExecutor(max_workers=10)
+      it = executor.map(square, (1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                       chunksize=1, timeout=2)
+
+      Here square() is callable
+      Iterators __next()__ calls result() of future, blocking
+      If result isn't ready, iteration will block
+        Specify timeout to mitigate
+        Raise timeout exception
+        No timeout = blocks until complete
+      Can iterate over completed futures
+        But first one not completed = iteration blocked
+      Chunksize argument has no effect in thread pool
+
+      from concurrent.futures import ThreadPoolExecutor
+      from threading import current_thread
+      import time
+
+      def square(item):
+          if item == 5:
+              time.sleep(10)
+          return item * item
+
+      if __name__ == '__main__':
+          executor = ThreadPoolExecutor(max_workers=10)
+
+          it = executor.map(square, (1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+                           chunksize=1, timeout=2)
+
+          for sq in it:
+              print(sq)
+
+          executor.shutdown()
+
+ProcessPoolExecutor
+  Very similar to thread pool, except for processes
+
+  from concurrent.futures import ProcessPoolExecutor
+  import multiprocessing
+  from multiprocessing import current_process
+  from threading import current_thread
+  import os
+
+  def say_hi(item):
+      print(
+          "\nhi " + str(item) + " executed in thread id " + current_thread().name + " in process id " + str(
+              os.getpid()) + " with name " + current_process().name,
+          flush=True)
+
+  if __name__ == '__main__':
+      print("Main process id " + str(os.getpid()))
+      multiprocessing.set_start_method('spawn')
+      executor = ProcessPoolExecutor(max_workers=10)
+      lst = list()
+      for i in range(1, 10):
+          lst.append(executor.submit(say_hi, "guest" + str(i)))
+
+      for future in lst:
+          future.result()
+
+      executor.shutdown()
+
+  Note you can also use map() again
+
+    from concurrent.futures import ProcessPoolExecutor
+    import os
+    import time
+
+
+    def square(item):
+        print("Executed in process with id " + str(os.getpid()), flush=True)
+        return item * item
+
+
+    if __name__ == '__main__':
+        executor = ProcessPoolExecutor(max_workers=10)
+
+        it = executor.map(square, (1, 2, 3, 4, 5, 6, 7, 8, 9, 10), chunksize=1)
+
+        for sq in it:
+            print(sq)
+
+        executor.shutdown()
+
+  Note high chunksize may be a good idea sometimes, save on creating, tearing down procs
+
+Futures
+  Deferred computation
+  May or may not be completed
+  Object that represented outcome of computation to be computed
+  Key methods of Future class
+    done - true if callable successfully completed or cancelled
+    cancel - tries to cancel execution of callable
+      Returns False if already finished/executing
+    cancelled - returns True if successfully cancelled
+    running - returns True if running, can't be cancelled
+  Read-only
+    Never create!
+  Returned by subclasses of Executor class
+  If exception occurs, retrieve via exception() method
+    If you try to retrieve via result(), exception from callable thrown, program exits
+    This makes the exception print nicely instead
+  Can cancel if has not started
+  To retrieve results without result() - which is blocking
+    add_done_callback()
+    Only invoked when future is completed/canceled
+
+Waiting
+  wait()
+  Takes iterable consisting of futures
+  Could be returned from thread or process pools
+  Takes timeout value
+    If elapsed will return regardless of futures completed
+  Takes wait strategy
+    FIRST_COMPLETED
+    FIRST_EXCEPTION
+    ALL_COMPLETED
+  Returns 2 sets
+    Completed/cancelled futures
+    Pending/running futures
+
+as_completed()
+  Takes iterable set of futures from thread or process pool
+  Returns iterator over future instances
+    Returns as complete
+  If timeout elapsed and future not completed, timeout exception raised
+  

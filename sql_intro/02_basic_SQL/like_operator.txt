@@ -1,0 +1,28 @@
+LIKE operator
+  SELECT col1, col2, … coln
+
+  FROM table
+
+  WHERE col3 LIKE "%some-string%"
+
+  SELECT * from Actors WHERE FirstName LIKE "Jen%";\
+
+  // Works only with strings
+  // % is a wildcard character that matches all strings
+  // % can match zero or more cahracters
+
+  SELECT * from Actors where FirstName LIKE "Jennifer%";
+    > Still returns Jennifer Aniston
+
+  // Match all rows in table using straight wildcard
+
+  SELECT * from Actors where FirstName LIKE "%";
+
+  // Use underscore to match exactly one char
+
+  SELECT * from Actors WHERE FirstName LIKE "_enn%";
+    > Again returns Jennifer Aniston
+
+  // Can also use with SHOW
+  SHOW DATABASES LIKE "M%";
+  SHOW TABLES LIKE "A%";

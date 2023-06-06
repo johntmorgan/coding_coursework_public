@@ -1,0 +1,391 @@
+LinkedIn
+  Users find jobs, grow careers
+  Users connect with others professionally
+  Employers post jobs
+  Job seekers post resumes
+  Workers and companies post profile pages
+  User profile
+    Education
+    Experience
+    Skills
+    Achievements
+    Recommendations
+  User post
+  User comment on post
+  User invite to connection
+  User message others
+  Users create groups
+  Personalized feed
+    Based on connections, job, work, education history
+      Liked pages, groups, content engagement
+  Very similar to Facebook
+    But more specialized because for professionals
+
+Questions
+  How do users search for job opportunities?
+  How are companies able to find match for openings
+  How are users able to search others profiles
+  Can users search for others by company name, history, job type?
+  How do users connect with others
+  Can page connect with pages too
+  Can users follow/unfollow pages without connecting?
+  Can users create both groups and pages?
+  Can users and companies both create groups and pages?
+  Can individual user post a job?
+  Can user join any group? What are criteria?
+  How are users notified of preselected events
+  How much notification control do users have?
+
+Start small
+  Post, comment
+  Page, group, profile
+
+Pattern
+  Observer - notifications
+
+Requirements
+  Add info to profile
+    Education
+    Experiences
+    Achievements
+    Skills
+  Users search for and view
+    Pages
+    Groups
+    Other users
+  Users send and cancel connection requests
+    Others accept/ignore
+  Users follow other users without adding
+  Users view
+    Number of connections
+    Profile views
+    Post impressions
+    Search appearances
+  Users request and give recommendations to other users
+  Users write new post
+  Users react, share, comment on post
+  Users react, comment on comment
+  Users send and receive messages
+  Notifications for messages, connection requests, comments on post
+  Users create company pages
+  Users follow other company pages
+  Company pages list of job openings
+  User create and join groups
+
+Use case diagram
+  System
+    LinkedIn
+  Actors
+    Primary
+      Users
+      Admin
+    Secondary
+      System
+
+  User
+    Login/logout
+    Change password/email
+    Create profile
+    Add profile into
+    Follow user
+    Unfollow user
+    Send message
+    Invite connection
+    Accept/ignore invite
+    Create page
+    Follow page
+    Unfollow page
+    Create group
+    Join group
+    Leave group
+    Add post
+    Share post
+    Update post
+    React to post
+    Delete post
+    Comment on post
+    Comment on comment
+    Update comment
+    React to comment
+    Delete comment
+    Search users/pages/jobs/groups
+    Post a job
+    View analytics
+    Request recommendation
+    Accept recommendation
+    Delete recommendation
+
+  Admin
+    Block/unblock user
+    Enable/disable page
+    Delete group
+
+  System
+    New post notification
+    New comment notification
+    Connection invite notification
+    Message notification
+    Recommendation notification
+    Add recommendation
+
+Relationships
+  Generalization
+    Add/update profile generalization with:
+      Add/update education, experience, skill, achievement
+
+  Include
+    Send message with message notification
+    Send connection invite with invite notification
+    Accept recommendation with add invitation
+    Add/share post with new post notification
+    Comment on post/comment with new comment notification
+    Request recommendation with rec notification
+
+  Extend
+    Request rec extend with accept/delete rec request
+    Send connection invite extend with accept/ignore connection invite
+
+Class diagram
+  Account
+    status: AccountStatus
+    accountId
+    username
+    password
+    email
+    resetPassword()
+  Experience
+    title
+    company
+    location
+    startDate
+    endDate
+    description
+  Education
+    school
+    degree
+    description
+    startDate
+    endDate
+  Skill
+    name
+  Recommendation
+    userId
+    createdOn
+    description
+    isAccepted
+  Achievement
+    title
+    dateAwarded
+    description
+  Analytics
+    searchAppearances
+    profileViews
+    postImpressions
+    totalConnections
+  Profile
+    profilePicture: byte {list}
+    coverPhoto
+    headline
+    about
+    gender
+    experiences: Experience {list}
+    education: Education {list}
+    achievements: Achievement {list}
+    skills: Skill {list}
+    recommendations: Recommendation {list}
+    analytics: Analytics
+    addExperience()
+    addEducation()
+    addSkill()
+    addAchievement()
+  CompanyPage
+    pageId
+    name
+    description
+    type
+    companySize
+    createdBy
+    jobs: Job {list}
+    createJobPosting()
+    deleteJobPosting()
+  Job
+    jobId
+    jobTitle
+    dateOfPosting
+    description
+    company: CompanyPage
+    employmentType
+    location: Address
+    status: JobStatus
+  Group
+    groupId
+    name
+    description
+    totalMembers
+    members: User {list}
+  Post
+    postId
+    postOwner
+    text
+    media: byte {list}
+    totalReacts
+    totalShares
+    comments: Comment {list}
+    updateText()
+  Comment
+    commentId
+    commentOwner: User
+    text
+    totalReacts
+    comments: Comment {list}
+    updateText()
+  Message
+    messageId
+    sender
+    recipient
+    text
+    media: byte {list}
+    addRecipients(User {list})
+  ConnectionInvitation
+    sender
+    recipient
+    dateCreated
+    status: ConnectionInviteStatus
+    acceptConnection()
+    ignoreConnection()
+
+  Person - abstract
+    name
+    address: Address
+    email
+    phone
+    account
+
+    Admin extends
+      blockUser()
+      unblockUser()
+      disablePage()
+      enablePage()
+      deleteGroup()
+
+    User extends
+      userId
+      joinDate
+      profile: Profile
+      connections: User {list}
+      followsUsers: User {list}
+      followsCompanies: Company {list}
+      joinedGroups: Group {list}
+      createdPages: CompanyPage {list}
+      createdGroups: Group {list}
+      sendMessage()
+      sendInvite()
+      cancelInvite()
+      createPage()
+      deletePage()
+      createGroup()
+      deleteGroup()
+      createPost()
+      deletePost()
+      createComment()
+      deleteComment()
+      react(Post)
+      requestRecommendation()
+      acceptRecommendation()
+      applyForJob(Job)
+
+  Notification
+    notificationId
+    createdOn
+    content
+    send(Account)
+
+  Search interface
+    searchUser(name): User {list}
+    searchCompany(name): Company {list}
+    searchGroup(name): Group {list}
+    searchJob(title): Job {list}
+
+  SearchCatalog
+    users: Map<string, User {list}>
+    companies: Map<string, Company {list}>
+    jobs: Map<string, Job {list}>
+    groups: Map<string, Group {list}>
+    addNewUser()
+    addNewCompany()
+    addNewGroup()
+    addNewJob()
+
+Enums
+  AccountStatus
+    Active
+    Deactivated
+    Blocked
+    Deleted
+
+  ConnectionInviteStatus
+    Pending
+    Accepted
+    Ignored
+
+  JobStatus
+    Open
+    Closed
+    OnHold
+
+Address as always
+
+Relationships
+  Association
+    User one-way with
+      itself
+      CompanyPage, Group, Job, Post, Comment, Message, ConnectionInvitation
+      Search interface
+    Notification one-way with
+      Comment, Message, Post, ConnectionInvitation, Recommendation
+
+  Composition
+    Person composed of Account class
+    User composed of Profile class
+    Profile composed of Experience, Education, Skill, Achievement, Recommendation, Analytics
+    Post composed of Comment
+    CompanyPage composed of Job
+
+  Inheritance
+    Admin and User extend Person
+
+Seqeuence - send connection invitation
+  Actors
+    User A
+    User B
+  Objects
+    SearchCatalog
+    Connection Invitation
+
+  User A searches for User B
+  If User B:
+    Catalog returns User B
+    User A adds User B as connection
+    Invite sent to User B
+    If invitation accepted:
+      User B added to User A connections
+      User A notified
+  Else
+    User A receives user not found result
+
+Activity diagram: creating a new post
+  Initial: User selects create new post
+  Final: Post is published
+
+  User selects create new post
+  Create post pop-up opens
+  User adds text to the post
+  Add media?
+    No: Forward to press post
+  Choose media
+    Photo, video, location
+  Upload media
+  Add more media?
+    Yes -> choose media
+  Press post button
+  Post is published

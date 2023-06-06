@@ -1,0 +1,16 @@
+Collations and Character Sets
+  Char set defines what characters MySQL can store
+    May be from non-EN languages
+  Collation set decides how to order strings
+    ü at diff positions in German, Swedish, Finnish
+
+  SHOW CHARACTER SET;
+    // by default MySQL uses latin-1
+      latin1_swedish_ci collation
+        ci = case insensitive
+        accented chars sorted using Swedish conventions
+
+  SHOW COLLATION;
+  SHOW VARIABLES LIKE "c%";
+    // Inspect defaults for your server
+

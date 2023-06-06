@@ -1,0 +1,222 @@
+Higher order functions
+  Great when moving towards functional programming
+
+  import React from 'react';
+
+  export default class App extends React.Component {
+
+    constructor(props){
+      super(props);
+
+      this.state = {
+      query: '',
+      };
+
+      this.onChange=this.onChange.bind(this);
+    }
+
+    onChange(event) {
+      this.setState({ query: event.target.value });
+    }
+
+    render() {
+    const users = [
+        { name: 'Robin' },
+        { name: 'Markus' },
+
+      ];
+      return (
+        <div>
+          <ul>
+            { users
+              .filter(user => this.state.query === user.name)
+              .map(myuser => <li>{myuser.name}</li>)
+            }
+          </ul>
+          <input
+            type="text"
+            onChange={this.onChange}
+          />
+        </div>
+      );
+    }
+  }
+
+
+  import React from 'react';
+
+  // Does not work
+  // doFilter needs to know about query property from state
+  function doFilter(user) {
+    return query === user.name;
+  }
+
+  export default class App extends React.Component {
+
+    constructor(props){
+      super(props);
+
+      this.state = {
+      query: '',
+      };
+
+      this.onChange=this.onChange.bind(this);
+    }
+
+    onChange(event) {
+      this.setState({ query: event.target.value });
+    }
+
+    render() {
+    const users = [
+        { name: 'Robin' },
+        { name: 'Markus' },
+
+      ];
+      return (
+        <div>
+          <ul>
+            { users
+              .filter(doFilter)
+              .map(myuser => <li>{myuser.name}</li>)
+            }
+          </ul>
+          <input
+            type="text"
+            onChange={this.onChange}
+          />
+        </div>
+      );
+    }
+  }
+
+
+  // Pass query to user
+  // Wrap with another function which leads to a higher-order function
+  import React from 'react';
+
+  function doFilter(query) {
+    return function (user) {
+      return query === user.name;
+    }
+  }
+
+  export default class App extends React.Component {
+
+    constructor(props){
+      super(props);
+
+      this.state = {
+      query: '',
+      };
+
+      this.onChange=this.onChange.bind(this);
+    }
+
+    onChange(event) {
+      this.setState({ query: event.target.value });
+    }
+
+    render() {
+    const users = [
+        { name: 'Robin' },
+        { name: 'Markus' },
+
+      ];
+      return (
+        <div>
+          <ul>
+            { users
+              .filter(doFilter(this.state.query))
+              .map(myuser => <li>{myuser.name}</li>)
+            }
+          </ul>
+          <input
+            type="text"
+            onChange={this.onChange}
+          />
+        </div>
+      );
+    }
+  }
+
+  // Neater version with arrow functions
+  // Now export from file and test as pure (higher-order) function
+  import React from 'react';
+
+  const doFilter = query => user =>
+     query === user.name;
+
+  export default class App extends React.Component {
+
+    constructor(props){
+      super(props);
+
+      this.state = {
+      query: '',
+      };
+
+      this.onChange=this.onChange.bind(this);
+    }
+
+    onChange(event) {
+      this.setState({ query: event.target.value });
+    }
+
+    render() {
+    const users = [
+        { name: 'Robin' },
+        { name: 'Markus' },
+
+      ];
+      return (
+        <div>
+          <ul>
+            { users
+              .filter(doFilter(this.state.query))
+              .map(myuser => <li>{myuser.name}</li>)
+            }
+          </ul>
+          <input
+            type="text"
+            onChange={this.onChange}
+          />
+        </div>
+      );
+    }
+  }
+
+  // Testing React local state management
+  // Extract outside of a React component
+  import React from 'react';
+
+  export const doIncrement = state =>
+    ({ counter: state.counter + 1 });
+
+  export const doDecrement = state =>
+    ({ counter: state.counter - 1 });
+
+  export default class Counter extends React.Component {
+    state = {
+      counter: 0,
+    };
+
+    onIncrement = () => {
+      this.setState(doIncrement);
+    }
+
+    onDecrement = () => {
+      this.setState(doDecrement);
+    }
+
+    render() {
+      return (
+        <div>
+          <p>{this.state.counter}</p>
+
+          <button onClick={this.onIncrement} type="button">Increment</button>
+          <button onClick={this.onDecrement} type="button">Decrement</button>
+        </div>
+      );
+    }
+  }

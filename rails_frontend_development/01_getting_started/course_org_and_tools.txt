@@ -1,0 +1,36 @@
+The Tools
+  Setting up Rails to use Webpacker to server JS and CSS
+  Then writing some code
+  Three main tools
+    TypeScript
+      Extension of JS with type checking and inference
+      Superset of JS
+        Any JS program is valid TypeSCript
+        Allows some basic type checking
+      Can prevent invalid states at compile time, runtime errors
+    Webpack
+      "Static module bundler"
+      Convert dev-friendly inputs to browser-friendly outputs
+      Inputs: JS, TypeScript, CSS
+      WebPack converts all the files to JS and CSS the browser understands
+    Webpacker
+      Rails-specific front-end wrapper around webpack
+      Gives Rails-style convention over config structure to Webpack builds
+      Builds in support for common tools
+      Adds default setups for common frameworks like the ones we're using
+
+Course structure
+  1. Client-side Rails - CSS
+    Intro to Rails tools for frontend
+    Then use Stimulus and React for richer interactions
+    Augment Stimulus and React via CSS
+  2. TypeScript - Talking to the Server
+    TypeScript, Webpack, webpacker
+  3. Managing State
+    Managing the state of data in client side
+    Common JS pattern reducer
+    Redux - a library that introduces reducer pattern
+      Commonly used with React
+  4. Advanced TypeSCript
+    Go a little deeper
+    Debugging, testing apps

@@ -1,0 +1,203 @@
+Mathematical data types
+  A set is a bunch of objects, called elements of the set
+  Elems can be anything - numbers, coords, other sets
+  To write sets, list elems in curly braces
+    B = {red, blue, yellow}
+  Or could indicate how to generate list
+    D ::= { 1, 2, 4, 8, 16,...}
+  Order of elements is not significant
+    {x, y} == {y, x}
+  Elem only appears once in a set
+    So any object simply is or is not elem of set
+    {x, x} = {x}
+  e EE S -> e is an element of set S
+  Key types of sets
+    0 - empty set
+    N - non-negative integers {0, 1, 2, 3,...}
+    Z - integers {..., -3, -2, -1, 0, 1, 2, 3,...}
+    Q - rational numbers - 1/2, 16, -5/3, etc
+    R - real numbers - pi, e, -9, sqrt(2)
+    C - complex numbes - i, 19/2, sqrt(2) - 2i, etc
+  Superscripts
+    +/- to limit to positive negative
+  S C= T S is a subset of T
+    Every elem of S is elem of T
+    N C= T because every non-negative integer is an integer
+    Q C= R because every rational number is real
+    C !C= R not every complex number is real
+    Think of C= as <= sign
+    S C= S for any set S
+  S C T
+    Subset but NOT equal
+    "Strict subset"
+  Combining sets
+    X ::= {1, 2, 3}
+    Y ::= {2, 3, 4}
+
+    Union A U B
+      Includes elements including in A, B, or both
+      x EE A U B IFF x EE A OR x EE B
+      X U Y = {1, 2, 3, 4}
+    Intersection A INTS B 
+      Elements that appear in BOTH A and B
+      X INTS Y = {2, 3}
+    Set difference A - B
+      Elements in A not B
+      X - Y = {1}
+      Y - X = {4}
+    Often all sets are subsets of a known domain of discourse D
+      For any subset A of D
+      Bar A = All elements of D not in A
+      Bar A :== D - A
+      Bar A is "complement" of A
+      So:
+        Bar A = 0 IFF A = D
+      If domain is all integers
+        Bar N = Z-
+    A C= B is equivalent to A INTS Bar B = 0
+  Power set
+    Set of all the subsets of a set pow(A)
+    B EE pow(A) IFF B C= A
+    pow{1, 2} = 0, {1}, {2}, {1, 2}
+    If A has n elements, there are 2^n in pow(A)
+      (You may see 2^A instead of pow(A) in some texts)
+  Set builder notation
+    Define a set using a predicate
+    Set consists of all values where predicate is true
+    A ::= {n EE N | n is a prime and n = 4k + 1 for some integer k}
+    B ::= {x EE R | x^3 - 3x + 1 > 0}
+    C ::= {a + bi EE C | a^2 + 2b^2 <= 1}
+    So A is {5, 13, 17, 29, 37, 41, 53, 61, 73,....}
+      Wouldn't work well by listing elements because pattern not obvious!
+    C is an oval-shaped region around the origin in the complex plane
+      (I *kind* of remember that... - JM)
+  Sets are equal if contain exactly same elements
+    X = Y means z EE X IFF z EE Y for all elements, z
+      (First of the ZFC axioms for set theory)
+    A INTS (B U C) = (A INTS B) U (A INTS C)
+    U functions a lot like OR
+      x EE A U B equivalent to x EE A OR x EE B
+      INTS resembles AND
+      complement resembles NOT
+    But do NOT write A AND B - AND is an operation on truth values
+  Remember DeMorgan's Law?
+    NOT(P AND Q) equivalent to NOT P OR NOT Q
+  For sets:
+    BAR(A INTS B) = BAR A U BAR B
+
+Sequences:
+  Another way to group a collection of objects
+  List in parens (in this class but not the next one bleah - JM)
+  (a, b, c)
+  Sequence elements are NOT required to be distinct, unlike sets
+  (a, b, a) is a sequence of length 3
+  {a, b, a} is a set with 2 elements
+  Sequence terms are in order
+  (a, b, c) != (c, b, a)
+  {a, b, c} == {c, b, a}
+  Cartesian product of sets
+    New set consisting of all sequences where first component from S1, second from S2, etc
+    Length two sequences = pairs
+  N x {a, b} = {(0,a), (0, b), (1, a), (1, b)...}
+  S^n - product of n copies of sets
+  {0, 1}^3 = {(0, 0, 0), (0, 0, 1), (0, 1, 0), (0, 1, 1)... }
+
+Lecture
+  Sets are the most fundamental of all data types
+  What is a set? Informally:
+    A collection of mathematical objects
+    Treat collection as a new object
+    Circular though: what's a collection? That is also hard to define
+  Familiar sets
+    real numbers R
+    complex numbers C
+    integers Z
+    empty set 0
+  A set of 4 things
+    {7, "Albert R.", pi/2, T}
+    Set with 4 elements of mixed type
+      Mixed type: not good in a programming language
+        Fine in math generally
+    There is no notion of order in a set
+      To a CS - naturally inclined define sequence of order
+      But when you get a set of lists - how would you even order?
+    So sets are kind of an unavoidable idea
+  Element is in a set or not in a set
+    {7, pi/2, 7} same as {7, pi/2}
+    No notion of being in set more than once
+      (There is a side idea of multi-sets, but)
+  Membership
+    x is a member of A:
+    x EE A
+    14/2 EE {7}
+    pi/3 xEE {pi/2}
+    Can also say
+      x is an element of A
+      x is in A
+    7 EE Z
+    2/3 xEE Z (fraction)
+    Z EE {T, Z, 7} - 3 element set - set contains a huge set here, that's fine math-wise
+  Subset
+    A C= B -> A is a subset of Bs
+      Don't overload <=!
+    Every element of A is also an element of B
+    Predicate logic:
+      For all x [x EE A IMPLES x EE B]
+    Examples
+      Z C= R
+      R C= C
+      {3} C= {5, 7, 3}
+      but 3 xC= {5, 7, 3} - just a number
+      A C= A
+      0 C= every set
+      0 C= B is defined to mean
+      For all x [x EE 0 IMPLIES x EE B]
+        x EE 0 is false
+        So whole implication is true
+        So 0 C= B is formally satisfied
+  Defining sets
+    If small, just list elements
+    Can describe infinite sets as a list too sometimes
+    But if say R numbers
+    Define by property of set
+    The set of elements x in A such that P(x) is true
+    { x EE A | P(x) } "|" = such that
+    Set E of even integers
+    { n EE Z | n is even }
+  Power set
+    pow(A) ::= all the subsets of A
+             = {B | B C= A}
+    pow({T, F}) = {{T}, {F}, {T, F}, 0}
+      Two elements -> 4 elements
+    E EE pow(Z) (even number set is a subset of pow(Z))
+    Z EE pow(R) (integers are a subset of reals, so member of pow of reals)
+    B EE pow(A) IFF B C= A
+
+Set operations
+  Venn diagram - sets A & B
+    Useful for 3, tricky for 4, not useful after that generally
+  Union
+    A U B ::= {x | x EE A OR x EE B}
+  Intersection
+    A INTS B ::=  {x | x EE A AND x EE B}
+  Set-theoretic identity
+    A U (B INTS C) = (A U B) INTS (A U C)
+    Union distributing over intersection
+      Kind of like: A * (B + C) = A * B + A * C
+    Show that these have the same elements
+    x EE left hand set IFF x EE right hand set
+    Remember
+    P OR (Q AND R) == (P OR Q) AND (P OR R) - OR distributes over AND
+
+    x EE A U (B INTS C) IFF
+    x EE A OR x EE (B INTS C)
+    x EE A OR (x EE B AND x EE C)
+    (x EE A OR x EE B) AND (x EE A OR x EE C)
+      (by propositional equivalence)
+    x EE A U B AND x EE A U C
+    x EE (A U B) INTS (A U C)
+      QED
+  Difference operation
+    A - B ::= {x | x EE A AND x xEE B}
+  Complement
+    BAR A ::= D - A = {x | x xEE A}

@@ -1,0 +1,679 @@
+Distributed data stores
+Grouping based on basic architectural chars and history
+Four distributed stores
+  BigTable/HBase
+  Cassandra
+  Spanner
+  Fauna DB
+
+Bigtable
+  Developed in Google
+  Inspired HBase - part of Apache Hadoop
+  Very similar arch - focusing on HBase now
+
+HBase
+  Sparse, multi-dimensional sorted map
+  Indexed by row key, column key, and timestamp
+  Each value in map uninterpreted array of bytes
+  Columns grouped in column families
+  All members in column family stored together physically in filesystem
+  User can specify tuning configs for each column family
+    Compression type
+    In memory caching
+  Column families
+    Declare upfront during schema definition
+  Columns
+    Can be created dynamically
+  System supports small number of column families
+    Unlimited number of columns
+  Keys are uninterpreted bytes
+    Rows of table physically stored in lexiographical order of keys
+  Each table partitioned horizontally using range partition
+    Based on row key into segments "regions"
+  Goal
+    Allow user to control physical layout of data
+    Store related data close together
+
+HBase Architecture
+  Leader-follower
+  Leader: HMaster
+  Followers: Region servers
+
+HMaster
+  Assigns regions to region servers
+  Detects addition and expiration of region servers
+  Balances region server load
+  Handles schema changes
+  Like other single master systems, clients do NOT comm with master for data flow
+    Only control flow
+    Otherwise would become system performance bottleneck
+
+Region servers
+  Manages a set of regions
+  Handles read and write requests to loaded regions
+  Splits regions that become too large
+
+Uses Zookeeper
+  Perform leader election to decide the master node
+  Maintain group membership of region servers
+  Store bootstrap location of HBase data
+  Store schema info
+  Access control lists
+
+Each region server stores data in HDFS, which provides redundancy
+  Region server can be collocated at same machine as HDFS datanode
+    Enable data locality
+    Minimize network traffic
+
+META table
+  Special HBase table
+  Mapping between regions and region servers in cluster
+  Location of META table stored in Zookeeper
+  First time client needs to read/write to HBase
+    Comm with Zookeeper
+    Retrieve region server that hosts META table
+    Contacts region server to find region server containing desired table
+    Finally sends read/write to proper server
+  Client caches META table location
+    As well as data read from table for future use
+
+Creation of ephemeral node
+  HMasters compete to create ephemeral node in Zookeeper
+    First becomes active master
+    Second listens for ZK notes for active master failure
+  Region servers create eph nodes in directory monitored by HMaster
+    HMaster aware of region servers joining/leaving cluster
+      Can assign regions accordingly
+
+Appends and read ops in HBase
+  Appends more efficient than random writes, especially in HDFS
+    Region servers try to take advantage
+  Memstore
+    Write cache
+    Writes initially written to this data structure
+    Stored in memory
+    Sorted efficiently before being written to disk
+    Writes buffered here periodically written to HDFS after being sorted
+  HFile
+    File in HDFS that stores sorted key-value entries on disk
+  Write ahead log (WAL)
+    Stores operations not persisted to permanent storage, only in MemStore
+    WAL stored in HDFS, used for recovery in case of region server failure
+  BlockCache
+    Read-cache
+    Stores frequently read data in memory
+    Evicts least recently used data when cache is full
+  As a result, write operations go through WAL and MemStore first
+    Eventually end up being stored in HFiles
+  Read operations
+    Have to read from MemStore, BlockCache, and existing HFiles
+      Merge results
+      Can be quite inefficient
+      Several optimizations
+    Optimizations
+      Columns grouped by column family, stored seperately
+      Only HFiles containing required column family queried
+      All entries in HFile stored in lexicographical order
+      Contain index at end of file
+        Kept in memory
+        Read can find required data without reading whole file
+      Each HFile contains time range of entries
+        Avoid unnecessary reads of files that cannot contain requested data
+      Bloom Filters
+        Reduce number of HFiles to be read
+        Special data structure - easy to identify whether not contained in file
+          Using minimal memory
+        Also a background process "compaction"
+          Merge multiple HFiles into single HFile
+          Remove older versions of data not needed anymore
+          Reduce number of HFiles that must be inspected during read
+
+HBase Guarantees
+  ACID
+  Atomicity
+    Operations mutating single row are atomic
+      Return success code = complete success
+      Return failure code = complete failure
+      Times out = may succeed or fail, but cannot do so partially
+        True even if mutation crosses multiple column families in row
+          Fine-grained, per-row locking
+      HFiles essentially immutable, only MemStore needs to participate
+        Makes process very efficient
+    Mutate multiple rows not atomic
+      Mutate rows a, b, c - may mutate some but not all
+        Operation returns a list of codes - success/fail/timeout
+    checkAndPut - conditional operation
+      Happpens atomically like compareAndSet (CAS) in many hardware archs
+  Consistency and Isolation
+    Single-row read/write linearizable
+    When client receives successful response for any mutation
+      Mutation immediately visible to client and any later client
+    HBase provides scan that iterates efficiently over multiple rows
+      Operation does NOT provide consistent view of table
+      Does NOT exhibit snapshot isolation
+    Instead
+      Any row returned by scan is a consistent view
+        Version of complete row existed at some point in time
+      Scan operation must reflect all mutations committed prior to scanner construction
+        May reflect some mutations committed subsequent to scanner construction
+  Durability
+    All visible data is durable
+    Read will never retun data not made durable on disk
+    Any mutation that returns successful response has been made durable
+    Any operation made durable storedin at least n different servers (Namenodes)
+      n is the configurable replication factor of HDFS
+
+HBase to BigTable
+  HB - BT
+  region - tablet
+  region server - tablet server
+  Zookeeper - Chubby
+  HDFS - GFS
+  HFile - SSTable
+  MemStore - Memtable
+
+Cassandra
+  Distributed datastore
+  Combines ideas from Dynamo and Bigtable
+    DynamoDB is similar to Cassandra, internal architecture not published atm
+  Developed by Facebook
+  Open-sourced, Apache project
+    Has evolved from origins
+  Design goals
+    Extremely high availability
+    Performance
+      Unbounded, incremental scalability
+  Tradeoffs
+    Strong consistency
+    Other (upcoming)
+  Data model
+    Keyspaces at highest level
+      Can contain multiple different tables
+    Table
+      Stores data in sets of rows, characterized by schema
+    Schema
+      Defines structure of each row consists of columns and types
+      Determines primary key
+    Primary key
+      Column or set of columns with unique values for each row
+      Can have two components
+        Partition key, mandatory
+        Clustering column, optional
+      If both components present "compound primary key"
+      If partition key multiple columns "composite partition key"
+      Very important for schema, determines how data distributed and stored in every node
+    Partition key component
+      First component of primary key
+        Determines distribution of data
+      Data split into partitions, containing only row with same partition key
+      All rows in a partition collocated in same nodes
+      Rows in different partitions can be distributed across different nodes
+      Clustering columns component
+        Second component
+        Determines how rows of same partition stored on disk
+        Rows in same partition stored in asc order of clustering columns
+          Unless otherwise specified
+    Distributing table partitions over available nodes
+      Consistent hashing
+      Virtual nodes of Cassandra cluster form ring
+      Each virtual node corresponds to specific value in ring called token
+        Determines which partitions belong to node
+      Each virtual node contains all partitions whose key (when hashed)
+        falls in range between token and token of previous virtual node in ring
+      Also supports range partitioning
+        ByteOrderedPartitioner
+        Available mostly for backwards compatibility
+        Not recommended - can cause hot spots, imbalanced data distribution
+      Every Cass node can be assigned multiple virtual nodes
+      Each partition replicated across N nodes
+        N is configurable per keyspace
+          "Replication factor"
+        Multiple strategies for selecting additional N - 1nodes
+        Can select nodes clockwise in ring
+          More complex: take account of network topology
+      Storage: inspired by Bigtable
+        Commit log containing all mutations
+        memtable periodically flushed to SSTables
+          Also periodically merged via compactions
+
+Cassandra Cluster Internode Comms
+  Gossip Protocol
+  Nodes in cluster communicate periodically
+    Exchange state and toplogy info and other nodes they know in cluster
+  New info gradually spread throughout cluster via process
+    Nodes keep track of which nodes responsible for which token ranges
+  Nodes can also determine which nodes are healthy and which are not
+    System does not send requests to unreachable nodes
+  Admin tools can be used to instruct node in cluster to remove permanently crashed node
+    Partitions from crashed node replicated to different node remaining
+  Bootstrapping
+    Allows first nodes to join cluster
+    Set of nodes designated as seed nodes
+      Can be specified to all nodes of cluster via config file, or 3rd party system
+  Handling requests
+    No leader/primary node
+    All replica nodes equivalent
+    Every incoming request routed to any node in cluster
+      This node is "coordinator"
+      Manages execution of the request on behalf of client
+      Identifies which nodes have data
+      Collects responses
+      Replies to clients
+    Writes handled concurrently
+      Last-write-wins conflict resolution scheme
+      When read performed, coord collects responses from replicas
+      Returns one with latest timestamp
+    Client specifies selection of coordinator node
+      Could select randomly round-robin
+      Select closest
+      Select replica that reduces network hops
+      Client supplied with list of nodes
+      Initially connect to a node to acquire view of whole cluster & route
+
+Cassandra consistency
+  Can specify when communicating with client
+  Optimize for consistency, availability, or latency
+    Client specify read & write consistency level
+  All
+    Write must be written to all replica nodes
+    Read returns only after all replicas respond
+    Operation fails if single replica does not respond
+    High consistency, low availability
+  Quorum
+    Write must be written on quorum of replicas
+    Read returns after quorum of replicas
+    Balance between consistency and tolerance to a few failures
+  One
+    Write must be written to at least one replica
+    Read returns after response of a single replica
+    High availability
+    Risk of reading stale data - reply replica may not have latest write
+  Which to use?
+    Consistency levels not independent
+    If keyspace with replication factor N and clients
+      with read consistency R and write consistency W
+    Read always reflects latest write if R + W > N
+      Perform reads & writes at quorum level
+      Perform reads at ONE level and writes at ALL level
+        (or reverse)
+  How Cass favors high avail and performance
+    Hinted handoff - during write
+      If coord cannot contact enough replicas
+        store result of operation locally, forward to failed node later
+    Read repair
+      If receive conflicting data from replicas
+      Select latest record
+      Forward synchronously to stale replicas before responding to read request
+    Anti-entropy repair
+      Happens in background
+      Replica nodes exchange data for range
+      If differences, keep latest data for each record, LWW strategy
+      Encode data for range in Merkle tree
+        Gradually exchange parts of tree to limit bandwidth
+
+Linearizability violations in Cass
+  Operations on single row not linearizable by default
+    Even when using majority quorums
+  How does Cass handle partial failures and network delays?
+  Ex. without read repair
+    Three different replicas with single row, col owner val none
+    Client A sets owner = A
+    Client B and C perform read
+    Client B quorum contains one replica with owner = A
+      reads owner = A
+    Client C quorum nodes not received
+      reads owner = none
+      Even though started after write op completed
+      Violates linearizability
+  With read repair
+    Linearizability maintained
+    Read from client B propagates to additional replica
+    Client C also reads owner = A
+    What if client A again sets owner = A
+      Write succeeds in one replica, fails in another
+      Write considered unsuccessful
+      Client B performs read, gets replica where write succeeded
+      Cassandra read repairs, propagating value owner = A
+    Therefore failed write has affected state of database
+      Linearizability fails again
+
+Linearizability guarantees by Cass
+  Another consistency level: SERIAL
+    Read/write executed at level = lightweight transactions (LWTs)
+    Guaranteed to be linearizable
+    4-phase protocol based on Paxos
+  Phase 1: prepare
+    Nodes try to gather votes before proposing value
+    Write operations conditional using IF clause, compare-and-set (CAS)
+  Phase 2: read
+    Retrieve data to check whether condition satisfied
+  Phase 3: propose
+    Proposes value to nodes
+  Phase 4: commit
+    Move accepted value into storage
+    Allow a new round
+    Unblocks concurrent LWTs
+  Read ops will commit any accepted proposal not yet committed
+  Write operations required to contain conditional part
+
+Efficient queries in Cass
+  Query not using primary key guaranteed to be inefficient
+    Need to perform full table scan querying all cluster nodes
+  How to solve?
+    Secondary indexes
+    Materialized views
+  Secondary indexes
+    Can be defined on some columns of a table
+    Each node will index locally using specified columns
+    Still need to ask all system nodes
+    At least nodes can retrieve data efficiently
+  Materialized views
+    Query on existing table with newly defined partitioned key
+    Materialized view maintained as separate table
+      Changes on original table eventually propagate to it
+  Tradeoffs
+    Secondary indexes suitable for high cardinality columns
+    Materialized views suitable for low cardinality columns
+    Materialized views more efficient during read operations
+      Only nodes with corresponding partition queried
+    Secondary indexes guaranteed to be strongly consistent
+      Materialized views eventually consistent
+  Denormalizing data for efficiency
+    Cass does not provide join operations
+    Would be inefficient due to distribution of data
+    Users encourage to include same data in multiple tables
+      Query efficiently, read from minimum nodes
+      Any update must update multiple tables
+      Expected to be efficient
+    Cass provides two kinds of batch operations for multiple updates
+      Logged and unlogged
+    Logged batches
+      Guarantee atomicity
+      All statements of match take effect or none
+      Guarantees all tables sharing data consistent with each other
+      Achieved by first logging batch as unit in system table replicated
+      Therefore less efficient than unlogged
+    Both logged and unlogged do not provide any isolation
+      Concurrent requests might only temp observe effects of some ops
+
+Spanner
+  Distributed data store developed at Google
+  Released publicly as part of Google platform
+  Very close to classical relational databases
+    One or more tables w/multiple rows
+    Each row contains value for each column defined
+    One or more columns are primary key of table
+      Must be unique for each row
+    Each table schema defines data types of each column
+  Partitions with horizontal range partitioning
+  Rows of table partitioned in multiple segments called splits
+  Split
+    Range of contiguous rows
+    Ordered by corresponding primary key
+  Dynamic load-based splitting
+    Any split with lots of traffic can be further split
+  Parent-child relationships
+    Can be defined between tables
+      Related rows collocated
+      Joins efficient
+      Interleave keyword
+      Will never be assigned to different split
+
+Spanner architecture
+  Deployment "universe"
+  Universe
+    Set of zones
+    Units of administrative deployment, physical isolation, and replication
+    Zone has zonemaster
+      Hundreds to thousands of spanservers
+    Zonemaster
+      Assigns data to spanservers
+    Spanservers
+      Read/write requests from clients and store data
+    Location proxies
+      Per-zone, used to locate spanservers serving specific portion of data
+    Universe master
+      Displays status info about all zones for troubleshooting
+    Placement driver
+      Handles automated movement of data across zones for load balancing
+  How it works
+    Each spanserver can manage multiple splits
+    Each split replicated across multiple zones
+      Availability, durability, performance
+    Each split stored in DFS "Colossus" successor of GFS
+      Already provides byte-level replication
+      Spanner adds another replication level for increased data avail and geo locality
+    All replicas of split form a Paxos group
+    One replica voted leader
+      Receives incoming write requests
+      Replicates to group via Paxos round
+    Other replicas are followers
+      Serve some kinds of read requests
+  Benefits
+    Long-lived leaders
+      Time-based leader leases, renewed by default every 10s
+    Pessimistic concurrency control
+      Ensures proper isolation between concurrent transactions
+        Two-phase locking
+    Leader of each replica group maintains a lock table
+      Maps ranges of keys to lock states
+      In practice, locks also replicated in replicas of groups
+        Cover against failures of the leader
+    Distributed transaction support
+      Supports distributed transactions involving multiple splits
+        Can potentially belong to different replica groups
+      Two-phase commit across involved replica groups
+        Each group leader implements transaction manager for this
+        Group leader = "participant leader"
+        Follower replica = "particpant follower"
+        One of these groups chosen to coordinate two-phase commit protocol
+
+Spanner using TrueTime
+  Novel API to record time
+  Key enabler for consistency guarantees provided by Spanner
+  Directly exposes clock uncertainty
+  Nodes can wait out uncertainty when comparing timestamps from different clocks
+    If uncertainty large b/c failure, manifests as increased latency
+      Nodes wait long periods
+  Represents time as a TTInterval
+    Bounded time uncertainty [earliest, latest]
+    TT.now() returns TTInteval guaranteed to contain absolute time during which method invoked
+      This is an assumption there's an idealized absolute time
+      Uses Earth as a single frame of reference
+      Generated using multiple atomic clocks
+    TT.after(t), TT.before(t)
+      Specify whether t is definitely in past or future
+      Basically just wrappers around TT.now()
+  Implementing TrueTime
+    Time master machines in each datacenter
+      Refer to either GPS or atomic clocks - different failure modes
+      Compare time refernces periodically
+      Cross-check reference time against local clock
+        Eject from cluster if major divergence
+    Timeslave daemon per machine
+      Poll a variety of masters to synch local clocks
+      Advertise uncertainty e which correspond to half interval width
+      (latest - earliest) / 2
+      Uncertainty depends on master-daemon comm latency
+        and uncertainty of master time
+      Uncertainty sawtooth function of time slowly increasing between synch
+        In Google prod, avg. value = 4 ms
+
+Spanner operations
+  Supports
+    Read-write transactions
+    Read-only transactions
+    Standalone (strong/stale) reads
+  Read-write
+    Can contain both read and/or write operations
+    Full ACID properties
+    Not simply serializable but strictly serializable
+      "External consistency" - basically same guarantee
+    Executes set of reads and writes atomically at a single logical point in time
+    Uses two-phase locking for isolation and two-phase commit for atomicity
+  Read-write workflow
+    Client opens transaction, directs all read operations to leader of replica group
+      which manages split with required rows
+      Leader acquires read locks for the rows and columns before serving lead
+      Every read also returns timestamp
+    Any write operations buffered locally in client until transaction committed
+      While transaction open, client sends keepalive messages
+    When client has completed all reads and buffered all writes
+      starts two-phase commit protocol
+      Chooses participant leader as coord leader
+      Sends prepare request to all participant leaders
+      Participant leaders receive buffered writes
+      Every participant leader acquire necessary write locks
+      Part. leaders choose prepare timestamp larger than any timestamps of prior transactions
+      Logs prepare record in replica group through Paxos
+      Leader also replicates lock acquisition to replicas
+        Ensure held even in case of leader failure
+      Then respond to coordinator leader with prepare timestamp
+    Availability problems from two-phase commit partially mitigated
+      Both participants and coordinator = Paxos group
+        If leader node crashes, replica node will detect and take over
+    Deadlocks
+      Can happen
+      Resolved via wound-wait scheme
+      TX1 allowed to abort TX2 that holds lock if TX1 older than TX2
+    Check whether replica up to date
+      Each replica tracks a value called safe time (tsafe)
+      tsafe = maximum timestamp at which replica is up-to-date
+      Replica can satisfy a read if t <= tsafe
+      tsafe = min(tsafe-Paxos, tsafe-TM)
+      tsafe-Paxos -> timestamp of highest applied Paxos write at replica group
+        Represents highest watermark below which writes will no longer occur due to Paxos
+      tsafe-TM -> mini(sprepare i,g) overall transactions Ti prepared (but not commited)
+        If no transactions, tsafe-TM = +inf
+  Read-only transactions
+    Allow client to perform multiple reads at same timestamp
+      Operations strictly serializable
+    Read-only do not need to hold locks and block other transactions
+      Perform reads at specific timestamp
+      Select in a way to guarantee concurrent/future write operations will update later
+      Timestamp -> TT.now().latest
+      Use for all read transactions
+    Can be served by any replica g that is up to date
+      tread <= tsafe,g
+    More generally
+      Sometimes replica can be certain via state and TrueTime that up to date enough to serve read
+      Sometimes might not be sure
+        Ask leader of group for timestamp of last transaction to apply to serve read
+      If replica is leader, always up to date
+  Standalone reads
+    Do not differ a lot from read-only transactions
+    Two kinds
+      Strong
+      Stale
+    Strong read
+      At current timestamp
+      Guaranteed to see all data committed up to start of read
+    Stale read
+      At timestamp in past
+      Can be provided by application
+      Can be calculated by Spanner based on staleness upper bound
+        Lower latency at cost of stale data
+        Replica unlikely to have to wait before serving
+  Partitioned Data Manipulation language
+    Client specifies update or delete in declarative form
+    Executes in parallel at each replica group
+    Very efficient - paralle, data is local
+    Tradeoffs
+      Operations need to be fully partitionable
+      Express as union of a set of statements
+      Each statement accesses single row of table
+      Each statement accesses no other tables
+        Ensures replica group executes locally, no coord with other replica groups needed
+      Operations must be idempoteent
+        Spanner might execute multiple times against groups due to network-level retries
+    Atomicity guarantee
+      Not for each statement across entire table
+      But per each group
+      Statement might run against some rows of table
+        If user cancels midway
+        Or if fails in some splits due to constraint violations
+
+FaunaDB
+  Inspired by Calvin protocol
+  Replicates inputs instead of effects to various nodes of system
+    More deterministic system where non-failing nodes go through same state
+    Obviate need for agreement protocols like two-phase commit
+    Nodes involved in transaction rely on each other, proceeding in the same way
+  Three layers
+    Sequencing
+    Scheduling
+    Storage
+  Sequencing layer
+    Recieves inputs/commands and places in global order
+      Achieved via consensus protocol
+      All nodes will execute in order
+    Scheduling
+      Orchestrates execution of transactions using deterministic locking scheme
+      Allows transactions to be executed concurrently
+    Storage layer
+      Responsible for physical data layout
+  Node roles
+    Every node plays three concurrently
+      Query coordinator - receives and processes request
+        Locally or route to other nodes
+      Data replica
+        Stores data and serves during read
+      Log replica
+        Reaches consensus on input order, adds to globally ordered log
+  Conceptual architecture
+    Cluster comprises 3+ logical datacenters
+    Data partitioned inside a datacenter & replicated across datacenters
+      Increased performance and availability
+    Similar to Spanner multiple versions of each item preserved in FaunaDB
+  Uses customized version of Raft for consensus
+    Aggregates requests and replicates in batches to improve throughput
+    Batches = "epochs"
+    10ms batching window typically
+    Impact on latency not significant
+    Requests ordered by epoch number and request index in batch
+  Request arrives at query coordinator
+    Speculatively executes at latest known log timestamp
+    If read-write
+      Forwarded to log replica recording it as part of next batch
+        Consensus with other replicas
+      Request then forwarded to each data replica
+    Difference
+      Data transfer is push-based, not pull-based
+      If replica A needs to write based on replica B data
+      Replica B send data to A instead of A requesting
+      Fewer messages, reduced latency
+      But what if node sending data fails?
+        Replica can fall back to requesting from other replicas
+    Each data replica blocks until has received all data needed from other replicas
+      Then resolves transaction, applies local writes, acknowledges success to query coordinator
+        If data has changed, transaction will be aborted, potentially retried
+          Unanimous decision, all nodes execute in same order
+          No need for two-phase commit
+    Read-only transaction
+      Sent to replicas that contain associated data
+      Time-stamped with latest known log timestamp
+      All read operations performed at timestamp
+      Client library maintains timestamp of highest log position seen so far
+      Guarantee monotically advancing view of transaction order
+      Guarantees causal consistency in cases where client switches from node A to node B
+  Guarantees
+    Read-write strictly serializable
+    Read-only just serializable
+      Can opt-in to being strictly serializable by using linearized endpoint
+      Read combined with no-op write and executed as regular read-write going through consensus
+      Increases latency
+    Achieving guarantees
+      Pessimistic concurrency control based on read/write locks
+      Deterministic, all nodes will acquire and release locks in exact same order
+      Prevents deadlocks
+      Order determined by order of transactions in log
+      Does not prevent transactions from running concurrently
+      Requires locks for transaction can only be acquired after locks for all previous transactions
+    FaunaDB must know all data access by read/write transactions in advance
+      Cannot support interactive transactions
+        Client can keep open and execute operations dynamically while potentially performing other operations
+      Replicas can perform reads again during execution of transaction
+        Identify whether read/write sets have changed
+        Transaction can be aborted and retried
+      Optimistic Lock Location Prediction (OLLP)
+      Simulate interactive transactions via snapshot reads and compare-and-swap operations

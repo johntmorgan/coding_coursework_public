@@ -1,0 +1,154 @@
+Distributed Ledger
+Corda
+  Allow multiple parties without full trust
+    to maintain distributed ledger with shared facts
+  Distrust manage through cryptographic primitives
+  Each node is a JVM runtime environment with unique identity
+    Corda network comprises many nodes
+    Nodes want to transact with each other, maintain shared set of facts
+    Nodes need to acquire X.509 certificate to operate
+      "Doorman" issues certs
+  Each node maintains public and private key
+    Private key used to attest to facts by signing assoc data
+    Public key used by other nodes to verify signatures
+    X.509 cert creates assoc between public key of node
+      and human-readable X.500 name
+  Map service
+    Contains network map service
+    Provides some form of service discovery to nodes part of network
+    Nodes can query service to discover other nodes part of network
+    Nodes do NOT trust network operator to distribute information
+      Each entry of map also signed by node
+      Nodes can exchange files out-of-band and install locally
+        Avoid censorship
+  Corda Data Model
+    States represent shared facts between nodes
+    States are immutable objects
+      Can contain arbitrary data depending on use case
+      Cannot be modified directly
+      Marked as historic and replaced by new state
+      Creates chain of states
+        See evolution of shared fact over time
+      Corda transaction does this
+  Corda Transaction
+    Specifies states marked as historic & new that supersede
+    Smart contracts specify rules - which states can replace which
+    Smart contract
+      Pure function takes transaction as input
+      Determines whether transaction valid based on contract rules
+      Can also contain commands
+        Indicate transactions intent
+        Each command assoc with list of public keys need to sign transaction
+  Corda for electronic $$
+    Each state represents amount of $$ issued by bank, owned by party
+    Alice combines 2 cash states to transfer total to Bob
+    Bob redeems money to get cash from bank
+    Two different commands for each case
+    Can also guess some rules of assoc contract for Cash state
+    For Spend command
+      Contract verifies that sum of all input states = sum of all output states
+      No money lost or created out of thin air
+      Check Spend command contains all owners of input as signers
+    Someone could spend cash state to two different parties "double-spend"
+      Prevent via notary - attest state not spent more than once
+    Every state associated with notary
+      Every transaction that wants to spend state must acquire signature from notary
+        proving not already spent
+      "Transaction finalization"
+    Notaries
+      Not necessarily single node
+        Can also be cluster of nodes - fault tolerant, available
+        Nodes will form consensus group
+      Can use crash fault tolerant (CFT) consensus algo like Raft
+        High performance, requires high trust between nodes
+      Can use byzantine fault tolerant algo
+        Lower performance, requires less trust
+    Permissions
+      On regular node, permissioning foundation for auth comm between nodes
+      On notaries, easy to detect when deviates from protocol
+        Identify real-world entity, take necessary actions
+    Finalized transactions are not reversible unless someone violates protocol
+      In bitcoin nodes are anon and can collude to revert historic transactions
+
+Corda architecture
+  Ledger can become large in network
+  Various nodes communicate peer-to-peer only with nodes need to transact
+  Notary service must be used by all nodes
+    Potential scalability and performance bottleneck
+  Corda supports horiz and vert partitions
+  Each network can contain multiple notary clusters
+  Different apps can use different clusters (vertical partitioning)
+  Single app can distribute states between multiple notary clusters (vert again)
+  Only requirement is all input states of transaction belong to same notary
+    Mark transaction as spent atomically
+  Can change notary assoc with state
+    Spend state and create new one assoc with new notary
+    "Atomic swap"
+    Use case in financial world: delivery-versus-payment
+  Corda apps
+    "CorDapps"
+    Several components: states, contracts, flows
+    Flows define workflow between nodes: update ledger, exchange messages
+    Node interaction
+      Corda provides framework
+      Set of blocking calls that send and receive messages
+      Framework transforms into anon, event-driven execution
+    Message serialization
+      Framework again
+      Determines how serialized when sent across wire
+      How deserialized when received
+    Messaging between nodes
+      Message queue - Apache ActiveMQ Artemis message broker
+      Each node inbound queue and outbound queue
+      Bridge process responsible for messages outbound -> inbound on other
+      Moving parts can crash and restart
+      Platform guarantees exactly-once processing
+        Resend messages until ack
+        Nodes keep track of processed messages, discard duplicates
+  Atomic operations
+    Ack message, store id, perform side-effects in atomic single DB transaction
+    All states from ledger relevant are stored in "vault" part of database
+  Node APIs
+    Starting flows
+    Querying node vault
+    Accessed remotely via client
+    RPC interface implemented on top of infrastructure
+
+Backwards compatibility
+  Various nodes might run different versionf of software
+  Software deployed incrementally, not single step
+  Provides API & ABI backward compat for all public APIs
+  Any CorDapp should run in future versions, no change or re-compile
+  CorDapps expected to evolve
+    Change structure of data exchanged between nodes
+    Change structure of data stored ledger
+  Changing data exchange
+    Serialization framework provides some support
+    Ex. add nullable properties
+    Node running old version will ignore new property receiving from new
+    Node running new version will populate as null when receiving from old
+    Ex. remove nullable properties, add non-nullable properties
+      Also possible by providing default value
+      Serialization framework does not allow for data persisted in ledger - states, commands
+      Handling states from earlier version can be removed
+        Only when all unspent states in ledger are from later state
+  Backwards incompatible feature
+    Older versions cannot understand
+    Problem
+      Different nodes might reach diff validity conclusions
+      Nodes are supposed to validate previous transactions in chain when validating new one
+  Multiple versioning problem solve
+    Network minimum platform version
+    Every network comes with params nodes must agree on
+    One param is minimumPlatformVersion
+    Any node below minimum cannot start
+    Any feature not backwards compatible can check param
+      Enabled only when network over specific platform version
+    Establishes balance between risk-happy and risk-averse nodes
+      Only applies to features with network-wide implications
+    targetPlatformVersion
+      Another lever
+      Indicates highest version CorDapp tested against
+      Disable backwards compatibility code paths
+        Less efficient, possibly insecure
+      

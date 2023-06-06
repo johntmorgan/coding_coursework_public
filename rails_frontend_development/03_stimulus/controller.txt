@@ -1,0 +1,48 @@
+Adding Our First Controller
+  Most Stimulus code will go through a controller
+    Similar to Rails Controller
+    Where responses to events are stored
+    Much less structured than a Rails controller
+      Less expectations
+  To invoke a controller
+    Add attribute data-controller to DOM element on page
+    Value of attribute is name of controller
+      Use dash case for >1 word: "fancy-color"
+  The controller has the same scope as the DOM element it's attached to
+    Any events you want dispatched to the controller must happen inside controller's DOM element
+    Any elements that are targets for the controller must also be inside
+
+Ex. Day Show/Hide
+  Controller needs to be attached to DOM element encompassing button and all concerts for day
+
+  <section id="day-body-<%= schedule_day.day.by_example("2006-01-02")%>"
+  data-controller="day-toggle">
+
+  Now Stimulus looks for matching controller when page loads
+    app/javascript/controller/day_toggle_controller.ts
+
+Basic controller
+  // ES6 module syntax to import Controller class from stimulus module
+  // Using webpack allows the import to work from Simulus module in node_modules directory
+    // (more later)
+  import { Controller } from "stimulus"
+
+  // Again using ES6 module keywords - export default as expected
+  export default class DayToggleController extends Controller {
+    // Define method connect (for now)
+    // Automatically called when controller instantiated
+    connect() {
+      console.log("The controller is connected")
+    }
+  }
+
+  // Load page, message has been printed 6 (!) times
+  // Stimulus automatically searches dom for data-controller attributes
+
+A couple points
+  Can declare same controller arbitrary number of times in document
+    You can even nest the controller inside itself
+  A single element can be attached to multiple controllers, separated by spaces
+    // ColorController, SizeController, ShapeController
+    <div data-controller="color size shape"></div>
+    

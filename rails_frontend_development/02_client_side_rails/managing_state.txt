@@ -1,0 +1,22 @@
+Managing State & Front-End
+  A lot of decisions about structure are about state management
+    Data controlling user-application interaction
+    Location of data
+    Logic that manipulates state
+  Avoid multiple sources of truth
+    Do not write same logic on client and server side
+  Consistent problem in web dev
+    Browser and HTTP server are stateless
+    Cookies since almost beginning of web
+  Cookies
+    Token - random string of chars
+    Allow browser to identify self
+      Server uses ID to recreate user's state
+    Over time, pattern = almost all state on server
+      Browser asks for new pages or parts & displays
+  RoR
+    Designed for managing most app state on server
+    Rails built around idea that most web interactions involve a very small set of operations
+      CRUD
+      create, new, show, index, edit, update, delete
+    But basic does not lead to a rich desktop-like experience

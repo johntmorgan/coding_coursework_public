@@ -1,0 +1,35 @@
+Stimulus + Haml and Slim
+Haml
+  Haml generally treats attribute lists as Ruby hashes, so
+    %section.day-body{"data-controller": "day-toggle",
+      "data-day-toggle-active": "false",
+      "data-day-toggle-class-name": "is-hidden"}>
+
+  Need quotes because Ruby symbol literals can't include dashes
+  data-controller: "day-toggle" is a syntax error
+
+  Simplify attribute names by nesting hash
+  Automatically appends data at front, same result less typing
+  Only line break after comma... first line can get long!
+    %section.day-body{data: {controller: "day-toggle",
+    "day-toggle-active": "false",
+    "day-toggle-class-name": "is-hidden"}}>
+
+Slim
+  Use attributes directly without Ruby hash, no commas
+
+  section.day-body(data-controller="day-toggle"
+  data-day-toggle-active="false"
+  data-day-toggle-class-name=is-hidden)>
+
+  Also can do a hash though
+
+  section.day-body(data={controller:"day-toggle",
+  "day-toggle-active": "false"
+  "day-toggle-class-name": "is-hidden"}>
+
+  Or splat sequence into hash
+
+  %section.day-body*{"data-controller": "day-toggle",
+  "data-day-toggle-active": "false",
+  "data-day-toggle-class-name": "is-hidden"}>

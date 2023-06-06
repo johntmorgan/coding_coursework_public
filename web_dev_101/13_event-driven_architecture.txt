@@ -1,0 +1,248 @@
+Event-Driven Architecture
+  Reactive programming, blocking, non-blocking
+  New frameworks/tech: NodeJS, Play, Tornado, Akka
+    Gaining more popularity
+  Blocking
+    Code execution pauses while waiting for process to complete
+    Until process completes, cannot move on
+    Say have a 10 line block of code
+    Every line triggers another external function executing task
+    When flow of execution enters function
+      Starts executing code from top
+      Until first line external function returns, nothing happens
+        Unless add asynchronous behavior by annotating and moving task to separate thread
+        Not what happens in regular CRUD-based apps
+      Synchronous behavior = "blocking"
+  Non-blocking
+    Flow doesn't wait for external function called to return response
+    Just moves on to execute following lines of code
+      A bit inconsistent compared to blocking
+      External function might not return anything, okr throw an error
+    Facilitates IO intensive operations
+    "Reactive"
+    "Event-driven"
+  Events
+    Two kinds of processes: CPU intensive and IO intensive
+    IO = events in web apps
+    Anything from a tweet to a button click
+    Web 2.0 real-time apps have a lot of events
+  Event-driven archs
+    NodeJS
+    Java
+      Play, Akka frameworks
+    Spring Reactor (Spring Framework)
+    Handle high number of concurrent connections, minimal resource consumption
+    Modern apps need a fully asynch model to scale
+      More reliable behavior in a distributed environment
+      Built to run on a cluster, handle large-scale concurrency
+      Write code without working about
+        Handling multi-threads
+        Thread lock
+        Out of memory due to high IO
+    Reactive
+      Just means reacting to events occurring regularly
+      Application becomes inherently asynchronous
+  Event streaming use cases
+    Handling large number of transactional events
+    Timeline of changing stock prices
+    User events on online shopping app
+  NodeJS
+    Single-threaded non-blocking framework
+      Event loop architecture
+    Downsides
+      Not fit for CPU-intensive tasks
+      Graphics rendering, ML algorithms, handling data in enterprise systems
+  Real world
+    Linked in uses Play framework to track online status of users
+
+  Webhooks
+    Ex
+      Write API consumed by lots of third-party services
+        Fetch info from API, add flavor, present to users
+      So many requests that server is getting crushed
+        Users keep polling API, no way to know if new
+      Cut down load with webhooks
+        Like callbacks
+          Allow two services to communicate without middleware
+        Event-based mechanism
+    How they work
+      Register HTTP endpoint with a unique API key
+        When event occurs, server fires HTTP event to all registered endpoints
+    Browser notification are example of Webhooks
+
+  Shared-Nothing Architecture
+    When several modules work in conjunction, often share RAM
+    Architecture where modules or services share nothing = shared-nothing
+      Eliminate all single points of failure
+      Even if several modules in system go down, other modules are unaffected
+
+  Hexagonal Architecture
+    3 key components
+      Ports
+      Adapters
+      Domain
+    Make components independent, loosely coupled, easy to test
+    Can be tested by both humans and automated tests
+      With and without UI
+      With mock databases and mock middleware
+      Without changing code
+    Holds domain at core - business logic
+    Outer layer has ports and adapters
+      Ports act like an API as an interface
+      All input to app goes through interface
+    External entities don't have any direct interaction with domain
+      Adapter is implementation of interface
+      Adapter converts data from ports to be processed by business logic
+    Hexagonal shape has nothing to do with pattern
+      Just a visual representation of the architecture
+      Called "ports and adapter pattern" originally
+    Real-world code
+      Isn't this alrady what we do in the layered approach?
+        Controller, service layer interface, business logic in domain model
+          Service, business, repository classes
+        This is an evolution of that
+    Layered approach
+      Too many layers besides standard controller, service, data access, business layer
+      Business logic scatters across multiple layers
+      Testing, refactoring, plugging new entities becomes difficult
+    Hexagonal very clear
+      Inside component = business logic
+      Ports and adapters involve databases, message queues, APIs, etc.
+
+  Peer-to-Peer (P2P)
+    Base of blockchain tech
+    Computers communicate with each other without a central server
+      No single point of failure
+    All computers in network have equal rights
+      Act as seeder and leecher at same time
+      Seeder hosts data and provides bandwidth to upload
+      Leecher node that downloads data
+    What's better over centralized systems?
+      Central server has access to all your messages
+        Even if encrypted, data breaches happen, governments access, resold for profit
+      Stranded in case of natural disasters (or company going out of business)
+      Corporation can easily ban you from service
+    P2P resilient - decentralized
+      Nobody has control over your data
+      Nobody has the power to delete it - again all nodes have equal rights
+    More advantages
+      How to share several GB of photos?
+        Messengers have a memory limit
+        Upload on cloud and share links
+          Storage space = money
+        Write to physical (CD etc)
+          Costs money
+          Time-consuming
+          Have to send to friends physically
+    Protocol
+      BitTorrent
+
+  P2P details
+    Designed around several nodes
+      Take turns acting as client and server
+    Data exchanged over TCP IP
+      Just like in HTTP protocol in client-server model
+      Has overlay network over TCP IP
+      Users connect directly
+        Takes care of all complexities and heavy lifting
+    Nodes/peers indexed and discoverable
+    Large file transferred by being divided into equally sized chunks in non-sequential order
+      Nodes rehost downloaded chunks immediately
+        Segmented P2P file transfer
+    Depending on link setup: structured, unstructured, hybrid
+
+    Unstructured
+      Nodes/peers connect randomly
+      No indexing of nodes
+      To search data, scan through all nodes in network
+        O(n) complexity
+        Pretty resource intensive
+      Examples
+        Gossip
+        Kazaa
+        Gnutella
+
+    Structured
+      Holds proper node indexing/topology
+        Easier to search for specific data
+        Implements distributed hash table to index nodes
+      BitTorrent
+
+    Hybrid
+      Majority of blockchain startups
+      Cherrypick good stuff from different models
+
+    Decentralized web gaining ground
+      Crypto, NFTs, blockchain provenance
+        Which have kinda peaked lately it seems - JM
+
+    P2P app examples
+      Tradepal
+      Bitcoin, peercoin
+      GitTorrent
+        Github with BitTorrent and Bitcoin
+      Twister
+        Decentralized microblogging
+        WebTorrent for media attachments
+      Diaspora
+        Decentralized social network, federated architecture
+
+  Decentralized social networks
+    Servers spread out over globe
+    Nobody has control
+    No scalability issues
+      Scales with users joining network
+    Host data from systems, do not send to third-party server
+    Nobody eavesdrops on conversations
+      Nobody can modify data
+    BYOD
+      Bring your own device, usually
+    Here it's Bring Your Own Data
+      User data layer is separate
+      Runs on protocols specifically design for the decentralized web
+        Consistent across networks and apps
+      Bail on network? Take your data with you
+    Examples
+      Minds
+      Mastodon
+      Diaspora
+      Friendica
+      Sola
+    In-game currency can be carried forward into other games
+      In-game items retain value
+      (Examples of this? JM)
+    Safe data
+      No private organizations eavesdropping
+      Data encrypted for everyone including technical team
+    Compensate everyone involved
+      For sharing, for hosting network
+      Get tokens, equity, or whatever
+      Moderators, devs, get compensated by ads or token-based economy
+    Network does not cost $$
+    Network basically cannot go down
+    Written on open source protocols
+      Community can keep improving
+    ActivityPub
+    Going to consume lots of market share soon
+      (Maybe - JM)
+    Decentralization becoming norm in FinTech
+
+  Federated Architecture
+    Extension of decentralized
+    Powers Mastodon, Minds, Diaspora
+    Federated = semi-autonomous entities that exchange info
+    Look at different states in a country managed by state governments
+      Partially self-governing
+      Share info with each other and with central government
+    Under continual research, development, and evolution
+    Has entities called servers or pods
+      Nodes subscribe to pods
+      Several pods linked to each other, share info
+    Pods hosted by individuals
+      If pod links break temporarily, network is still up
+      Nodes still communicate via pods
+    Why pods?
+      Facilitate node discovery
+        Better than having to scan through whole network for nodes
+      
+

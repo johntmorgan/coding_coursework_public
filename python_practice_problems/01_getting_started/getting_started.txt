@@ -1,0 +1,42 @@
+Why Design Patterns
+  Interviews are hard
+  Never know what question asked
+    So many
+    Need to reach optimal solution
+  Good news though
+  Handful of patterns that can help
+    Blueprint that solves many related problems
+    Avoid rote memorization
+
+This course
+  175 popular coding interview questions
+  24 design patterns
+  CW: go through 100-200 hard questions for interview
+    Without conceptual basis, just exam cramming
+  Goal: build up robust conceptual framework
+  Each lesson presents both logic and implementation
+    Multiple interactive elements
+  Each pattern has ~5 problems each
+    Cat A: step by step solution construction
+    Cat B: deep dive into solution
+    Cat C: brief overview of solution
+      Training wheels coming off
+    Cat D: test skill in applying techniques
+      Just clues and tips
+  Challenge yourself chapter
+    Set of advanced questions
+      Common at top tech companies
+  Each problem is a pair
+    Problem statement
+    Solution
+  Exceptions: Cat D, Challenge Yourself
+  Also provide code templates
+    Use at your discretion
+
+Complexity note
+  Do not count space taken in memory by input data or output data
+    When comparing solutions, this is always the same
+
+Audience
+  Want to ace interview for dream job
+  Learn more algorithms

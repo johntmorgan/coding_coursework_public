@@ -1,0 +1,24 @@
+What are Stored Procedures?
+  Simple way to save queries for later access
+  Can be defined as a set of SQL statements stored in MySQL server
+  Ex.
+    SELECT STATEMENT that returns all male actors
+  Invoke using a CALL statement
+  MySQL compiles code of procedure, stores in cache
+    Call same stored procedure, execute previously compiled code
+  Why good
+    Reduce traffic between apps & server
+      Send name of procedure, not full query
+    Reduces code duplication
+      Call by other procedures
+    Performance gains
+      Pre-compile code instead of parsing query every time
+    Security
+      Give users access to certain procedures, not entire tables
+  Limitations
+    Difficult to debug
+      Automatically executed
+      No checkpoints in code allowed
+    Resource overhead
+      May overuse memory, CPU
+    No way to rollback a change to a stored procedure

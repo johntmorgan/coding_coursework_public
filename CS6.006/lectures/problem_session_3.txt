@@ -1,0 +1,207 @@
+(Skipped 3-1, just basic hashing, did it by hand on paper - JM)
+Problem 3-2
+  Implementing sequence via hash table
+    build(A) runs in expected O(n) time
+    get_at and set_at run in expected O(1) time
+    insert_at and delete_at run in expected O(n) time
+    first/last run in amortized expected O(1) time
+  Last week saw set via hash table
+    build O(n) exp
+    find O(1) exp
+    insert/delete O(1) exp.amortized
+  Given these operations as a black box
+    Build a sequence from them
+    Called a "reduction"
+    Reducing the sequence problem to the set problem
+    Here going to covert into solution for sequence
+  Sequence bounds
+    Build O(n) exp
+    get_at/set_at O(1) exp
+    insert/delete_at O(n) exp
+    ins/del_first/last O(1) exp amortized
+  Thought process
+    First read the problem
+    What is the hard part here?
+      Build in linear time
+        Basically everything we've seen
+      Get or set_at in constant time
+        That's fast
+        But sure seems like sequence "find" operation
+      Insert and delete at location in linear time
+        That's big!
+        We can rebuild the whole data structure every time, easy!
+      Insert and delete at beginning and end
+        Constant expected amortized time
+        Tricky one
+      Other thing to notice - "expected"
+        Here we know we're gonna be hashing
+        However in other cases, that tells you some randomness will be present
+        In this class that's basically the only form or randomization you'll ever use
+  Now how to tackle problem
+    Challenge - give items keys to store in set
+    get_at and set_at - map to find
+      search for item by key
+      let's make the indices keys
+    seq_build(A): set_build()
+      <key i, value A[i]> for i = 0, 1, ... A[i - 1]
+    get_at(i): find(i).value
+    set_at(i): find(i).value = x
+      Javascript actually implements arrays this way
+        Gross: convert integers into strings and index by the strings (what - JM)
+    insert/delete_at: seq build - linear time operation, extract into array, call build again
+      Use iter to extract all items into array seq
+        Build a static array of size n (have a len operation)
+        Put into array
+        Go to position i, delete and shift over
+        Build a totally new sequence
+        Constant space?
+          delete item
+          for all items bigger, delete (getting item)
+          reinsert with new key
+    insert/delete_first and last
+      ins_last(x): insert(<key len(), value(x)>
+      del_last() : delete item @ key len - 1
+      ins_first(x): now there's a problem
+        want to have key 0
+        but already have key 0
+        so would need to shift every item
+        that's going to take linear time
+          could build an external set - messy but works
+        Idea
+          store variable first = key of the first item (index 0)
+          store -1 as 1, -2 as 3 etc - keep all positive if structure only supports non-negative keys
+        So insert
+          decrement first variable start with first = 0 - set to -1
+          insert(<key first, value x>)
+        Delete
+          delete item with key first, increment first
+    Now need to change everything
+      find(i + first).value
+      set_at(i) = find(i + first).value = x, etc.
+      ins_last(x): insert(<key len() + first, value(x)>
+      invariant: keys = {first, first + len - 1}
+        Can prove by induction, each time you do an operation this is maintained
+  Problem 3 - Critter Sort
+    Abstract: sort n objects by keys
+    Faster more points than slower
+    a) integers range -n to n
+      Radix sort - basically always a good answer when you have (small) integers
+        (I would really like to see a real-world example of integers too big - JM)
+      Radix sorts n integers in range {0... u-1} in n + nlogn(u) time -> linear time if u is n^c
+      Can't apply as is to integers, because negative
+        Don't fold them - does not preserve order
+      Just add n to all the integers, now range [0, 2n]
+        u = 2n + 1, that's linear
+    b) strings over 26 letters of length <= 10 * ceil(logn)
+      map letters to vals
+      map into integer in base 26
+        aa -> 00
+        pad shorter words with a's at the end
+        then radix sort - O(n)
+        2^10logn -> n^10 polynomial works
+        assuming conversion runs in constant time
+      or you can split strings up and tuple sort
+        but you have logn letters so nlogn
+    c) integers [0, n^2)
+      radix sort, can sort as long as bounded by polynomial
+      just call counting sort twice, linear time
+    d) rational win/fight in [0, 1]
+      o <= w < f < n^2
+      n^4 possible choices for what w and f are, that's promising
+      unfortunately it's a rational, that's difficult
+      first goal - nlogn via merge sort
+        what do I need to do for this?
+        comparison - how do you compare wi/fi to wj/fj
+          can't compare directly, computer binary, only has so many bits
+          cross multiplication - all non-negative
+          wifj < fiwj
+          this was the intended solution!
+      But in fact linear time is achievable
+        It would be great if they all had the same f (I mistakenly assumed they did on my first pass - JM)
+        Draw the real interval from 0 to 1
+        Need to map numbers to integers, maybe more of them
+        Get u relatively small - two very close but distinct keys to map to distinct integers
+          Can do that, then just radix sort
+        How close can two of these numbers be?
+          |wi/fi - wj/fj| = |(wifj - wjfi) / fifj|
+            this is an integer
+            top part
+              could be zero, then identical
+              if not zero, then at least 1
+            bottom
+              well all the fs are less than n^2
+              so fifj <  n^4
+          So the closest the two points can get is 1/n^4
+          So:
+            multiply wi/fi by n^4, floor
+            how to do in a machine with no "floor" operation?
+            wi * n^4 // fi
+          u = n^2 * n^4 / 1 = n^6
+          that's fine because radix can handle any fixed polynomial n
+            winds up doing 6 counting passes
+  Problem 4
+    Architecture problem, but what boils down to
+    S = {s0, s1, ..., s(n - 1)}
+    Want 2 numbers in s that sum to h
+      Solve in linear expected time
+        Can't get much faster than that - need input
+        "Expected time" - hashing
+      Not obvious how to approach with hashing
+        First thing you should think about
+        Linear time, n things, hashing
+        Obvious thing to do is take those things and put them in a hash table
+          Takes O(n) time
+        Build on all the keys in S
+          Set interface, call find in constant time
+        Calling find only takes linear time
+          Want to call find() O(n) times
+        Check whether complement (h - si) is in hash
+          n iterations over loop, find costs constant expected time
+          O(n) expected time
+    Now two things harder
+      O(n) worst-case time - can't use hashing anymore
+      Now we would like to find the largest pairwise sum <= h
+        Assume h = 600n^6
+          Polynomial should make you think radix sort
+            Problem: but si could be > h
+            Idea: throw out anything bigger than h
+            Now can apply radix sort
+        Now S is sorted
+          for i = 0, 1, ... n - 1
+          Start at both ends, move fingers
+          Sum is either <= h or > h
+          If it's bigger than h
+            Decrement j
+          Otherwise
+            Keep result as a candidate
+            Increment i
+          Terminate
+            When i >= j (greater than if s can = h/2, but that's not possible from description - JM)
+          Invariant
+            S[i'] + S[j'] > h OR (<= and max candidate)
+            For all i' <= i < j <= j'
+            Really clear it works in one step
+              Hard to argue it works in every step
+            Argue by induction
+              Anything to the right of current j too big
+  Problem 5
+    Wordy! Have a deck D with n cards, dealing k cards and cut points i
+    Starting at position i, taking next k cards from there cyclically
+      Getting different substrings of length k, but sorting them
+        aaba == baaa == abaa -> aaab
+    Build in O(n) time a structure that can determine whether
+      P(D, i, k) = P(D, j, k) hand from cut point i == hand from cut point j in O(1) time
+      Don't need to compare symbols, compress letters
+        3as, 1b, 0cs in above hand - Frequecy table
+        Just give 26 numbers in range [0, n]
+        26 digit number base n + 1
+          (n + 1)^26 - good polynomial, can do radix sort
+          Can write down in 26 words
+        Can just compare 26 numbers
+      Slide window down for cut location
+        Build in linear time
+    Part B
+      Which representation is the most common
+      Do this by radix sorting
+        Take all the representations
+        Scan through the array

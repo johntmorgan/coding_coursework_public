@@ -1,0 +1,26 @@
+Group By
+  Sorts rows together into groups
+  Returns one row for each group
+  Data is organized using a comma separated list of columns after GROUP BY
+  Often used with aggregate functions like COUNT etc.
+  Must appear after FROM and WHERE
+    Evaluated after too
+    Evaluated before ORDER BY, LIMIT, HAVING
+
+  SELECT FirstName FROM Actors GROUP BY FirstName;
+
+  // Fails
+  // Nonsensical to associate any one value for SecondName with entire group
+  SELECT FirstName, SecondName FROM Actors GROUP BY FirstName;
+
+  // Cannot have non-aggregated columns in SELECT, ORDER BY, HAVING clauses when do not appear in GROUP BY
+    Exception when non-aggregated col has single value
+    Set sql_mode to only_full_group_by
+      Can unset and redo failed qury
+      But value chosen for SecondName is arbitrary
+
+  // Find number of male and female actors
+  SELECT Gender, COUNT(*) FROM Actors GROUP BY Gender;
+
+  // Find average wealth of actors of a specific marital status
+  SELECT MaritalStatus, AVG(NetworthInMillions) FROM Actors GROUP BY MaritalStatus ORDER BY MaritalStatus ASC;

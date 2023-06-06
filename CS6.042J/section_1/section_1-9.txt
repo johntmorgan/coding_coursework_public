@@ -1,0 +1,370 @@
+State Machines
+Text
+  Simple, abstract model of step by step processes
+  Floyd's Invariant Principle
+    Version of induction tailored specifically for proving properties of state machines
+    Proving one or more desirable properties holds at every step in process
+    Preserved through operations = "preserved invariant"
+      Variable never exceeds a value
+      Plane never drops below altitude without wingflap deploy
+      Nuclear reactor temp never exceeds meltdown threshold
+  Formally
+    State machine - binary relation on a set
+      Elements of set = states
+      Relation is the "transition relation" or "state graph"
+      Arrow in the graph of the relation is a "transition"
+      state q -> state r is written as q -> r
+      Comes with a designated "start state"
+  Example
+    Bounded counter
+      Counts from 0 to 99 and overflows at 100
+      states ::= {0, 1,..., 99, overflow},
+      start state ::= 0
+      transitions ::= {n -> n + 1 | 0 <= n < 99} U
+        {99 -> overflow, overlow -> overflow}
+      Machine is kinda useless once overflows - can't get out of state
+  State machines:
+    Digital circuits, string pattern matching algorithms
+      Typically have a finite number of states
+    Modeling continuing computations
+      Infinite number of states
+        Can easily define "unbounded" counter that keeps counting up, no overflow
+        Infinite state set - harder to draw
+    Often defined with labels on states and/or transitions to indicate:
+      Input/output values, costs, capacities, probabilities
+      Doesn't *include* labels - will name them to talk about them, but not part of machine
+  Example
+    Diagnonally moving robot
+      Starts at (1,1)
+      Cannot reach (1,0)
+        Can only reach positions (m, n) for which m + n is even
+    Even-sum((m, n)) ::= [m + n is even]
+    Lemma: for any transition q -> r, if Even-sum(q), then Even-sum(r).
+    Prove by induction on the number of transitions
+      P(n) ::= if q is a state reachable in n transitions, then Even-sum(q)
+      Base case: P(0) is true, start state(0, 0) and 0 + 0 is even
+      Assume P(n) is true
+        Let r be any state reachable in n + 1 transitions
+        Need to prove that Even-sum(r) holds
+        Since r is reachable in n + 1 transitions
+        Must be a state q reachable in n transitions such that q -> r
+        Since P(n) is assumed to be true, Even-sum(q) holds
+        And so by Lemma, Even-sum(r) holds
+        Therefore P(n) IMPLIES P(n + 1) as required, completing the proof of the inductive step
+        We conclude that for all n >= 0, if q is reachable in n transitons
+          Then Even-sum(q)
+          Therefore all reachable states have Even-sum property
+    Corollary: The robot can never reach position (1, 0)
+    Proof - by now-proven theorem, robot can only reach positions with coords that sum to an even number
+  The Invariant Principle
+    An execution of the state machine is a (possibly infinite) sequence of states
+      Begins with the start state
+      If q and r are consecutive states in sequence, then q -> r
+      A state is "reachable" if appears in some execution
+    Preserved invariant of a state machine is a predicate P on states
+      Such that whenever P(q) is true of a state q, and q -> r for some state r, then P(r) holds
+    Officially:
+      If a preserved invariant of a state machine is true for the start state
+      Then it is true for all reachable states
+    Just the induction principle reformulated in a convenient form for state machines
+      Note preserved invariants are often just called "invariants" in literature on program correctness
+      "invariant" = "Predicate true of all reachable states"
+    Created by Robert Floyd, late 60s/early 70s
+  Die Hard Example
+    5L and 3L jug, make 4 L in big jug
+    Keep track of amount of water b in big jug and l in little jug
+    0 <= b <= 5, 0 <= l <= 3
+    Start state (0, 0)
+    Several transitons available
+      (b, l) -> (b, 3) // fill little jug
+      (b, l) -> (5, l) // fill big jug
+      (b, l) -> (b, 0) // empty little jug
+      (b, l) -> (0, l) // empty big jug
+      (b, l) -> (b + l, 0)       // if b + l <= 5 (pour little to big)
+                (5, l - (5 - b)) // otherwise
+      (b, l) -> (0, b + l) // if b + l <= 3 (pour big to little)
+                (b - (3 - l), 3) // otherwise
+    Note there are multiple transitions out of states here
+      99-counter: determininstic
+      Die hard: non-deterministic
+    Bomb gets disarmeed
+      (4, 3) is reachable
+  Die Hard Final
+    Replace the 5 gallon jug with a 9 gallon jub
+    Now (4, l) is impossible
+    We prove this using the Invariant Principle
+    P((b, l)) to be that b and l are nonnegative integer multiples of 3
+    Assume P(q) holds for some state q ::= (b, l) and that q -> r
+      Show that P(r) holds
+      "Fill the little jug"
+        r = (b, 3) but P(q) implies b is an integer multiple of 3, so P(r) holds
+      "Pour from little jug into big jug"
+        Again P(r) holds
+      And so on
+        Every reachable state satisfies P
+        But since no state of the form (4, l) satisfies P - bomb goes off
+    Note that (1, 0) which satisfies NOT(P)
+      Has a transition to (0,0) which satisfies P
+      Negation of a preserved invariant may not be a preserved invariatn
+  Fast exponentiation
+    Floyd distinguished two required properties to verify a program
+    1) Partial correctness
+      Final results must satisfy system requirements
+      Does not mean "also partially incorrect"
+      Partial -> process that might not terminate - "partial relation"
+      So partial correctness -> when there is a result
+        But sometimes might get stuck in a loop
+    2) Termination
+      Process does always produce some final value
+    Partial correctness can be proved using Invariant Principle
+    Termination can commonly be proved with Well Ordering
+  Let's verify a fast expontentiation procedure
+    Compute bth power of a
+      Straightforward: multiply a by itself b - 1 times
+    Fast exponentiation approach
+      Register machine program
+      x, y, z, r are registers that hold numbers
+      assignment statement z := a sets number in register z to number a
+    Given inputs a in R and b in N
+      Initialize x, y, z to a, 1, b respectively
+      Repeat until termination
+      If z = 0, return y and terminate
+      r := remainder(z, 2)
+      z := quotient(z, 2)
+      if r = 1, then y := xy
+      x := x^2
+    We claim this program always terminates and leaves y = a^b
+    1. states ::= R x R x N
+    2. start state ::= (a, 1, b)
+    3. transitions defined by rule
+      (x, y, z) -> (x^2, y, quotient(z, 2)) if z is nonzero and even
+                   (x^2, xy, quotient(z,2 )) if z is nonzero and odd
+      The preserved invariant P((x, y, yz)) will be
+        z in N and yx^z = a^b
+      To prove that P is preserved, assume P((x, y, z)) holds and that (x, y, z) ->
+        (xt, yt, zt). We must prove that P(xt, yt, zt) holds, that is
+          zt in N and ytxt^zt = a^b
+      Since there is a transition from (x, y, z), z != 0, and since z in N
+      We consider 2 ases
+        If z is even then we have:
+          xt = x^2, yt = y, zt = z/2
+          Therefore zt in N and
+          ytxt^zt = y(x^2)(z/2)
+                  = yx^z
+                  = a^b
+        If z is odd, xt = x^2, yt = xy, zt = (z - 1)/2
+          Therefore zt in N
+          ytxt^zt = xy(x^(2(z - 1/2))
+                  = yx^(1 + 2*(z - 1)/2)
+                  = yx^(1 + z - 1)
+                  = yx^z
+                  = a^b
+      So in both cases it holds, proving P is a preserved invariant
+        Easy to prove partial correctness - if terminates, does so with a^b in register y
+        However the program only stops when z = 0 - is (x, y, 0) reachable?
+    What is fast about this?
+      Number of multiplications is length of binary representation of b
+      Uses ~logb multiplications, compared to b-1 (~linear - JM) multiplications
+      More precisely, at most 2([logb] + 1) multiplications
+        Number in register z is initially b, and gets at least halved with each transition
+        So it can't be halved more than [log b] + 1 times before hitting 0 and causing program to terminate
+  Derived variables
+    Prior proof involved finding a nonnegative integer-valued measure to assign to states
+    Call this the "size" of the state
+      We showed the size of the state decreased with every state transition
+      By the WOP, size can't decrease indefinitely
+      So when a minimum state size is reached, the process has terminated
+    More generally assigning values to states - useful to analyze algorithms
+      Potential functions play a similar role in physics
+      But in a computational context, value assignments are "derived variables"
+    For the Die Hard machines
+      Introduce a derived variable, f: states -> R for the amount of water in both buckets
+      By setting f((a, b)) ::= a + b
+      In the robot problem, position of the robot along the x-axis would be given by derived variable x-coord
+        x-coord((i, j)) ::= i
+    A few standard derived variable properties handy in analyzing state machines
+      Derived variable f : states -> R is strictly decreasing iff
+        q -> q' IMPLIES f(q') < f(q)
+      Is weakly decreasing iff
+        q -> q' IMPLIES f(q') <= f(q)
+      Confirmed termination of Fast Exponentiation by confirming derived variable z
+        Is non-negative integer-valued and strictly decreasing
+      If f is a strictly decreasing N-valued derived variable of a state machine
+        Then the length of any execution starting at q is at most f(q)
+      If there exists a strictly decreasing derived variable whose range is a well ordered set
+        Then every execution terminates
+      Note that weakly decreasing derived variable does NOT guarantee every execution terminates
+  SE jumping robot
+    Robot positioned NE quadrant of plane, (x, y) in N
+    Every second away from (0, 0), must move
+      unit distance west when not at the boundary of NE
+      unit distance south, combined with arbitrary jump east
+    Claim: robot will always get stuck at the origin
+      No way to bound time the robot takes to get stuck
+      Can delay getting stuck by moving far east
+      v(x, y) ::= y + x/(x + 1)
+      if (x, y) -> (x', y') is a legit move
+        then v((x', y')) < v((x, y))
+        v is a strictly decreasing derived variable
+        So robot always gets stuck - even though number of moves unclear
+
+  Lecture
+    State machines topic in many further courses - model step by step processes
+      Normally think of computation step by step until termination
+        Ditto for digital circuits
+      May step in response to input - not today
+    A state graph of a 99-bounded counter
+      Circles indicate states 0 -> 1 -> 2 etc
+      Reaches final state called overflow
+        Arc back on itself
+      States: {0, 1,...,99, overflow}
+      Transitions: i -> i + 1 0 <= i <= 99
+        99 -> overflow
+        overflow -> overflow
+      If you built this machine, not too useful
+        Dies at overflow
+        Real machine would have a reset
+    Die Hard
+      Example from movie, ARM forgot which one (#3 - JM)
+      Madman is Simon
+      You must fill a jug with exactly 4 gallons of water using a 3-gal and 5-gal jug
+      Model this as a state machine
+      State: amount of water in jugs (b, l)
+        0 <= b <= 5, 0 <= l <= 3
+      Start state: (0,0)
+      Transitions:
+        (b, l) -> (b, 3) // fill little jug
+        (b, l) -> (5, l) // fill big jug
+        (b, l) -> (b, 0) // empty little jug
+        (b, l) -> (0, l) // empty big jug
+        (b, l) -> (b + l, 0)       // if b + l <= 5 (pour little to big)
+                  (5, l - (5 - b)) // otherwise
+        (b, l) -> (0, b + l) // if b + l <= 3 (pour big to little)
+                  (b - (3 - l), 3) // otherwise
+      How?
+        JM:
+          Fill 3, pour into 5
+          Fill 3 again, pour into 5 until full
+          Now have 1 in little
+          Empty 5
+          Pour 1 into 5
+          Fill 3 again and pour into 5
+        ARM:
+          Fill 5, pour into 3
+          Empty 3
+          Fill 3 with remaining 2 in 5
+          Fill 5, pour 1 into 3
+            You're done
+            (Ok that's a little faster - JM)
+      But what if we have 3 and 9 gallon jugs instead?
+        Can you still do it? (No - JM)
+          Can you prove it?
+        Amount of water in any jug is always divisible by 3
+        Preserved invariant
+        P(state) ::= "3 divides number of gallons in each jug"
+        P((b, l)) ::= (3|b AND 3|l)
+          If 3 divides b and l, then 3 divides b' and l'
+          Corollary - no state (4, x) is reachable, so Bruce dies
+    Floyd's Invariant Principle
+      Induction reformulated for state machines
+      Preserved Invariant, P(state):
+      if P(q) and q -> r, then P(r)
+      Conclusion: if P(start), then P(r) for all reachable states r
+        Including final state (if any)
+        (Can prove by induction on number of states)
+      If P(start) is false, then holds in any state, implication is true
+        But not what others would call an invariant
+  Diagonal robot
+    In grid
+    Coords of square are (x,y)
+    Robot at (0,0)
+      Can you get to (1, 0)?
+      NO! preserved invariant:
+        P((x, y)) ::= x + y is even
+      Move adds +-1 to both x and y, preserving parity of x and y
+        If started at odd, stays odd
+      P((0,0)) is true
+      So in all positions (x,y) reachable from (0,0) x + y stays even
+      But 1 + 0 is odd, (1, 0) not reachable
+  The 15 puzzle game
+    Logo on every slide so far
+      And finally something not in book - JM
+    How to get from one permutation to another
+      Fairly sophisticated
+    Oh, we're not doing that - JM
+  Fast exponentiation
+    Compute a^b using registers x, y, z, r
+    X := a, Y := 1, Z := b
+    REPEAT
+      if Z = 0 then return Y
+      R := remdr(Z, 2); z := quotnt(Z, 2)
+      if R=1, then Y := XY
+      X := X^2
+    State machine
+      States ::= R x R x N
+      start ::= (a, 1, b)
+      transitions ::= (X, Y, Z) ->
+        (X^2, y, quotnt(Z, 2)) if Z > 0 is even
+        (X^2, x*y, quotnt(Z, 2)) if Z > 0 is odd
+    Preserved Invariant
+      YX^Z = a^b
+      (X^2, x*y, (Z - 1)/2) if Z > 0 is odd
+      (X * Y)(X^2)^((Z - 1)/2) = (X * Y)X^(Z - 1) = YX^Z = a^b
+      similar, easier for even
+    at start
+      1 * a^b = a^b
+    at end Z = 0
+      so return
+        Y = YX^0 = a^b
+  Fast termination
+    Floyd distinguished two aspects of program correctness
+      One is showing you get the right answer (partial correctness)
+        Might not be defined everywhere
+      Termination - showing that function is total - program always does stop
+        at each transiton
+        Z := quotient(Z/2)
+          Halving or more at every step
+        Z = b at start
+        so Z = 0
+        in <= log2(b) transitions
+  Derived variables
+    Technique that comes up in state machine analysis
+    A function, v assigning a "value" to each state
+    v: States -> Values
+    If Vals = N, say v is "N-valued"
+      or nonnegative-integer-valued
+    Robot on grid example
+      States = N^2
+      Define the sum-value sigma of a state
+      sigma(x,y) ::= x + y
+      a N-valued derived variable
+    Called derived to distinguish from *actual* variables that appear in a program
+      For robot Actual: x, y
+               Derived: sigma (sum)
+                        phi ::= sigma(mod 2)
+                        phi is {0, 1} valued - 1 if even, 0 if odd
+      For fast exponentiation
+        Have actual variable Z
+        Proof of termination strictly decreasing
+        Termination by following Well Ordering Principle
+          Z must take a least value, then the algorithm is stuck
+            Must terminates
+    How to prove termination
+      Find nonnegative integer, strictly decreasing variable
+    Weakly decreasing variable
+      Down or constant after each step
+      Not useful for proving termination
+        But for analyzing behavior of algorithm
+    robot sigma
+      up & down all over the place, neither increasing nor decreasing
+    robot phi
+      constant, both weakly increasing and weakly decreasing
+        (in the degenerate sense)
+      We used to call weakly decreasing variables "nonincreasing" variables
+        Caused a lot of confusion
+        NOT same as not increasing
+    Well ordered sets
+      generalizes straightforwardly
+      A set W of real numbers is well ordered iff it has no infinite decreasing sequence
+      Termination using WOP on N generalizes to strictly decreasing variables
+        whose values are in any well ordered set

@@ -1,0 +1,337 @@
+Partial Orders & Equivalence
+Reading
+  Intro
+    Have already mapped direct prereq relation on digraph
+    Any digraph is formally the same as a binary relation where domain and codomain are both vertices
+    Which means any binary relation where domain = codomain can become a digraph!
+    How can we tell if a binary relation is a DAG?
+      What can we conclude if it is?
+    Will abstract some of the properties a binary relation might have
+  Walk relations in a DAG
+    We've already seen merging u -> v and v -> w gives u -> w
+    A binary relation R on a set A is transitive iff
+      a R b AND b R c IMPLIES a R c
+    for every a, b, c in A
+    Lemma
+      For every digraph G, walk relations G+ and G* are transitive
+    There is a length zero walk from any vertex to itself
+    Definition
+      A binary relation R on a set A is reflexive iff a R a for all a in A
+    Lemma
+      For any digraph G, the walk relation G* is reflexive
+        We know a digraph is a DAG if no positive length closed walks
+        Any vertex on a closed walk can serve as the beginning and end of the walk
+        If a graph is a DAG there is no positive length path from any vertex back to itself
+        The positive walk relation D+ of a DAG has a relational property called irreflexivity
+    Definition
+      A binary relation R on a set A is irreflexive iff NOT (a R a) for all a in A
+      R is a DAG if R+ is irreflexive
+  Strict Partial Orders
+    A relation that is transitive and irreflexive is called a strict partial order
+    A relation R is a strict partial order iff R is the positive walk relation of a DAG
+    Strict partial orders come up in many non-digraph situations (on the surface)
+      "<" is a strict partial order:
+        if x < y and y < z then x < z, so "<" is transitive
+        NOT (x < x) so "<" is irreflexive
+      "C" containment relation is also a partial order
+      if A C B and B C C then A C C so transitive
+      NOT (A C A) so proper containment is irreflexive
+    If there are two vertices reachable from each other
+      Then positive length closed walk that starts at one, goes to the other, and then comes back
+      DAGs are digraphs in which no two vertices are mutually reachable
+    Asymmetry
+      A binary relation R on a set A is asymmetric iff a R b IMPLIES NOT(b R a) for all a, b in A
+      Corollary
+        A digraph D is a DAG iff D+ is asymmetric
+      Corollary
+        A binary relation R on a set A is strict partial order iff it is transitive and asymmetric
+    A strict partial order may be the positive walk relation of different DAGs
+      How to find a DAG with the smallest number of edges that determine a given strict partial order
+        Unique and easy to find for finite strict partial orders
+  Weak partial orders
+    <= and C=
+    Strict partial orders, but every element is related to itself
+    Relax the asymmetry property so it does not apply when a vertex is compared to itself
+    "Antisymmetry"
+      Binary relation R on a set A is antisymmetric iff for all a != b in A
+        a R b IMPLIES NOT(b R a)
+    Definition
+      A binary relation on a set is a weak partial order iff it is transitive, reflexive, and antisymmetric
+    Lemma
+      A relation R on a set A is a weak partial order iff there is a strict partial order S on A such that
+        a R b iff (a S b OR a = b) for all a, b in A
+    Corollary
+      A relation is a weak partial order iff it is the walk relation of a DAG
+    For weak partial orders write D=
+      D indicates strict partial order
+    Let A be some family of sets and define a R b iff a @ b then R is a strict partial order
+    The divisibilty relation is a weak partial order on nonnegative integers
+    More practice
+      Identity relation IdD is a weak partial order
+      Empty relation - no arrows - is a strict partial order
+  Partial orders and set containment
+    DAGs are one way to picture partial orders
+      Can also picture in terms of familiar mathematical objects
+      Sets related by containment
+    Every partial order has the "same shape" as such a collection - aka "isomorphic"
+    A binary relation R on a set A is isomorphic to relation S on a set B
+      If there is a relation - preserving bijection from A to B
+      bijection f : A -> B such that for all a, a' in A
+        a R a' iff f(a) S f(a')
+      To picture a partial order D= on a set A as a collection of sets
+        Represent each element A by the set of elements that are D= to that element
+        a <-> {b in A | b D= a}
+    For example, if D= is the divisibility relation on integers {1, 2, 3, 4, 6, 8, 12}
+      1 <-> {1}
+      3 <-> {1, 3}
+      4 <-> {1, 4}
+      6 <-> {1, 3, 6}
+      8 <-> {1, 4, 8}
+      12 <-> {1, 3, 4, 6, 12}
+    So the fact that 3 | 12 corresponds to the fact that {1, 3} C= {1, 3, 4, 6, 12}
+    Lemma
+      Let D= be the weak partial order on a set A. Then D= is isomorphic to subset relation C=
+      On the collection of inverse images under the D= relation of elements a in A
+    Every weak partial order D= is isomorphic to the subset relation C= on a collection of sets
+    Every strict partial order D is isomorphic to the proper subset relation C on a collection of sets
+  Linear Orders
+    Given two numbers, one will be bigger than the other
+      Partial orders with this property are "linear orders"
+    Can think of a linear order as one where all elements are lined up so you know which is ahead or behind
+    Def
+      Let R be a binary relation on a set A, and let a, b be elements of A.
+      Then a and b are "comparable" with respect to R iff [a R b OR b R a]
+      A partial order for which every two different elements are comparable is a linear order
+      So < and <= are linear orders on R
+      However the subset relation is *not* linear, any two different finite sets of same size
+        Are incomparable under C=
+      Class prereqs are *not* linear
+        Some classes are not prereqs of others and have no relation
+  Product orders
+    Product R1 x R2 of relations R1 and R2
+      domain (R1 x R2) ::= domain(R1) x domain(R2)
+      codomain (R1 x R2) ::= codomain(R1) x codomain(R2)
+      (a1, a2)(R1 x R2)(b1, b2) iff [a1 R1 b1 and a2 R2 b2]
+    If R1 and R2 both are transitive, reflexive, irreflexive, or antisymmetric
+      Than R1 x R2 is as well
+    If R1 and R2 are both partial orders, than so is R1 x R2
+    Example
+      Define relation Y on age-height pairs - younger AND shorter
+      Relation on set of pairs (y, h) y is nonneg int age in months, age is nonneg int height in inches
+      (y1, h1) Y (y2, h2) iff y1 <= y2 and h1 <= h2
+      i.e. Y is the product of the <= relation on ages and the <= relation on heights
+      Since both ages and heights are numerically ordered, Y is a partial order
+      Must be a chain or antichain of 11 students in a class of 101
+        11 students that get tallers as they get younger
+      However being a linear order is not preserved
+        (240, 68) is incomparable to (228, 72)
+  Equivalence relations
+    Definiton: reflexive, symmetric, and transitive
+    Congruence modulo n is an equivalence relation
+      Reflexive: x === x (mod n)
+      Symmetric: x === y (mod n) implies (y === x) (mod n)
+      Transitive: x === y (mod n) and y === x (mod n) imply x === z (mod n)
+    Equality itself
+    Any total function defines an equivalence relation on its domain
+      If f : A -> B is a total function, define a relation ===f by the rule
+        a ===f a' IFF f(a) = f(a')
+      ===f is reflexive, symmetric, and transitive because properties of equality
+      ===f is an equivalence relatoin
+    Remainder Lemma implies congruence modulo n is the same as ===r
+      Where r(a) is the remainder of a divided by n
+    A relation is an equivalence relation iff it equals ===f for some total function f
+  Equivalence Classes
+    Given an equivalence relation R : A -> A
+    The equivalence class [a]R of an element a in A is the set of all elements of A related to a by R
+      [a]R ::= {x in A | a R x}
+    In other words, [a]R is the image R(a)
+    Example
+      A = Z and a R b means that a === b (mod 5)
+      [7]R = {...-3, 2, 7, 12, 17, 22,...}
+      Notice that [7]R = [12]R = [17]R
+    Exact correspondence between equivalence relations on A and partitions of A
+      The equivalence classes of an equivalence relation on a set A are the blocks of a partition of A
+      For example the congruent-mod-5 relation partitions integers into 5 equivalence classes
+        {...-3, 2, 7, 12, 17, 22,...}
+        {...-2, 3, 8, 13, 18, 23,...}
+        etc.
+      x === y (mod 5) is equivalent to asserting that x and y are in the same block of this partition
+      Example
+        6 === 16 (mod 5) because both in
+          {...-4, 1, 6, 11, 16, 21,...}
+        but 2 !=== 9 (mod 5) because in different blocks
+  Relational properties review
+    A relation R: A -> A is the same as a digraph with vertices A
+    Reflexivity
+      For all x in A.x R x
+      Every vertex in R has a self-loop
+    Irreflexivity
+      NOT[there exists x in A.x R x]
+      There are no self-loops in R
+    Symmetry
+      For all x, y in A.x R y IMPLIES y R x
+      If there is an edge from x to y in R, there is an edge back from y to x as well
+    Asymmetry
+      For all x, y in A.x R y IMPLIES NOT(y R x)
+      There is at most one directed edge between any two vetices in R, no self-loops
+    Antisymmetry
+      For all x != y in A. x R y IMPLIES NOT(y R x)
+      There is at most one directed edge between any two vertices in R, but there may be self-loops
+    Transitivity
+      For all x, y x in A.(x R y AND y R z) IMPLIES (x R z)
+      If there is a positive length path from u to v, there is an edge from u to v
+    Linear
+      For all x != y A.(x R y OR y R x)
+      Given any two vertices in R, edge in one direction or the other between them
+      For any finite, nonempty set of vertices of R, there is a directed path going through exactly these vertices
+    Strict partial order
+      R is a strict partial order IFF
+        R is transitive and irreflecive IFF
+        R is transitive and asymmetric IFF
+        Positive length walk relation of a DAG
+      R is a weak partial order IFF
+        R is transitive and antisymmetric and reflexive IFF
+        R is the walk relation of a DAG
+      Equivalence relation
+        R is an equivlance relation IFF
+          R is reflexive, symmetric and transitive IFF
+          R equals the in-the-same-block relation for some partition of domain(R)
+
+Lecture
+  Partial orders another way to talk about digraphs
+  Offer an interesting lesson in the idea of axiomatizing a mathematical structure and mathematical ideas
+  Walks in Digraph G
+    Think about a walk - if you have a walk u to v and v to w, combine and get a walk u to w
+    u G+ v AND v G+ w IMPLIES u G+ w
+    Apply it to an arbitrary relation is a transitivity property
+    Apply to a set
+      u R v and v R w IMPLIES u R w
+    G+ is transitive
+  Transitivity
+    Them: R is transitive iff R = G+ for some digraph G
+  Paths in DAG D
+    Positive length path from u to v implies no path from v to u
+    Because no cycles in DAG
+    "Asymmetry"
+      u D+ v IMPLIES NOT(v D+ u)
+    abstracted:
+      u R v IMPLIES NOT(v R u)
+    D+ is asymmetric in a graph without cycles
+  Strict partial order
+    Transitive and asymmetric
+    Examples
+      C on sets (proper containment relation)
+      "indirect prereq" on MIT subjects
+      less than, <, on real numbers
+    Thm
+      R is a SPO iff R = D+ for some DAG D
+    Transitivity and asymmetry abstractly capture property of relation that it comes from a DAG
+  Path-total order
+    Given any two elements, one will be bigger than the other
+    < or <= on the Reals
+    if x != y, then either x < y or y < x
+    Formal
+      if x != y, then either x R y or y R x
+    Another way to say it: the whole order is a chain
+      Number properties of > than
+      Not: subset containment
+        Can have two sets neither of which is contained in the other
+  Weak partial order
+    Small variation of a strict partial order
+    Take the strict property, guarantees nothing related to itself, and relax it
+    Same as a strict partial order, except that a R a always holds
+      In fact, not just relaxed but denied
+    C= on sets - a is a subset of a
+    <= is weak p.o. on real numbers
+    Key property reflexivity
+      relation R on A is reflexive iff a R a for all a in A
+      G* (which includes walks of length 0) is reflexive
+    Can reformulate asymmetry into antisymmetry
+      binary relation R is antisymmetric iff asymmetric except for a R a case
+    Asymmetric vs Antisymmetric
+      In asymmetric a R a never allowed
+      In antisymmetric a R a sometimes, allowed
+      antisymmetric
+        u R v IMPLIES NOT(v R u) for u != v
+      D* is antisymmetric (DAG in digraph, allows length 0 walks)
+    Weak PO
+      Transitive, antisymmetric, and reflexive
+        Note if some elements are self-related and some not, neither a strong nor weak PO
+          Would just be "transitive and asymmetric"
+          Don't come up much, so no formal name and not really covered
+    Thm
+      R is a WPO iff R = D* for some DAG D
+  Representing partial orders
+    Proper subset relation
+    A C B means B has everything A has and more, and B !C A
+    Example
+      7 sets with arrows indicating proper subset relation, edges pointing up
+        "Hasse diagram"
+        Top set has everything below sets have
+    Partial order: properly divides
+      a divides b and not equal to b
+      Exactly same shape as subset example
+        "isomorphic"
+        All that matters is the connections - if same then isomorphic
+        Formally: Edge-preserving matching between vertices (bijection)
+      G1 isomorphic to G2 IFF there exists bijection f V1 -> V2 with
+      u -> v in E1 IFF f(u) -> f(v) in E2
+      p.o. represented by C
+      Thm
+        Every strict partial order is isomorphic to a collection of subsets partially ordered by C
+        IOW strict partial order isomorphic to a bunch of sets under containment
+      Proof
+        Map element a to the set of elements below it
+          a maps to { b in A | b R a OR b = a}
+          f(a) ::= R^-1(a) U {a}
+      Example
+        subsets from divides
+        1 -> {1}
+        3 -> {1, 3}
+        5 -> {1, 5}
+        2 -> {1, 2}
+        15 -> {1, 3, 5, 15}
+        10 -> {1, 2, 5, 10}
+        30 -> {1, 2, 3, 5, 10, 15, 30}
+        And graph
+  Equivalence relations
+    Another binary relation on a set
+      Key role on math and CS in particular
+    Can be explained in terms of both digraphs and axioms
+      Two-way walks
+        Walk from u to v and back from v to u
+        u and v are strongly connected
+        u G* v and v G* u
+        "symmetry"
+    Symmetry
+      relation R on set A is symmetric iff a R b IMPLIES b R a
+    Equivalence relation
+      Transitive, symmetric, and reflexive
+        Two-way walk relation
+      Thm:
+        R is an equiv relation iff R is the strongly connected relation of some digraph
+    Examples
+      Equality, = 
+      Congruence, === (mod n)
+      Sets same size
+      Objects have the same color
+    Graphical properties of relations
+      Reflexive - self loop on every vertex to itself
+      Transitive - two edges connect one to another, path of length 1 from first vertex to last
+      Asymmetric - have an edge from one to another, no edge back
+      Symmetric graph - wherever edge, edge going back the other way
+    Representing equivalences
+      For total function f : A -> B
+      Define relation ==f on A:
+        a ==f a' IFF f(a) = f(a')
+      Thm
+        Relation R on set A is an equiv relation IFF R is ==f for some f : A -> B
+    Example w/congruence
+      === (mod n) is ==f where f(k) ::= rem(k, n)
+      Two numbers are congruent mod n iff same remainder on division by n
+    For partition bpi of set A
+      define relation ==bpi on A
+      a ==bpi a' IFF a, a' are in the same block of bpi
+    Thm
+      Relation R on a set A is an equivalence relation IFF
+      R is ==bpi for some partition bpi of A

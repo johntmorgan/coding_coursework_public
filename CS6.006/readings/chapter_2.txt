@@ -1,0 +1,181 @@
+Insertion sort
+  Sort a sequence of numbers, known as keys
+    Practically speaking, sequence will be an array with n elements
+  Add cards to hand, one at a time, finding position from right
+  Actual algorithm sorts in place
+    Start with leftmost pair of keys, swap if R smaller than L
+    Move to next key, swap until L is smaller than R
+    Track key location with j (why not i... oh well - JM)
+    Start J off at position 2
+    A[1.. j-1] is the already sorted hand
+    A[j+1.. n] is the pile of cards still on the table
+    State A[1.. j-1] as "loop invariant"
+      Must show 3 things about a loop invariant:
+        Initialization - true prior to first loop iteration
+        Maintenance - if true before first iteration, true before next iteration
+          Can use other facts besides loop invariant itself to prove this
+        Termination - when loop terminates, invariant gives useful property showing algorithm correct
+      Very similar to induction!
+        Prove base case, inductive step
+        Here, initialization = base case
+        Holding from iteration to iteration = inductive step
+        Termination property differs from induction though
+          There you apply the inductive step infinitely
+          Here induction stops when loop terminates
+  Proving iteration sort works
+    Initialization - before J = 2, you just have A[1], which is (trivially) sorted
+    Maintenance - moves along A[j - 1], A[j - 2], and so on until proper position for A[j] found
+      Subarray A[1.. j] consists of elements in A[1.. j] but in sorted order
+      Incrementing j preserves loop invariant
+    Termination - loop terminates when j > A.length = n
+      Because loop increases j by 1 each time, must have j = n+1
+      Substituting n+1 for j in loop invariant
+      We have subarray A[1.. n] consisting of elements originally in A[1.. n] but in sorted order
+      Since A[1.. n] is the whole array, the whole array is sorted, the algorithm is correct
+    This will be used a lot in the future!
+  Pseudocode notes
+    Loop counter retains its value after exiting, unlike some situations in C++/Java
+    This property is used in correctness argument for insertion sort
+    Treat a variable representing array or object as a *pointer* to the data representing the array or object
+    have object x with attributes f? setting y = x causes y.f to equal x.f
+    if x.f now = 3, then y.f = 3 as well - so x and y point to same object after assignment
+    if y = x.f, then x.f.g is the same as  y.g
+    Pointer referring to nothing has value NIL (not NULL? sigh - JM)
+    Params passed to procedure *by value*
+    Objects are passed: pointer to data representing object is passed, but attributes are not
+      So x = y is not visible to calling procedure
+      But x.f = 3 IS visible to calling procedure
+    Return statements immediately transfer control back to calling procedure
+      Multiple values MAY be returned (unlike many languages)
+    Boolean operators short circuit
+      So "x != NIL and x.f = y" works because if x is NIL it will short circuit before evaluating x.f
+    Keyword error
+      Indicates error occurred because conditions were wrong for the procedure to have been called
+      Calling procedure must handle error, what action to take is not specified
+Analyzing algorithms
+  Predicting resources the algorithm requires
+  Memory, communication bandwidth, or computer hardware may be important
+  Computational time is usually the main thing we want to measure
+  Before analysis, must have a model of the implementation tech
+    For most of book: one processor, random-access machine (RAM) model of computation
+    Instructions executed one after the other, no concurrent operations
+    Tedious to define all the details
+    But don't abuse the model too much - what if there was a "sort" instruction?
+    Assume:
+      common arithmetic
+        add, subtract, multiply, divide, remainder, floor, ceiling
+      data movement
+        load, store, copy
+      control
+        conditional and unconditional branch
+        subroutine call and return
+    Data types: integer, floating point
+    Limit on size of each word of data
+      Input of size n
+      Integers represented by clgn bits for some constant c >= 1
+        Each word can hold the value of n
+        c is a constant so word size does not grow arbitrarily
+          Can't store lots of data all in one word
+    Real computers CAN do more than stuff above
+      Exponentiation? - not a constant time instruction
+        Except in some situations... "shift left" instruction in constant time
+        Shift left 1 position = multiply by 2 in most computers
+        So a shift of k positions is like multiplying by 2^k
+      Generally going to try to avoid these gray areas
+        However 2^k is constant time when k is a fairly small positive integer
+    Do not model memory hierarchy
+      No cache or virtual memory modeling
+        There are models that do account for these effects, may be significant in some cases
+        But generally going to ignore - complicated!
+      Usually RAM-model is an excellent predictor as is
+Analyzing insertion sort
+  Input size
+    Number of items in input - frequently best
+    But if multiplying integers - total number of bits needed to represent in binary notation
+    If graph - number of vertices and edges in graph
+  Running time
+    Number of primitive operations or "steps" required
+    Some steps may actually take more or less time
+      But we are going to assume each step takes some constant ci time
+  T(n) - running time of insertion sort on an input of n values
+    For insertion sort, best case occurs if array is already sorted
+      Linear function of n - constants of each step * n - constants of most steps
+    Worst case - reverse sorted order
+      Quadratic function of n - sum lines evaluate to n(n - 1) / 2
+    Fixed running time for a given input
+      Other than some "randomized" algorithms in later chapters
+  Usually focus on worst-case
+    Upper bound on running time
+      Don't need to hope it never gets worse
+    Worst case may happen fairly often for many algorithms
+      Searching for something in database that is not there
+    Average case often roughly as bad as worst case
+      What if the numbers are randomly ordered in insertion sort?
+      About half the elements must be checked on average to insert the next element
+      Running time remains quadratic
+  Sometimes also interested in average-case
+    Probabilistic analysis
+    Limited scope - what is "average" input can be tough to figure out
+      Often assume all inputs of a given size are equally likely
+      Assumption may be violated in practice
+      Sometimes use a randomized algorithm
+  Order of growth
+    Simplifying abstractions were used in insertion-sort analysis
+      Ignored cost of each statement - used a constant
+      And in fact ignored those in the final analysis - boiled down to "some constants"
+    Let's abstract even more
+      It is rate of growth, or "order of growth" that really interests us
+      So consider only leading term of a formula
+        Lower-order terms are insignificant for large n
+      And ignore leading term's constant coefficient
+        Less significant than rate of growth for large inputs
+    So insertion sort
+      theta(n^2) - to be defined formally next chapter
+    Generally consider an algorithm more efficient
+      If worst case running time has lower order of growth
+      Though it might still be worse for a small input!
+Desiging algorithms
+  Insertion sort was incremental
+    Sticking one element into sorted subarray at a time
+  Divide and conquer
+    Recursive algorithms
+    Break problem into subproblems similar to the original problem
+    Solve each piece, then combine solutions
+Merge sort
+  Divide the n-element sequence into two n/2 subsequences
+  Sort the two subsequnces recursively using merge sort
+  Combine sorted subsequences to produce sorted answer
+  Recursion "bottoms out" when all sequences length 1 - already sorted
+  Key operation is merging of sorted sequences in combine
+  Merge takes time theta(n) time - need to examine n elements
+  Analyzing divide and conquer - or any recursive call
+    "recurrence equation" or "recurrence"
+  Division of problem yields a subproblems, with length 1/b
+    Here it's 2 subproblems, length 1/2
+    But it won't always be this way!
+    It takes T(n/b) to solve one subproblem
+    So aT(n/b) to solve a of them
+    D(n) time to divide
+    C(n) time to combine
+    T(n) = aT(n/b) + D(n) + C(n)
+
+    D(n) = theta(1) - just compute middle of array
+    aT(n/b) = 2T(n/2)
+    C(n) = theta(n) - already proved this!
+    theta(n) + theta(1) is a linear function of n
+    so just theta(n)
+    So worst case:
+    T(n) = 2T(n/2) + theta(n)
+      Chapter 4 master theorem shows this equals theta(nlgn)
+    For large enough inputs merge sort outperforms insertion sort
+    But we don't need to master theorem to understand why it's theta(nlgn)
+      Assume n is an exact power of 2 for convenience
+      T(n) = 2T(n/2) + cn
+      cn work done at root
+      T(n/2) at two smaller recurrences
+      cost at each of two subnodes is cn/2
+      each level of tree does cn work
+      total number of levels of recursion tree is lgn + 1
+      A tree with 2^(n+1) leaves has one more level than a tree with 2^i leaves
+      So total number of levels is (i + 1) + 1 = lg2^(i + 1) + 1
+      total cost is cn(lgn + 1) = cnlgn + cn, ignoring lower term and constant nlgn

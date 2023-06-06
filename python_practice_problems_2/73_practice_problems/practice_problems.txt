@@ -1,0 +1,305 @@
+Practice Problems
+
+Blocking Queue / Bounded Buffer / Consumer Producer
+  Classic synch problem
+  Limited size buffer
+  Items added/removed by different producer, consumer threads
+
+  Blocking queue is queue which blocks caller of enqueue if no more capacity
+    Also blocks dequeue caller if no more items in queue
+    Notifies blocked enqueuer when space
+    Notifies blocked dequeuer when items
+
+  Solution
+    queue.Queue already provides synchronized queue out of box
+    Going to create one from scratch used by multiple producers, consumers
+    Queue size passed in via constructor
+    Use list as backing data structure for queue
+      pop() and append() to emulate queue operation
+    Track both max_size and curr_size of queue
+    self.cond = Condition()
+      Either producer, consumer can wait on if queue full/empty
+    For enqueue() method
+      if curr_size == max_size, then block invoker
+        Call wait on cond variable
+      False as soon as another thread dequeues
+      Acquire lock to make sure no other thread changing curr size
+      Call notifyAll() when released
+        Signal wakes up any waiting threads
+        If no thread waiting, will just be ignored
+          "Missed signal"
+    For dequeue() method
+      Block caller if curr_size == 0
+      After consuming item, call notifyAll()
+    Followup
+      Does notifyAll() matter?
+        Yes - imagine queue size 1
+          2 producers
+          1 consumer
+        Item added by producer
+          Other producer and consumer sleep
+        Other producer wakes up
+          Consumer does not
+        Deadlock!
+
+Non-Blocking Queue
+  Followup to Blocking Queue
+  Blocks producer or consumer when queue full/empty
+  What is non-blocking?
+    Producer, consumer can always enqueue/dequeue
+  First approach
+    Return boolean if unsuccessful
+    Producer must retry again later
+    Use a lock to make sure only one enqueue/dequeue happening at once
+  Second approach
+    Return concurrent.futures.Future object
+    Keep two separate queues to track
+    Can retry when future in resolved state
+    Resolves futures in FIFO order
+    But requires busy waiting
+  Third approach
+    Use callbacks instead
+    Future method exposes add_done_callback()
+      Takes callable, invoked when future is resolved
+    Need to use RLock
+      Callback always called in thread belonging to process that added
+      Callback may be invoked by same thread that resolves future
+        Immediately after future object's set_result() is called
+      If normal Lock
+        Queue resolves future while holding Lock
+        Attempts enqueue again
+        Therefore attempts to acquire lock again
+        Deadlock
+    Trivial for dequeue
+      Resolve future to item dequeued from queue
+    Problems?
+      Well now we're retaining info about all enqueues/dequeues can't complete
+        So queue can grow without bound
+          That was something to avoid originally
+      Queues to ensure FIFO
+        Resolve futures in FIFO
+        However doesn't guarantee pending gets/puts same order
+        Unless framework guarantees callback invoked as future resolved
+          No FIFO guarantee
+
+Rate Limiting Using Token Bucket Filter
+  Actual interview question at Uber, Oracle
+  Imagine you have a bucket that gets filled with tokens
+    Rate 1 token/s
+  Bucket can hold N tokens
+  Thread-safe class that lets threads get a token when one is available
+  If no token available, token-requesting threads should block
+  Class exposes API called get_token()
+  Solution
+    Naive form of class of algorithms called token bucket
+      Complimentary: "leaky bucket"
+    Application shaping network traffic flows
+  Majority of candidates incorrectly start with multithreaded approach
+    Create background thread to fill bucket with tokens regularly
+  But far simpler solution
+    No threads
+  Key is find a way to track number of available tokens when requested
+    So if know when token bucket instantiated & get_token() call
+    Take difference of two instants and know max # possible tokens
+    But need to tweak to account for max bucket can hold
+
+    class TokenBucketFilter:
+      def __init__(self, MAX_TOKENS):
+        self.MAX_TOKENS = MAX_TOKENS
+        self.last_request_time = time.time()
+        self.possible_tokens = 0
+        self.lock = Lock()
+
+      def get_token(self):
+        pass
+
+      Note that get_token() does not return token type
+        Just returning implies thread has token
+          Permission to undertake action
+    Envelop logic of get_token with lock defined in __init__() method
+      Must ensure only a single thread inside get_toke() at a time
+        Do not rely on GIL to do this!
+          Thread can be context switched at any time
+            Mutation of shared state in thread unsafe way
+    Let's assume bucket can hold 5 tokens
+      If last request > 5 seconds ago
+        Set tokens to 5 and return one
+      If last within 5 seconsd
+        Calculate tokens since last and add to unused
+        Then return one
+      If last within 5 and all tokens used
+        Sleep for one second and then return
+        Lock still held by requesting thread
+        Any new threads get blocked
+  What about using a background thread?
+    Instantiate thread to add token to bucket every second
+    Logic of daemon thread is simple
+      Sleep 1
+      Wake up, if number of tokens less than max, increment
+    Mark daemon thread as background, exits when app terminates
+    Problem: start thread in constructor
+      Inadvisable
+      Child thread can be passed self variable
+      Child thread can use before passed-in self fully constructed
+    How to solve?
+      Naive but correct: start outside of the object
+        But now management spills outside of class
+      Simple Factory design pattern
+        Create Factory class
+          Makes token bucket filter objects
+          Only starts daemon thread when object is fully constructed
+
+Thread Safe Deferred Callback
+  Design and implement a thread-safe class that allows reg of callback
+  Callback methods executed after user specified time interval has elapsed
+  Class exposes API add_action()
+    Takes parameter action
+    Specify after how many seconds class invokes passed-in action
+  Solutions?
+    Busy thread that loops over list and executes when due
+      But challenge is to not do that
+    Priority queue min-heap ordered by time remaining
+      Sleep until time to execute earliest action
+      But what if earlier action added while sleeping?
+        Need elegant way to wake up, reset sleep duration
+  Define DeferredAction class
+    Object will be passed into register_action method
+    Add action to min_heap self.actions
+    Define __lt__() in DeferredAction to compare actions based on execution
+    Use a Condition object to guard access to critical sections
+      Also used to signal executor when new action gets added
+      Without it, execution thread busy waits
+        Instead will wait on variable
+
+Implementing Semaphore
+  Takes in constructor # of permits allowed
+  Initialized with same number of permits
+  If all permits given out, semaphore blocks
+    Track max_permits and given_out
+  Need acquire() and release() to simulate gaining/releasing
+  Acquire and release can be invoked at same time by diff threads
+    Need to guard logic inside by lock
+    Can use simple lock for this purppose
+    Condition variable
+  acquire()
+    Thread acquires cond_var
+    While max_permits == given_out
+      must cond_var.wait
+    notifyAll after incrementing
+      Because threads can be blocked releasing at 0 given out in release()
+
+  release()
+    Decrement given_out
+    Block if given_out == 0
+    Again notifyAll and release
+
+Read Write Lock
+  Application with multiple readers and one writer
+  Design a lock which lets multiple readers read at same time
+  But only one writer can write
+  Let's define APIs class will expose
+    acquire_read_lock
+    release_read_lock
+    acquire_write_lock
+    release_write_lock
+  Read
+    Make sure no writer in progress
+    Ok to have other readers in critical section, no modifications
+    Have a count to track number of readers
+  Write
+    Make sure no reader or writer in critical section
+    Can just use a boolean variable
+
+  Followup
+    Only one writer thread - why not acquire cond_var in lock acquire
+    and then release cond_var in lock release?
+    If writer thread dies, entire system is in deadlock!
+
+Unisex Bathroom
+  Both men and women using bathroom
+  The two cannot be in the bathroom at the same time
+  Should never be more than 3 employees in bathroom at the same time
+  Avoid deadlocks!
+  Don't worry about starvation
+
+  Basically condition waits if opposite gender is using bathroom
+  Otherwise increment
+  Sleep to simulate using bathroom
+  Then decrement
+  If nobody in bathroom, in_use_by back to None
+  Use a semaphore to hold threads up while bathroom is full
+
+  Note that this result is unfair to genders!
+    Whichever one gets access first may hold it forever
+    Other gender may starve (or, well, you know - JM)
+
+  Also that this result may show the wrong employee number at times!
+    Threads may pile up after bathroom without managing to decrement employee number
+      If program prioritizes letting other threads in
+
+Barrier
+  All threads need to reach before any can get further
+  Again, Python provides this - so re-inventing wheel
+    But good interview question
+  Solution
+    Need to track number of threads at barrier
+    Seems like wait until reach set point
+
+Uber Ride
+  Leaving a political convention
+  2R/2D or 4D or 4R
+  Model ride requestors as threads
+  Each thread invokes seated() when selectd
+  When all seated(), any invokes drive()
+  Solution
+    Model as class
+    Democrat calls method
+    Republican calls diff method
+    Keep count of Republicans, Dems requesting rides
+    Create two variables, modify within lock/mutex
+    Need barrier - all four threads arrive at before riding away
+
+Dining Philosophers
+  Dijkstra
+  5 philosophers sitting on roundtable
+    Contemplate
+    Eat
+  Only have 5 forks
+    Need fork to left and right to eat
+  Design setup where each philosopher gets to eat without deadlock
+  Solution
+    Can only let 2 eat at a time
+    Think of fork as resource shared by philosophers to either side
+  But can deadlock if all grab one fork at the same time!
+    Only let 4 eat at the same time - then someone always gets through
+    Use a Semaphore(4)
+  Or you can force one to pick up left fork ahead of right fork
+
+Barber Shop
+  Waiting room with n chairs
+  Barber chair for haircuts
+  If all chairs occupied, customer leaves
+  If barber busy, sit in chair
+  If nobody there barber goes to sleep
+  If barber asleep and customer arrives, customer wakes up
+  (Modeled in code - using 4 semaphores)
+
+Async to Sync
+  Actual Netflix question
+  Async executor performs async via execute()
+  Accepts function that acts as callback
+    Invoked after async execute done
+    Take any action after async process
+  Note that main thread exits first
+  Make execution synchronous without changing original classes
+    "Given binaries not source code"
+
+Multithreaded Merge Sort
+  Classic recursive, divide-and-conquer example
+  Base case, recurrence equation, etc.
+  Very nice match for parallelism
+    Can use multiprocessing module
+    But let's stick to threading here
+    Subdivided problems/subarrays do not overlap
+    Main caveat: peer threads at each level of recursion must finish before merge
+  Let's do an extra space solution to avoid complexity

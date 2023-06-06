@@ -1,0 +1,10 @@
+Truncate
+  A faster way to delete all the rows from your table
+  Drops and recreates table
+  MySQL does not count the number of rows affected - so may show wrong number here
+
+  TRUNCATE Actors;
+
+  Does not work with locking or transactions
+  Is the equivalent of DELETE when used on InnoDB tables
+    (InnoDB is a specific database engine, we'll discuss in future)

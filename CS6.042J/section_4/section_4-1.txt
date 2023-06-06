@@ -1,0 +1,354 @@
+Events and Probability Spaces
+Reading
+  Example - Monty Hall - Marilyn Vos Savant
+    Let's Make a Deal
+    3 doors - 1 car, 2 goats
+    Pick a door, host opens another door, it has a goat
+    Should you switch doors?
+      Marilyn: yes
+      Letters: wrong!
+    Intuition leads to the wrong conclusion here
+    Follow a rigorous approach such as Four Step Method
+    First let's make sure we understand the problem
+      Car equally likely to be behind any door
+      Player equally likely to pick each door
+      Host must open a door with a goat from remaining 2
+      Host equally likely to select if has a choice
+  The Four Step Method
+    Every probability problem involves some sort of randomized experiment/process/game
+      How to model mathematically?
+      How to solve the resulting problem?
+    Step 1: find the sample sapce
+      Set of all possible outcomes
+      Tree diagram to work through if outcomes not too large
+      12 possible outcomes for Monty hall
+      Where is car, door chosen, door opened by host
+      S = {(A, A, B), (A, A, C), (A, B, C), (A, C, B),
+            B, B, A), (B, B, C), (B, C, A), (B, A, C),
+            C, A, B), (C, B, A), (C, C, A), (C, C, B)}
+    Step 2: define events of interest
+      In half the outcomes the player wins by switching
+        Might be tempted to conclude switching player wins with probability 1/3
+          This is wrong
+          Not all outcomes are equally likely
+    Step 3: determine outcome probabilities
+      3a assign edge probabilities
+        Note that when host has no choice, probability 1
+      3b compute outcome probabilities
+        Mechanical process by multiplying edge-probabilities on path from root to outcome
+        So Pr[(A, A, B)] = 1/18
+        Pr[(A, A, C)] = 1/18
+        Pr[(A, B, C)] = 1/9
+    Step 4: compute event probabilities
+      Pr[switching wins] = Pr[(A, B, C)] + Pr[(A, C, B)] + Pr[(B, C, A)] +
+        Pr[(B, C, A)] + Pr[(C, A, B)] + Pr[(C, B, A)]
+        = 1/9 * 6 = 2/3
+      It seems Marilyn is correct! A player who switches wins with probability 2/3
+      However the player who stays original wins probability 1/3
+        Because staying wins only if switching loses
+      Just needed to add fractions to get here
+        Key was avoiding leap to "intuitively obvious" answer
+  Monty Hall postscript
+    Marilyn is right... but only if she interpreted Craig's letter right
+      On the actual show, Monty could also open the door the contestant picked first
+      In fact Monty could give the switch option only to contestants who picked right originally
+        Then switching never works!
+  Example 2: Strange Dice
+    Three strange dice
+    Each player selects and rolls once
+    Winner gets $100
+    The dice - opposte sides have the same number (Die A intuitively looks best to me - JM)
+      1) 2 6 7
+      2) 1 5 9
+      3) 3 4 8
+    Or what if you get $105 to $100 and get to pick first?
+    Sample space S for die A & B
+      S = {(2, 1), (2, 5), (2, 6), (6, 1), (6, 5), (6, 9), (7, 1), (7, 5), (7, 9)}
+    Die A > die B on 5/9 rolls
+      {(2, 1), (6, 1), (6, 5), (7, 1), (7, 5)}
+    All edges have probability 1/9 - 1/3 for each die
+      "Uniform sample space"
+      Makes things very easy - just compute number of outcomes
+      Event E = A beats B
+      Pr[E] = |E|/|S| = 5/9
+    A vs. C
+      S = {(2, 3), (2, 4), (2, 8), (6, 3), (6, 4), (6, 8), (7, 3), (7, 4), (7, 8)}
+      Event E = A beats C
+      {(6, 3), (6, 4), (7, 3), (7, 4)}
+      4/9 - so C > A
+    B vs. C
+      S = {(1, 3), (1, 4), (1, 8), (5, 3), (5, 4), (5, 8), (9, 3), (9, 4), (9, 8)}
+      Event E = B beats C
+      S = {((5, 3), (5, 4), (9, 3), (9, 4), (9, 8)}
+      5/9, so B > C
+    So C > A 5/9, A > B 5/9, and B > C 5/9
+    Seems like this ought to be transitive, but it's not
+      Picking first is actually a disadvantage here!
+    Ok, how about rolling a die twice?
+      Tree diagram now has four levels, 81 possible outcomes
+      But equally likely A sums of (4, 8, 8, 9, 9, 12, 13, 13, 14)
+      B sums of (2, 6, 6, 10, 10, 10, 14, 14, 18)
+      Counting pairs shows 37 pairs where A > B and 42 where B > A, 2 ties
+    Surprising, right?
+      Die A is favored on a single roll, but not on a double roll
+      In fact die strength completely reverses on a double roll
+      Single: A > B > C > A
+      Double: A < B < C < A
+      Generalizes in a remarkable way
+      There are arbitrarily large sets of dice will beat each other in any desired pattern
+        Depending on the number of dice rolls
+  The Birthday Principle
+    There are 95 students in a class. What is the probability two share a birthday?
+      You might guess ~1/4 since 95/365
+      But very wrong, probability > 0.9999
+    Assume probability a randomly chosen student has a birthday is 1/d
+      d = 365, n = 95
+      Randomness not really true - periodicity in births, class selections linked (e.g. twins)
+    d^n sequences of n birthdays
+      These are equally likely
+      There are (d)(d - 1)(d - 2)... (d - (n - 1)) length n sequens of distinct birthdays
+      (d)(d - 1)(d - 2)... (d - (n - 1)) / d^n
+      d / d * (d - 1) / d * (d - 2) / d ... d - (n - 1)) / d
+      (1 - 0/d) * (1 - 1/d) * (1 - 2/d) ... (1 - (n - 1) / d)
+      since 1 + x < e^x
+      < e^0 + e^(-1/d) + e^(-2/d)... e^(-(n-1)/d)
+      = sum i = 1 to n - 1 of i /d
+      = e^(-n(n - 1) / 2d)
+        For n = 95 and d = 365, value < 1/200000
+      For d < n^2/2 probability of no match asymtotically equal to the upper bound
+        For d = n^2/2, equal to 1/e
+    Birthday principle
+      If there are d days in a year and sqrt(2d) people in a room, probability that share bday
+        Is about 1 - 1/e ~= 0.632
+      So if sqrt(2 * 365) ~= 27 in a room, probability is ~0.632 (actual is 0.626)
+    If you use a hash function that maps n items into hash table size d
+      Expect many collisions if n^2 more than a small fraction of d
+      Also basis of "birthday attack" cracking some crypto
+  Set Theory and Probability
+    Let's abstract into a general mathematical definition
+    Probability spaces
+      Countable sample space S is a nonempty countable set
+      Element lomega in S is called an outcome
+        A subset of S is called an event
+      Probability function on a sample space S is a total function Pr: S -> R such that
+      Pr[lomega] >= 0 for all lomega in S and
+      sum lomega in S PR[lomega] = 1
+      Sample space + probability function = probability space
+      For any event E C= S
+        Probability of E is defined to be sum of probabilities of outcomes in E
+        Pr[E] ::= sum lomega in E Pr[lomega]
+      So far only finite possible outcomes
+      But soon, countably infinite number of outcomes
+      Any set can be a sample space, any subset can be an event
+        General probability theory deals with uncountable sets like real numbers
+        But will stick to countable, using sums not integrals
+        Avoid distracting technical issues in set theory like Banach-Tarski "paradox"
+    Probability rules from set theory
+      Most rules extend from finite sets very naturally
+      For disjoint events E and F
+        Pr[E U F] =  Pr[E] + Pr[F]
+      Generalized to countable number of events - Sum rule
+        PR[ big union n in N of En] = Sum of n in N of Pr[En]
+      Lets us analysze a complicated event by breaking down into simpler cases
+      Consequence:
+        Pr[A] + NOT(Pr[A]) = 1
+        Follows because Pr[S] = 1 and S is the union of disjoint A and NOT(A)
+        Pr[NOT(A)] = 1 - Pr[A] - complement rule
+      More rules
+        Pr[B - A] = Pr[B] - Pr[A int B]
+        Pr[A U B] = Pr[A] + Pr[B] - Pr[A int B]
+        Pr[A U B] <= Pr[A] + Pr[B]
+        If A C= B, then Pr[A] <= Pr[B]
+      Union Bound
+        Pr[E1 U ... U En U ...] <= Pr[E1] + ... + Pr[En] +...
+        Useful in many calculations
+        Suppose Ei is the chance the ith critical component in a spacecraft fails
+        Then E1 U ... U En is the event that some critical component fails
+          If sum i = 1 to n of Pr[Ei] is small, Union Bound upper bound of overall probability critical failure
+      Uniform Probability Spaces
+        Finite probability space S is uniform if Pr[lomega] same for every outcome lomega in S
+        Saw in strange dice problem
+        Uniform sample spaces particularly easy to work with
+        That's because for any event E C= S
+        Pr[E] = |E| / |S|
+        Once we know cardinality of E and S, immediately obtain Pr[E]
+        Great, have lots of tools for computing cardinality of a set
+        Example
+          Select 5 cards at random from a standard deck of 52 cards
+          What is probability of having a full house?
+          |S| = 52 ch 5
+          |E| = 13 * (4 ch 3) * 12 * (4 ch 2)
+          Where E is full house event
+          Every five-card hand is equally likely
+          Pr[E] = |E|/|S| = 13 * (4 ch 3) * 12 * (4 ch 2) / 52 ch 5
+                          = 13 * 12 * 4 * 6 * 5 * 4 * 3 * 2 / 52 * 51 * 50 * 49 * 48
+                          = 18 / 12495
+                          ~= 1/694
+      Infinite probability spaces
+        Actually fairly common
+        Example
+          Two players take turns flipping a coin
+          First to flip heads wins
+          Pr[first player wins] = 1/2 + 1/8 + 1/32
+                                = 1/2 sum n=0 to inf (1/4)^n
+                                = 1/2 (1/(1 - 1/4)) = 2/3
+          So Pr[second player wins] = 1/4 + 1/16 + 1/64 + 1/256 + ... = 1/3
+        Sample space S is the infinite set
+          S ::= {T^nH | n in N}
+          Where T^n stands for a length n string of Ts
+          Pr[T^nH] ::= 1 / (2^(n + 1))
+        To verify that this is a probability space, check all probs nonneg, sum to 1
+        sum n in N of Pr[T^nH] = sum n in N of 1/(2^(n + 1)) = 1
+        Notice that model does not have an outcome where they flip tails forever
+        Can add lomega(forever), with probability... zero
+          So generally can ignore in countable probability spaces
+
+Lecture
+  More thorough and theoretical look at what you already learned in high school (probably!)
+  Has been debate among faculty - up with chem, phys, math as a key thing every student should know
+  Historically
+    Starts off disreputable late 17th, early 18th centuries to analyze gambling
+  Basis of insurance industry - underwriting, premiums
+  Understanding error in sample, confirm hypotheses
+  True to the historical basis, let's start with gambling
+    Then working up to tree model
+  Example from poker - probability of exactly 2 jacks in each hand
+    Really a counting problem
+    52 ch 5 possible 5-card hands
+    4 ch 2 ways of picking Jack suits
+    4 ch 2 * 52 - 4 ch 3 hands
+    Pr{2 Jacks} = (4 ch 2 * 52 - 4 ch 3) / 52 ch 5 ~= 0.04
+    Under this interpretation
+    Probability says - what's fraction of time I get what I want/win
+  Probability: 1st idea
+    A set of basic experimental "outcomes"
+    A subset of outcomes is an "event"
+    Probability of an event
+      Pr{event} ::= # outcomes in event / total number of outcomes
+    First naive approach
+      Applies to a lot of cases, but not always
+  Here's the problem: Monty Hall
+    Let's Make A Deal (1970's show, host name: Monty Hall) - still has a fanbase now
+    Three doors on stage
+      A prize behind one of them
+      Beautiful woman holding goat behind others
+      (Actual show had more rules, but for sake of simplicity)
+    Assume staff on purpose place prize at random behind doors
+      No cheating - prize stays there
+    Contestant picks a door
+    Monty reveals a goat behind an unpicked door
+    Contestant sticks or switches to the other unopened door
+    Marilyn Vos Savant explained Game in magazine "Ask Marilyn"
+      Advertised herself as highest recorded IQ of all time
+      Firestorm of response, even with math Ph.D.s
+    Either sticking and switching are equally good
+    Or switching is much better
+  Analyzing Monty Hall
+    Draw tree of possible steps to help
+    3 possibilities for where prize is (symmetric)
+    3 possibilities contestant picks
+      1/3 picked right
+        either of other two doors open
+      1/3 picked wrong
+        other goat revealed - switch to win
+      1/3 picked wrong
+        other goat revealed - switch to win
+    Look at whole tree
+      12 outcomes, 6 L and 6 W
+      If switching wins, sticking loses
+      Win by sticking iff lose by switching (doesn't hold if > 3 doors, that's another exercise)
+    False conclusion
+      Reason as if poker hands
+        Same number of outcomes, so doesn't matter - probability same, 1/2
+          Wrong!
+      Think about what happens after first door opened
+        Two closed doors left, with and without prize
+        Contestant doesn't know what's behind door
+        Equally likely doesn't matter stick/switch - also wrong!
+    What is wrong? Let's go look at outcome tree
+      Structure of tree leading to leaves is not the same
+      Don't treat the branches the same way
+      Let's put probability on branch
+      1/3 for location
+      1/3 for contestant picks
+        Contestant picks right (1/3) - Carol picks 1/2 doors
+        Contestant picks wrong (2/3) - Carol picks unchosen door - 100%
+      All 6 good stick outcomes odds 1/18 -> 1/3
+      All 6 good switch outcomes odds 1/9 -> 2/3
+      Pr{switch wins} = 2/3
+      So sticking is a bad strategy, switching way to go
+      In class, back up with experiments - turns out to be true
+  2nd key idea in probability
+    Outcomes may have differing probabilities! Not always uniform
+  Finding probability
+    Intuition is important but dangerous, esp for beginners
+    Stick with 4-part method:
+      1. Identify outcomes (tree helps)
+      2. Identify event (winning)
+      3. Assign outcome probabilties (use tree and logic)
+      4. Compute event probabilities (add up outcomes)
+  The Monty Hall tree we used
+    Very literal, overkill
+    Next section - how to make simpler argument
+  Simplified Monty Hall tree
+    Prior tree was absurdly large and literal (didn't copy whole thing - JM)
+    Could have just analyzed one branch
+      And don't need the first branch
+    Zoom in on that branch
+      Instead of saying "prize is at door 2"
+      Contestant picks prize, or misses at 1, or misses at 2
+      Have captured whole story by relativizing the first move
+        Will get some mileage out of whole tree later
+      But if thinking solely about switch strategy, better way to start
+      Also since talking about switching - collapse p = 1 branch
+      If switching
+        Pick a no-prize door and win
+        Pick a prize door and lose
+      Can collapse your no-prize door
+        No-prize door = 2/3
+        Prize door = 1/3
+      Now that's a really simple tree
+      Switch wins iff prize door is not picked
+        Pr{switch wins} = 2/3
+    The tree you come up with to model - may be many models that work
+      Often pays off to find simpler tree
+  Probability spaces
+    Have just been doing examples up until now
+    1. Sample space - a countable set S whose elements are called outcomes
+    2. Probability function Pr: S -> [0, 1] such that
+      sum omega in S Pr{omega} = 1
+    The purpose of the "tree model" is to figure out which probability space to use
+    Math doesn't start until you have the probability space
+    Outcomes = leaves of tree
+    Outcome probabilities calculated from branch probabilities
+    An even is a subset, E C= S
+    Pr{E} ::= sum lomega in E of Pr{lomega}
+    Cor: the Sum Rule
+      For pairwise disjoint A0, A1,...
+      Pr {A0 U A1 U A2 U ....} =
+      Pr{A0} + Pr{A1} + Pr{A2} + ...
+      Rule we'll be using all the time
+      Can be also be treated as an axiom that defines a probability space
+    Discrete probability
+      Countable sample space
+      Combinatorics of finite and countable sets
+      Allows sums instead of integrals
+        And much simpler theoretical basis
+    Derived rules of probability - sure look like sets, proof is the same too
+      Difference rule
+        Pr[B - A] = Pr[B] - Pr[A int B]
+      Inclusion-Exclusion - just like cardinalities of finite sets
+        Pr[A U B] = Pr[A] + Pr[B] - Pr[A int B]
+      The Union Bound - follows trivially from Inclusion-Exclusion
+        Pr[A U B] <= Pr[A] + Pr[B]
+      Monotonicity
+        If A C= B, then Pr[A] <= Pr[B]
+      Boole's Inequality
+        For sets A0, A1...
+        Pr{for i in N union Ai} <= sum i in N of Pr{A}
+        Will get a lot of mileage out of it later on
+    Summary, key concepts
+      1. Sample space, set S whose elements are outcomes
+      2. Probability function: Pr S -> [0, 1] such that
+        sum lomega in S of Pr{lomega} = 1
+

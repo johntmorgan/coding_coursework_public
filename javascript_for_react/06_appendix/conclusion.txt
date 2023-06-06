@@ -1,0 +1,53 @@
+Conclusion
+  Lots of JS can be harnessed in React
+  React has only a slim API surface area
+  Devs have to get used to all the JS functionalities
+  "Being a React dev makes you a better JS dev"
+
+Let's refactor:
+  function withLoading(Component) {
+    return class WithLoading extends {
+      render() {
+        const { isLoading, ...props } = this.props;
+
+        if (isLoading) {
+          return <p>Loading</p>;
+        }
+
+        return <Component { ...props } />;
+      }
+    }
+    };
+  }
+
+  // Change class component to functional stateless component
+
+  function withLoading(Component) {
+    return function ({ isLoading, ...props }) {
+      if (isLoading) {
+        return <p>Loading</p>;
+      }
+
+      return <Component { ...props } />;
+    };
+  }
+
+  // Arrow function for conciseness
+
+  const withLoading = Component => ({ isLoading, ...props }) => {
+    if (isLoading) {
+      return <p>Loading</p>;
+    }
+
+    return <Component { ...props } />;
+
+  // Arrow function
+  // Higher order function
+  // Ternary operator
+  // Destructuring
+  // Spread operator
+
+  const withLoading = Component => ({ isLoading, ...props }) =>
+    isLoading
+      ? <p>Loading</p>
+      : <Component { ...props } />

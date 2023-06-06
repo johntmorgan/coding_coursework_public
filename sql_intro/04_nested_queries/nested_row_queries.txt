@@ -1,0 +1,34 @@
+Nested Row Queries
+  Return rows
+  Allow outer query to match on multiple different column values
+  Also now going to use WHERE instead of FROM
+
+  // Select actors whose latest social update anywhere was the date of their birthday
+  // Inner join approach
+  SELECT FirstName
+  FROM Actors
+  INNER JOIN DigitalAssets
+  ON Id=ActorId
+  AND MONTH(DoB) = MONTH(LastUpdatedOn)
+  AND DAY(DoB) = DAY(LastUpdatedOn);
+
+  // Nested query approach
+  // Inner query returns temp result set of several rows with 3 columns
+  // Outer query lists columns from the Actors table that should be matched
+
+  SELECT FirstName
+  FROM Actors
+  WHERE (Id, MONTH(DoB), DAY(DoB))
+  IN (SELECT ActorId, MONTH(LastUpdatedOn), DAY(LastUpdatedOn)
+      FROM DigitalAssets);
+
+  // Nested query with FROM clause
+  // Which account did Kim Kardashian most recently update?
+  SELECT FirstName, AssetType, LastUpdatedOn
+  FROM ACTORS
+  INNER JOIN (SELECT ActorId, AssetType, LastUpdatedOn
+              FROM DigitalAssets) AS tbl
+  ON ActorId = Id
+  WHERE FirstName = Kim
+  ORDER BY LastUpdatedOn DESC LIMIT 1;
+  

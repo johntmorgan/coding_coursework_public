@@ -1,0 +1,36 @@
+Two pointers
+  Use two pointers to iterate over array, list
+  Keep track of two different indexes in iteration
+  Whenever requirement to find two elements satisfying condition
+  Can iterate in one or both directions
+  String a palindrome?
+    Use one pointer from beginning, one from end
+      Compare values at each step
+    Better than naive solution, nested loop O(n^2)
+      Instead is O(n)
+  Essentially application of prune-and-search
+
+Examples
+  Reversing an array
+  Pair with given sum in sorted array
+
+Pattern matching
+  Input data can be traversed in linear fashion
+    Array, linked list, char string
+  Data sorted, or arranged in fashion relevant to problem
+    Numeric data in asc/desc order
+    Chars symmetric
+  Only considering two elements in the input data
+
+Not pattern match:
+  Data cannot be traversed linearly
+  Problem requires exhaustive search of solution space
+
+Real-world
+  Transmission errors
+    Can tolerate at most one deviance to a diversion router
+    Path back to router recorded in array inside packet
+    Use 2P to determine whether same path followed
+  Product suggestions
+    Show pairs of products to qualify for free shipping
+    

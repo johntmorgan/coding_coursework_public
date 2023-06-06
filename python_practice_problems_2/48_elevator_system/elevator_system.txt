@@ -1,0 +1,249 @@
+Elevator System
+
+Getting Ready
+  Elevator
+    Integral part of buildings with multiple floors
+    Can be in different states
+      Up
+      Down
+      Stopped on floor
+    Algorithm sets priority and takes action accordingly
+      Minimize wait time
+    Panel for passengers to select target floor
+    Fixed capacity
+    Display to show current floor
+  Questions:
+    Multiple elevators, or just one?
+      How would one vs many differ in terms of wait time and cost?
+    Display
+      How can customers see status & request car?
+      Display same inside and outside elevator?
+    Optimization
+      Optimized solution to minimize wait time of passengers
+      Minimize running cost of elevator system
+  Design
+    Bottom up
+      Start
+        Button
+        Door
+      Then
+        Panel
+        Elevator Car
+        Building
+  Design patterns
+    Strategy design pattern
+    State design pattern
+    Delegation design pattern
+
+Requirements
+  There exist multiple elevator cars and floors in building
+  Max 15 floors, 3 elevator cars
+  Elevator car up down or idle state
+  Elevator door only opened when in idle state
+  Every elevator car passes through each floor
+  Panel outside elevator should have buttons to call, specify up/down
+  Panel inside elevator buttons to every floor
+    Buttons to open and close doors
+  Display inside and outside car to show current floor number
+  Display inside elevator show capacity of elevator car
+  Each floor has separatepanel and display for each car
+  Multiple passengers to same or different floors in same/opp direction
+  Elevator system able to control elevator car
+    Door functioning
+    Monitor car
+  Send most appropriate elevator when passenger calls
+  Carry max of 8 people or 680 kg at once
+
+Use Case
+  System
+    Elevator
+  Actors
+    Primary
+      Passenger
+        Request elevator
+        Open and close door
+        Move up and down
+        Press emergency button
+    Secondary
+      System
+        Open and close door
+        Display floor level
+        Move according to dispatcher algorithm
+
+Use Cases
+  Passenger
+    Press elevator button panel
+      Select destination floor
+      Request to open/close elevator door while stopped
+      Call emergency
+    Press hall panel button
+      Request elevator to go up/down
+  System
+    Move/stop elevator
+    Dispatcher algorithm
+    Display inside/outside
+    Open/close door
+  Non-actor
+    Request for elevator
+    Floor request
+    Door open/close request
+    Call emergency
+
+Relationships
+  Generalization
+    Press elevator panel button
+      Floor request
+      Door open/close request
+      Call emergency
+
+Include
+  Floor request has include with move/stop elevator use case
+  Door open close/request include with door open/close
+  Press hall panel button include with request for elevator use case
+
+Class design
+  Start with small components - button, door, floor
+  Button
+    Abstract class
+    Press button or check through Button class
+    ElevatorButton inherits
+      destinationFloorNumber
+    HallButton inherits
+      buttonSign: Direction
+      sourceFloorNumber: int
+  Elevator panel and hall panel
+    ElevatorPanel
+      floorButtons: ElevatorButton {list}
+      openButton: ElevatorButton
+      closeButton: ElevatorButton
+      (number of buttons: 2 + # of floors)
+    HallPanel
+      up: HallButton
+      down: HallButton
+      (number of buttons: 2)
+  Display
+    floor: int
+    capacity: int
+    direction: Direction
+    showElevatorDisplay() - shows all class attributes
+    showHallDisplay() - shows floor, direction
+  Door
+    state: DoorState
+    isOpen()
+  ElevatorCar
+    id: int
+    door: Door
+    state: ElevatorState
+    display: Display
+    panel: ElevatorPanel
+    currentFloor: int
+    openDoor()
+    closeDoor()
+    move()
+    stop()
+  Floor
+    displays: Display {list}
+    panels: HallPanel {list}
+    isBottomMost: bool
+    isTopMost: bool
+  Building
+    floors: Floor {list}
+    elevators: ElevatorCar {list}
+  ElevatorSystem
+    building: Building
+    monitoring()
+    selectBestElevatorCar()
+
+Enumerations
+  ElevatorState
+    Idle
+    Up
+    Down
+  Direction
+    Up
+    Down
+  DoorState
+    Open
+    Close
+
+Relationship between classes
+  Aggregation
+    ElevatorSystem has aggregation relationship with building
+  Composition
+    Building composed of ElevatorSystem and Floor
+    ElevatorCar composed of Door, ElevatorPanel, Display
+    Floor composed of HallPanel and Display
+    HallPanel composed of HallButton
+    ElevatorPanel composed of ElevatorButton
+  Inheritance
+    ElevatorButton extends Button
+    HallButton extends Button
+
+Design pattern
+  Strategy design pattern
+    System can have multiple dispatch request strategies
+      Choose depending on building layout
+  State and delegation
+    Context object stores reference to state objects
+      Delegates to those tasks
+    e.g. Elevator has state, system infers behavior
+  Additional requirements
+    Algorithm to optimize
+      Min wait time of system
+      Min wait time of passenger
+      Maximize throughput
+      Minimize power usage or cost
+  Dispatching algorithms
+    First come first serve
+      System looks for idle and moving in same direction
+      Ignores others
+      Simple to implement
+        Queue system
+      But causes extra movements
+        Expensive
+    Shortest seek time first
+      Passenger closest to elevator gets car
+        Increased throughput
+        Less elevator movement
+      But always chooses minimum distant passengers
+        Ignores others completely
+      Priority queue, min-heap, array
+    SCAN
+      "Elevator Algorithm"
+      Elevator moves up and down, getting requests on the way
+      Serves multiple requests in parallel
+      More costs
+        Only change direction at top/bottom
+      Boolean arrays
+        Or Hashmap
+        Or two priority queues
+    LOOK
+      Look-ahead SCAN
+      Elevator stops when no request in front
+      Move again when requested
+      HashMap, TreeMap, or binary search tree
+
+Sequence Diagram for Elevator System
+  Passenger calls elevator
+  Actor: Passenger
+  Objects: HallButton, ElevatorSystem, Dispatcher, ElevatorCar, Door
+
+Activity Diagram
+  Passenger presses button
+  Up direction/Down direction
+  Is elevator car at max load/capacity
+    Yes/no
+    No: passenger not allowed to enter
+      Terminate
+  Yes:
+    Passenger enters car
+    Passenger presses desired floor
+    Other floors requested?
+      No: Elevator reaches passenger floor
+    Yes:
+      Same direction as existing passengers:
+        Yes: Elevator stops and opens at floors
+        No: New request ignored
+      Elevator reaches floor
+        Terminate
+

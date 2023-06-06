@@ -1,0 +1,255 @@
+Sequencer
+Motivation
+  Millions of events/second in large, dist system
+    e.g. commenting on FB
+    sharing Tweet
+    posting picture on IG
+  Need a way to distinguish events
+    Assign globally unique ID
+    Primary key to DB entry, auto increment
+      Won't work for distributed DB
+        Different nodes with identifiers
+    Need unique ID generator
+      Acts as primary key in distributed setting
+        e.g. horizontally sharded table
+      Identify flow of event in logs
+      Useful for debugging
+      e.g. Facebook Canopy
+        TraceID for each event
+        Event may perform hundreds of microservces for user request
+
+Design
+  Requrements
+    Uniqueness - for ID purposes
+    Scalability - 1B IDs per day
+    Availability - cover multiple events within nanoseconds
+    64-bit numeric - enough for many years in future
+      2^64 = 1.84 * 10^19
+      1 B events per day = 10^9
+      365 B events per year
+      Covered for 50.5m years
+  Solution #1, UUID
+    Straw man solution, to facilitate discussion
+    128-bit number, 10^38 numbers
+    Different versions
+    Version 4 generates pseudorandom number
+    Each server can generate own ID and assign
+    No coordination needed, independent of server
+    Easy to scale up and down
+    Highly available
+    Low probability of collisions
+    Cons:
+      128-bit = slow primary key indexing
+        Slow inserts
+        Can interpret as hex string
+          Not suitable for many use cases
+      Minimal chance of duplication
+        Not deterministically unique
+      Does not monotonically increase over time
+  Solution #2, database
+    Copy database autoincrement
+    Increment value by 1 every time
+    Use current ID as unique ID for events
+    Cons:
+      Single point of failure
+      (and lack of scalability? - JM)
+  Solution 2a, database but remove single point of failure
+      Use m database servers
+      Each server increments by m
+      Scalable
+      Prevents duplication
+    Cons
+      Difficult to scale for multiple data centers
+      Adding/removing server can result in duplicate IDs
+        Say a server faces downtime and m changes
+          But IDs have already been generated
+          Not unique anymore
+  Solution 3, range handler
+    Use ranges, say 1m at a time
+    Central microservice provides range to server on request
+    Server can grab a range whenever needed
+    Microservice can be single point of failure
+      But have a failover server
+      Recover available & unavailable ranges from replicated store
+    Pros
+      Scalable
+      Available
+      No duplicates
+      64-bit numeric range
+    Cons
+      Lose range when server dies
+        Can allocate shorter ranges to servers
+        But want ranges to be big enough to last a while
+      What about time sorting?
+
+Unique IDs with Causality
+  Ex. John posts comment (event A)
+    Peter responds (event B)
+    Event B depends on event A
+    Events are not concurrent
+    But could have concurrent events
+      Say they comment on two different Tweets
+  Can assign unique ID and encode dependence with social graph
+  Can use separate time data structure and unique ID
+  But want unique ID to do double duty - unique ID, causality help
+  Some apps need events to have unique IDs and carry causality info
+    Implementing last-write-wins in key-value store
+  Use either logical or physical clocks to infer causality
+    May also need causality to map wall-clock time
+      e.g. European MiFID regulations
+        Clocks must be with in 100 us of UTC
+        Detect anomalies during high vol/high speed market trades
+    Time stamps used to maintain causality
+  Time in distributed system
+    Two types of physical clocks
+      Time of day clock
+      Monotonic counter
+    Time of day
+      Lower resolution vs. monotonic
+      Network time protocol can move, not always monotonic
+      May or may not incorporate leap seconds
+    Monotonic counters
+      Higher resolution
+      Used for duration between events
+      Not meaningful across different nodes
+        Even within server, may differ per processor
+      NTP may adjust without monotonicity violation
+      NTP can only speed or slow rate of change by 0.05%
+    Clock drift
+      Temp differences
+      Equipment age
+      Manufacturing defects
+      Virtualized clocks
+      On public internet, NTP can't get accurace > 35 ms
+        Can spike to 1s with network congestion
+    Tradeoff: complexity & cost vs. accuracy
+      Keep drift low with GPS & atomic clocks
+        Expensive, complex
+    Logical clocks
+      Lamport clocks -> happened before relationships
+        Can't compare bewteen servers
+        Events can be concurrent
+      Use vector clocks to infer happened-before
+      Note happened-before may not mean causally related
+        Need app-level context to infer causality
+  Unix time stamps
+    Granual to millisecond
+    ID-generating server generate 1 ID/ms
+    Server returns time stamp and unique ID
+    1k identfiers/second
+    86.4m/day
+      Not 1B/day
+  Solution 4, Avoiding SPOF (single point of failure)
+    Add more servers
+    Each server generates unique ID for every ms
+    Attach ID with UNIX time stamp
+    Load balancer to distribute more efficiently
+    Pros:
+      Simple
+      Scalable
+      Easy to implement
+      Multiple servers handle concurrent
+    Cons:
+      Current events = same time stamp
+        Same ID may be assigned
+  Twitter Snowflake
+    Use 64 bits efficiently
+      12 bit sequence
+        For every ID generated on server, increment by one
+        2^12 = 4096
+        Reset after this
+      10 bit workerID
+        2^10 = 1024 worker IDs
+        Server creating unique ID will attach
+      1 bit sign
+        Always zero, makes number positive
+      2^41 identifiers
+        Can use Snowflake epoch from 2010
+        69 years until new algorithm needed to generate IDs
+    Pros
+      Time stamp as first component
+      Time sortable
+      ID generator highly available
+    Cons
+      ID in dead period are problem
+        Dead period = no request made to server
+        Wasted IDs
+        Unique range will deplete earlier than expected
+      Physical clocks are unreliable
+        Can drift as much as 17s/day
+        Will always be skew no matter how much sync
+        NTP can fix and recalibrate
+          NTP = Network Time Protocol
+            Clock synch over packet-switched, variable latency data networks
+            Keep all participating comps with in a few ms of UTC
+          But IDs could have been generated in future
+          Now have nonconcurrent events with same time stamp
+  Logical clocks
+    Lamport clocks
+      Each node has counter at zero
+      Increase counter before event
+      When another node receives, updates value
+      Provide unique partial ordering of events
+      But can't infer causality at global level
+    Vector clocks
+      Overcome Lamport clock shortcoming
+      Must choose efficient data structure
+    Design
+      Sign bit
+      Vector clocks: 53 bits, counters of each node
+      Worker number: 10 bits, 1024 worker IDs
+      However, vector clock must be at least n nodes in size
+        Singificant storage
+      ID length up, hard to handle, store, use
+  Google TrueTime API
+    Reports interval of time, not timestamp
+    Get earliest and latest values
+    Clock knows time within interval
+      Based on how long since last synchronized
+    Deploy GPS receiver or atomic clock in each data center
+      Synch within about 7 ms
+      Keep uncertainty (eps) to minimum
+    If intervals don't overlap, then B happened after A
+    Generate unique ID using TrueTime intervals
+      Use earliest time
+    Timestamp: 41 bits
+    Uncertainty: 4 bits (up to 10 ms)
+    Worker number: 10 bits
+    Sequence number: 8 bits
+      Reset at 256
+    Pros
+      Satisfies all reqs
+      Globally unique 64-bit ID
+      Causality maintained
+      Scalable
+      Highly available
+      Ensures high database consistency
+    Cons
+      If intervals overlap, order unsure
+        May be concurrent, not 100%
+      Expensive
+        Elaborate infrastructure, monitoring
+
+Summary
+  Avoid duplicate identifiers
+    Imagine duplicate payment/purchase identifiers
+  UUIDs
+    Probabilistic guarantees about non-collision
+  Large keys = slow database tuple updates
+    Identifiers big but not too big
+  Often desirable nobody can guess next ID
+    e.g. competitor learn how many orders processed in day
+      Add a few random bits
+        Performance cost though
+  Simple counters if not relating ID to time
+    Timestamps slower than counters
+    Requires persistent generated ID storage
+      Has its own issues
+        Overwhelming writes to DB
+        B single point of failure
+  Distributed databases like Spanner
+    Hurts to generate monotonically increasing IDs
+      Creates hotspots in database
+  Overall
+    Globally ordering events in dist system slow and expensive
+    Fast and simple in centralized DB

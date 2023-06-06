@@ -1,0 +1,77 @@
+OOP in the Real World
+
+Interview Process
+  Problem statement
+  Decipher and solve with OOD skills
+  Generally all follow similar pattern
+  Ambiguous problem presented with constraints
+  Understand problem
+  Identify all main entities that will play part
+  Design workable solution
+    Flexible and adaptable to change in future
+
+Key steps
+  Identify requirements
+    ~10 minutes
+    Ask the interviewer questions
+    Ask if you should implement or give structural overview
+    Try to understand and apply SOLID
+    Interviewer is looking for
+      How good are you at collecting requirements
+      Can you effectively scope down the problem?
+      Can you produce a design based on requirements in 30-45 min?
+  Model the problem
+    Identify primary use cases
+    Talk to engage interviewer
+    Think out loud - identify expectations or ideas missed earlier
+    May need to sketch use case diagram
+  Establish classes and their relationships
+    Highlight and most important part of OOD
+    List all objects that play some role in system
+    Parking lot?
+      Vehicles
+      Parking spots
+      Entrances
+      Exits
+    Work out attributes and operations for each object
+    Nouns are objects, verbs are methods
+    Map out relationships between objects
+    Will you use abstract classes or interfaces?
+    Identify constraints of each class
+    Point out how OOD concepts will play a part
+    Sketch a high-level diagram for the interviewer
+      Visualize your explanation
+  Sequence and activity diagrams
+    May not be a reuqirement
+    But if interviewer asks for sequence of events
+      Or to explain system flow of control of certain activity
+  Use design patterns
+    Try to apply best design patterns
+  Code
+    Code the classes and relationships
+    Expected to code high-level structure of the system
+    May code one class at implementation level
+    Prioritize writing abstract classes and interfaces
+    Then core objects and internal structure
+    Make sure code nicely maintainable
+
+Design approach
+  Identify use cases
+    Parking lot
+      Agent collecting toll
+      System showing how many parking spots
+  Note constraints
+    Get as simple as possible without compromising on key features
+  Keep scalability in mind
+    What if parking lot adds more floors?
+  Top-down, bottom-up
+    Top down:
+      High level objects, then smaller subcomponents
+      Backward-looking
+      Structural programming
+      High amount of data redundancy
+    Bottom up:
+      Smallest components and then uses as base for bigger components
+      Forward looking
+      OOD
+      Minimum data redundancy

@@ -1,0 +1,317 @@
+Design a Parking Lot
+
+Getting Ready
+  Fixed number of spaces for vehicles
+  Each space charged according to time
+  Tracked with parking ticket issued at entrance
+  Vehicle exiting pay at automated panel
+    Or to parking agent
+    Card or cash payment
+  Expectations:
+    Payment flexibility
+      How are customers able to pay?
+        Credit, cash, coupon?
+      If multiple floors, track payment on specific floor?
+    Parking spot type
+      How will parking capacity be considered?
+      What happens when lot is full?
+      How to track free spots on each floor?
+      How will division among spot types be carried out?
+        Handicapped
+        Compact
+        Large
+        Motorcycle
+    Vehicle types
+      Car
+      Truck
+      Van
+      Motorcycle
+      Can vehicle of another type park in a spot?
+    Pricing
+      Different rates per hour?
+        $4 first hour, $3.50 second hour, $2.50 after that?
+      Same for different vehicle types?
+  Design approach
+    Start with smallest components
+      Vehicle and parking spot types
+    Use these to design e.g. payment system at exit
+    Repeat steps until entire lot is designed
+  Design pattern
+    Singleton pattern design (one lot - JM)
+    Abstract factory design
+    Factory design pattern
+
+Requirements
+  R1: park 40,000
+  R2: types of spaces are handicapped, compact, large, motorcycle
+  R3: multiple exit and entrance points
+  R4: four types of vehicles allowed to park
+    Car, truck, van, motorcycle
+  R5: display board showing free spots for each type
+  R6: do not allow more vehicles if capacity reached
+  R7: if completely occupied, show message on entrance and display board
+  R8: collect ticket from entrance and pay at exit
+  R9: pay at automated panel or pay agent
+  R10: calculate at hourly rate
+  R11: pay with credit card, debit card, or cash
+
+Use case diagram
+  System: "parking lot"
+
+  Actors
+    Primary
+      Customer
+        Park vehicle in allocated parking space
+        Pay for parking before exit
+      Parking agent
+        Assist customer
+        Do all tasks customer can do
+          Pay ticket on behalf of customer
+    Secondary
+      Admin
+        Add, remove, update
+          Spot
+          Agent
+          Entry/exit panels
+        View/update accounts
+      System
+        Give details of availability
+        Assign parking spot to vehicle
+
+  Use cases
+    Admin
+      Add spot
+      Add agent
+      Add/modify rate
+      Add entry/exit panel
+      Update account
+      Login/logout
+      View account
+    Customer
+      Take ticket
+      Scan ticket (get fee at exit)
+      Pay ticket
+      Cash
+      Credit card
+      Park vehicle
+    Parking agent
+      Update account
+      Login/logout
+      View account
+      Take ticket
+      Scan ticket
+      Pay ticket
+      Cash
+      Credit card
+      Park vehicle
+    System
+      Assign spots to vehicles
+      Remove spot
+      Show full
+      Show available
+
+  Relationships
+    Generalization
+      Parking agent and customer
+        Can perform all tasks a customer can perform
+      Cash and credit card
+        With "pay ticket" case
+    Include
+      Scan ticket with pay ticket
+        Need to scan before paying
+
+Class diagram
+  Components
+    Bottom-up approach
+    Start with vehicles and parking spots
+  Vehicle
+    Can be a car, truck, van, motorcycle
+    Can represent via enumeration or abstract class
+    Enumeration class
+      User-defined data type has four types as values
+      Not proficient for OOD
+      What if want to add another type later?
+      Need to update code in multiple spots
+      Violates open closed principle of SOLID design
+        Classes can be extended but not modified
+      Not recommended, not scalable
+    Abstract class for vehicle
+      Each type extends abstract class
+      License number attribute string, private
+      Call assignTicket() void
+  Parking spot
+    Another abstract class
+    id int
+    isFree bool
+    getIsFree() bool
+    Each type extends again
+  Account
+    Abstract class
+    Two child classes
+      Admin
+        addParkingSpot(floorName, spot): bool
+        addDisplayBoard(floorName, displayBoard)
+        addEntrance(entrance)
+        addExit(exit)
+      ParkingAgent
+        processTicket()
+  DisplayBoard
+    id
+    handicappedSpot
+    compactSpot
+    largeSpot
+    motorcylcleSpot
+    showFreeSlot()
+  Entrance
+    id
+    getTicket()
+  Exit
+    id
+    validateTicket()
+  ParkingTicket
+    ticketNo
+    timestamp date/time
+    exit date/time
+    amount: double
+    payment: Payment
+  Payment
+    Abstract class
+    amount
+    status
+    timestamp
+    calculate()
+    cash, credit card extend
+  ParkingRate
+    hours
+    rate
+    calculate()
+  ParkingLot
+    id
+    name
+    address
+    addEntrance
+    addExit
+    getParkingTicket
+    isFull
+
+  Enumerations
+    PaymentStatus
+      Completed
+      Failed
+      Pending
+      Unpaid
+      Refunded
+    AccountStatus
+      Active
+      Closed
+      Canceled
+      Blacklisted
+      None
+
+  Address
+    zipCode
+    address
+    city
+    state
+    country
+
+  Person
+    name
+    streetAddress
+    city
+    state
+    zipcode
+    country
+
+Relationship
+  ParkingSpot one-way with vehicle
+  Vehicle, Exit, Entrance one-way with ParkingTicket
+  Payment has two-way with ParkingTicket
+
+Composition
+  ParkingLot class includes
+    Entrance
+    Exit
+    ParkingRate
+    DisplayBoard
+    ParkingTicket
+    ParkingSpot
+
+Inheritance
+  Vehicle class includes car, truck, van, motorcycle
+  ParkingSpot class includes handicapped, compact, large, motorcycle
+  Payment class includes cash, credit card
+
+Design pattern
+  System has a Singleton ParkingLot class
+    Only one instance of system
+  Composed of smaller objects already designed
+    Abstract Factory and Factory to instantiate
+
+Additional requirements
+  ParkingFloor
+    ParkingSpot, DisplayBoard included
+    ParkingLot includes ParkingFloor
+  Electric parking spots
+    Add another class extending ParkingSpot
+    Includes ElectricPanel
+      payedForMinute
+      chargingStartTime
+      cancelCharging
+      oneway to abstract Payment, extends cash, credit card
+        amount
+        status
+        timestamp
+        initiateTransaction
+
+How about assigning a spot as close to an entrance as possible
+  Min-heap for each entrance
+  When user calls getParkingSpot
+    min-heap for entrance_id
+    Mark the parking spot as reserved and remove from all heaps
+      (Isn't removing from other heaps going to be slow? - JM)
+
+Sequence diagram
+  Great way to understand interactions
+  Let's model 2
+    Card payment
+    Sequence challenge - payment verification
+
+  Card Payment
+    Actor: Customer
+    Object: CardReader, Payment, ExitPanel
+    Steps:
+      Customer inserts card
+      Card reader initiates payment
+      Payment processes and returns payment status
+      Card reader ejects card
+      If payment successful
+        Customer requests receipt
+        Exit panel prints receipt
+      If payment unsuccessful
+        Customer sees error message
+      Note: payment object created when customer enters lot
+
+Activity diagram
+  Visualize flow of messages from one activity to another
+  Let's cover 2 activities
+    Vehicle entering parking lot
+    Challenge: customer pays parking ticket
+
+  Vehicle entering lot
+    States
+      Initial state: customer enters lot
+      Final state: customer receives ticket
+        OR customer denied because no spots
+    Actions
+      Customer arrives at parking lot entrance
+      Customer selects vehicle type
+      System assigns spot according to type
+      Parking lot informs about availabilty of spot
+
+Coding
+  Parking lot classes
+  Not defining setters and getters for simplicity
+  Assume all attributes private
+    Accessed through respective public getter methods
+    Modified only through public method functions

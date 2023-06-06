@@ -1,0 +1,34 @@
+SELECT and INSERT
+  Populate data from a table into another table
+
+  // Let's make a table with all the second names of actors
+  CREATE TABLE Names (name VARCHAR(20), PRIMARY KEY(name));
+
+  // Now insert using INSERT and SELECT
+  INSERT INTO Names(name) SELECT SecondName FROM Actors;
+
+  // Note that it isn't guaranteed there are no duplicates
+  // Error if try to insert duplicate
+  INSERT INTO Names(name) SELECT SecondName FROM Actors WHERE Id=1;
+
+  // Can bypass error and continue execution with IGNORE
+  // Row is *not* added
+  // MySQL issues a warning instead of error -> abort
+  INSERT IGNORE INTO Names(name)
+  SELECT SecondName
+  FROM Actors WHERE Id = 1;
+    > Records: 1 Duplicates: 1 Warnings: 1
+
+  // Creating and inserting in a single shot
+  CREATE TABLE MyTempTable SELECT * FROM Actors;
+
+  // All the modifiers you'd use in a create table statement may be used
+  CREATE TABLE NamesWithDoBs (
+  Id INT AUTO_INCREMENT,
+  Name VARCHAR(20) NOT NULL DEFAULT "unknown",
+  DoB DATE,
+  PRIMARY KEY(Id), KEY(Name), KEY(DoB)) SELECT FirstName, DoB FROM Actors;
+
+  // Copy existing table with no data using LIKE
+  // Contains no data but structure is exactly the same
+  CREATE TABLE CopyOfActors LIKE Actors;

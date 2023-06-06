@@ -1,0 +1,213 @@
+Recurrences, infinity stones, queue/stack, all kinds of things talking to each other
+Question 1. Recurrences
+  Favorite way to bug undergrads in algorithms classes the first two weeks
+  Master Theorem
+    Giant sledgehammer for solving recurrences "without understanding" why you got the answer
+    Homework asks you to
+      1. Use master theorem via rules
+      2. Draw tree, count computations
+    Title because "general"
+    Have recurrence that looks like:
+      T(n) = aT(n / b) + f(n)
+      Example: merge sort
+        T(n) = 2T(n / 2) + f(n)
+        a and b are both 2, work done in merge step n
+      Asymptotically, what does function look like
+      Not obvious because defined T in terms of itself
+        That's the annoying bit about solving recurrences
+    Divides into 3 cases
+      3 key numbers here - a, b and f
+      a is your branching factor
+      b is the amount that your problem size reduces at leaves
+      f is the work you do at each node
+    Case 1
+      f(n) = O(n^logb(a - eps)) for some eps > 0
+        (So in other words, f(n) is smaller in order than n^logb(a) - JM, later)
+        Notice this is just an upper bound
+        Ok if f is below this thing
+        T(n) = theta(n^(logb(a)))
+        Kinda cool if you think about it
+          Only an upper bound for f, but get a nice tight bound for T
+          Reason: work at f insignificant compared to work of just traversing up and down tree
+    Case 2
+      f(n) = theta(n^logb(a) * log^k(n)) for some k >= 0
+        (So in other words, f(n) is basically the same order as n^logb(a) - JM, later)
+      Super weird form but perfectly ok to take k = 0
+        In which case starts to look like case 1
+      T(n) = theta(n^logb(a) * log^(k + 1)(n))
+      You can see why don't love the theorem in this course
+        Staring at formulas is totally unenlightening
+        But it is a giant sledgehammer for solving recurrences quickly
+    Case 3
+      f(n) = omega(n^logb(a + eps)) for some eps > 0 AND af(n/b) < cf(n) for some c in (0, 1)
+        (So in other words, f(n) is bigger in order than n^logb(a) - JM, later)
+      T(n) = theta(f(n))
+    This covers 3 major cases
+      There are other more general versions were e.g. more than 1 term with T in it
+        Not covered in this class
+  3 example problems to apply formulas
+  1a. T(n) = 2T(n / 2) + O(sqrt(n))
+    Notice second term is O, just upper bounded, could be theta(n)
+    People have a tendency to get sloppy about O
+    Every time you write O/theta/omega down, step back and make sure you thought about it
+      "Did I just write a random Greek letter"?
+    Tips for applying Master Theorem
+      The really key quantity is n^logb(a)
+      Shows up in all different cases
+      Figure out what it is for recurrence, plug in and figure out which case you're in
+    So here
+    a = 2
+    b = 2
+    f(n) = O(sqrt(n))
+    n^logb(a) = nlog2(2) = n^1 = n
+    I want to know what does f(n) look like compared to n?
+      Well f(n) is upper bounded by n (more or less, big O allows some wiggle room)
+    f(n) = O(n^(1/2))
+         = O(n^(1 - 1/2))
+         = O(n^(logb(a - eps))) // eps = 1/2
+    So we have laboriously shown we are in Case 1
+      So you're basically just done
+      T(n) = theta(n^(logb(a)))
+      T(n) = theta(n^1)
+      T(n) = theta(n) // that's it!
+    Now... did we learn anything about what this recursion is doing?
+      No, we just plugged in some symbols and out came a theta
+    Let's use another method (the prof is still learning)
+      Draw out tree of computation
+    T(n) does work that sort of looks like sqrt(n)
+    Then it makes 2 function calls, each of which has n/2 of data
+                  sqrt(n)
+                /        \
+           sqrt(n/2)    sqrt(n/2)
+          /       \     /       \
+      sqrt(n/4) s(n/4) s(n/4)  s(n/4)
+
+    First level: 1 node
+    Second level: 2^1 nodes
+    Fourth level: 2^2 nodes
+    Algorithm stops when T looks like 1
+      log2(n) levels in the tree
+      each level l does workl = 2^l * sqrt(n * 2^-l)
+    So total work
+      sum l = 0 to log2(n) of 2^l * sqrt(n * 2^-l)
+      = sqrt(n) * sum l = 0 to log2(n) of 2^(l/2)
+      = sqrt(n) * sum l = 0 to log2(n) of sqrt(2)^l
+      This is a geometric series
+      Geometric series formula out there
+      = sqrt(n) * (sqrt(2)^log2(n + 1) - 1) / sqrt(2) - 1
+      = sqrt(n) * 1 / (sqrt(2) - 1) * (2^log2(sqrt(n) + 1/2) - 1)
+      = sqrt(n) * 1 / (sqrt(2) - 1) * (sqrt(n) * sqrt(2) - 1)
+      = theta(n)
+    Now you can see why Master Theorem is valuable, saves you a lot of headaches!
+  1b. Easier by a funny fluke though it looks harder
+    Now branching factor and amount of work reduction are not the same
+    T(n) = 8T(n / 4) + O(n * sqrt(n))
+    T(n) = 8T(n / 4) + O(n^(3/2))
+    Now what is n to log base b of a
+      n^log4(8) = n^(3/2)
+      Looks just like the O(n^(3/2))
+    Case 2
+      f(n) = theta(n^logb(a) * log^k(n))
+      Don't need that second log factor so k = 0
+    T(n) = O(n^(3/2) * logn)
+      Note that it is O not theta!
+      We only know f(n) is O, not theta!
+    Now let's do the hard but more enlightening version
+      level 1: 1 * n^(3/2)
+      level 2: 8 * (n/4)^(3/2)
+      level l has 8^l nodes
+      each node does (n * 4^-l)^(3/2)
+      # levels = log4(n)
+        how many levels? data divides by 4 each time
+      work <= c * sum l = 0 to log4(n) of (n * 4^-l)^(3/2) * 8^l
+        Sneaky: (4^-l)^(3/2) = 8^-l so  8^l * 8^-l cancels
+      work = c * sum l = 0 to log4(n) of n^(3/2)
+        Now does n^3/2 depend on l? Nope
+      work = c * n^(3/2) * (log4(n) + 1)
+           = O(n^(3/2) * logn)
+    Question: does base of log matter?
+      No! logb(a) = log(a)/log(b)
+        And log(b) is just a constant factor, does not matter for O
+  Rest of problem set is much easier
+    Master Theorem is a bit painful, ain't it
+  Question 2
+    Trying to find a stone on a planet with index k
+    Number of planets is infinite
+      Can only ask if index is bigger or smaller than planet standing of
+      In log k time
+        Notice that's already weird because it's not the size of your data
+      In log k time
+        Can you find the planet?
+    Now you see that log, problem is screaming to use binary search
+      But problem - number of planets is unbounded
+      Can't start at the middle so easily
+    Say you did a linear search, how long would it take?
+      k - and k does exist, no infinity there
+    JM:
+      Start at 1, if not there multiply by 10 -> 100 -> 1000
+        Find k or upper bound in logk time
+        Then do a binary search - still order logk even with the second search - 2logk basically
+    Have a left hand side, which is 1
+      Visit planets 2^m from m = 0
+        Until k <= 2^m
+        Takes log(k) time
+        2^(m - 1) <= k <= 2^m
+      Now you can binary search, also takes logk time
+      Solved
+  Question 3
+    Creating a document program
+    Images overlaid on each other
+    Keep images in order top to bottom
+    Come up with a data structure that supports a few different ops
+      Create a document - O(1)
+      Import image and add to top of document - O(n)
+        Prof: eyebrow raising - stack/queue would be O(1)
+      Return index of all images - O(n)
+      Swap - move one below the other - O(logn)
+        It's the logn on the last one that makes it tough
+    Kind of a sequence aspect, kind of set aspect
+      Sequence - display in order n time
+      Set - move on top in order logn time
+        Need to be able to quickly find what layer it's in
+    For set functions
+      Sorted array of x's
+      Building empty anything takes O(1)
+    Keep different ordering than just ordered by x
+      Store order of images in document
+      Doubly-linked list
+    Importing item
+      Add x to set - O(n)
+      Put x on top of the linked list O(1)
+    Display
+      Iterate over linked list, output in terms of order O(n)
+    Move something below
+      Right now takes O(n) to find the item missing
+      So now attach data to keys
+        Attach pointer into linked list
+        Pointers remain valid even if editing
+      Binary search on set to find keys - O(logn)
+      Rewiring linked list - O(1)
+    Interesting note
+      Didn't affect set at all
+  Question 4
+    Wolf blows to the right
+    Knock down all houses to right of house you knock down that are smaller
+    34 57 70 19 48 2
+    If you knock down 34, then it knocks down 19 and 2
+      (That was unclear from the problem phrasing - JM)
+    a) (computed values)
+    b) House is special if no easterly neighbor - rightmost house
+      Or adjacent neighbor to the east contains at least as many bricks
+      All but one house is special
+      Has two sorted pieces
+      Little dividing line at non-special house
+      Order(n) time
+        Can't sort
+        Can just walk up and down the array
+      Can only blow down stuff in right half of array
+      Second half of array is just a bunch of 1s
+      Two-finger algorithm
+        Point at first thing that doesn't blow over
+        Move to right
+        Track how far into array you are
+          O(n) technique

@@ -1,0 +1,51 @@
+K-nearest neighbors
+  Classifying grapefruit vs orange
+    Clusters on size & color axes
+    What if fruit in the middle?
+      In example, two neighbors in oranges, 1 in grapefruit
+      Probably an orange
+      Well that's KNN!
+  Recommend movies
+    Find users most similar to you
+    Once you have a graph of similar users, if one or more likes something
+      You probably will too
+      (Lol no I like most stuff for idiosyncratic reasons, and every rec engine sucks for me - JM)
+  To measure distance between points, use pythagorean theorem
+  For Netflix
+    Get ratings of 5 different genres
+    5 dimensions but distance calc is still sqrt of sum of squares of distances
+  What if you want to predict what user will rate a movie, based on neighbors
+    Take the average of their ratings
+      "Regression"
+  So:
+    Classification - categorizing into a group
+    Regression - predicting a response
+  Bakery in Berkeley
+    Find 3 closest data points, take their average
+  Cosine similarity
+    Should distance formula be the way to compare distance?
+    Measures angles rather than distance between vectors
+      Look it up if using KNN!
+
+Intro to machine learning
+  You already just built a recommendation system
+  OCR
+    Optical character recognition
+    Used by Google to digitize books
+    Classify a bunch of numbers, and extract features
+    Extract features of new number - what are its nearest neighbors?
+    How to classify?
+      Measure lines, points, curves
+    Much more complicated than prior examples
+      But it's built on simple ideas like KNN
+    Going through images and extracting features = training
+      Generally must be trained before executing task
+  Spam filter
+    Naive Bayes algorithm
+      Yes/no training
+  Hard to do with machine learning
+    Predicting whether stock market goes up or down
+    How do you pick good features?
+      What it did yesterday? Last month?
+    Very hard to predict future with so many variables involved
+      (Apparently possible enough with NBA games lol - JM)

@@ -1,0 +1,34 @@
+Alter Index
+  Add, modify, remove indexes after app deployed
+
+  ALTER TABLE Actors ADD INDEX nameIndex (FirstName);
+
+  // Index only first 10 chars
+  ALTER TABLE Actors ADD INDEX nameIndexWithOnlyTenChars (FirstName(10));
+
+  // Delete index
+  ALTER TABLE Actors DROP INDEX nameIndex;
+
+  // Drop primary key
+  // Can't do this from Actors - it's auto_increment
+  ALTER TABLE Actors DROP PRIMARY KEY;
+
+  // Let's make a table with no auto_increment primary key
+  CREATE TABLE Movies (Name VARCHAR(100), Released DATE, PRIMARY KEY (Name));
+  DESC Movies;
+  ALTER TABLE Movies DROP PRIMARY KEY;
+  ALTER TABLE Movies ADD PRIMARY KEY (Released);
+
+  // Note that modifying indexes does not change table data
+
+  // Renaming table
+  ALTER TABLE Actors RENAME ActorsTable;
+
+  // Use if exists to prevent repeated deletion in an automated script
+  DROP TABLE IF EXISTS ActorsTable;
+
+  // Delete multiple tables in a single statement
+  DROP TABLE IF EXISTS Table1, Table2, Table3;
+
+  // Drop the entire database
+  DROP DATABASE IF EXISTS MovieIndustry;

@@ -1,0 +1,78 @@
+Background
+  Classes are relatively new to JS
+  Previously only JS prototype chain
+    Could be used for inheritance
+  Classes in JS are syntactic sugar over prototype chains
+
+  class Developer {
+    constructor(firstname, lastname) {
+      this.firstname = firstname;
+      this.lastname = lastname;
+    }
+
+    getName() {
+      return '${this.firstname} ${this.lastname}';
+    }
+  }
+
+  var me = new Developer('Robin', 'Wieruch');
+  console.log(me.getName());
+
+  Create an object with the new keyword
+  Constructor of class called at same time to assign values to class properties
+  Class methods used to read or write object properties
+  That's basically all you need for React
+
+JS class used to define React component
+  However React component only React component because inherits from _React Component class_
+    This is imported from the React package
+
+    class Car {
+        constructor(color, model, engineCap, registrationNum) {
+            this.color = color;
+            this.model = model;
+            this.engineCap = engineCap;
+            this.registrationNum = registrationNum;
+        }
+
+        getColor() {
+            return this.color;
+        }
+
+        getModel() {
+            return this.model;
+        }
+
+        setColor(color) {
+            this.color = color;
+        }
+
+        setModel(model) {
+            this.model = model;
+        }
+    }
+
+Objects
+   A lot like classes
+
+   let computer = { brand : 'HP', RAM : '8 GB', clockspeed : '2 GHz'};
+
+   let computer2 = {
+      brand : 'HP',
+      RAM : '8 GB',
+      clockspeed : "2 GHz"
+   }
+
+  // Objects can also have 'functions' called methods
+  let computer3 = {
+    brand : 'HP',
+    RAM : '8 GB',
+    clockspeed : "2 GHz",
+
+    printRam() {
+      console.log(this.RAM)
+    }
+  }
+
+  computer3.printRam();
+

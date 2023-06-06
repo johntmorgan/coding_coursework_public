@@ -1,0 +1,43 @@
+Insert syntax
+  INSERT INTO table(col1, col2, ... coln)
+    VALUES(val1, val2,... valn);
+
+  // Add a record
+  INSERT INTO Actors (
+    FirstName, SecondName, DoB, Gender, MaritalStatus, NetworthInMillions)
+    VALUES ("Brad", "Pitt", "1963-12-18", "Male", "Single", 240.00);
+      > Query OK, 1 row affected (0.01 sec)
+    // Note can change col order from the table, just make sure value order matches
+
+  // Add multiple records
+  INSERT INTO Actors (
+  FirstName, SecondName, DoB, Gender, MaritalStatus, NetworthInMillions)
+  VALUES
+  ("Jennifer", "Aniston", "1969-11-02", "Female", "Single", 240.00),
+  ("Angelina", "Jolie", "1975-06-04", "Female", "Single", 100.00),
+  ("Johnny", "Depp", "1963-06-09", "Male", "Single", 200.00);
+    > Query OK, 3 rows affected (0.01 sec)
+    > Records: 3  Duplicates: 0  Warnings: 0
+
+  // Alternative syntax with no col names
+  // Values must match order of columns now
+  INSERT INTO Actors
+    VALUES (DEFAULT, "Dream", "Actress", "9999-01-01", "Female", "Single", 000.00);
+    // Used the column DEFAULT for ID column
+      // Using NULL or 0 also works, MySQL auto-assigns next higher integer
+
+  // Skip a column and populate with default using DEFAULT keyword
+  INSERT INTO Actors VALUES (NULL, "Reclusive", "Actor", "1980-01-01", "Male", "Single", DEFAULT);
+
+  // Use all default values
+    INSERT INTO Actors () VALUES ();
+      // Will assign NULL as default in any cols w/o default
+      // Note default for TIMESTAMP column is current timestamp
+
+  // Alternate syntax setting vals one col at a time
+    INSERT INTO Actors SET DoB="1950-12-12", FirstName="Rajnikanth", SecondName="",  Gender="Male",
+    NetWorthInMillions=50,  MaritalStatus="Married";
+    // Eliminates ambiguity - easy to see what setting
+
+  
+

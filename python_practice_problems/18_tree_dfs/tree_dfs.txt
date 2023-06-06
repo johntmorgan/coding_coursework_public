@@ -1,0 +1,34 @@
+Tree depth-first search
+  Graph with properties
+    Undirected
+    Acyclic
+    Single connected component
+  Tree dfs
+    Reduce nested loops
+    Usually implement recursively
+    Can implement iteratively with stack
+  Go as far as possible down one branch before others
+  Three main patterns
+    Preorder
+      Node
+      Left child
+      Right child
+      Most common
+    In order
+      Left child
+      Node
+      Right child
+      When finding elements smaller than root
+    Postorder
+      Left child
+      Right child
+      Node
+      Rarest
+      Ex. deleting tree
+  Why?
+    Restart at root -> O(n^2)
+    Use dfs -> O(n)
+  DFS vs BFS
+    Prefer DFS if answer close to leaf
+    BFS is answer close to root
+    

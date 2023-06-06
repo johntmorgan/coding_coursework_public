@@ -1,0 +1,83 @@
+JS object notation
+  To transfer objects, use JSON
+
+JSON
+  Lightweight text-based language for storing data
+  JSON used exchanging data browser <-> server
+    When only data transferred can be text based
+  Any JS object can be converted into JSON text
+  Uses same syntax as JS for object declaration
+    Key-value pairs
+    But can declare arrays directly
+
+  Here's a JSON object
+
+    {
+        "key" : "value",
+        "number" : 1,
+        "string" : "string value",
+        "boolean" : true,
+        "array" : [1, 2, "three", true],
+        "object" : {"key" : "value"},
+        "Null" : null,
+    }
+
+    Key-value pairs between braces
+    If more than one key-value pair, separate by commas
+    Values may have the types
+      Number
+      String
+      Boolean
+      Array object (List of values enclosed in square brackets)
+      Objects (another JSON object in brances)
+      Null object (null value)
+
+    All keys are strings in double quotes
+
+Arrays in JSON
+  List of values placed between square brackets
+  More than one value, separate by commas
+
+    [
+        1,
+        "string value",
+        true,
+        [1, 2, "three", true],
+        {"key" : "value"},
+        null,
+    ]
+
+ Parsing JSON in JS
+  Since JSON is just text, translate to object using JSON.parse
+  JSON.parse
+    Takes string as object
+    Translates into JS object
+
+    var obj_json = '{"name": "Ali", "age": 3}'; // string representation of JSON text
+    var object_translated = JSON.parse(obj_json); // Parse JSON text
+
+    // Print types and values of obj_json and object_translated
+    console.log('obj_json: ', obj_json);
+      > obj_json:  {"name": "Ali", "age": 3}
+    console.log('object after parsing: ', object_translated);
+      > object after parsing:  { name: 'Ali', age: 3 }
+    console.log('type of obj_json: ', typeof obj_json);
+      > type of obj_json:  string
+    console.log('type of object_translated: ', typeof object_translated);
+      > type of object_translated:  object
+
+JS to JSON
+  JSON.stringify
+
+    var object = {name: "Ali", age: 3}; // JavaScript object assigned to object
+    var json_obj = JSON.stringify(object); // convert JavaScript object into JSON text
+
+    // Print types and values of object and json_obj
+    console.log('object: ', object);
+      > { name: 'Ali', age: 3 }
+    console.log('object after JSON.stringify: ', json_obj);
+      > object after JSON.stringify:  {"name":"Ali","age":3}
+    console.log('type of object: ', typeof object);
+      > type of object:  object
+    console.log('type of json_obj: ', typeof json_obj);
+      > type of json_obj:  string

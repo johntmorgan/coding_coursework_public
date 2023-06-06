@@ -1,0 +1,324 @@
+Coloring and Connectivity
+Book
+  So far edges = affinity between nodes
+  But what about when they indicate conflict?
+    Example: exam scheduling
+  Edges = students in same course
+  Color vertices - adjacent must get different colors
+  To keep exam period short, use as few colors as possible
+    In example 3 colors work
+    Can use less than 3? No, triangle in graph, corners must all be different colors
+  "Graph coloring problem"
+    Given a graph G, assign colors to each node such that adjacent nodes have different colors
+      "valid coloring" or just "coloring" for short
+    A graph G is k-colorable if it has a coloring that uses at most k colors
+      Minimum value of k for which a graph G has a valid coloring is chromatic number, chi(G)
+      G is k-colorable if chi(G) <= k
+    Figuring this out can take a long time
+      Classic example of a problem for which no fast algorithms are known
+      Easy to check if it works, hard to find it
+        ($1m Clay prize)
+  Simple coloring bounds
+    An even-length closed cycle is 2-colorable
+      Cycles in simple graphs have positive lengths by convention and so are not 1-colorable
+      chi(Ceven) = 2
+    An odd-length closed cycle requires 3 colors
+      chi(Codd) = 3
+    Complete graph Kn
+      chi(Kn) = n
+        Since all vertices are connected, no two can have the same color
+    Bipartite
+      Two colors - one for nodes on "left", one for nodes on "right"
+      Conversely graphs with chromatic number 2 are all bipartite
+        Can group on left/right
+    No edges
+      chi(Cempty) = 1
+        The only graph with chrom. number 1
+    Lemma
+      A graph G with at least one edge is bipartite iff chi(G) = 2
+    Chromatic numbers generally small if vertex degrees are small
+    Thm
+      A graph with maximum degree at most k is (k + 1)-colorable
+        Tempting to prove with induction on k... but disaster, not on PSet lol
+        When inducting on graphs, induct on number of nodes or number of edges
+      Proof
+        Induct on number of vertices in graph, denoted by n
+        P(n) - an n-vertex graph with max degee at most k is k+1 colorable
+        Base case (n = 1)
+          Max degree 0, 1-colorable, so P(1) is true
+        Inductive step
+          Assume P(n) is true, let G be an (n + 1)-vertex graph with max degree k
+          Remove a vertex v (and edges), leaving an n-vertex subgraph H
+          Max degree of H is ast most k, and so H is k + 1 colorable
+          Now add back vertex v. Can assign v a color from the set of k + 1 colors
+            That is different from all adjacent vertices
+            Since at most k vertices adjacent to v
+            And k + 1 colors still available
+          Therefore G is (k + 1)-colorable
+    Sometimes k + 1 colors is the best you can do
+      chi(Kn) = n and every node in Kn has degree k = n - 1
+        Also true if K(k + 1) as a subgraph
+    But sometimes you can do much better
+      Star graph - central node with degree n - 1, every other node has degree 1
+        Colorable with just 2 colors
+  Why coloring
+    One reason: scheduling conflicts are very common
+      Akamai - deploy software over 65k servers every few days
+        Can't all be done at once, need to be taken down in order
+        Can't be done one at a time, would take forever (each takes ~1h)
+        Certain pairs cannot be taken down at the same time - common critical functions
+        Solved by making a 65k node conflict graph and coloring it with 8 colors
+          (8 waves of install, ~8 hours)
+    Frequencies at radio stations
+      Overlap in broadcast area, can't get same frequency
+        Frequencies are precious and expensive (I suspect less so in 2022 - JM)
+      Minimum coloring for graph - vertices are stations, edges connect w/overlapping areas
+    Allocating registers for program variables
+      While variable in use, value saved in register
+      Register can be reused for different variables
+      However variables need different registers if referenced during overlapping periods of prog execution
+      Coloring problem where vertices are variables - adjacent if overlap, colors are registers
+    Famous map coloring problem
+      How many to color a map so that adjacent get different colors?
+        Proof that 4 colors enough for *planar* graphs discovered ~30 years ago
+        Implicit is a procedure that takes time proportional to # vertices in graph
+      $1m question - is four needed, or will 3 actually do the job
+        As hard as the $1m SAT problem
+  Simple Walks
+    Walks and paths essentially the same as digraphs
+    Formal
+      Walk in simple graph G is an alternative sequence of vertices and edges
+      Begins with a vertex
+      Ends with a vertex
+      For every edge one of the endpoints is the element just before and the other is the next
+      The length of a walk is the total number of occurrences of edges in it
+        Start at v0, end at vk, length k
+      Path iff all the vertices are different, that is if i != j, then vi != vj
+      Closed walk is a walk that begins and ends at the same vertex
+        A single vertex counts as a length 0 closed walk and a length 0 path
+      A cycle is a closed walk of 3+ vertices which are distinct except for beginning and end
+    What is different from digraphs?
+      Don't count length 2 walk as a cycle
+      No closed walks of length 1, simple graphs don't have self-loops
+    As in digraphs
+      Length of walk is one less than # of vertices
+    Cycles as subgraphs
+      Cycle does not have a beginning or end, so can be described with any starting point
+        Simple graph cycles don't have a direction, can go in either order too
+      Which closed walks describe the same cycle?
+        Define as a subgraph instead of a closed walk - looks like a length-n cycle for n >= 3
+      Def.
+        A graph G is a subgraph of a graph H if V(G) C= V(H) and E(G) C= E(H)
+      Def.
+        A cycle of a graph G is a subgraph of G that is isomorphic to Cn for some n >= 3
+  Connectivity
+    Two vertices are connected when path begins at one and ends at other
+      By convention every vertex is connected to itself by a path of length 0
+    A graph is connected when every pair of vertices is connected
+    Being connected is usually a "good" property for a graph to have
+      Can get from any node to any other node
+      Can communicate between any pair of nodes
+    But not all graphs are connected
+      nodes = cities, edges = highways
+        Connected for America
+        Not connected for Australia
+      Internet
+        Some government networks are completely isolated
+    Connected pieces = connected components
+    Connected component of a graph
+      Is a subgraph consisting of some vertex and every node and edge connected to that vertex
+    A full graph is connected iff it has exactly one connected component
+      The empty graph on n vertices has n connected components
+  Odd cycles and 2-colorability
+    Equivalent graph properties:
+      The graph contains an odd-length cycle
+      The graph is not 2-colorable
+      The graph contains an odd-length closed walk
+      Each implies the other
+    Proof - not 2 colorable -> odd-length closed walk
+      Prove for connected graphs - will hold for each connected component of arbitrary graph
+      Pick arbitrary vertex r of G
+      Since G is connected, for every node u in V(G)
+        Walk wu starting at u and ending at r
+        color(u) = {black if |wu| is even}
+                   {white otherwise}
+      G is not colorable, this can't be a valid coloring
+        So there must be an edge between u and v with the same color
+        But wu^reverse(wv)^(v-u)
+        Is a closed walk starting and ending at u, and its length is |wu| + |wv| + 1 which is odd
+    Proof odd-length closed walk -> odd-length cycle
+      WOP implies odd length closed walk of minimum length
+      w must be a cycle
+      assume to contrary w is not a cycle - repeat vertex occurrence
+        If the start vertex reoccurs, w = f^xr
+          Positive length walks f and r beging and end at x
+          |w| = |f| + |r|
+            exactly one of f and r must have odd length, one will be odd length closed walk shorter than w, contradiction
+        Other case
+          w = f^yg^yr
+          f is a walk from x to y for some y != x, r is a walk from y to x, and |g| > -
+            g cannot have odd length or it would be shorter than w, so g has even length
+            so f^yr must be an odd length closed walk shorter than w, again contradiction
+    Useful because bipartite graphs come up pretty often in practice
+  k-connected Graphs
+    Telephone network, oil pipeline, electrical powerline
+      Need to survive component failure
+    Connection strength = how many links must fail before connectedness fails
+    k-edge connected - takes k "edge-failures" to disconnect
+    Formally
+      Two vertices in a graph are k-edge connected when they remain connected in every subgraph
+        obtained by deleting up to k - 1 edges
+      A graph is k-edge connected when it has more than one vertex, and (every? one?) pair of distinct vertices
+        in the graph is k-connected
+    Notice that if graph is k-connected, it's also j-connected for j <= k
+    A complete graph kn is (n - 1)- connected
+    Every cycle is 2-connected
+    Def
+      If 2 vertices are connected in a graph G, but not when edge e is removed, e is called a "cut edge" of G
+    So a graph with more than one vertex is 2-connected iff it is connected and has no cut edges
+    Lemma
+      An edge is a cut edge iff it is not on a cycle
+    More generally if two vertices connected by k edge-disjoint paths (no repeated edges)
+      They must be k-connected, need to remove at least one edge from each path before disconnect
+    Menger's Thm (Ingenious proof ommitted)
+      Converse is true: if two vertices are k-connected, k edge-disjoint paths connecting them
+      Takes ingenuity to prove just for case k = 2
+  Minimum number of edges in a connected graph
+    A graph with few edges must have many connected components
+    Every graph G has at least |V(G)| - |E(G)| connected components
+      Must be less edges than vertices
+    Proof
+      Use induction on the number of edges k. Let P(k) propose that
+        Every graph G with k edges has at least |V(G)| - k connected components
+      Base case (k = 0)
+        In a graph with 0 edges, each vertex is itself a connected component
+        Exactly |V(G)| = |V(G)| - 0 connected components, P(0) holds
+      Inductive step
+        Let Ge be the graph that results from removing an edge e in E(G)
+        Ge has k edges and by induction may assume Ge has at least |V(G)| - k connected components
+        Now add edge e back to obtain original graph G
+        If endpoints of e were in the same connected component of Ge than G has same connected components as Ge
+          So G has at least |V(G)| - k > |V(G)| - (k + 1) components
+        If endpoints of e were in different connected components, these two components are merged
+          So G has one fewer connected components than Ge
+          G has at least (|V(G)| - k) - 1 = |V(G)| - (k + 1) connected components
+    Corollary
+      Every connected graph iwht n vertices has at least n - 1 edges
+    A couple points
+      Inducted on number of edges - should be first approach considered along with num vertices
+      Shrink-down, grow-back process very common in inductive steps of proofs for graphs
+        Why not start with k-edge graph and add one more to get a k + 1 graph?
+        Works here but opens door to nasty logical error called "buildup error"
+
+Lecture
+  Coloring
+    The abstract version of problem arising from conflict scheduling
+    Let's look at an example first
+    Schedule aircraft to gates
+    If on ground at same time, need different gates
+    How many gates needed?
+    Looking at airline schedule - blocks to indicate when on ground
+      Can put green line across bars and see how many cross (3 at most)
+    Abstractly, assign each aircraft to be vertex of graph
+      Now edge = conflict instead of compatibility
+    Let's assign colors to vertices in such a way no two adjacent have the same color
+      Should be clear that minimum colors = 3
+      Let's try coloring
+        Triangle - all 3 different colors
+        Wound up doing it with 4 colors - need 4 gates
+        But could also do it with just 3 colors
+    Final exams
+      Subjects conflict if student taking both
+      Try coloring graph - lots of triangles - four colors
+        This time four colors are the best possible
+  Conflicting allocation problems
+    Separate habitats to house different species of animals, some incompatible with others
+      "Big fish eat little fish" - aquarium world
+    Different frequencies for ratio stations that interfere with each other
+      Close enough to interfere - connected by edge
+    Different colors to color a map?
+      Never share a border with same color - 4-colored example
+        Can share if only meet at one point, but not positive-length boundary
+      Countries are the vertices
+        Stick a vertex in the middle of each region
+        Connect when share positive-length edge
+  Planar four coloring
+    Every planar map is 4-colorable
+      1850s false proof published (correct for 4 colors)
+      1970s proof with computer
+        Was controversial - program had to crank through several thousand sample graphs
+        Argument that could be one of several thousand counterexamples - colored with computer and by hand
+          Unhappy but basically uncheckable
+      1990s
+        Much improved - but program still needs to generate ~600 maps and verify
+        Not much doubt at this point though
+  Chromatic number
+    Minimum number of colors to color G - chi(G)
+    Simple cycles
+      chi(Ceven) = 2
+      chi(Codd) = 3 - when you wrap around, can't alternately color
+    Complete graph K5
+      Every vertex is adjacent to the others
+      Need 5 colors
+      chi(Kn) = n
+    Wheel Wn
+      Cycle with "axle" in the middle
+      W5 = 4 colors
+      chi(Wodd) = 4 - 3 for rim, fourth for axle
+      chi(Weven) = 3 - 2 for rim, third for axle
+    Bounded Degree
+      All degrees <= k implies chi(G) <= k + 1
+      "Greedy" coloring - just color any way you like
+      <= k neighbors - so can always can find a k + 1 color that works
+  Coloring arbitrary graphs
+    2-colorable? easy to check
+    3-colorable? hard to check (even if planar)
+      Back in realm of NP-complete problems - result of student 40 years ago
+      Hard as satisfiability
+        Proof of reducing problem to SAT may be a PSet problem
+    find chi(G)
+      Theoretically no harder than 3-color, but harder in practice
+  Connectivity
+    Vertices are connected iff path between them
+      Same as saying walk between them
+      0 length included, so each vertex is connected to itself
+    Graph is connected if all vertices are connected to each other
+      Every graph consists of separate connected pieces (subgraphs) - "connected components"
+    Connected components - infinite corridor on MIT
+      East campus, medical center connected 4 in sequence
+      Whole layout - one graph with 3 parts, 3 connected components
+        Has more connected components, the more broken up it is
+      Connected component of vertex v ::= {w | v and w are connected}
+        = E*(v)
+        The image of v under the >= 0 walk relation
+    So a graph is connected if it has only 1 connecte component
+  k-Connectivity
+    Edge connectedness
+    Def: vertices v, w are k-edge connected
+      If they remain connected when you remove fewer than k edges from a graph
+    A graph is k-edge connected iff every two vertices are k-edge connected
+    Connectivity measures fault tolerance of network
+      How many connections can fail without cutting off communication?
+      Example - one edge remove split in two
+  k-vertex connectedness
+    Similar definition
+    k-vertex connected IMPLIES k-edge connected
+    but NOT converse
+      Example of a graph - one vertex in middle with two connections to loops on both sides
+    Kn is the complete graph on n vertices
+      Kn is (n - 1)-vertex connected - need to remove everything basically
+      n choose 2 edges - n(n - 1)/2 edges
+    n-dimensional hypercube Hn
+      V(Hn) ::= {0, 1}^n
+      <u-v> an edge IFF u, v differ in one place
+      Hn is n-vertex connected
+  Menger's Thm
+    Not going to prove - a bit too much to get into
+    k-connected vertices will be connected by k non-overlapping paths
+  Summary
+    Connectivity measures fault tolerance of a network (and # of edges, its cost)
+    Complete graph? ~n-1 connectivity, ~n^2/2 cost
+    Hypercube? log n connectivity, nlogn/2 cost
+    Grid? 4 connectivity, 2n cost (wrap around in shape of donut with finite graph to avoid 2-connected edges)
+    Cycle? 2 connectivity, n - 1 cost
+    Tree? 1 connectivity, n - 1 cost

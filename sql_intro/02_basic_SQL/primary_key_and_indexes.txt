@@ -1,0 +1,102 @@
+Primary Key and Indexes
+  For any WHERE query, MySQL must full scan table
+    Linear scan = not efficient!
+  Add index to table to speed up search for matching rows
+    Think about it like a book index
+    Can jump to letter M and find topic quickly
+    However you do have to add a few pages to the book
+      (Ain't it a BST? - JM)
+
+  // See indexes on a table;
+  SHOW INDEX FROM Actors;
+    // Cardinality shows number of unique primary key values
+      Also described as estimate
+      May not be exact for smaller tables
+        Came out to 2 in my test - JM
+        Based on statistics stored as integers
+
+  ANALYZE TABLE Actors;
+  SHOW INDEX From Actors;
+    // Now cardinality is exact
+
+Two kinds of indexes
+  Clustered
+  Non-clustered
+
+Clustered Index
+  Rows are written to physical storage medium when inserted
+  With clustered index, sorted and kept in B-tree structure
+    (Or R-tree in case of a spatial index)
+  Physical arrangement of rows on disk mimics logical order defined by index
+    No separate data structure holding rows
+    Close to each other in index order = close to each other on disk
+  B-Trees and B+ trees are common data strucutres to store
+    B-Trees are balanced, guarantee a fixed number of disk reads
+    B+ Tree: data only lives in leaf nodes
+      Root and internal nodes contain key on which data is sorted
+    MySQL stores rows in entity called page
+      Smallest unit of data a database can write to or read from disk
+    A page contains rows and forms leaf of B+ tree
+    Especially useful in range queries
+      Say want names > Kylie
+        Find leaf node with key value Kylie
+          Blindly follow forward pointers until end of index
+    Default size of page is 16 KB
+      Configurable
+    Collection of pages = extent (64 pages, 1 MB)
+    Collection of extents = segment - grows or shrinks one extent at a time
+    Collection of segments = tablespace
+    Tablespace = tables & indexes
+    There is a tablespace called the system tablespsce
+    In older versions of MySQL, all user tables part of system tablespace
+    Later MySQL = can tell via config to have a separate tablespace for each table
+
+  Can force primary key if it's not set
+
+  INSERT INTO Actors (Id, FirstName, SecondName,DoB, Gender, MaritalStatus, NetWorthInMillions) VALUES (15, "First","Row", "1999-01-01", "Male", "Single",0.00);
+
+  INSERT INTO Actors (Id, FirstName, SecondName,DoB, Gender, MaritalStatus, NetWorthInMillions) VALUES (13, "Second","Row", "1999-01-01", "Male", "Single",0.00);
+
+  Key will pick up at highest value inserted
+
+How pages work
+  Pages of B-tree split and merge as required
+  Full page and new key
+    Existing page splits
+  Enough rows get deleted
+    Pages may merge
+  There are a lot of intricate details
+    Not needed for intro course
+  Within page
+    Singly linked list
+      Enforces index order on rows
+    When row added
+      In memory added to available free space
+      Linked list pointers manipulated to maintain order
+        Row may be before some page contents
+  Clustered index does NOT imply rows are contiguously stored on the hard disk
+    OS decides location
+    Clustered index only ensures physical & logical order of rows is same
+  InnoDB database enging
+    Every table is clustered index, primary key is sort key
+    SHOW ENGINES;
+      // See available engines
+  If no primary key defined
+    Look for first unique index with all columns that form key set as NOT NULL
+    If no unique index available?
+      Generates hidden clustered index named GEN_CLUST_INDEX
+      Synthetic column containing row ID values
+
+Non-clustered index
+  Leaf nodes do not hold data
+  They hold pointers to data elsewhere on disk
+  MyISAM engine
+  Actual table is stored as a heap with no ordering
+    "heap-table"
+    ISAM = Indexed Sequential Access Method
+      Indexing algo developed by IBM
+    Rows appear in actual insertion order
+
+Cost of indexing
+  Takes up disk space
+  Must be modified whenever insert or update made

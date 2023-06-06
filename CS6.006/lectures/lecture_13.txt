@@ -1,0 +1,247 @@
+Dijkstra's algorithm
+  Recap from last time
+    Have been talking about single-source shortest paths on weighted graphs
+    So far have talked about 3 ways to solve
+      BFS - if unweighted or can transform into unweighted
+        Only good for small positive weights
+        O(|V| + |E|)
+      If no cycles
+        DAG relaxation
+        O(|V| + |E|) topological order
+        Push shortest path info back by relaxing edges forward
+      General graphs
+        If negative weight cycles
+        Bellman-Ford detects them
+        Finite weight path compute
+        Reachable from negative weight cycle - mark as -inf distance
+        Also find negative weight cycle
+        Duplicate graph into DAG and follow back in expanded DAG with multiple layers
+        O(|V| * |E|)
+        How bad is this?
+          If the graph is sparse, then O(|E|) ~ O(|V|), so quadratic in V, V^2... ok
+          But if dense, e.g. complete graph, then V^2 edges, and V^3 running time... "not great"
+            Would like something closer to linear
+  Today:
+    *Almost* linear time for non-negative weights
+      No negative-weight cycles
+      Many time no negative weights, don't have a negative distance to house
+      Can get almost linear
+    |V|log|V| + |E|
+      Remember log|V| will not be bigger than 30, maybe 60 in real life
+      Pretty good performance, almost linear
+  How? Two observations to start
+    The idea is to generalize the notion of BFS
+    To solve weighted shortest paths with BFS
+      Take positive edge weight, break up into individual edges
+      But if total weight of edges is large, have expanded size of graph
+        And it's kind of analogous to a Radix sort situation - a huge huge u far bigger than n
+    The idea here
+      Grow a frontier of increasing distance from source, try to maintain all things within dist from source
+      Repeatedly explore closer vertices before get to further ones
+        But how can I explore closer if I don't know dists beforehand?
+          Feels like circular logic
+      Gradually compute distances as we go
+        Wouldn't work in a negative edge weight context
+    Observation 1
+      If weights are >= 0 then distances increase along shortest paths
+        Maybe weakly monotonically increase if lots of 9 weight edges
+        But if path from s to v through u
+        delta(s, u) and delta(s, v)
+          how do they relate?
+          delta(s, u) <= delta(s, v)
+          That's what Dijkstra will exploit
+        If had negative weight
+    Observation 2
+      Can we piggyback on DAG relaxation?
+      Can solve SSSP if given order of vertices in increasing distance beforehand
+        Not distance, but order of vertices
+        Example - had to compute from actual numbers
+          Got right ordering
+        Solve in linear time with vertices
+          Any edge going backwards with respect to ordering can't participate unless weight is 0
+          0 weights could be problematic, want to get to DAG relaxation
+          Collapse vertices connected by 0 weight edges down into single vertex
+            Or can flip ordering with no penalty
+          If there's a 0-weight cycle, coalesce into single vertex
+          Any edge going backward can't participate
+          Now run DAG relaxation in linear time
+  Dijkstra time
+    Dijkstra is Dutch computer scientist - wrote with name ÿ but converted to ij in manuscripts
+      Wrote a monograph on why languages should start with 0 indexing
+    Idea
+      Relax edges from vertices in increasing distance from s
+        How do we know?
+    Idea 2
+      Find next vertex efficiently using a data structure
+        Changeable priority queue
+        A little different from a normal priority queue we saw in data structures
+        Q.build(X)
+        Q.delete_min() // same as normal PQueue
+        Q.decrease_key(id, k) // a little strange, what is id
+          Each item has two values instead of one value - has a key for delete min
+          id is a unique integer - find item in data structure, change its key to smaller value
+      How to implement a changeable priority queue?
+        Regular one will already get build, delete_min
+        So to implement, regular priority queue Q' crosslinked with dictionary D
+          Could do this stuff pretty fast
+          Assume ids 0 to |V| - 1
+            Expected constant time with a hash table
+            Better: constant time with direct access array
+      Use data structure to track distances of vertices away from s
+  Full Dijkstra
+    Set d(s, v) = inf for v in V
+    Set d(s, s) = 0 // will never update again, no negative edge weights
+    Build changeable priority queue Q with an item (v, d(s, v)) <- (id, key)
+    While changeable priority queue Q still has items
+      Delete (u, d(s, u)) from Q that has minimum distance
+        Starting with the source itself
+      Process just like DAG relaxation
+        Relax all of its outgoing edges
+        For v in Adj+(u): if d(s, v) > d(s, u) + w(u, v)
+          Relax edge (u, v) -> set d(s,v) = d(s, u) + w(u, v)
+          Tell queue to change key value associated with key
+          Decrease key of v in queue to new d(s, v)
+    Example (on paper)
+      Set s to 0, everything else to infinite
+      Look at adjacencies to s and relax (set to distances)
+      Take shortest distance and relax
+      Etc
+      Until all have been pulled out of queue
+      Seem like shortest distances
+      How do we prove that though?
+    Proof - correctness of Dijkstra
+      Follows from two main observations
+      Claim: d(s, v) = delta(s, v) for all v in V at end
+      First, if relaxation ever sets d(s, v) = delta(s, v), still true at end
+        Not a very strong statement to start
+        Relaxation only ever decreases the distance, but safe - length of some path to v, unless infinite
+          Can never be lower than delta(s, v)
+      Suffices to show that d(s, v) = delta(s, v) when v is removed from the queue
+        Since remove every vertex from queue, eventually set all to real distance
+      Prove d(s, v) = delta(s, v) when v is removed from the queue
+        Proof by induction on first k vertices removed from Q
+        Assume true for first k
+        Base case, k = 1
+          First vertex popped has this property - s = 0
+        Inductive step
+          Assume true for k < k'
+          Let v' be the k'th vertex popped
+          Now look at shortest path from s to v'
+            S and some vertices removed from queue, but maybe some not
+            What if vertex preceding is not popped from queue?
+            Let's consider the vertex y that is not in queue
+            Predecessor x is in the queue
+            But everything before it is not in the queue
+            distance estimate d(s, y) <= delta(s, x) + w(x, y)
+                                       = delta(s, y)
+            But what about v'
+              d(s,y) <= delta(s, v') because non-negative weights
+                     <= d(s, v') because relaxation is safe
+                        Because we're popping the minimum from our priority queue
+                     <= d(s, y)
+      So that's why Dijkstra is correct
+  Running Time
+    Q.build(x) takes B time
+    Q.delete_min() takes M time
+    Q.decrease_key(id, key) takes D time
+    Build once
+    Delete minimum from queue V times
+      Relax all outgoing edges
+    O = B + |V| * M  + |E| * D
+    How do we implement priority queue
+      Array - O(n) delete_min, O(1) decrease_key
+      If we look at running time bound
+        Replace M with |V| get quadratic running time algorithm in number of vertices
+          For dense graph, actually in linear time
+          Actually pretty good, despite stupidest possible data structure
+        Can do better for sparse graphs where few edges per |V|
+          binary heap, delete_min in log(n) time, and decrease_key in log(n) time
+          O(|V| + |V| * log|V| + E * log|V|)
+          That will give |E| * log(|V|) running time, pretty good!
+            Just an extra log factor on linear
+        Different data structure achieves both bounds for both sparse and dense graphs
+          Fibonacci heap - not doing to talk about in 6.006
+          Gives us an |E| + |E| * log(|V|) running time bound
+            See chapter 19 in CLRS, or 6.854
+      Theory problems with Dijkstra
+        O(|E| + |V|log|V|) - use this in this class
+        But if you happen to know your graph is dense or sparse
+          Using an array or heap is going to get you just as good a running time
+          Most people know in practice, so do not implement Fibonacci heap which is a lil complicated
+  So far
+    Have gotten all of these nice bounds
+      DAG - linear |V| + |E|
+      Dijkstra - close to linear |V|log|V| + |E|
+      Bellman-Ford - |V| * |E| // if might be negative cycles, go for quadratic running time
+        There *are* faster ways, not taught in this class
+
+Recitation
+  Dijkstra possibly most commonly used weighted shortest paths algorithm
+    Faster than Bellman-Ford
+    Only applies to non-negative edge weight graphs, but those are very common
+  Intuitive but implementation can be more complicated
+  Think of a weighted graph as a network of pipes, each with non-neg length (weight)
+    Turn on water faucet at source vertex s
+    Assuming water flows evenly, will hit intersection vertex in order of shortest distance from the source
+    Dijkstra discretizes this continuous process by repeatedly relaxing edges from a vertex
+      Whose minimum weight path estimate is smallest among vertices whose outgoing edges have not yet been relaxed
+    In order to efficiently find estimate, often prsented in a minimum priority queue data structure
+      Running time then depends on efficiency of priority queue in supporting operations
+  (code)
+  Follows same structure as general relaxation framework
+    Initialize shortest path weight estimates and parent pointers
+    Initialize priority queue with all vertices from the graph
+    Loop, remove vertex from queue, relax edges from u, update keys in queue if possible
+  Why does Dijkstra compute shortest paths?
+    Key observation: shortest path weight estimate of vertex u equals actual shortest path weight
+      d(s, u) = delta(s, u) when u is removed from the priority queue
+        And by the upper-bound property, will still hold at the end of the algorithm
+  Focus: analyzing running time via different priority queues
+  PQueue here differs slightly from presentation earlier in term
+    Maintains a set of key-value pairs, where v is a value and d(s, v) is its key
+    Supports 3 operations
+      insert(val, key)
+      extract_min()
+      decrease_key(val, new_key)
+        Reduces key of a given value to the given new_key
+    Running time of Dijkstra depends on these operations
+      Ti = time to insert
+      Te = time to extract_min
+      Td = time to decrease key
+    Tdijk = O(|V| * Ti + |V| * Te + |E| * Td)
+      Many different ways to implement a priority queue
+      Store in hash table?
+        Insert and decrease_key expected O(1)
+        Extract_min O(|V|)
+      Store in direct access array? If vertices are indices into the vertex set with linear range
+        Insert and decrease_key worst-case O(1)
+        Extract_min O(|V|)
+      Either of these simplifies to O(|V|^2 + |E|)
+        This is actually quite good
+        If graph is dense, |E| = omega(|V|^2)
+        Implementation linear in size of input
+      If graph is sparse, |E| = O(|V|)
+        Speed things up with more sophisticated PQueue operations
+        Binary min heap can implement insertion and extract-min in O(logn) time
+        Have each vertex maintain a pointer to stored location in the heap
+          Or have the heap maintain a mapping from values (vertices) to locations in the heap
+          Support find a given value in the heap in constant time
+          Then after decreasing the value's key, can restor min heap by re-heapifying the tree
+          All operations supported in O(log|V|)
+        THeap = O((|V| + |E|) * log(|V|))
+          For sparse graphs, O(|V|log|V|)
+      If the graph is between sparse and dense, Fibonacci Heap
+        More sophisticated
+        Amortized O(1) insertion and decrease-key operations
+        O(logn) minimum extraction
+        TFibHeap = O(|V|log|V| + |E|)
+        Won't talk about much
+        Useful for speeding Dijkstar ao edge between linear and quadratic in # of vertices
+        Quote this time bound when arguing Dijkstra when solving theory questions
+        Fibonacci Heaps not used very often in practice
+          More complex to implement
+          Larger constant overhead factor
+          When number of edges in graph is known to be at most linear (planar, bounded degree)
+            Then using a binary heap performs as well as Fibonacci
+          When number of edges is known to be at least quadratic (complete graph)
+            Then using a dictionary performs as well Fibonacci

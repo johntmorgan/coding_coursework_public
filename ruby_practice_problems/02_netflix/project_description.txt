@@ -1,0 +1,19 @@
+Netflix
+  Biggest streaming video platform in the world
+  Video repository is always growing
+
+Features
+  Enable users to see search results despite typos
+  View top-rated movies worldwide, have ratings per region
+  Update median age of viewers whenever someone signs up for Netflix
+  Determine titles gaining or losing popularity
+  Cache that replaces least recently watched title
+  Cache that replaces least frequently watched title
+  Let user move back and forth in history
+    Smells like a stack, but also want to jump to top ranked
+  Beta testing last feature, next and previous broken
+    Use their session history to test
+  Given initial set of categories genre, return all possible genre/video combos
+  Record median number of buffering events
+  Generate all possible permutations of movies in marathon
+  Continue watching returns most frequently watched show

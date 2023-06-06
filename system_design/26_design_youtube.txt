@@ -1,0 +1,571 @@
+Design YouTube
+
+What is YouTube?
+  Popular video streaming service
+  Users
+    Upload
+    Stream
+    Search
+    Comment
+    Share
+    Like or dislike
+  Channels host videos
+  Free hosting of video content
+  Second most viewed website 2022
+    After Google
+
+Why is YouTube popular?
+  Simplicity
+    Yet interface also powerful
+  Rich content
+    Lots of creators
+      Simple interface
+      Free hosting
+  Continuous improvement
+    Scalability constantly improving
+    Google backing since 2007
+  Source of income
+    Content creators make money if partners
+
+YouTube's growth
+  2.5B monthly active users now
+  Second most-streamed after Netflix
+    694k hours per minute
+    (How about TikTok? - JM)
+
+Requirements
+  Functional
+    Stream videos
+    Upload videos
+    Search videos by title
+    Like and dislike videos
+    Add comments to videos
+    View thumbnails
+    (No recommendations? - JM)
+  Non-functional
+    High availability
+      > 99% is considered good generally
+    Scalability
+      Do not bottleneck on:
+        Storage for uploading
+        Bandwidth for simultaneous viewing
+        Number of concurrent user requests
+    Good performance
+      Stream smoothly
+    Reliability
+      Do not lose or damage content
+  Not required
+    Strong consistency
+      Don't need instantaneous notifications on upload
+      (Perfect like count, etc. - JM)
+
+Resource estimation
+  Hundreds of minutes of video uploaded per minute
+  Large number of users streaming at same time
+  Storage resources for uploaded & processed content
+  Large number of requests via concurrent processing
+  Upload and download bandwidth for millions of users
+  Convert to numbers
+    1.5B users (I thought we just learned it was 2.5B now - JM)
+    500m DAU
+    Video length 5m (It's actually ~12 min - JM)
+    Size of video before encoding: 600 MB
+    Size of video after encoding: 30 MB
+      MPEG-4, VP9 = encoding algorithms
+
+  Storage estimation
+    500 hours uploaded in a minute
+    30 MB = 5 minutes of video
+    6 MB for one minute of video
+    180 GB per minute
+      (500 hours -> 30k minutes * 6 = 180k GB = 180 GB/min)
+    180 * 60 * 24 * 365 = 94.6 PB/year
+    Will also need to transcode into other formats, need even more space
+    Say 5 formats -> 90 GB/minute, ~500 PB/year
+      (Aren't high-res formats bigger though? - JM)
+
+  Bandwidth estimation
+    Upload - uncompressed
+      500 hours per minute
+      60 minutes/hour
+      50 MB/minute
+      8 bits/60s = 200 Gbps
+    Upload:view ratio = 1:300
+    Stream videos
+      500 hours per minute
+      60 minutes/hour
+      10 MB/minute
+      300
+      8 bits / 60s
+      12 Tbps
+    Total bandwidth
+      12.2 Tbps
+       12 Tbps down
+       0.2 Tbps up
+
+  Number of servers
+    500m DAU
+    Server handles 8k requests/second (typical)
+      Ballpark where converts to users/day
+    500m / 8k = 62.5k servers
+
+  Real world
+    Thumbnail storage
+    User data
+    Video metadata
+    User channel info
+  These are small compared to video files
+    Ignore for simplicity
+
+Building blocks
+  Database
+    Video metadata
+    Thumbnails
+    Comments
+    User-related info
+  Blob storage
+    Videos
+  CDN
+    Deliver content to end users
+  Load balancers
+    Handle millions of incoming requests
+  Also
+    Servers
+      Run app logic, handle user requests
+    Encoders & transcoders
+      Compress videos into different formats
+
+High-level design
+  Workflow
+    User uploads video to server
+    Server stores metadata and accompanying user data to database
+    Server hands video over to encoding
+    Encoder & transcoder compress and transform into multi resolutions
+    Videos stored on blob storage
+      GFS, S3 similar
+    Popular videos forwarded to CDN
+      Acts as cache
+      CDN not only infrastructure for serving
+  Why server in between user and encoder?
+    Client could abuse encoder
+    Server can filter duplicate videos
+    Encoders available privately within YT network, not publicly available
+
+API design
+  Translate from functionalities
+  REST APIs for simplicity and speed
+    Upload videos
+    Stream videos
+    Search videos
+    View thumbnails
+    Like/dislike videos
+    Comment on videos
+  Upload video
+    POST method
+    uploadVideo(user_id, video_file, category_id, title, description,
+    tags, default_language, privacy_settings)
+    Video file broken down into smaller packets
+      Upload to server in order
+      In case of failure store and resume if user retries
+  Stream video
+    GET method
+    streamVideo(user_id, video_id, stream_resolution, user_bitrate, device_chipset)
+      user_bitrate - to understand quality of video chunks to serve
+      device_chipset - can handle high res? mobile phones may not
+  Search video
+    GET
+    searchVideo(user_id, search_string, length, quality, upload_date)
+  View thumbnails
+    GET
+    viewThumbnails(user_id, video_id)
+  Like and dislike
+    GET method (not PATCH/PUT? - JM)
+    likeDislike(user_id, video_id, like)
+      0 for like, 1 for dislike
+  Comment video
+    GET again (huh - JM)
+    commentVideo(user_id, video_id, comment_text)
+
+Storage schema
+  User
+    id: INT
+    user_email: VARCHAR
+    username: VARCHAR
+    password: VARCHAR
+    DOB: DATE
+  Video
+    id: INT
+    title: VARCHAR(256)
+    desc: VARCHAR
+    upload_data: DATE
+    channel_id: INT
+    likes_count: INT
+    dislikes_count: INT
+    views_count: INT
+    video_URI: VARCHAR
+    privacy_level: SMALLINT
+    default_lang: VARCHAR
+  Comments
+    id: INT
+    video_id: INT
+    user_id: INT
+    date_posted: DATE
+    comment_text: VARCHAR(2048)
+    likes_count: INT
+    dislikes_count: INT
+  Channel
+    id: INT
+    channel_name: VARCHAR
+    user_id: INT
+    subscribers: INT
+    description: VARCHAR
+    category_id: INT
+  Many details omitted for simplicity
+    Video storage with different qualities
+
+Detailed design
+  What requires more discussion?
+  Component integration
+    Interconnections between servers and storage
+  Thumbnails
+    Add thumbnail generation
+  Database structure
+    Massive storage space required
+    Multiple kinds of data
+      Videos
+      Video metadata
+      Thumbnails
+
+Detailed design components
+  Load balancers
+    Divide user requests among web servers
+  Web servers
+    Take in user requests and respond to them
+    Interface to API servers
+  Application servers
+    Application & business logic
+    Prepare data needed by web servers to handle user queries
+  User & metadata storage
+    Video metadata & user content must be in different clusters
+    Decouple for scalability
+  Bigtable
+    Store thumbnails - several for each video
+    High throughput, scalability for key-value data
+    Optimal for large number of items < 10 MB
+  Upload storage
+    Temp storage for videos
+  Encoders
+    Video compression and transcoding
+    Thumbnail generation
+  CDN and colocation sites
+    Store popular and moderately popular content near users
+    Colocation used where not possible to invest in data center facility
+
+Design flow and tech usage
+  Upload video by connecting to web servers
+    Apache, Lighttpd
+      Lighttpd preferable, fast, good for serving static pages
+  Web servers pass to app servers
+    Read or write user, videos, video metadata
+    Separate web and app servers
+      Decouple client services from business logic
+      Use different programming languages for efficient tasks
+        e.g. C good for encryption
+        Python otherwise fine
+      Additional layer of caching
+        Frequent pages on web servers
+        Frequent objects on app servers
+  Multiple storage units
+    Upload storage - temp before temp encode
+    User account data in database
+    Video metadata in separate database
+      Use MySQL if limited number of concurrent reads and writes
+      Move towards NoSQL as number of users grow
+    BigTable based on Google File System
+      Store large number of small files with low retrieval latency
+        Thumbnail storage
+  Encoders generate thumbnails, additional metadata
+    Provide popular-ish content to CDNs, colocation servers
+  User can stream videos from any available site
+  Note: YouTube is storage intensive
+    Sharding different storage services comes into play with scaling
+    BigTable has multiple cache hierarchies
+    Combine with GFS, web and application-level caching to reduce latency
+
+YouTube search
+  Already did a distributed search building block
+  Each video uploaded processed for extraction
+  JSON file to store
+    Title
+    Channel name
+    Description
+    Content of video
+      Possibly extracted from transcripts
+    Video length
+    Categories
+  JSON file = document
+    Extract keywords from document and store in key-value store
+    Key holds keywords searched by users
+    Value occurrence of each key freq, and location of occurrence
+    Videos with most relevant keywords returned
+  Very simplistic approach 
+    Filter, rank video
+    View count, watch time, context, history of user to improve
+      (Recency, etc.)
+
+Evaluation
+  Requirements
+    Low latency/smooth streaming
+      Geographically distributed cache servers at ISP level for most viewed
+      Choose appropriate storage types for data
+        Bigtable for thumbnails
+        Blob storage for videos
+        Etc.
+      Cache at various layers via distributed cache management
+      CDNs that make heavy use of caching
+        Mostly serve videos out of memory
+        Deploy services in close vicinity to end users
+    Scalability
+      Horizontal scalability of web and application servers
+      MySQL can't scale beyond a certain point
+        May require restructuring
+          We'll focus on this in other sections
+    Availability
+      Redundant by replicating data to as many servers as possible
+        Avoid SPOF
+      Replicate across data centers
+        Even if whole center down, ok
+      Local load balancers to exclude dead servers
+      Global load balancers steer to different region
+    Reliability
+      Data partitioning and fault tolerance
+      Use redundant hardware and software
+      Use heartbeat protocol to monitor health of servers
+        Omit servers faulty/erroneous
+      Use variant of consistent hashing to add/remove servers seamlessly
+  Is load balancer SPOF?
+    Multiple load balancers
+    Randomly forward to different ones from DNS
+
+Tradeoffs
+  Consistency
+    High availability, low latency preferred
+    Ok to lose consistency
+    Don't need to show consistent feed to all users
+      Don't need to see uploaded video at same time
+        (Yes, have experienced this - JM)
+    Strong consistency maintained in user data
+      Decoupled from video metadata
+  Distributed cache
+    Scalability, availability, fault tolerance
+    Cache cannot be SPOF
+    Mostly static content
+      Memcached a good choice
+      Open source
+      Popular Least Recently Used (LRU) algorithm
+        YouTube video access long-tailed
+  Bigtable vs. MySQL
+    MySQL for users
+      May not scale as much as videos/thumbnails
+         (2.5B is still a lot... - JM)
+      Must store user and metadata in structured form
+    Bigtable for videos & thumbnails
+      Greater in number
+      Custom or NoSQL type of design
+        GFS & Bigtable
+        Also HDFS, Cassandra
+  Public vs. private CDN
+    CDN key for low latency
+    Low traffic area? Public CDN
+    Private CDN costs a lot of CAPEX
+    For viral traffic in region, may not be time to set up CDN
+    May not be enough users to pay for CDN in regions
+    But build private CDN if high number of useres
+    Public CDNs expensive with high traffic
+    Private CDNs can also be better optimized
+  Duplicate videos
+    Doesn't handle yet
+    Take extra space
+      Waste storage space vs. additional complexity
+    Say 50/500 uploaded hours are duplicates
+      Save up to 9.5 PB/year
+    And of course copyright issues
+  Solving duplicates
+    Simple
+      Locality-sensitive hashing
+    Complex techniques
+      Block matching algorithms
+      Phase correlation
+    Complex in large database
+      May need to use AI
+
+Future scaling
+  Reality: YouTube quite complex, requires advanced systems
+  What if traffic goes up a few fold
+  Need to scale existing infra
+    Web servers
+    Applications servers
+    Datastores
+    Load balancers among above layers
+    Distributed caches
+  Infra may require modifications
+    MySQL for users can become choke point
+    To use sharded database
+      Make changes to achieve ACID + high performance
+  Also haven't incorporated disaster recovery into design
+  YouTube system: Vitess
+    Put abstraction on top of all database layers
+    Give database client illusion talking to single server
+      Partitioned MySQL structured database
+      Performance of NoSQL storage system
+  Could also imagine e.g. data denormalization
+    Denormalization: adding precomputed redundant data
+    Cost: reduced writing performance
+    Even if work read-intensive, writing performance degrades
+  Custom web server eventually good idea
+    Commercial, open-source general purpose
+      Developed with wide range of users in mind
+    lynx -head -dump http://www.youtube.com | grep ^Server
+      Server: ESF
+    ESF is custom web server developed by Google
+      Widely used as of early 2022
+
+Reality is more complicated
+  Intro
+    Optimizations
+    Encode
+      Depending on end device used to play content
+    Deploy
+      Content must be intelligently deployed
+    Deliver
+      Need knowledge about client/device
+
+  Encode
+    Divide into smaller time frames "segments"
+    Generating different files, "chunks"
+    Choice of encoding depends on content of segment
+      Get best quality with least space
+      Dynamic colors & high depth diff from few colors
+      Less dynamic = compressed more
+    Encode audio in various formats
+      Different clients
+
+  Deploy
+    Bring closer to user
+      Fast streaming
+      Reduced burden on origin servers
+      ISPs spare bandwidth
+    Deploy chunks of popular videos
+      CDNs
+      Point of presence (PoP) of ISPs
+        IXPs (Internet exchange points) if cannot collab with ISPs
+        IXP fills out ISP PoP cache
+    Only popular/moderately popular content cached
+    Two types of storage at origin servers
+      Flash servers: popular & moderate content
+        Low-latency delivery optimization
+      Storage servers: non-popular content
+        large storage optimization
+    Transfer content to ISPs off-peak to avoid network congestion
+
+  Recommendations
+    Based on user
+      Interests
+      View history
+      Search history
+      Subscribed channels
+      Related topics to viewed content
+      Comments and likes on content
+    Approx of engine
+      Filters in two phaess
+      Candidate generation
+        Filter millions to hundreds
+      Ranking
+        Filter hundreds do a few dozen
+      Machine learning technology in both phases
+    Different from popular
+      Based on specific profile/interest, not regional/global popularity
+
+  Popularity algorithm?
+    Comment weight * comment number + 
+    Like weight * like number + 
+    Link weight * link number
+    Weights sum to 1
+    Different thresholds in different regions
+    Globally popular if passes thresholds in different regions
+    May put some directly into CDN depending on channel
+    How often to calculate popularity
+      Real-time calculation requires special infrastructure
+        Limit to most popular channels
+      Metric could trigger every time threshold crossed
+        Say request count in period of time
+
+  Deliver
+    Chunks already deployed near users
+      Redirect to nearest available chunks if available
+    Nonpopular
+      Server from colocation sites or YT data center
+        Distributed caches at different layers
+
+  Adaptive streaming
+    Monitor user bandwidth at all times
+      Chunks provided depending on conditions
+    Params:
+      End to end available bandwidth
+      Device capabilities
+      Encoding techs used
+      Buffer space at client
+
+Follow-up questions
+  Availability 99.99% or 99.999% - what design changes?
+    Hard question
+    In reality part of service SLA
+    Generated from models, long-term empirical studies
+    Good to know how numbers are obtained
+    Good to know how to monitor for high availability
+    Discuss fault tolerance
+      Software faults
+      Server failiures
+      Full data center failures
+  Assumed reasonable numbers
+    Say average video length 5 minutes
+    Designing for average behavior
+    What about users that don't follow average profile?
+    Numbers will likely change over time
+    System should be horizontally scalable
+    Some systems may not scale with order of magnitude change
+    Cost points of designing 10x and 100x scales are different
+  Why not discuss video comments and likes?
+    Same complexity as messaging system
+      Will discuss in later chapter
+  Unexpected spikes in system load
+    Horizontally scalable design
+    Public clouds not infinitely scalable
+  Deploy global network to connect data centers and CDN sites?
+    YouTube uses Google's netowrk
+    Purpose build over years
+    Peers with many ISPs
+    Review more outside of course
+  Why not more detail on audio/video encoding
+    Many encoding choices
+      Many public
+      Some proprietary
+    Details of algorithms left to reader
+  Specialized hardware like GPUs to speed up computations
+    Assumed any server can fill any functionality
+    With Moore's law slowing
+      Special-purpose hardware often used
+        Hardware encoders/decoders
+        Tensor Processing Units - machine learning accelerators
+    That's a whole different course
+  Compress at client-side or server-side
+    May do some lossless but fast compressin on client end
+      Reduce data to upload
+      Google Snappy
+    Rich client, or fall back to plain data if compressor unavailable
+    Adds complexity to system
+  Benefits to making file chunks other than adaptive bitrates
+    Parallelize any preprocessing
+      Key for live streams
+    Full-fledged topic in itself again
+  

@@ -1,0 +1,13 @@
+Top K elements
+  Find specific k number of elements from given data with best time complexity
+  Could sort, O(nlogn), then find in O(k)
+  But instead do O(nlogk)
+    Use min or max heap depending on problem
+  Uses
+    Sort characters by frequency
+    Connect n ropes with min cost (pull 2 smallest out of heap)
+
+Pattern match
+  Largest, smallest, most frequent, least frequent in unsorted
+
+

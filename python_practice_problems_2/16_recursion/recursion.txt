@@ -1,0 +1,32 @@
+Recursion
+  Function calls itself repeatedly
+  Stops at specific stopping condition
+
+Why recursion?
+  Shorter and easier to write than iterative
+  Useful for tasks defined in terms of subtasks
+
+Format
+  Base case - where all further calls to same function stop
+  Recursive case - calls repeatedly to base
+
+  def RecursiveFunction() :
+    # Base Case
+    if <baseCaseCondition> :
+      <return some base case value>
+
+    # Recursive Case
+    else :
+      <return(recursive call and any other task)>
+
+When recursion
+  Haskell, Scala, JS use functional programming
+    Relies on recursion
+  Entire coding languages now based on recursion
+  Recursion is not always the best method for solving a problem!
+    Use where appropriate
+      Will become more obvious as you do it more
+      When problem hard to break down iteratively
+    Indicators
+      Problem breaks down into smaller subproblems
+      Problem requires arbitrary number of nested loops

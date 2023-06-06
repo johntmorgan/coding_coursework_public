@@ -1,0 +1,10 @@
+Backtracking
+  Explore multiple paths
+  Build solution step by step
+  Better than brute force
+    Don't need to generate all possible solutions
+    Check required condition at recursive call
+
+Pattern matching
+  Must explore all paths
+  No feasible solutions can be ignored

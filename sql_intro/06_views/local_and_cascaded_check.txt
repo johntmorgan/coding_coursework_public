@@ -1,0 +1,68 @@
+Local & Cascaded Check
+  Determine scope of rule testing when view created based on another view
+  Local check restricts to only view defined
+  Cascaded checks rules of all underlying views
+    Default if no keywords
+
+  // Show actors > 40
+  CREATE VIEW ActorsView1 AS
+  SELECT *
+  FROM Actors
+  WHERE TIMESTAMPDIFF(YEAR, DoB, CURDATE()) > 40;
+
+  // No WITH CHECK OPTION
+  // Insert a 20 year old into the Actors table
+  INSERT INTO ActorsView1
+  VALUES(DEFAULT, 'Young', 'Actress', '2000-01-01', Female, Single, 000.00)
+
+  // Can fix above using WITH CHECK OPTION
+  // Now let's crate another view with cascaded check
+  CREATE OR REPLACE VIEW ActorsView2 AS
+  SELECT *
+  FROM ActorsView1
+  WITH CASCADED CHECK OPTION;
+
+  // Now ActorsView2 must be compatible with this view and ActorsView1
+  // Let's try inserting a young actor
+  INSERT INTO ActorsView2
+  VALUES (DEFAULT, 'Young', 'Actor', '2000-01-01', 'Male', 'Single', DEFAULT);
+    > ERROR 1369 (HY000): CHECK OPTION failed 'MovieIndustry.ActorsView2'
+
+  // Does not work because ActorsView1 limited to 40+ year olds
+  // Let's see CASCADED is scoped
+  CREATE OR REPLACE VIEW ActorsView3 AS
+  SELECT *
+  FROM ActorsView2
+  WHERE TIMESTAMPDIFF(YEAR, DoB, CURDATE()) < 50;
+
+  // Only one in this view, Angelina Jolie between 40 and 50
+  Try inserting 20 yo.
+  INSERT INTO ActorsView3
+  VALUES (DEFAULT, 'Young', 'Actor', '2000-01-01', 'Male', 'Single', DEFAULT);
+    > ERROR 1369 (HY000): CHECK OPTION failed 'MovieIndustry.ActorsView2'
+
+  // Nope! ActorsView3 based on ActorsView2 based on ActorsView1
+    Cannot insert, ActorsView1 blocks < 40
+  // What about a 60 year old?
+  INSERT INTO ActorsView3
+  VALUES (DEFAULT, 'Old', 'Actor', '1960-01-01', 'Male', 'Single', DEFAULT);
+    > Works
+    > No WITH CHECK OPTION on ActorsView3
+    > Insert confirms with underlying view rule as age is > 40
+
+Local Check
+  ALTER VIEW ActorsView2 AS
+  SELECT *
+  FROM ActorsView1
+  WITH LOCAL CHECK OPTION;
+
+  INSERT INTO ActorsView2
+  VALUES (DEFAULT, 'Young', 'Actor', '2000-01-01', 'Male', 'Single', DEFAULT);
+    > Works
+    > Passes (absent) age restriction on ActorsView2
+
+  INSERT INTO ActorsView3
+  VALUES (DEFAULT, 'Young', 'Actor', '2000-01-01', 'Male', 'Single', DEFAULT);
+    > Works
+    > Checks to ActorsView2 since AV3 has cascading
+    > But stops at ActorsView2 (with no rules) since it's now local

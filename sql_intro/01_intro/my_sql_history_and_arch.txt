@@ -1,0 +1,50 @@
+MySQL history & arch
+  SQL stands for Structured Query Language
+    Orig. SEQUEL Structured English Query Language
+    Another company had SEQUEL copyright
+  Developed at IBM
+    Built to manipulate IBM DB data
+  ANSI standard 1986
+  ISO 1987
+  Has been revised several times
+  Various implementations of standard
+  Standard = blueprint
+  Implementations = MySQL, SQL Server, PostgreSQL, etc
+    All similar
+    All conform to same standard
+    Some syntax diffs though (as I know - JM)
+      Oracle RDBMS, IBM DB2, MS SQL Server, Teradata, MySQL
+  Many companies have DBs based on this standard
+
+MySQL
+  Consists of diff components
+  Based on client-server architecture
+  Website, MySQL command line connect & interact with DB thru MySQL server
+  Server responds to queries from clients
+  3 layers
+    App/client layer
+    MySQL Server Layer
+    Storage Engine Layer
+
+App/Client layer
+  Client connections
+  Authorization
+  Authentication
+  Security
+
+MySQL Server Layer
+  Parse, analyze, optimize submitted queries
+  Maintains caches & buffers
+  Recovery and backup partitioning
+  SQL interface for interaction with database
+  "Relational engine"
+  Output = query execution plan fed into storage engine
+
+Storage Engine Layer
+  Part of DBMS that actually writes & retrieves data
+  With MySQL, choose from several possibilities
+    Depends on use case
+    Ex.
+      InnoDB - foreign key constraints, transactions
+      MyISAM - simpler, lacks those features, good for single-user apps
+    

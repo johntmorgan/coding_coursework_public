@@ -1,0 +1,324 @@
+Hashing
+  Last lecture - talking about set data structures
+    Set interface
+      Storing so you can query by key
+      By what they intrinsically are
+    vs. Sequence
+      Impose external order to maintain
+      Not looking up by what items are
+  Today, talking more about the set interface
+    On Tuesday, 2 ways of implementing
+      1) Just toss it in there, no order and do a linear scan - everything O(n)
+      2) Sorted array - slightly better data structure
+        Look up in log n time
+        Build overhead nlogn
+          Showed 3 ways to sort
+            Two n^2 - selection, insertion
+            One nlogn - merge sort
+    So questions now are:
+      Can I build data structure faster? - next week (lecture 6?)
+      Can I search faster than logn time? - static find
+  Today:
+    Prove that you can't find k faster than O(logn)
+      Within current constraints, restricted model of computation
+    Show how to actually find k faster than O(logn)
+      Without constrained model of computation
+    Logn is already pretty darn good
+      Not going to be larger than ~30 for any problem you're talking about in the real world
+      But a factor of 30 is still bad ("not ideal"? - JM)
+        Would prefer to do better with a constant factor if possible
+  Find key
+    See if one of the items you're storing contains key same as one I search for
+      Item might contain other things (just use an exmaple it's like a database backing a website - JM)
+      Support search/find operations quickly
+  Want to also improve insert/delete
+    Might do those operations quite a bit
+  So lecture overall is about improving find, insert, and delete
+Can't do better than O(logn) for find
+  Which is a little weird
+  Proving a lower bound
+  *Any* way that you store these items in the data structure
+  Any algorithm of this time will require logn time
+  Comparison model
+    Items you're storing are black boxes - can't touch
+    Can ONLY distinguish with keys
+    Is key same, bigger or smaller
+    If say keys are numbers, don't get to look exactly at what number of key is
+  Everything we saw in last class was a comparison algorithm
+    Step through program, branch depending on whether one key bigger than another
+      Then moved stuff around - but that was the fundamental paradigm
+    There's only one thing to branch on, two different lines here
+      Either it's true and do one set of computations
+      Or false and do another set of computations
+    View algorithm in comparison model as a decision tree
+      Need to do comparisons, otherwise won't know if keys are there
+    Might start with some constant time stuff - like grab length of array
+    But at some point, I'll do a comparison and I'll branch
+      T/F
+      Branch differently
+      Keep doing comparisons
+      Until get down to a leaf
+        Not branching anymore
+        Stopped computation, outputting something
+      Changing algorithm into a graphical representation
+      Have a binary tree representing it
+        Not looking at other work, just looking at comparisons
+        Number of comparisons = number of internal nodes
+        How many leaves?
+        Leaves represent outputs
+          What is output - index of key, or return the item
+          If you are storing n things, need n possible outputs
+          Need to return everything you're storing
+          And one more output in case it's not in there
+        So you must have n+1 leaves at bottom of tree
+      So now the fun part
+      How many comparisons?
+        Worst case, longest root to leaf path
+        Longest path = height of tree
+        What is the minimum height of any binary tree with n+1 leaves
+          Can state a recurrence and solve in recitation
+          But min height, *if balanced* is at least theta(logn)
+            Balanced is actually the best you can do (otherwise you get chains)
+        So takes at least logarithmic time if restricting to comparisons
+How to go faster than comparisons
+  One operation presented a couple weeks ago that allows
+  Comparisons have a constant branching factor if/else - 2 different locations
+  If I branch 3/4/etc per node
+    Height of tree still bounded by log base number of leaves
+  Need to branch a non-constant amount - how?
+    We have a neat operation in RAM machine
+    Can got to any location in memory in constant time based on number
+      Super powerful
+    That's potentially much larger than linear branching factor
+      Can we use that to find quicker
+    Have been using implicitly in sequence data structure
+  If you have an item that has key 10
+    Keep an item and store item 10 spaces away from front of array
+      Store at location in memory
+      Use random access and see if something there, return if so
+    "Direct access array"
+      Really no different than arrays we were talking about earlier
+      Now, can only store one item with key 10
+        But that was a stipulation of the data structure anyway, replace if key same
+      How long does it take to find? O(1)
+        Insert/delete also takes O(1)!
+        We solved all our problems! lol
+      What are the problems?
+        Don't know how high the numbers go
+        Storing class of ~400
+        But storing MIT IDs
+          Would need array with indices spanning space of 9-digit numbers
+          10^9 size to use this techniques
+          But there are only 300-400 students
+      Terminology
+        u = size of the universe of space of keys storing
+          Assuming integer keys - we have to use them for this - can't store arbitrary items
+        build(X) is now theta(u)
+          find_min, find_max, find_prev, find_next also hosed
+            Have to scan down the thing to find the next one because non-continuous
+        Word RAM model subtlety
+          CPU register can operate on w bits at a time
+          u < 2^w
+            Or operations will not run in constant time
+          If keys are much larger, need to do something else
+          In this class when given integers or strings
+            Unless otherwise stated, can assume those things fit in one word of memory
+How to get around using too much space with direct access solution?
+  Allocate less space
+    Store keys in a direct access array of size m = theta(n) - *around* the size of the things storing
+  Map large space of keys u (o to u - 1)
+    Down to a range that's 0 to m-1
+    Function h that maps down to smaller range
+      h : {0, ..., n - 1} -> {0, ..., m - 1}
+    Put key through function and store at that index location, in compressed space
+  What's the problem here?
+    What if we have to store more than one thing at the same index location
+    Mapping a big space down to a small space
+      Function can't be injective, based on pigeonhole principle
+      If u > n^2, for any function, n of them will map to same space
+    Choose a bad function, might store everything in one place
+      Haven't gained anything
+    Want a hash function that will distribute evenly over the smaller space
+      But what about when you do need to store 2 things in the same place - "collisions"
+      May map down to hash with same value h(a) = h(b)
+        Two options for handling this
+          1. choose m to be larger than n
+            There's some extra space in the smaller array
+            Stick somewhere else in existing array
+            How to find an open space? a little complicated
+            "Open addressing" - Python uses this
+              Much more common than the main technique we're going to focus on
+              Notoriously difficult to analyze
+          2. Store pointer to another data structure than can store a bunch of things
+            Can be a dynamic array or a linked list
+            When collide, go and look through additional structure
+            "Chaining"
+            Want to make sure that these chains are short
+            Often put a linked list there
+            But could put a dynamic array, sorted array etc there
+        Goal is to pick hash function so collisions are rare
+          And any extra storage is small
+          So exactly how you chain doesn't matter
+  How do we pick a good hash function?
+    Any fixed hash function WILL experience collisions
+      And if u is large
+      Possible for some input that they all get stuck in the same place
+      But let's ignore that for a second
+    What's the EASIEST thing you could do?
+      Modulus - "Division method"
+        h(k) = k mod m
+        Effectively just wraps around large space
+        Perfectly valid thing to do
+        And if keys are completely uniformly distributed, it's actually not bad
+          But that's imposing a distribution requirement on the keys
+        But this PLUS some extra mixing and bit manipulation, is basically what Python does
+          Jumbles up key
+            Some fixed amount of jumbling
+          Mods it m
+            And then sticks it there
+          Hard coded in Python library
+          So there are some key sequences that will have bad performance!
+            Can be lots of collisions at a single hash
+          But they do that for a lot of reasons
+            Want a deterministic program - do it again, same thing underneath
+            But sometimes Python gets it wrong
+          But if your data is sufficiently uncorrelated with your hash function
+            Which it usually is
+            Then pretty good performance
+    But this is not a practical class
+      Well it is, but we care about proving it in theory
+        "Sometimes good" is not good enough
+      Want to know we have a running time independent of keys you input
+        But it's impossible to pick a fixed function that always achieves this
+      But what if you don't need to have a deterministic function? (Don't need repeatable)
+        Instead, weaken notion of constant time to do better
+      Don't choose a hash function up front
+        Choose one randomly later
+        User picks inputs
+          Then you pick function randomly later
+          User doesn't know what you'll pick, hard to give bad inputs
+      How do I choose a hash function
+        Choose from space of all hash functions
+          Anything that maps from u to m space
+          There's a whole lot of options there
+        But let's limit this
+          Fix a family of hash function - choose one randomly, get good performance
+Universal hash function
+  Satisfies universal hash property
+  There exist many "universal" functions, this is just an example of one
+    hab(k) = (((ak + b) mod p) mod m)
+  Kinda doing the same thing as the above function k mod m
+    But before modding by m, multiply by a number, add a number, mod another number
+    This is still a fixed hash function
+    Let's generalize to be a family of functions
+    H(p,m) = { hab(k) | a,b in { 0, ... p - 1}} AND a != 0
+      (a != because you'd lose the key informatoin, and that's no good)
+  Ok that's a lot of notation
+    Have a hash family
+    Parameterized by length of hash function (m) and fixed large random prime (p) > u
+      Fixed when make hash table
+      Then when instantiate hash table, pick a random a and random b from range 0... p-1, a!= so don't lose key
+      Doing jumbling, and some randomness involved
+      When start program, instantiate with random a and b
+      User doesn't know what a and b picked - hard to give bad example
+  This function is universal
+  Universality says that
+    Pr (h in H) { h(ki) = h(kj) } <= 1/m for all ki != kj in universe
+    Basically has property
+      For any two keys you randomly pick in universe space u
+      Probability of collision is less than 1/m
+      Why is that good - a measure of how well distributed
+      Therefore unlikely to collide
+        Proof in 046 (different class)
+        But can use this result to show
+      Length of chains is expected to be constant length
+    How do we prove that chains are constant length
+      Doing some probability
+      Going to define indicator random variable
+        A variable with some probability p is 1 and 1 - p is 0
+        Xij over random choice h in set H (hash function in hash family)
+        Xij == 1 if h(ki) = h(kj) - collision and 0 otherwise
+    Formula for length of chain at i in hash table = Xi
+      Size of chain h(ki) in hash table
+        h(ki) = Xi = sum j = 0 to u - 1 of Xij
+        That's where h(ki) goes
+        Just summing over all the things that go there - Xij is 1 if collision, 0 if not
+      So here's where probability comes in
+      EV h in H { Xi } = E h in H { sum (j) Xij }
+        Expectation summation is linear if independent from each other
+        = sum j of E { Xij }
+        = sum j != i of E { Xij } + 1 // because if j and i are equal, definitely collide, factor out and equal to 1
+        = sum j != i (1/m) + 1  = 1 + (n - 1) / m // there are n - 1 things
+        So as long as m is same size or larger than n, chain lengths are constant
+          Because n - 1 / m is constant as long as m is at least order m
+    But how do we make this dynamic?
+      Keep growing n, no longer linear to m
+      Rebuild the entire hash table with a new m
+      Just like we did with a dynamic array
+      You can prove (not doing here)
+        That you won't do it too often if resizing in the right way
+    Next week: faster sorts!
+
+Recitation 4 notes
+  Set via sorted array:
+    Query is efficient
+      find_min etc. O(1)
+    Find is log(n)
+      Can we do better?
+    Dynamic operations are lacking
+      insert, delete still O(n)
+  Prove that the smallest height for any tree of n nodes is ceil(lg(n + 1)) - 1 = omega(logn)
+    Max number of nodes in any binary tree with height h is
+      n <= T(h) = 2^(h + 1) - 1 so h >= (lg(n + 1)) - 1
+    Induction on h
+      Height zero has one node
+      T(0) = 1
+      T(h) = 2T(h - 1) + 1 (root plus two subtrees)
+      Substitute for T(h)
+      2^(h + 1) - 1 = 2(2^h - 1) + 1
+    So sorted arrays and balanced BSTs are able to support find(k) asymptotically optimally
+      Given comparison model of computation
+    Comparisons are limiting because each operation perform can lead to at most a constant branching factor
+      If not limited by this, can get faster than O(logn) search
+  Direct access array
+    Gives you constant lookup time
+    Example of limitation: 10 letter names
+      u ~ 26^10 = 9.5 * 10^13 - a bit array of that length = 17.6 TB
+  While lecture was limited to integer keys
+    Anything can be associated with an integer so this is not a big deal
+  If hash function is injective, no two keys map to the same direct access array index
+    Then support worst-case constant time search
+    Hash table acts as a direct access array over the smaller domain m
+  However if space of possible keys larger than number of array indices, m < u
+    Any hash function mapping u keys to m indices must map multiple keys to the same index, by pigeonhole
+      This is a collision
+    If you don't know in advance all keys to be stored, unlikely your choice of function avoids all collisions
+      Store collisions elsewhere in array - open addressing
+        How most tables actually work
+        But hard to analyze
+      Or chaining
+        Any implementation is fine - array, linked list
+          As long as each operation takes no more than O(n) time
+        Inserting a new item x into the hash table?
+          Insert x into the chain at h(x.key)
+        Want chains to be small
+          If only hold a constant set of items, run in constant time
+        If everything goes to one location
+          Chain has linear size, dynamic set operations take linear time
+  Hash functions
+    Division method (bad)
+      h(k) = k mod m
+      But if keys all have the same remainder when divided by m, well...
+    Universal hashing (good)
+      For a large enough key domain u, every function bad for some set of n inputs
+        if u > nm, every hash function from u to m maps some n keys to the same hash, by pigeonhole
+  If you know all the keys you want to store in advance
+    You can always devise a hashing scheme that will avoid collisions
+      "Perfect hashing" - follows from the Birthday Paradox (what is that? JM)
+  Problems
+    Find duplicates
+    Brute force O(n^2) - Just scan each item and then scan array for all duplicates
+    Worst-case O(nlogn) - Merge sort and then scan through in O(n)
+    Expected O(n) - Hash into hash table, when inserting check against other integers in chain
+      Return if integer in chain has same value
+    If k < n and ai <= k for all ai in A, worst case O(1) algorithm

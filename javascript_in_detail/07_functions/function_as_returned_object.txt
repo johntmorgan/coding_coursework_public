@@ -1,0 +1,25 @@
+Function as returned object
+  Function that returns function = "higher-order" (again)
+
+  function foo (){ // Create function taking sum as argument
+      function printCompleted(){
+          console.log("This is new Function!");
+      }
+      return printCompleted;
+  }
+
+  var newFunc = foo (); // invoke foo and assign returned value to newFunc var
+  console.log("foo exited"); // print to signify completion of foo
+  console.log("invoking newFunc"); 
+  newFunc(); // invoke returned function from foo through variable newFunc
+
+Returning an arrow function
+
+  function foo (){ // Create function taking sum as argument
+      return () => console.log("This is new Function!"); // return arrow function
+  }
+
+  var newFunc = foo (); // invoke foo and assign returned value to newFunc var
+  console.log("foo exited"); // print to signify completion of foo
+  console.log("invoking newFunc"); 
+  newFunc(); // invoke returned function from foo through variable newFunc

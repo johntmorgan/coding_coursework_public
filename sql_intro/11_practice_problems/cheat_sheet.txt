@@ -1,0 +1,41 @@
+What does SQL stand for?
+  Structured Query Language
+Default port
+  3306 TCP
+Hello world
+  SELECT "Hello World";
+List all databases
+  SHOW DATABASES;
+Select database
+  USE DatabaseName;
+List storage engines
+  SHOW ENGINES;
+Display table structure
+  DESCRIBE TableName
+  EXPLAIN TableName
+List tables in DB
+  SHOW TABLES?
+List all views in a database
+  SHOW FULL TABLES IN <SUBSTITUTE_DATABASE_NAME> WHERE TABLE_TYPE LIKE 'VIEW';
+Display create database statement
+  SHOW CREATE DATABASE DBName;
+Display create table statement
+  DESCRIBE TableName; or, EXPLAIN TableName;
+List available character sets
+  SHOW CHARACTER SET;
+List available collations
+  SHOW COLLATION;
+List variables and their values set for the running MySQL server
+  SHOW VARIABLES;
+Get rows from a table
+  SELECT * FROM TableName
+Create a table
+  CREATE TABLE MyTable (id INT, name VARCHAR(30));
+Create an index on a table
+  CREATE INDEX indexOnId ON MyTable(id);
+Create a table with a primary key
+  CREATE TABLE MyTable (id INT, name VARCHAR(30), PRIMARY KEY (id));
+Alter name of a table
+  ALTER TABLE MyTable RENAME NotMyTable;
+Inner join two tables
+  SELECT * FROM TableA INNER JOIN TableB ON TableA.id = TableB.id;

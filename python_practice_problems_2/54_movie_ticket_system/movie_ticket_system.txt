@@ -1,0 +1,340 @@
+Movie Ticket Booking System
+  Has info on all cinemas
+  Has info on all movies in database
+  Each movie can have multiple shows playing in cinema
+  Customer can search and select a movie
+  System displays seating layout
+  Once customer pays, booking confirmed and notification received
+
+Questions
+  Seat selection
+    How to prevent duplicates
+    Temporary seat reservation?
+    Transaction locks?
+  Payment
+    What methods used? Credit card, cash ok?
+    Pay online or at location?
+  Price variance
+    How is price calculated
+    Does seat type affect pricing
+    Discount coupon codes?
+  Duplication
+    How to handle same movie, different hall
+    And same movie, same hall
+      Different times?
+
+Bottom up design
+  Cinema hall -> cinema
+
+Design patterns
+  Strategy design pattern
+
+Requirements
+  Multiple cinemas in city
+  Each cinema has multiple halls
+  Cinema displays all available showtimes of a movie
+  Users search movies based on: title, language, genre, release date
+  Users book any hall at available time
+  Booking online or walk-in via ticket agent
+  Online customers pay credit card only
+    Walk-in credit card, cash
+  Users can select multiple available seats
+  Each seat has a fixed cost
+    Silver, gold, platinum
+  Only one ticket per seat
+  No two customers reserve same seat
+    System differentiates available, booked seats
+  Admin
+    Add a show
+    Delete a show
+    Update a show
+    Add a movie
+    Delete a movie
+  Notifications:
+    New movie released
+    Booking made
+    Booking canceled
+
+Use Case
+  System
+    Movie ticket booking system
+  Actors
+    Primary
+      Customer
+      Ticket agent - can do almost everything but modify/cancel booking
+    Secondary
+      Admin - add/remove show/movie
+      System - send notifications
+  Use cases
+    Admin
+      Add a show
+      Remove a show
+      Modify a show
+      Add movie
+      Search movie
+      Delete movie
+    Customer
+      Search movie
+      Create booking
+      Modify booking
+      View booking
+      Cancel booking
+      Reserve seat
+      Pay w/card or cash
+    Ticket agent
+      Search movie
+      Create booking
+      View booking
+      Reserve seat
+      Pay w/card or cash (Not listed, but they do on behalf of customer? - JM)
+    System
+      Send new movie notification
+      Send booking notifications
+      Send cancellation notification
+
+Relationships
+  Search movie has generalization with
+    By Title
+    By Language
+    By Genre
+    By Release Date
+  Include
+    Create booking has include with reserve seat
+    Pay using cash/card include with send booking notifiation
+    Cancel booking include with refund payment
+    Add movie include with send new movie notification
+    Cancel booking, delete movie, delete show include with send cancellation notification
+
+Class diagram
+  Seat
+    seatNo
+    status
+    isAvailable()
+    setSeat()
+    setRate()
+    Silver extends
+      rate: double
+      setSeat()
+      setRate()
+    Gold extends
+      rate: double
+      setSeat()
+      setRate()
+    Platinum extends
+      rate: double
+      setSeat()
+      setRate()
+  ShowTime
+    showId
+    startTime
+    date
+    duration
+    seats: Seat {list}
+    showAvailableSeats()
+  Hall
+    hallId
+    shows: ShowTime {list}
+    findCurrentShows()
+  Cinema
+    cinemaId
+    halls: Hall {list}
+    city: City
+  City
+    name
+    state
+    zipCode
+    cinemas: Cinema
+  Movie
+    title
+    genre
+    releaseDate
+    language
+    duration
+    shows: ShowTime {list}
+  MovieTicket
+    ticketId
+    seat: Seat
+    movie: Movie
+    shows: ShowTime
+    (customerId? - JM)
+  Payment - abstract
+    amount: double
+    status: PaymentStatus
+    timestamp
+    makePayment()
+    CreditCard extends
+      nameOnCard
+      cardNumber
+      code
+      billingAddress
+      makePayment()
+    Cash
+      makePayment()
+  Person - abstract
+    name
+    address
+    email
+    phone
+    Admin extends
+      addShow
+      updateShow
+      deleteShow
+      addMovie
+      deleteMovie
+    Customer
+      bookings: Booking {list}
+      createBooking
+      updateBooking
+      deleteBooking
+    TicketAgent
+      createBooking
+  Notification - abstract
+    notificationID
+    createdOn
+    content
+    sendNotification()
+    EmailNotification extends
+      sendNotification
+    PhoneNotification extends
+      sendNotification
+  Catalog
+    movieTitle: Map<string, Movie {list}>
+    movieLanguage: Map<string, Movie {list}>
+    movieGenre: Map<string, Movie {list}>
+    movieReleaseDate: Map<string, Movie {list}>
+    updateMovieCatalog(movie)
+  Search - Interface
+    searchMovieTitle: Movie {list}
+    searchMovieLanguage: Movie {list}
+    searchMovieGenre: Movie {list}
+    searchMovieReleaseDate: Movie {list}
+  Booking
+    bookingID
+    amount
+    totalSeats
+    createdOn
+    status: BookingStatus
+    payment: Payment
+    show: ShowTime
+    tickets: MovieTicket
+    seat: Seat
+  Enums
+    PaymentStatus
+      Pending
+      Confirmed
+      Canceled
+      Denied
+      Refunded
+    SeatStatus
+      Available
+      Booked
+      Reserved
+    PaymentStatus
+      Pending
+      Confirmed
+      Declined
+      Refunded
+
+Relationships
+  Association
+    City one-way with Cinema
+    Admin one-way with ShowTime, Movie, Notification
+    Customer, Agent two-way with Notification
+    Booking one-way with ShowTime, MovieTicket, Seat
+    Booking two-way with Payment
+    ShowTime one-way with Seat, MovieTicket
+    Movie one-way with ShowTime, MovieTicket
+
+  Composition
+    Cinema composed of Hall composed of ShowTime
+    Movie conains Catalog
+
+  Generalization
+    Catalog implements Search
+
+  Inheritance
+    Gold, Platinum, Silver from Seat
+    Admin, Customer, TicketAgent from Person
+    Cash, CreditCard from Payment
+    EmailNotification, PhoneNotification from Notification
+
+Concurrency handling
+  Locking
+  Optimistic locks or versioning
+  Lock time assigned to track timestamps
+  Lock remains until first customer finishes payment or quits
+
+Design pattern
+  Strategy to calculate price of each seat type
+    Can differ based on movie popularity
+
+Additional reqs
+  Discount
+    Apply to payment class
+    CouponCode
+    discountAmount
+    expiryDate
+  Customer and guest users
+    Guest can search for movies, register
+    Guest extends person
+      Register()
+    Account - Abstract
+      accountId
+      username
+      password
+      resetPassword
+      Admin, Customer, TicketAgent extend
+
+Sequence
+  Create booking
+    Actor
+      Customer
+    Objects
+      Catalog
+      Movie
+      ShowTime
+    Customer searches for movie
+    Catalog returns movie
+    Customer requests showtimes
+    Show times are returned
+    Customer requests available seats
+    If seats:
+      Customer receives list of seats
+      Customer books desired seats
+      Seat status set to booked
+      System requests payment
+      (Customer pays - JM)
+    If no seats:
+      Customer informed no seats
+        (really should do this in the list of show times - JM)
+  Booking payment
+    Customer initiates payment
+    Payment processes and informs system
+    If payment ok:
+      Payment informs customer
+      System creates booking object
+      Booking status updated and system informed
+      System sends notification to customer
+    If payment declined:
+      Payment informs customer payment declined
+      System requests to revert seat status
+      Seat status updated
+      System informs customer booking declined
+        (Double negative notifications? Hmm - JM)
+
+Activity diagram for booking movie
+  Customer opens a search
+    By title, language, genre, release date (parallel)
+  Is movie available?
+    If no, inform customer
+  Customer selects available show
+  Customer selects available seat type
+    Silver, gold, platinum (parallel)
+  Customer selects payment
+    Pays credit card, cash (parallel)
+  Transaction successful?
+    No: return to customer selects payment
+  System sends success message
+  Customer receives movie ticket
+
+

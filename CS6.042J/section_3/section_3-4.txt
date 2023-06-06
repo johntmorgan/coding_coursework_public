@@ -1,0 +1,310 @@
+Repetitions & Binomial Thm
+Reading
+  The Division Rule
+    Counting by ears and dividing by 2 is silly
+    But illustrates powerful counting principle
+    "k-to-1 function" maps exactly k elements of the domain to every element of codomain
+    Function mapping ear to owner is 2-to-1
+    Finger to owner is 10-to-1
+    Division Rule
+      If f : A -> B is k-to-1, then |A| = k * |B|
+    Example
+      Suppose A is set of ears in room and B is set of people
+      2-to-1 mapping
+      |A| = 2 * |B|
+  Examples of when the division rule helps
+    Chess Problem
+      How many ways to place two rooks on a chessboard so do not share row/column
+      Let A be set of all sequences where r1 and r2 are distinct rows
+        And c1 and c2 are distinct columns
+      Let B be the set of all valid rook configurations
+      Natural function f from set A to set B
+      But there's a snag: swapping rook positions is the same configuration!
+      More generally f maps exactly two sequences to every board config
+      f is a 2-to-1 function
+      |B| = |A| / 2 = (8 * 7)^2 / 2
+    Knights of the Round Table
+      How many ways to arrange n different knights at round table
+      Seatings are same arrangement if each sits between same two knights
+      So seatings correspond to permutations of knights, and therefore n! of them
+      However exact same order but rotated ("cyclically shifted") = same
+        There are n ways to do this
+      # seatings = n! / n = (n - 1)!
+  Counting Subsets
+    How many k-element subsets of an n-element set are there?
+    Select 5 books from collection of 100
+    13 card bridge hands from 52 card deck
+    5 pizza toppings out of 14 available
+    "n choose k" ::= the number of k-elements of n element subset
+    Map any permutation of an n-element set into a k-element subset
+      But taking the first k elements of the permutation
+      Any other permutation with same first k-elements in any order
+      And the same remaining n - k elements in any order
+      Will also map to this set
+      There are k! possible permutations of the first k elements
+      There are (n - k)! possible permutations of the remaining elements
+      k! * (n - k)! permuations of the n-element set map to specific subset
+      Mapping from permutations to k-element subsets is k!(n - k)!-to-1
+      We know n! permutations of n-element set so by division rule
+      n! = k! * (n - k)! * n choose k
+      n choose k = n! / (k! * (n - k)!)
+      notice this works even for 0-element subsets - n! / (0! * n!) = 1
+  Bit sequences
+    How many n-bit sequences contain exactly k ones
+      10011000
+    Bijection to a k-element subset selection
+      Number of n-bit sequences with exactly k ones is n choose k
+    Number of ways to select n donuts when k flavors available
+      n + (k - 1) choose n
+  Sequences with Repetitions
+    Sequences of Subsets
+    Choosing k-element subset of n-element set is same as splitting into pair of subsets
+    Let A be an n-element set and k1, k2, ... , km be nonneg ints with sum n
+    The (k1, k2, ... km)-split of A
+    Is a sequence (A1, A2,..., Am)
+    Where the Ai are disjoint subsets of A and |Ai| = ki for i = 1,...,m
+    To count splits take the same approach as for Subset Rule
+    Map is a k1!k2! ... km!-to-1 function from the n! permutations to the (k1, k2,... ,km)-splits of A
+    So from the Division Rule we conclude Subset Split Rule
+    For n, k1,...,km in N, such that k1 + k2 + ... + km = n
+    Define the multinomial coeff
+    (n choose k1, k2, ..., km) ::= n!/k1!k2!...km!
+  The Bookkeeper rule
+    Can also generalize count of n-bit sequences with k ones to counting sequences of n letters
+      Over an alphabet with more than 2 letters
+    How many sequences can be formed by permuting BOOKKEEPER?
+    1 B, 2 O, 2 K, 3 E, 1 P, 1 R
+    bijection between permutations and (1,2,2,3,1,1) splits of {1,2,...,10}
+    Namely map a permutation to the sequence of sets of positions where different letters appear
+    So in the word itself
+    ({1}, {2,3}, {4,5}, {6,7,9}, {8}, {10})
+    From this bijection and subset split rule, we conclude it's
+    10! / (1! * 2! * 2! * 3! * 1! * 1!)
+    The (generalized) rule:
+      let l1...lm be distinct elements. The number of sequences with k1 occurrences of l1,
+      k2 occurrences of l2 ..., and km occurrences of lm is
+      (k1 + k2 + ... + km) choose (k1,...,km)
+    Suppose you plan a 20-mile walk
+      Should include 5 N miles, 5 E, 5 S, 5 W
+      How many different walks are possible?
+      Bijection between such walks and sequences with 5N, 5E, 5S, 5W
+      By bookkeeper rule, it's 20! / ((5!)^4)
+  Note that subset split and bookkeeper rule are made-names
+    Bookkeeper sometimes called "formula for permutations with indistinguishable objects"
+  The binomial theorem
+    A binomial is a sum of two terms, say a + b
+      Now consider 4th power, (a + b)^4
+      By using distibutivity of products to multiply we get
+      = aaaa + aaab + ... + bbbb
+      One term for every sequence of a's and b's. 2^4 terms
+      Number of terms with k copies of b and n - k copies of a
+      n choose k
+      Therefore coefficient of a^(n-k)b^k is n choose k
+      So for n = 4
+      (a + b)^4 = 4 ch 0 * a^4 * b^0 + 4 ch 1 a^3 * b^1 ... (4 ch 4) a^0 * b^4
+    Thm
+      For all n in N and a, b in R
+      (a + b)^n = sum k = 0 to n of n choose k * a^(n - k)b^k
+    This is why n choose k is called a binomial coefficient
+    Extends to multinomials
+      Supposed wanted coeff of bo^2k^2e^3pr
+      In the expansion of (b + o + k + e + p + r)^10
+      Each term in this expansion is the product of 10 vars where each is one of b, o, k, e, p , or r
+      Number of such terms is precisely the number of rearrangements of BOOKKEEPER
+      10! / (1! * 2! * 2! * 3! * 1! * 1!)
+    Multinomial Theorem
+      For all n in N
+      (z1 + z2 + ... + zm)^n = sum k1 + ... + km = n k1,...,km in N (n choose k1, k2, k3)z1^k1 * z2^k2 * ... zm^km
+      But you're better off remembering the reasoning than the formal statement
+  Poker Hand Practice
+    Five-Card Draw: 5-card hand from 52 cards
+    52 choose 5 = 2598960
+    Let's work out the number of hands with various properties
+    Four of a Kind
+      Sequence specifies rank of 4 cards, rank of extra card, suit of extra card
+      {8, Q, Heart} = four eights, queen, heart
+      13 ways to choose first rank
+      12 ways to choose second rank
+      4 ways to choose scond suit
+      13 * 12 * 4 = 624 hands, only about 1 in 4165
+    Full house
+      Rank of triple, 13 options
+      Suits of triple, 4 choose 3
+      Rank of pair, 12 options
+      Suits of pair, 4 choose 2
+      13 * 4 choose 3 * 12 * 4 choose 2
+      Cool beans
+    Two pair - speed bump - wrong answer first
+      Rank of pair, 13 options
+      Suits of pair, 4 choose 2
+      Second pair, 12 options
+      Suits of second pair, 4 choose 2
+      Extra card - 11 ways
+      Suit of extra card, 4 choose 1
+      Wrong!
+    Two pair
+      Not a bijection from such sequences to hands with two pairs
+      Actually a 2 to 1 mapping
+      pair queens & pair 3s = pair 3s & pair queens
+      Apply division rule, divide whole thing above by 2
+    Avoiding mistakes
+      When mapping f : A -> B
+        Check that the same number of elements in A are mapped to each element in B
+        if k elements of A map to each element of B, then apply the division rule
+      Try solving the same problem in a second way
+    Two pair, another solve
+      Bijection between hands with two pairs and sequences that specify
+      Ranks of the two pairs, can be chosen 13 choose 2 ways
+      Suits of lower rank, can be chose 4 choose 2 ways
+      Suits of higher rank, can be chosen 4 choose 2 ways
+      Extra card rank can be chosen 11 ways
+      Extra card suit can be chosen 4 choose 1 ways
+      And multiply it out - same answer as before, different form
+    Hands with every suit
+      Ranks of each suit, can be selected 13^4 ways
+      Suit of extra card - 4 ways
+      Rank of extra card - 12 ways
+      But there is actually a 2 to 1 mapping
+        Extra card can double with one in the hand
+      Number of hands with every suit
+        13^4 * 4 * 12 / 2
+
+Generalized Counting Rules
+  Generalized product rule
+  # lineups of 5 students in class
+  Let S ::= students
+  Say |S| = 91 so
+  Basic product rule
+    |lineups of 5 students| = 91^5 - NO! Same student can't appear twice
+    |seqs in S^5 with no repeats| = 91 * 90 * 89 * 88 * 87
+      = 91!/86!
+  Q a set of length-k sequences
+    if n1 possible first elements
+    n2 possible second elements (for first entry)
+    n3 possible third elements (for first and second entry) etc
+    then |Q| = n1 * n2 * nk
+  Division
+    #6.042 students = #6.042 students' fingers / 10
+      Of course that's a harder way to do it, not practical
+      But illustrates basic straightforward idea
+    If total function domain A to codomain B and mapping is k to 1
+    Then |A| = k|B|
+      Exactly k arrows into every element of B
+      Generalized bijection rule
+    Counting subsets
+      How many size 4 subsets of {1,2, ..., 13}?
+      Find a mapping from something you know how to count
+      Let A ::= permutations of {1, 2, ..., 13}
+      B ::= size 4 subsets
+      map a1 a2 a3 a4 a5...a12 a13 in A
+      to {a1, a2, a3, a4} in B
+      Any perm with first 4 elements, but in same order, maps to the same
+        a1 a3 a2 a4
+      And whatever the remaining 9 elements also doesn't matter
+      4! ways to permute the first four elements
+      9! ways to permute the last nine elements
+      (4! * 9!)-to-1 mapping
+      13! = |A| = (4! * 9!)|B|
+      So the number of size 4 subsets is
+      13 choose 4 - "binomial coefficient notation"
+      13! / (4! * 9!)
+      m element subsets of an n element set is
+      n choose m
+      n! / (m! * (n - m)!)
+  Counting in Poker
+    Practice with these rules
+    2 Pair in Poker
+      5 card draw - dealt 5 cards from a deck of 52
+      2 cards of some rank out of 13
+      2 cards of a second rank
+      1 card of a third rank
+      To count, choose
+        1st pair rank (13 ranks)
+        2nd pair rank (12 ranks left)
+        last card rank (11 ranks left)
+      Then choose
+        1st pair suits - 4 choose 2
+        2nd pair suits - 4 choose 2
+        last card suits - 4 choose 1 (4 suits)
+      Specify hand
+        K, A, 3, {diamond, heart}, {diamond, spade}, club
+      So number of 2-pair hands is
+        13 * 12 * 11 * 4 ch 2 * 4 ch 2 * 4
+        NOPE! There is a bug
+      This answer is set 1st card ranks x 2nd card ranks x last card rank x
+        1st card suits x 2nd card suits x last card suit
+      However it is not a bijection to all 2-pair hands
+      Because
+        A, K, 3, {diamond, spade}, {diamond, heart}, club is the same hand
+      Mistake to distinguish first and second pair
+        There are simply 2 pairs
+        This is actually a 2-to-1 mapping
+        So to fix
+        13 * 12 * 11 * 4 ch 2 * 4 ch 2 * 4 / 2
+  Binomial Theorems
+    Connection between algebra and computation
+    3 beanies x 2 neckties = 6 pairings of beanies & ties
+    Product of sums = sums of products
+    (1 + X)^n = c0 + c1X + c2X^2 + ... + CnX^n
+    What is the expression for ck?
+      (1 + X)^4 = 1 + 4X + 6X^2 + 4X^3 + 1X^4
+      What is the pattern of coefficients?
+      Write it out
+        (1 + X)(1 + X)(1 + X)(1 + X)
+        Apply distributive law
+        Multiplying gives 2^n product terms
+          11... 1 + X11X .... + XX...XX (middle term is just an example, not next in alpha answer)
+          Correspond to every possible way to select terms
+        X^k coefficient Ck is # terms with exactly k X's selected
+          and n - k ones
+        Ck = (n choose k)
+    The Binomial formula
+      (1 + X)^n =
+      n ch 0 + (n ch 1) x + (n ch 2) x^2 + ... (n ch k)X^k + ... + (n ch n) X^n
+    More general binomial formula
+      (X + Y)^n =
+      (n ch 0)Y^n + (n ch 1)XY^(n - 1) + (n ch 2)X^2 * Y^(n - 2) + ... +  (n ch k)X^k * Y^(n-k) + ... + (n ch n) X^n
+    So
+      (X + Y)^n = sum k=0 to n of (n ch k)X^k * Y^(n - k)
+  Multinomial formula & bookkeeper rule
+    Extension of binomial theorem
+    Product of a sum of k things
+    How many permutations of the word bookkeeper?
+    How many distinguishable ways to scramble this word?
+    b o1 o2 k1 k2 e1 e2 p e3 r
+    10! ways to permute these letters with subscripts
+    map word to letters without subscripts
+      mapping is k-to-1
+      but what is k?
+        subscripts on os don't matter, 2 possible orders
+        k's don't matter, 3 possible orders
+      So mapping is 2! * 2! * 3! to one -> 10! (2! * 3! * 3!)
+    General permutations of length n
+      with n1 as, n2 bs, nk zs
+      n! / (n1! * n2!... nk!) = (n choose n1, n2, ..., nk)
+    Binomial is a special case
+      n choose k = (n choose k, n - k)
+    What is the coefficient of
+      EMS^3TY
+    In the expansion of
+      (E + M + S + T + Y)^7
+      Words of length 7
+      Multiply it out - 5^7 terms
+      Coefficient is exactly number of ways of permuting letters with 3S
+      number of ways to rearrange letters in word SYSTEMS
+      By bookkeeper rule
+        7 choose 1, 1, 3, 1, 1
+      coefficent of BAAANN in (B + A + N)^6
+      Rearrange BANANA = 6 choose 1, 3, 2
+    What is the coefficient of
+      X1^r1 * X2^r2... Xk^rk
+      In the expansion of
+      (X1 + X2 + X3 + ... + Xk)^n
+      n choose (r1, r2, r3, ... , rk)
+    The real formula
+      (X1 + X2 + X3 + ... + Xk)^n
+      sum r1 + ... + rk = n of n choose r1, r2, r3, r4 * X1^r1 * X2^r2... Xk^rk
+      Not a key formula to memorize
+        Clogged up with subscripts, but good to have for the record
+  Next infinite polynomials & infinite series - generating functions
+  

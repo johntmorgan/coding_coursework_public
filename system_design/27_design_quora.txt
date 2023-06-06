@@ -1,0 +1,400 @@
+Design Quora
+Intro
+  Finding answers to question
+  Can use search engines
+    But sometimes not a straightforward process
+  Search
+    Fast
+    Shallow
+    Read-only
+  People
+    Slow
+    Deep
+    Conversational
+  People can be more instructive if slower
+  And content can be just unavailable for some topics
+
+What is Quora?
+  Social question and answer service
+  Ask public instead of search engine
+  Anyone can ask questions
+    Anyone can reply
+  Domain experts occasionally answer questions
+  Quora usage has risen quickly
+    2014-2020
+    (Almost plateaued since then, looks like - JM)
+  300 million MAU
+  Thousands of questions daily
+  400000 topics
+  Info inspired by engineering blog of Quora
+
+Requirements
+  Functional
+    Questions and answers
+      May include images and videos
+    Upvote/downvote and comment
+    Search
+    Recommendation system
+      View feed on topics interested in
+      Include questions in need of answers
+      Include answers that interest reader
+    Ranking answers
+      According to usefulness
+      Best at top
+  Non-functional
+    Scalability
+      Scale with features and users
+    Consistency
+      Questions and answers same for any collection of viewers
+      Not essential to see new question, answer, comment immediately
+    Availability
+      High availability
+      Even with lots of concurrent requests
+    Performances
+      Smooth experience, no delay
+
+Resource estimation
+  1b users
+  300m DAU
+  15% of questions have image
+  5% of questions have video
+    Cannot have both image and video
+  Images 250 KB
+  Video 5 MB
+  Number of servers
+    300m DAU
+    20 requests/day
+    300 * 10^6 * 20 = 6 * 10^9 requests/day
+    6 * 10^9 / 86400 = 69500 rps
+  Servers
+    300m/8000 = 37500 servers
+  Storage
+    1 question/user/day
+    2 responses/question
+    10 upvotes/question
+    5 comments/question
+    300m questions/day
+    1 KB text/question
+    0.3 TB for question text/day
+    11.25 TB for question images/day
+    75 TB for question videos/day
+    86.55 TB/day
+    32.6 PB/day
+    Seems very high... but if 300m DAU, feasible
+      Ignoring inactive users
+      (I think 1 question/day is probably too high tbh - JM)
+  Bandwidth estimation
+    Incoming 86.55 TB / 86400 * 8 = 8 Gbps
+    Outgoing 
+      View 20 questions per day
+      160 Gbps
+    Total 168 Gbps
+
+Building blocks
+  Load balancers
+  Databases
+  Distributed caching
+  Blob store
+
+Initial design
+  Web & app servers
+    Maintain processes to generate web page
+    Web have manager processes
+    App have worker processes
+      Handle various requests
+      Distribute work with router library
+  Data stores
+    Key data in relational MySQL
+      Questions, answers, comments, upvotes/downvotes
+    NoSQL like HBase
+      Views on page
+      Scores to rank answers
+      Extracted features for recs later
+      High read/write required for stats
+        High parallelism required
+      Why HBase? Dev in 2008 by Apache
+        Modeled after BigTable
+        Good for large amount of small-sized data
+    Blob storage
+      Videos and images
+  Distributed cache
+    For performance
+    Memcached for frequently accessed critical data
+      Otherwise stored in MySQL
+    Redis for view counter
+      Allows in-store incrementing
+    CDNs serve frequently accessed videos and images
+  Compute servers
+    High RAM & processing power
+    Recommendations
+      ML to provide
+    Ranking based on attributes
+  Other basic building blocks
+    Load balancers
+    Monitoring
+    Rate limiters
+    All these are basically as usual
+
+Workflow
+  Complex, lots of functional and non-functional requirements
+  Let's go feature by feature
+  Posting question/answer/comment
+    Load balancer receives, passes to web
+    Web receives, passes to app server
+      Generate part of the page
+      Let app work do rest of page
+    Data stored in MySQL database
+    Videos and images stored in blob storage
+    Similar approach to posting comments, up or down answers
+    Prioritize work
+      User requests urgent
+      Weekly Q & A digest not urgent
+    Worker processes fetch from queues
+  Notification feature?
+    User posts question on topic respondent following
+    User posts answer to question
+    Post receives comment or upvotes/downvotes
+    Do via relatively low-priority queue to worker process
+  Answer ranking system
+    Could sort based on date
+      Easy
+    Users prefer to see most appropriate at top
+      ML to ranks answers
+      Different features extracted and stored in HBase
+    Why not rank based on upvotes?
+      Joke answers get a lot of upvotes
+        (Guess I'm just used to that on e.g. Reddit - JM)
+    Do offline
+      Good answers get upvotes & views over time
+      Less burden on infrastructure
+  Recommendation system
+    User feed
+      (Pregenerate, or do on the fly based off rankings? - JM)
+    Related questions and ads
+    Recommend questions to respondesr
+    Highlight duplicate content
+    Find TOS violations
+    Must provide both online & offline answers
+  Search feature
+    Build index in HBase
+    Match queries against index
+    Suggest related content to user
+    Frequent index served from cache for low latency
+    Index content:
+      Questions
+      Answers
+      Topic labels
+      Usernames
+    Tokenization of search
+      Returns same results for reordered words
+
+Practical tech
+  Mostly built on AWS
+  Uses EC2 instances for app servers to start - 8 cores, 8 MB cache
+  Used search server "Sphinx"
+    Was slow
+    Quora custom-built serach with Thrift & Python Unicode only
+  Full-text search only launched in 2013
+    Previously individual words only
+
+API design
+  Let's just look at a handful
+  Post a question
+    POST method
+    postQuestion(user_id, question, description, topic_label, video, image)
+    NULL for video/image if none embedded
+  Post an answer
+    POST method
+    postAnswer(user_id, question_id, answer_text, video, image)
+  Upvote answer
+    upvote(user_id, question_id, answer_id)
+    (downvote same thing)
+  Comment
+    comment(user_id, answer_id, comment_text)
+  Search
+    search(user_id, search_text)
+  Use a sequencer for e.g. question_id
+
+Why is there a custom routing layer between web and app layers?
+  Performance
+  Generic load-balancing = high latency, little app understandability
+  Manager process generates skeleton
+    Majority of work left to high-priority worker proceesses
+    Supports scalability
+
+Final design
+  Limitations
+    Web & app transfer = latency up due to network I/O
+  In-memory queue failure
+    Worker queues can fail
+      Manual engineering required to recover
+    Replicating queues = increasing RAM size
+    Many tasks to assemble -> insuffcient memory, maybe
+    Don't choke app servers with low-priority tasks
+  MySQL limitations
+    Lot of user queries
+    No scheme for disaster recovery management
+  HBase latency
+    Allows real-time throughput
+    P99 (99th percentile) latency is not the best
+    ML engine has its own latency on top of this
+
+Let's adjust
+  Service hosts
+    Combine web and app in single powerful machine
+    Eliminate network IO and latency
+  Vertically shard MySQL
+    Split tables into multiple partitions
+      Keep in same partition where lots of joins expected
+        Do app level joins in rare edge cases
+    Co-locate data, reduce traffic on hot data
+      Add replicas, or shard further if needed
+    Requires partition mapping
+      Where are tables and columns?
+      What is host and primary?
+      Use Zookeeper
+    Quora shards vertically not horizontally
+      Horizontal more common
+      But partition/table can grow horizontally
+        Horiz sharding may be required for performance eventually
+  MyRocks
+    Replaces HBase as key-value store
+      Lower p99 latency
+        80 ms -> 4 ms
+    Operational tools to transfer MyRocks <-> MySQL
+      Key for serving ML compute engine
+        Need questions and answers stored in MySQL
+  Kafka
+    Puts lower-priority tasks in queues
+      View counter (sharded counter)
+    Notification system
+    Analytics
+    Highlight topics to user
+    Execute through cron jobs
+  Tech usage
+    Python Paste web framework
+      Fast!
+    C++ for feature extraction
+      Very fast
+      Thrift supports interoperability
+  Long polling
+    Client looking for page updates
+    To avoid overloading server, may not respond for 60s
+    Will respond immediately if update
+  Memcached
+    multiget() to obtain multiple keys from cache shards
+      Reduce retrieval latency of multiple keys
+  Note
+    Quora uses S3 for blob storage
+    Redshift for view counters
+      Allows large-scale data transfer
+      Amazon data warehouse based on Postgres
+  How should manager and worker processes communication within hosts?
+    UNIX sockets
+    TCP connections
+    Allow data streaming with flow control
+      And TCP congestion control
+    Send variable-size data in decoupled fashion
+    Not so good
+      Shared memory - must estimate size of memory segment
+        Participants more coupled
+      Will not work across physical servers
+  Why Kafka for counter updating?
+    Many viewers may view response at once
+      Could choke server
+    Instant view counter updates not critical
+      Still handled in 2m or less
+  Why long polling? 
+    Transfers control to server-side
+    Reduces request load
+    But still resource-intensive
+      Connection stays alive for long period of time
+    Could also do WebSockets
+      Low latency
+      Low overhead
+      Overkill for Quora features
+
+Evaluation
+  Scalability
+    Powerful, homogenous service hosts
+      In-memory cache, queueing, manager, worker, routing library
+    Vertically sharded MySQL database
+      Avoid issues in scalability
+      Put high join tables in same shard/partition
+      May have to horizontally shard with more growth
+  Consistency
+    Different schemes for different data
+      Questions & answers stored synchronously
+        Performance hit
+          But users don't expect instant responses
+      View counts stored async
+        Not a goal to show all users same view same time
+        Eventual consistency for performance
+  Availability
+    Isolation between components
+      Maintainance easier
+      Upgrades easier
+      Recover during individual failures
+      Collocation = multiple services down at once
+    Redundant instances
+    CDN
+    ZooKeeper
+    Load balancer to hide failures
+    Still needs disaster recovery management
+      Coming next
+  Performance
+    Right tech for right job
+    Lots of distributed caches
+    Kafka to queue similar tasks & assign to cron jobs
+    Can handle 15k tasks/second
+
+Fun facts
+  In-memory caching
+    PyCache
+      Quora developed
+      10s of GB on local machine
+      Simple but effective key-based library
+  Cache requests
+    Asynq
+      Quora developed, open source
+      Simplifies batch caching
+      Devs can code faster
+      Cache round-trip time reduced
+
+Disaster recovery
+  Frequent backups
+    First and foremost in any plan
+    Daily backups suitable
+      Individual data stores and shards no problem
+    Store at remote locations
+    Quick restoration is also key
+  Identify which data and systems most critical
+  How fast is restoration from backup facility
+  Can all systems be recovered
+  What if some data is lost?
+  Approach
+    Data, app servers, confgs all backed up in Amazon S3 in same zone
+      Replicate to other zones
+    Simple & effective, but...
+    Can lose some data with only daily backups
+      Mitigate with sychronous rep across regions
+    Restoration may be slow
+      A few hours
+      No queries served while recovering
+  Amazon?
+    99.999999999% durability
+    99.9% availability
+
+Conclusion
+  Learned how Quora scales
+  Interesting aspect
+    Vertical sharding of MySQL database
+  Did not learn about
+    Natural language processing (NLP)
+      Correct user spelling mistakes
+      Typeahead services
+  Interesting point
+    Multiple data stores = good for data recovery?
+      Can recover in parallel
+      Not one big blob of data
+      However admins need to know details of checkpoint/restore for multiple

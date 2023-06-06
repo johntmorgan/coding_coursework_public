@@ -1,0 +1,32 @@
+Custom Data Structures
+  Standard: array, linked list, stack, queue
+    (Hashmap? - JM)
+  Specialized used sometimes
+    Doesn't have to be totally novel
+      Often modified version of existing structure
+  Ex.
+    Tree with pointers to parents
+      Add array for every node
+  Ex.
+    Custom stack
+      Add a second stack with min values for getMin() in O(1)
+
+Pattern matching
+  Yes
+    Customize existing data structure
+      Min stack
+      Max freq stack
+    Combine one or more data structures
+      Least recently used (LRU) cache
+  No
+    Existing data structures solve problem efficiently
+
+Real world
+  Keep game state
+    Maintain state of players, levels, relevant game details
+  Search engines
+    Customized trees and arrays to search & display data
+  Data in tabular format
+    E.g. JSON data -> table for efficient access
+      Don't parse entire string every time!
+  

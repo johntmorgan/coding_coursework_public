@@ -1,0 +1,352 @@
+Uber
+
+What is Uber?
+  Provides ride-hailing
+  Register and book vehicle from source to destination
+  Communicate on smartphone
+  110k quarterly active users pre-COVID
+
+Requirements
+  Functional
+    Update driver location
+      Moving, at regular intervals
+    Find nearby drivers
+      Show to rider
+    Request a ride
+      Notify nearest driver of request
+    Manage payments
+      From start of trip
+    Show driver ETA
+    Confirm pickup
+      Driver confirms
+    Show trip updates
+      Driver and rider see ETA, location
+    End trip
+      Driver marks journey complete
+  What if 2 drivers same distance from rider?
+    Multiple factors
+      Distance, type of vehicle, driver rank
+    If totally identical
+      Pick one at random
+      If do not accept fast, switch to other
+  Non-functional requirements
+    Available
+      Even a fraction of a second down could mean trip failure
+        Driver may not be able to find rider
+        Rider may not be able to contact driver
+    Scalable
+      More and more drivers & riders with time
+    Reliable
+      Fast and error free services
+      Ride requests smooth
+    Consistency
+      Must be strongly consistent
+      Drivers & riders in area should see same thing
+    Fraud detection
+      Detect payment fraud
+
+Resource estimation
+  500m riders
+  5m drivers
+  20m daily riders
+  3m daily drivers
+  All drivers send location every 4 seconds
+  Storage
+    Rider metadata
+      1 KB/rider
+        ID, name, email, etc.
+      500 GB storage
+    Driver metadata
+      1 KB/driver
+      5 GB storage
+      10k new drivers daily
+        100 MB storage
+    Driver location metadata
+      36 Bytes for driver location updates
+      5m drivers
+      180 MB storage
+    Trip metadata
+      100 Bytes
+        Trip ID, rider ID, driver ID, etc.
+      20 million daily rides
+      2 GB/day
+    Total 2.78 GB/day
+  Bandwidth
+    20m daily rides
+    232 trips/second
+    Trip = 100 Bytes
+    23 KB/s bandwidth
+    Location updated every 4 seconds
+      3 Byte ID, 16 Byte location
+      3m * (3 + 16 B) = 57MB * 8 = 114 Mbps
+    Maps?
+      Not considering here...
+      Quite a bit more
+  20m daily users/8000 = 2500 servers
+
+Building blocks
+  Databases for rider, driver, trip metadata
+  Cache stores requested data for quick responses
+  CDNs to effectively deliver to end users
+  Load balancer distributes read/write among services
+
+Note: data in chapter from Uber engineering blog
+
+High-level design
+  Workflow
+    All drivers available seen when rider starts app
+    Rider enters drop-off and requests ride
+    Application receives request and finds driver
+    "Waiting for driver to respond" until match found
+    Drivers report location every 4 seconds
+    App finds trip info and returns to driver
+    Driver accepts or rejects
+      Status info modified on rider, driver apps if accept
+      Restart search for driver if reject
+
+API design
+  updateDriverLocation(driverID, oldlat, oldlong, newlat, newlong)
+  findNearbyDrivers(riderID, lat, long)
+  requestRide(riderID, lat, long, dropoffLat, dropOffLng, typeOfVehicle)
+  showETA(driverID, eta)
+  confirmPickup(driverID, riderID, timestamp)
+  showTripUpdates(tripID, riderID, driverID, driverlat, driverlong, time_elapsed, time_remaining)
+  endTrip(tripID, riderID, driverID, time_elased, lat, lng)
+    (wouldn't riderID, driverID be implied from tripID? - JM)
+
+Detailed design
+  Location manager
+    Shows nearby drivers to riders opening app
+    Receives data from drivers every 4 seconds
+    Location of drivers communicated to quadtree map service
+      Figure out which segment driver belongs to on map
+    Save last location of all drivers to database
+    Save route followed by driver on trip
+  Quadtree map service
+    Updates location of drivers
+    Modified from Yelp
+    Help divide map into segments
+    If more than say 500 drivers, split into four more child nodes
+      Each leaf node contains segments that can't be divided further
+    Big difference: Yelp not designed for regular updates
+      Need to change driver location in quadtree if moving
+      Repartition grid if exceeds driver limit
+      Must tell rider and driver car current location during ride
+    Use hash table to store latest position of drivers
+      Update quadtree every 10-15 seconds
+  Request vehicle
+    Rider adds drop-off location
+    Request vehicle comms with find drier
+  Find driver
+    Finds the driver who can complete the trip
+  Trip manager
+    Manages all trip-related tasks
+    Create a trip in database, store all info in said database
+  ETA service
+    Shows riders the pickup ETA
+    Consider factors such as route and traffic
+    Calc shortest route
+    Calc time for route
+    Whole road network = graph
+      Intersections nodes, roads, edges
+      Depict one-way streets, turn limits, speed limits
+    Split graph into partitions
+      Preprocess optimum path using contraction hierarchies
+        CH: preprocess, skip over unimportant vertices for speed
+      Execute in parallel across partitions for speed if needed
+        If each partition works in 1s, then just 1 second total
+    Then calculate time for path
+      Account for traffic
+    DeepETA
+      ML component
+      Improve metrics in production
+    Routing engine
+      Use real-time traffic & map data to predict ETA
+      Post-processing ML model
+        Spatial & temporal params
+        Source, destination, time of request, real-time traffic
+  Database
+    Must scale horizontally
+    Handle large number of reads & writes
+      Driver loc updated every 4s
+    Never down
+    Cassandra
+      Store driver locations
+      Trip info after trip completed & no updates
+      Handle enormous data
+    MySQL
+      Trip info in progress
+      Trip info is relational
+    Recently Uber migrated to Google Cloud Spanner
+      Global transactions
+      Strongly consistent reads
+      Automatic multisite replication & failover
+    Why not only use MySQL?
+      Will scale poorly over time
+    Why not only use Cassandra?
+      Data for trip highly relational, spread across tables, consistency needed
+  Storage schema
+    Riders
+      ID, name, email, photo, phone, etc
+    Drivers
+      ID, name, email, photo, phone, vehicle_type, vehicle_name, vehicle_number
+    Driver_location
+      Driver_ID, old lat, old long, new lat, new long
+    Trips
+      Trip_ID
+      Rider_ID
+      Driver_ID
+      Location
+      ETA
+      Status
+  Fault tolerance
+    Replicate database
+    Primary-secondary with a few secondaries
+      Synchronously replicate
+    When primary down, use secondary as primary
+  How to handle bad driver network
+    Use phone as local storage
+    Store state of trip every few seconds
+      Store to disk, persist if phone/app restarts
+  Load balancers
+    Distribute load across servers
+  Cache
+    Store location in hash table in Redis
+    Copy into persistent storage every 10-15 seconds
+
+Fraud detection
+  Payment system
+    Add new payment option
+    Authorize payment for transaction
+    Refund previously authorized payment
+    Charge: move money from user to Uber
+  Prevent
+    Lack of payment
+    Duplicate payments
+    Incorrect payment
+    Incorrect currency conversion
+    Dangling authorization
+  Payment system based on double-entry bookkeeping
+    Every entry to account requires alternate entry on another account
+  Components
+    API used to access service
+    Order store
+      Orders collect payments
+      Orders contain info about money flow between riders and drivers
+    Account store
+      Stores rider & driver accounts
+    Risk engine
+      Analyzes risks in collecting rider payment
+      History of rider - rating, $$ in account, pending dues, cancellation rate
+    Payment profile service
+      Provides credit, debit card info
+    User profile service
+      Info on user's payments
+    Payment auth service
+    PSP gateway
+      Connects with payment service providers
+  Workflow
+    Rider requests a ride
+    Uber app uses API to check risks in involved
+    If risk is too high, request rejected
+      (Have not heard of this happening - JM)
+    If risk is low, create auth token
+    Send to payment profile
+      For record-keeping
+    Payment profile fetches token, sends to authorization service
+    Authorization service sends to PSP gateway
+    PSP gateway contacts service provider for authorization
+    PSP gateway sends auth token back to payment auth service
+    Payment auth service sends token back to Uber app
+      Trip request approved
+    After trip, Uber App -> API -> PSP gateway
+    PSP gateway -> service provider, status back to Uber app
+    Overall:
+      Set of microservices grouped together as stream-processing architecture
+  Apache Kafka
+    Open-source stream-processing software platform
+    Primary tech used in payment processing
+    How does Kafka work?
+      Order creator gets a business event (trip finishes)
+      Order creator creates money movement info & metadata
+      Information pushed to Kafka
+      Kafka processes order, sends to order processor
+      Order processor takes from Kafka, processes, sends as intent to Kakfa
+      Order proceessor processes, contacts PSP
+      Order processor takes answer from PSP, transmits to Kafka
+      Result saved by order writer
+    Why Kafka?
+      Works like messages queues to publish & sub to message queues
+      Stores records in fault-tolerant manner
+      Processes payment records asynchronously
+  Fraud detection
+    Critical component
+    Fraud losses calculated as percentage of gross amounts
+      Tiny portion of gross bookings
+      Significant impact on net earnings
+    If not quickly detected & handled, will be leveraged more
+      Significant losses possible
+    Already discussed risk engine
+    Now, fraud detection during or after trips
+    Challenging
+    Many instances are like zero-day security bugs
+      System needs to be smart
+      Needs accountability for automated decisions - human-led audits
+    What is fraud?
+      Driver increases trip distance/time dishonestly
+      Driver manipulates GPS data, uses fake GPS location app
+      Driver confirms trips with no plans to take them, riders must cancel
+      Driver creates false accounts (driver or rider)
+      Driver provides false info about themselves
+      Driver drives unapproved vehicle
+      Driver claims fraudulent fees/charges, e.g. cleaning
+      Driver confirms/completes fraudulent trips
+    RADAR
+      Human-assisted AI fraud detection solution
+      Analyzes activity time series of the payment platform
+      Generates rule, stops from further processing
+      Detect unseen fraud in real time
+      Uses human knowledge for improvements
+      Fraud analyst after rule generated
+        Review and accept/reject
+        Send feedback to protection system
+        Also send to fraud detection to improve
+      Examine data:
+        Trip time after trip
+          Are rider and driver locations same?
+          Speed vs. actual traffic - is driver slow, congestion?
+        Payment settlement time
+          When data comes in
+          May take days/weeks
+      Human experts do decrease scalability
+      Research how to to ensure AI system decisions fair & ethical
+
+Evaluation
+  Non-functional
+    Availability
+      WebSocket servers
+        Load balancer connects to different if disconnect
+      Multiple replicas of database, primary/secondary
+      Cassandra database
+        Highly available, no SPOF
+      CDN, cache, load balancers
+    Scalability
+      Independent microservices, scale each as needed
+      Quadtrees to divide map into smaller segments
+      CDN increases capacity
+      NoSQL Cassandra horizontally scalable
+      Load balancers
+    Reliability
+      Trip can continue if connection broken, phones local storage
+      Multiple WebSocket servers
+      Redundnant copies of servers/databases
+      Services decoupled/isolated
+      Load balancerst to move to healthy servers
+    Consistency
+      MySQL for data consistency
+      Synchronous replication for strong consistency
+      Limited number of data writers & viewers
+        Traditional database not a bottleneck
+      Data sharding easy
+    Fraud detection
+      RADAR system for suspicious activity

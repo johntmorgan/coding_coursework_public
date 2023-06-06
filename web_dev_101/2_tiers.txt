@@ -1,0 +1,108 @@
+Tier
+  Logical and physical separation of components in an application or service
+  Components
+    Database
+    Backend application server
+    User interface
+    Messaging
+    Caching etc.
+
+Single-tier applications
+  User interface, backed business logic, database all in same machine
+  Examples
+    MS Office
+    PC games
+    Image editing - Photoshop etc.
+  Upsides
+    No network latency, good performance
+      Actual performance depends on hardware requirements, machine power
+    High privacy and safety
+      Data stays on user's machine, doesn't need to be transmitted for persistence
+  Downsides
+    App publisher has no control over the application
+      No code or feature updates until manually updated by user
+        Connect to remove server
+        Download and install a patch
+      Product testing vital - no room for mistakes
+    Code vulnerable to being tweaked, reverse engineered
+      Product security for publisher in minimal
+      Hacker can get access to source code, modify or copy for profit
+    Performance and look and feel can be inconsistent
+      App rendering largely depends on user's machine
+
+Two-tier app
+  Client and server
+  Client contains user interface and business logic
+  Backend server - database
+  Why not host business logic on a different machine and have control?
+  Isn't application code vulnerable again?
+    Yes, code is vulnerable
+  Good for e.g. to-do list, productivity app
+  Code being accessed won't cause much business harm
+    Since business logic and UI in same machine
+      Fewer network calls to backend server
+      Low latency
+  In todo list example
+    Makes a call to database server only when user has finished creating their list
+  Browser and mobile app-based games
+    Download game files once
+    Call to server only to persist state
+  Cheap to keep running with fewer server calls
+
+Three-tier
+  Pretty popular, widely used on web
+  Almost all simple websites
+  UI, business logic, database all on different machines
+  Blog
+    UI written with HTML, JS< CSS
+    Backend runs on server like Apache, database MySQL
+  Good for simple use cases
+
+N-tier
+  More than 3 components
+    Cache
+    Message queues for asyncrhonous behavior
+    Load balancers
+    Search servers for searching through massive amounts of data
+    Components processing massive amounts of data
+    Comoponents running heterogenous tech
+      Web services
+      Microservices
+  Large scale social apps
+  Online MMOs - Pokemon Go, Roblox
+  "Distributed systems"
+  Why so many tiers
+    Single responsibility principle, separation of concerns
+    Single responsibility principle
+      Give one dedicated responsibility to component, execute flawlessly
+      Lots of flexiblity, easy to manage
+        Dedicated teams and code repositories for individual components
+      Components are loosely coupled
+        Changing one doesn't affect functionality of others
+        Ex
+          Upgrading DB server with new operating system doesn't affect components
+          If it goes down, only features requiring database impacted
+      Avoid stored procedures
+        Add business logic to database
+          What if want to plug in a different database later?
+            Where does the business logic go?
+            Take to new database?
+        A database should not hold business logic
+          Just take care of persisting the data
+    Separation of concerns
+      Loosely means the same thing
+      Be concerned about your work only, don't worry about the rest
+        Both at the tier level and the code level
+      Keeping components separate makes reusable
+        Different services can use the same database, messaging server, etc.
+          As long as they are not tightly coupled
+      Easy to scale service when things grow beyond scale in the future
+  Layers vs tiers
+    Don't confuse them
+      Some use interchangeably
+    Layers
+      UI, business, service, data access
+      Layers are at the code level
+        Conceptual/logical organization of code
+    Tiers
+      Physical separation of components

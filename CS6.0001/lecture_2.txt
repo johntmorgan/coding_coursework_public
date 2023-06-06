@@ -1,0 +1,107 @@
+Lecture 2 - PSet 1 - done
+Binary/bisection search basics
+  Test value = (low + high)/2 at start of loop
+  Set either low or high to test value at end of loop
+
+Strings
+  New object type
+  Sequences of characters
+    Chars can be anything
+  Tell python it's a string by enclosing in quotation marks
+    Either double or single, just be consistent
+  hi = "hello there"
+  Two things you can with strings today
+    Concatenate
+      name = "ana"
+      greeting = hi + " " + name
+    Star operator
+      can multiply strings (Ruby too)
+      silly = hi + (" " + name)*3
+
+Getting input from user
+  Input command - type prompt in parens
+
+Now adding tests in your code
+  Comparison operators
+  You can compare ints and floats
+  But you can't compare a string with a number
+  Equality test ==
+  Inequality test !=
+
+  Boolean operators
+    not a - returns True if a is False
+    a and b - true if both are true
+    a or b - true if either are true
+
+Finding free food example
+  Go right until hit wall
+  Go forward with wall on right
+  If right and front blocked go left
+  If right front and left blocked go back
+
+Control flow
+  if < condition >
+    < expression >
+  otherwise, keep going
+  instructions executed inside code block
+  four spaces of indentation
+  if/else
+  if/elif/else (elsif in Ruby)
+  Always enter the first one that's true
+    Never more than one
+  Python will catch assignemnts in if (nice in comparison to Ruby)
+
+Let's try to apply this to a game
+  Zelda lost woods enter left to right - keep going right, same screen
+  Go back to exit woods
+  But nesting ifs to define it - can't predict how many times right
+
+While loop
+  while <exit right>
+    <set background to woods background>
+  <set background to exit background>
+  while <condition>
+    <expression>
+  condition evaluates to boolean
+  if condition evaluates true
+    keep doing it
+  Use while loops to keep a counter
+    Count something
+  Two things you must take care of
+  Must initialize loop counter
+  Must increment loop counter
+    Or else it'll just go forever
+
+For loop
+  for n in range(5):
+    print(n)
+  Creates a sequence 0, 1, 2, 3, 4
+  Not in ruby!
+  Inclusive of last number and no range
+    for i in 0..4
+    (0..4).each do |n|
+    (0..4).step(n) do |n|
+  Customize range to your needs
+    One value: stop, default start 0
+    Two values: start, stop, default step 1
+    Three values: start, stop, step
+
+  Sometimes you want to exit early
+    While - exit before false
+    break immediately exits loop in
+    ONLY exits innnermost loop!
+
+  When to use for or while
+  Use for when you know the number of iterations
+  While is when you're getting unpredictable (user) input
+  Remember to initialize and increment counter in while loop
+  For loop - can still end early as a break
+  For loop can be written as while
+  While cannot always be written as a for
+
+Book note: floats are not exact!
+  Numbers are stored as 2 binary sets
+  0.625 = (101, -11) 5 * 2 ^ -3
+  Just watch out if you are doing comparisons
+  Even 0.1 = 0.1000000000000000005551115123157.....
+  Better to subtract and make sure they are close enough

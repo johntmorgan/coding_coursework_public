@@ -1,0 +1,19 @@
+Order by
+  SELECT * FROM Actors ORDER BY FirstName;
+    // Sorting case insensitive, ascending by default
+  SELECT * FROM Actors ORDER BY FirstName DESC;
+  SELECT * FROM Actors ORDER BY NetWorthInMillions, FirstName;
+    // Specify more than one sort key
+  SELECT * FROM Actors ORDER BY NetWorthInMillions DESC, FirstName ASC;
+    // Sort with net worth desc, breaking ties by first name asc
+  SELECT * FROM Actors ORDER BY NetWorthInMillions DESC, FirstName DESC;
+  SELECT * FROM Actors ORDER BY BINARY FirstName;
+    // Force ASCII comparison - case sensitive
+    // Lowercase last
+
+CAST
+  Use with ORDER BY
+  Treat a column as a different type
+  SELECT * FROM Actors ORDER BY CAST(NetWorthInMillions AS CHAR);
+    // Sorts with all 1s at the top
+

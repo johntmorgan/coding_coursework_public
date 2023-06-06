@@ -1,0 +1,354 @@
+The ATM System
+  Remote financial transactions
+    Deposits
+    Withdrawals
+    Balance inquiries
+    Account transfers
+  Locations
+    Banks
+    Grocery stores
+    Airports
+    Other public places
+  To use
+    Bank card
+    Account
+    PIN
+
+Questions
+  ATM components
+    What are the components?
+    Is the ATM always placed in a room?
+    Does it have a fingerprint scanner?
+
+  Features
+    Withdrawal limit
+    Check account balance?
+    Set PIN?
+
+  Processing
+    What happens if user wants more than acct balance?
+    What is ATM cash limit?
+    What happens if user wants more than cash limit?
+    What happens if ATM almost out of cash?
+    Can ATM be used for online transactions?
+
+Design
+  Small
+    Screen
+    Keypad
+    Cash dispenser
+    Printer
+    Card reader
+  Bigger
+    State
+    Machine
+    Room
+
+Patterns
+  Singleton
+  State
+
+Requirements
+  Each user has a single account at bank
+  User accesses account by inserting card into ATM
+  ATM components
+    Card reader
+    Keypad
+    Screen
+    Cash dispenser
+    Printer
+    Network infra
+  ATM authenticates with PIN
+  Transactions possible after auth
+  Two account types
+    Current
+    Savings
+  Transactions
+    Balance inquiry
+    Cash withdrawal
+    Funds/money transfer
+  At end
+    User may start another transaction
+    User may end session
+
+Use case
+  System
+    ATM
+
+  Actors
+    Primary
+      Cardholder
+        Insert/remove card
+        Perform/cancel transaction
+        Change PIN
+
+    Secondary
+      Card issuer
+        Verify identity
+        Check for funds
+        Check transaction limit
+        Block/unblock account
+      System
+        Check for funds in ATM
+        Checks ATM limit
+        Verify identity
+        Return card
+        Dispense amount
+        Receipt
+      Operator
+        Start system
+        Shut down system
+        Refill cash dispenser
+        Refill printer receipt
+
+Use cases
+  Cardholder
+    Insert ATM card
+    Transaction
+    Change PIN
+    Cancel transaction
+
+  Card issuer
+    Verify cardholder
+    Check funds in account
+    Check account transaction limits
+    Block account
+    Unblock account
+
+  System
+    Verify cardholder
+    Check funds in account
+    Check ATM withdrawal limits
+    Return card
+    Dispense money
+    Dispense receipt
+
+  Operator
+    Start system
+    Shut down system
+    Refill printer receipts
+    Refill cash dispenser
+
+Relationships
+  Generalization
+    Transaction with:
+      Balance inquiry
+      Deposit
+      Transaction
+      Cash withdrawal
+
+  Extend
+    Transaction has extend with dispense receipt
+
+  Include
+    Insert card has include with verify identity
+    Transfer has include with check funds and check account limits
+    Withdrawal has include with check holder funds, check holder limit,
+      check ATM funds, and check ATM withdrawal limits
+    Cash withdrawal has include with dispense money
+    Transaction and cancel transaction include with return card
+
+Class
+  User
+    card: ATMCard
+    account: BankAccount
+    (no id? - JM)
+
+  ATMCard
+    cardNumber
+    customerName
+    cardExpiryDate: date
+    pin: int
+    (zip code? security code? - JM)
+
+  Bank account - parent
+    accountNumber
+    totalBalance
+    availableBalance
+    getAvailableBalance()
+    SavingAccount extends
+      withdrawalLimit()
+    CurrentAccount extends (CheckingAccount? - JM)
+      withdrawalLimit
+
+  Bank
+    name
+    bankCode
+    getBankCode()
+    addATM()
+    (shouldn't it have list of ATMs? - JM)
+
+  Keypad
+    getInput()
+
+  CashDispenser
+    dispenseCash()
+
+  CardReader
+    readCard()
+
+  Screen
+    showMessage()
+
+  Printer
+    printReceipt()
+
+  ATMState - abstract, six types
+    insertCard()
+    authenticatePin()
+    selectOperation()
+    cashWithdrawal()
+    displayBalance()
+    transferMoney()
+    returnCard()
+    exit()
+    CheckBalanceState type
+      displayBalance()
+      returnCard()
+      exit()
+    CashWithdrawalState
+      cashWithdrawal()
+      returnCard()
+      exit()
+    TransferMoneyState
+      transferMoney()
+      returnCard()
+      exit()
+    HasCardState
+      authenticatePin()
+      returnCard()
+      exit()
+    IdleState
+      insertCard()
+      returnCard()
+      exit()
+    SelectOperationState
+      selectOperation()
+      returnCard()
+      exit()
+
+  ATM - can have idle state or be performing operation
+    atmObj: ATM
+    currentState: ATMState
+    atmBalance
+    noOfHundredDollarBills
+    noOfTwentyDollarBills
+    noOfFiveDollarBills
+    displayCurrentState()
+    initializeATM()
+
+  ATMRoom
+    atm: ATM
+    user: User
+
+  Enums
+    ATMState
+      Idle
+      HasCard
+      SelectionOption
+      Withdraw
+      TransferMoney
+      BalanceInquiry
+    TransactionType
+      BalanceInquiry
+      Withdraw
+      Transfer
+
+Relationships
+  Association
+    ATMRoom one-way User, ATM
+    User one-way ATMCard, BankAccount
+    ATMCard one-way BankAccount
+    ATM one-way Bank, ATMState
+
+  Composition
+    ATM composed of
+      Keypad
+      Screen
+      Printer
+      CardReader
+      CashDispenser
+
+  Inheritatnce
+    SavingsAccount and CheckingAccount from BankAccount
+    ATMState abstract class extensions:
+      CheckBalanceState type
+      CashWithdrawalState
+      TransferMoneyState
+      HasCardState
+      IdleState
+      SelectOperationState
+
+Design pattern
+  Singleton
+    Single instance of ATM at a given moment
+
+  State
+    Alter behavior based on internal changes in machine
+
+  ATM patterns
+    Composite - combine ATM components to make ATM
+    Builder - same processes for complex object with different reps
+      Have withdrawals, deposits
+
+More
+  How to handle cash withdrawal?
+    Need to withdraw the correct bill combinations
+    Work sequentially until amount met
+
+  Chain of Responsibility design pattern
+    CashWithdrawProcessor
+    HundredDollarWithdrawProcessor
+    TwentyDollarWithdrawProcessor
+    FiveDollarWithdrawProcessor
+
+    $100 proc starts - return remainder
+    then passed to $20
+    then $5
+    (then $1 if needed)
+
+Sequencing: balance inquiry
+  Cardholder inserts card
+  ATM asks for PIN
+  Cardholder enters PIN
+  ATM sends code to card issuer
+  If verified
+    Main menu displayed
+    Cardholder selects balance inquiry
+    ATM requests balance from card issuer
+    Card issuer returns balance
+    ATM displays balance
+    ATM asks if receipt should be printed
+      Yes: print receipt via printer
+      No: ATM card ejected
+        (Not back to main screen? - JM)
+  Else
+    Card ejected
+      (Really they ask again though - JM)
+
+Activity Diagram
+  Initial state: cardholder inserts card
+  Final state: successful transaction OR error message
+  Insert card
+  Enter ATM code
+  Is valid?
+    No:
+      Retry?
+        Yes -> enter ATM code
+        No -> eject card, finished
+  Display transaction options
+    Deposit, withdraw, balance inquiry, transfer, cancel in parallel
+  Cardholder selects transaction option
+    Not valid:
+      Retry?
+        Yes -> display options
+        No -> eject card
+  Perform transaction
+  Eject card
+
+
+
+
+
+
+

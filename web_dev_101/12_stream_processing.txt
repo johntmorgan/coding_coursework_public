@@ -1,0 +1,253 @@
+Stream Processing
+  Advent of IoT
+    Gathering and transmitting data at unprecedented rate
+    Devices comm with each other and make decisions with no human intervention
+  Large-scale IoT today
+    Sensors in industries and smart cities
+    Electronic gadgets
+      Drones
+      Smartwatches
+      Cellphones
+    Wearable body sensors
+    Need sophisticated backend to handle
+      Gather meaningful info
+      Archive/purge less meaningful info
+  Large data
+    Customer data for plans and projections
+    Understand user needs and behavior
+    Businesses create better products, make smarter decisions
+      more effective ad campaigns, rec new products, market insights
+  Tracking service efficiency
+    Check ok signal on millions of IoT devices
+
+  Data ingestion
+    Collecting data streaming in from several different sources
+      Make it ready to be processed by system
+    Route to different components/layers via data pipeline
+    Run algorithms on the data
+    Archive the data
+    Several layers
+      Data collection
+      Data query
+      Data processing
+      Data visualization
+      Data storage
+      Data security
+
+  Data standardization
+    Streamed data not in homogenous structured format
+    Unstructured, heterogeneous
+    Comes in different speeds and sizes
+      Every stream has different semantics
+    Collect and convert into standardized format
+      Happens in data collection and prep layer
+
+  Data processing
+    After standardization
+    Processed depending on business reqs
+      Classify into different flows
+      Route to different destinations
+
+  Data analysis
+    Run analytics on the data
+      Predictive modeling
+      Statistical analysis
+      Text analysis
+
+  Data visualization
+    After analytics run, present to stakeholdres in (usually) web-based dashboard
+    Kibana is common data visualization tool
+
+  Data storage and security
+    Moving data is highly vulnerable to security breaches
+
+  How to ingest data
+    Real-time or in batches at regular intervals
+    Pick depends on business reqs
+    Real-time
+      Medical data - heartbeat, blood pressure
+      Wearable IoT sensors
+      Financial data
+        Stock market events
+      Time, lives, money closely linked - need info asap
+    Batches
+      Read trends over time
+        Popularity of a sport in a region over time
+
+  Challenges
+    Ingestion is slow
+      Several different sources, formats, attached metadata
+      Has to be transformed
+        Tedious process
+        Lots of resources and time
+        Has to staged at several points, processed, moved ahead
+      Authenticated and verified to meet security standards at each stage
+      Traditional data cleaning
+        ETL
+        May take weeks or even months
+        Not that effective anymore
+      Modern systems are evolving to beat limitations of legacy systems
+        Real-time wasn't possible before
+      Realtime not as accurate or holistic
+        Runs on limited set of data
+      Spend more time studying with batch approach, more accurate
+    Complex and expensive
+      Resource intensive
+      Lots of heavy lifting to prep before ingestion
+      Not a side process, team required
+      Tools and frameworks available often do not meet needs
+        May have to write a custom solution from bare bones
+      Ex
+        LinkedIn Goblin
+          Before custom-wrote, had 15 data ingestion pipelines running
+            Huge management challenge
+      IoT machines evolving rapidly
+        Semantics of data coming in may change, data sources not always controlled
+    Risky
+      Moving data is vulnerable
+
+  Use Cases
+    Moving Big Data into Hadoop
+      Data ingestion's most popular use
+      Hadoop is a distributed data processing frameowrk used to analyze
+
+    Streaming data from databases to Elasticsearch server
+      Elasticserach is open-source framework for implementing search in web apps
+      De fact search framework used in industry
+        Advanced features
+        Open source
+        Enables custom solutions when needed
+      Author wrote product search as a service
+        Java, Spring Boot, Elasticsearch
+        Large amount of data streamed from legacy storage to ES server
+        Indexed to make products come up in search results
+        As new data persisted in main storage
+          ayncrhonously delivered to Elastic server in real-time for indexing
+
+    Log processing
+      If not a hobby project, probably running on a cluster
+      With lots of microservices
+        Massive number of logs
+        Only way to move back in time, track errors, study system behavior
+        Stream all logs to central place
+        Ingested to a central server to run analytics
+          ELK stack - Elastic Logstash Kibana
+
+    Stream processing for real-time events
+      Core components in handling live info like sports scores
+        Architectural setup must be efficient enough to ingest, analyze
+          figure out behavior in real time, quickly push updated info to fans
+        Message queues
+          Kafka
+        Stream computatoion frameworks
+          Apache Storm
+          Apache Nifi
+          Apache Spark
+          Samza
+          Kinesis
+
+  Data pipelines
+    Core component of data processing
+    Facilitate efficient flow of data from one point to another
+    Enable devs to apply filters on data streaming-in in real time
+    Features
+      Ensure smooth flow of data
+      Enable business to apply filters and business logic on streaming data
+      Avert any bottlenecks and redundancy in data flow
+      Facilitate parallel processing of data
+      Protect data from being corrupted
+    Work on a set of rules predefined by engineering teams
+      Data routed accordingly, no manual intervention
+    Facilitate parallel processing of data by managing multiple streams (upcoming)
+    Traditionally used ETL systems to manage all of the data's movement
+      One major limitation: doesn't support management of real-time streaming data
+    ETL
+      Extract Transform Load
+      Extract: fetch data from single or multiple sources
+      Transform: standardize extracted data according to business rules
+      Load: move transformed data into warehouse or storage location for more processing
+      Flow same as data ingestion
+        But always done in batches
+        Does not stream through data pipelines in real time
+    Real-time data processing offers fast results
+      Doesn't undermine importance of batch processing
+      Companies use both to get best of both worlds
+
+  Distributed data processing
+    Diverge large amounts of data to several nodes running in a cluster for paralle processing
+    All nodes in cluster execute task allotted in parallel
+      Work in conjunction coordinated by node-coordinator
+      Apache Zookeeper = widely used coordinator
+    Nodes are distributed
+    Tasks are executed in parallel
+    Highly scalable - both horizontally and vertically
+    Highly available
+    Data is made redundant and replicated across cluster to avoid any sort of loss
+    Much faster than running on centralized data processing system
+    MapReduce - Apache Hadoop
+      Programming model for managing distributed data processing across several machines
+        Distribute work
+        Run in parallel
+        Manage communication and data transfer within system
+      Map part involves sorting data based on parameter
+      Reduce part involves summarizing sorted data
+      Apache Hadoop is open-source implementation of MapReduce programming model
+      Framework used by all big guns in industry to manage massive amounts of data
+        Used by Twitter for running analytics
+        Used by Facebook for storing big data
+    Apache Spark
+      Open-source cluster computing framework
+      Provides high performance for both batch and real-time in-stream processing
+      Work with diverse data sources
+      Facilitate parallel execution of work in cluster
+      Has cluster manager and distributed data storage
+        Manager facilitates communication between nodes
+        Distributed storage facilitates storing Big Data
+        Integrates with distributed stores
+          Cassandra, HDFS, MapReduce File System, Amazon S3
+    Apache Storm
+      Distributed stream processing framework
+      Process massive amounts of streaming data
+      Real-time analytics
+      Machine learning
+      Distributed remote procedure calls
+    Apache Kafka
+      Open-source distributed stream processing and messaging platform
+      Written in Java and Scala
+      Developed by LinkedIn
+      Storage with distributed scalable pub-sub message queue
+        Helps read and write streams of data like a messaging system
+      Used to develop real-tmime features
+        Notification platforms
+        Managing streams of massive amounts of data
+        Monitor website activity and metrics
+        Messaging
+        Log aggregation
+    Hadoop preferred for batch data processing
+    Spark, Kafka, Storm preferred for real-time streaming data
+
+  Lambda architecture
+    Distribted data processing architecture
+    Leverages both batch and real-time streaming data processing
+      Tackle latency from batch approach
+    Joins results from both approachs before presenting to end user
+    Batch processing does take time
+      But high accuracy, comprehensive results
+    Real-time streaming
+      Quick, but not as accurate or comprehensive
+    Three layers
+      Batch layer
+      Speed layer
+      Serving layer
+        Combines results from first two
+
+  Kappa architecture
+    All data goes through one pipeline
+    Less complexity, no separate layers for data pprocessing
+    Two layers
+      Speed layer
+      Serving layer
+    Not an alternative to Lambda
+      Both have their use cases
+      Kappa preferred if batch and streaming results are fairly identical
+      Lambda preferred if not

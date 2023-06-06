@@ -1,0 +1,129 @@
+Regular expressions
+  Expressions containing a sequence of characters
+    Invoke a sequence matching or pattern matching of strings
+    aka Rational expressions, RegEx
+
+  [...] any chars in here
+  [^..] not any chars in here
+  [0-9] any number 0-9
+  [a-z] any lowercase letter
+  [A-Z] any uppercase letter
+  [a-Z] any lower/upper letter
+
+  p+ should exist 1+ times
+  p* should exist 0+ times
+  p? should exist 1x max
+  p{n} should exist in seq n times
+  p{m,n} exist between m and n times
+  p$ at end of string
+  ^p
+
+Lookaround
+  p(?=q) p immediately followed by q
+  p(?!q) p NOT immediately followed by q
+  p(?<=q) p should immediately be preceded by q
+  p(?<!q) p should not be preceded by q
+
+Character literals
+  Alphanumeric - any alphanumeric char
+  \0 null
+  \t tab
+  \n newline
+  \v vertical tab
+  \f form feed char
+  \r carriage return
+
+Metacharacters
+  . any single char ([^\n])
+  \s white space
+  \S NOT white space
+  \d any numeric
+  \D NOT numeric
+  \w any word char [a-zA-Z0-9_]
+  \W any non-word char [^a-zA-Z0-9_]
+
+Regex in JS
+  var regex1 = /[a-b]*/;
+  var regex2 = RegExp('[a-b]*');
+
+Modifiers
+  i case-insensitive
+  g global matching, find all matches
+  m multiline matching, boundaries at newlines/carriage returns not str start/end
+
+  var regex1 = /[a-b]*/i;
+  var regex2 = RegExp('[a-b]*', i);
+
+RegExp object
+  Defines regular expression
+
+  var regex1 = /[a-b]+/i; // Create a regex and assign to regex1
+  var regex2 = RegExp('[a-b]+','i'); // Create a regex and assign to regex2
+  console.log(regex1, typeof regex1); // Print the regex variable and type
+    > /[a-b]+/i 'object'
+  console.log(regex2, typeof regex2); // Print the regex variable and type
+    > /[a-b]+/i 'object'
+
+exec
+  To run regex on string passed as argument
+
+  var regex = /[a-b]+/i; // Create a regex and assign to regex
+  console.log('exec on "Abc123":',regex.exec("Abc123"));
+    > exec on "Abc123": [ 'Ab', index: 0, input: 'Abc123', groups: undefined ]
+  console.log('exec on "123":',regex.exec("123"));
+    > exec on "123": null
+  console.log('exec on "ABC":',regex.exec("ABC"));
+    > exec on "ABC": [ 'AB', index: 0, input: 'ABC', groups: undefined ]
+
+test
+  To run regex and test if match found
+  var regex = /[a-b]+/i; // Create a regex and assign to regex
+  console.log('test on "Abc123":',regex.test("Abc123"));
+    > test on "Abc123": true
+  console.log('test on "123":',regex.test("123"));
+    > test on "123": false
+  console.log('test on "ABC":',regex.test("ABC"));
+    > test on "ABC": true
+
+search
+  let main_string = "HelloWorld!"; // Assign string to variable main_string
+  let index1 = main_string.search("hello"); // search for "hello"
+  let index2 = main_string.search("Hello"); // search for "Hello"
+  console.log("Index of string 'hello':",index1); // print index after search
+    > Index of string 'hello': -1
+  console.log("Index of string 'Hello':",index2); // print index after search
+    > Index of string 'Hello': 0
+
+  let main_string = "WorldHello!"; // Assign string to variable main_string
+  let index1 = main_string.search("hello"); // search for "hello"
+  let index2 = main_string.search("Hello"); // search for "Hello"
+  let index3 = main_string.search(/hello/i); // search for "Hello"
+  console.log("Index of string 'hello':",index1); // print index after search
+    > Index of string 'hello': -1
+  console.log("Index of string 'Hello':",index2); // print index after search
+    > Index of string 'Hello': 5
+  console.log("Index of string through regex:",index3); // print index after search
+    > Index of string through regex: 5
+
+replace
+  let main_string = "HelloWorld!"; // Assign string to variable main_string
+  // Repace "hello" with goodbye
+  let replace1 = main_string.replace("hello","Goodbye");
+  let replace2 = main_string.replace("Hello","Goodbye");
+  let replace3 = main_string.replace(/hello/i,"Goodbye");
+  console.log("Replacement of string 'hello':",replace1); // print after replace
+    > Replacement of string 'hello': HelloWorld!
+  console.log("Replacement of string 'Hello':",replace2); // print after replace
+    > Replacement of string 'Hello': GoodbyeWorld!
+  console.log("Replacement of string for regex:",replace3); // print after replace
+    > Replacement of string for regex: GoodbyeWorld!
+
+  var isSafe = function(password)
+  {
+      var regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W]).{6,}$/i; 
+      return regex.test(password); // return regex.test(password) after completing regex
+  }
+
+  Use a series of lookaheads ?=
+  After anchoring to start of string ^ and end of string $
+  Leave last condition out of lookahead .{6,}

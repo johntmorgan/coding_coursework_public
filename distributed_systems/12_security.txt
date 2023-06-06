@@ -1,0 +1,153 @@
+Security
+Key fallacy: network is secure
+Previous chapter: distributed system extensive, lots of different components
+  Each under control of different organization
+  Need to build system to function even when third parties acting maliciously
+Three core problems
+  Authentication
+  Confidentiality
+  Integrity
+Authentication
+  Process of determining whether someone/thing is who/what declares self to be
+  Two key contexts
+    User to system
+    System to system
+User to system
+  Knowledge factors - e.g. password, question answer
+  Ownership factors - ID card, auth device
+  Inherence - biometric like fingerprint or DNA
+Highest security
+  Use multiple authentication factors
+    Multi-factor auth (MFA)
+    Two-factor auth (2FA)
+  Many apps these days use 2FA
+    Provide password
+    Then receive one-time code in personal device to provide back
+    Even if password compromised, safe unless also have device
+  Best practices
+    Do not store password in plaintext
+    Compute hash of password and store instead
+      Attacker could compute by precomputing table of hashes
+      Then check leaked hashes against table
+        "Rainbow attack"
+    Make rainbow attack harder: use salt
+      Random data for every password
+      Append before calculating hash
+      Store alongside hash
+      Salt makes rainbow attacks harder
+        Can't precompute, only after discovering salts
+System to system
+  Knowledge and ownership mostly used
+Confidentiality
+  Protecting info from unauthorized access
+  Main tech is encryption
+    Convert plaintext into ciphertext
+    Can be converted back only by unauthorized parties
+    Achieved through use of pseudo-random key
+    Corresponding decryption key
+    Two main schemes
+      Symmetric
+      Asymmetric
+  Symmetric encryption
+    Single key used as both encrypt and decrypt key
+  Asymmetric
+    Two separate keys
+    Encrypt via public key shared with everyone
+    Decrypt with private key used by entity to decrypt
+  Comparison
+    Symmetric faster
+    Symmetric bootstrapping problem: need secure way to exchange keys first
+  Many protocols use asymmetric to exchange symmetric key
+    Then use that for remaining comms
+  Use cases
+    Encryption in transit - data transferred through network
+    Encryption at rest - stored on computers and storage devices
+Integrity
+  Preserving accuracy and completeness of data over lifecycle
+    No modifying in unauth or undetected manner
+      Whether maliciously or inadvertently (due to software/hardware failure)
+  Achieving
+    Already discussed checksums and CRC against accidental mod
+    Here focus on malicious
+    Hash value
+      Calculate hash value, send both data and hash
+      Entity can modify data, can detect it unless hash function figured out
+      Problem: what if malicious actor figures out hash function used?
+  Two key techniques
+    Message authentication codes - shared secret key
+      Similar problems as symmetric encryption
+    Digital signature
+      Uses asymmetric again - public and private key
+      Private key known only to sender
+        Recipients use shared public key to verify signature valid
+Cryptography primer - just the basics
+  Cipher - algorithm converting piece of data, plaintext, into ciphertext
+  Ciphertext - appears as random data, no info about original data
+  Cipher pair of algorithms (E, D)
+  E: K x M -> C
+    Plaintext * key = ciphertext
+  D: K x C -> E
+    Ciphertext * key = plaintext
+  One-time pad
+    Simplest example
+    E(k, m) = k XOR m
+    D(k, c) = k XOR c
+  Two main categories of ciphers
+    Stream ciphers
+    Block ciphers
+  Stream ciphers
+    Encryptes one plaintext digit (bit) with corresponding digit of pseudorandom keystream
+    Useful when full size of plaintext not known in advance
+    Semantically secure
+    Be careful to not use same key more than once
+  Block cipher
+    Operate on fixed-length groups of bits - blocks
+    Most are iterated block ciphers
+      Repeatedly apply invertible transformation, Round function
+    Can use cipher in multiple ways to encode multiple blocks - whole plaintext
+      "Modes of operation"
+    Ex. Cipher-block chaining mode (CBC)
+      Add random initialization vector to XOR
+  Ciphers provide confidentiality, but not necessarily integrity
+    Man in middle can alter text in a way that decrypts into valid plaintext
+  Message auth code (MAC)
+    Integrity but not confidentiality
+    Three main functions
+      Key-generating function
+      Signing function that generates tag for plaintext
+      Verifying function that verifies whether tag valid for specific plaintext
+    Can be constructed from other cryptographic primitives
+      Block cipher algorithms
+      Cyptographic hash functions
+  Both confidentiality & integrity
+    Combine cipher and MAC
+    Authenticated encryption
+    Encrypt plaintext first, then MAC based on ciphertext
+      "Encrypt-then-MAC"
+
+Symmetric/asymm encryption, digital signatures
+  Symmetric cryptography based on randomization
+  Asymm crypto allows easy computation in forward direction, inverse extremely hard
+    Main building block intractable problems
+  Intractable problems
+    No known efficient algo to solve
+    Discrete logarithm - easy to calc for real numbers, extremely hard in mod math
+    Factoring - distinguish prime from composite, resolving composite into prime factors
+  Public key encryption schemes
+    trapdoor functions
+    Diffie-Hellman key exchange
+  Trapdoor function
+    Easy to calculate one way, secret required to calculate other way
+    RSA most widely used
+      Relies on properties of modular math
+      Attacker must factor a number
+    Trapdoor + symmetric auth encryption + hash = public key encryption with auth encryption
+  Diffie-Hellman
+    Based on discrete logarithm
+    Two sides securely exchange private key used to perform symmetric encryption
+  Digital signatures
+    Assure integrity of signature over data without confidentiality
+    MAC solve same problem, but need shared private key
+    Here generate with private key, verified by anyone with public key access
+      Build on top of trapdoor functions, used in opposite direction
+  

@@ -1,0 +1,309 @@
+Stack Overflow
+  Q&A website
+  Users post new questions
+    Answer questions
+  Users collect reputation points
+    Upvotes, downvotes
+  Reputation point rewards
+    Vote to close
+    Vote to delete
+  Badges for credibility
+
+Questions
+  How do users search for questions
+    (Google - JM)
+  Filter questions using tags or users
+  Reputation points
+    How calculated
+    Points for asking/answering questions
+  Points required for moderator?
+  Upvote and downvote? Other options?
+  How does voting work around closing a question?
+  Bounty: special rep on question not noticed/answered
+    How do bounty questions award points
+    When do users start bounty?
+    How long does bounty last before expiring?
+
+Smallest first
+  Question, answer
+
+Design patterns:
+  Observer
+
+Requirements
+  Any guest can view questions and search
+    By tag
+    By username
+    By words
+  Users can post questions
+    Add answers to open questions
+  Users flag question, answer, comment
+  Users upvote, downvote, add comments
+    Comments upvote only
+  Vote to delete or close question
+    Delete only for answer
+  Any user can add bounty to question
+  Moderators can close questions or restore
+    Can delete answers
+  System sends notification when interaction
+  Users earn badges for helpful answers & comments
+  System able to determine most popular tags
+  Users can add tags to questions
+    Word or phrase describing
+
+Use cases
+  System
+    Stack Overflow
+  Actors
+    Primary
+      User
+    Secondary
+      Guest
+      Admin
+      Moderator
+      System
+
+  User
+    Login/logout
+    Reset password
+    Search/view question
+    Add/modify/flag question
+    Add/modify/flag answer
+    Add comment
+    Vote to close/delete question
+    Upvote/downvote
+
+  Guest
+    Search/view question
+    Register account
+
+  Admin
+    Block/unblock user
+
+  Moderator
+    Close/reopen/delete/restore question
+    Delete answer
+
+  System
+    Award badge
+    Send notification
+
+Relationships
+  Generalization
+    Moderator generalization with User
+      Can perform all tasks +
+    User generalization with Guest
+
+  Include
+    Modify question extends modify tag, modify bounty
+      Modify question can modify tag & bounty
+    Add question extends add bounty, add tag
+    Modify question extends add tag, add bounty
+
+Class diagram
+  Account
+    accountId
+    username
+    password
+    name
+    email
+    phone
+    status
+    resetPassword()
+
+  Guest
+    registerAccount()
+
+  Question
+    id
+    title
+    content
+    createdBy: User
+    tags: Tag {list}
+    followers: User {list}
+    answers: Answer {list}
+    upvotes
+    downvotes
+    viewCount
+    voteCount
+    score
+    creationDate
+    modificationDate
+    bounty
+    status: QuestionStatus
+    closingReason: ClosingDetails
+    addComment()
+    addBounty()
+
+  Answer
+    id:
+    content:
+    postedBy: User
+    followers: User {list}
+    flagCount
+    upvotes
+    downvotes (I thought you couldn't - JM)
+    voteCount
+    isAccepted
+    creationDate
+    addComment(comment)
+
+  Comment
+    id
+    content
+    postedBy
+    creationDate
+    upvotes
+    flagCount
+
+  Bounty
+    reputationPoints
+    expiryDate
+    updateReputationPoints()
+
+  Badge
+    name
+    description
+
+  Tag
+    name
+    description
+
+  TagList
+    tagsCount: Map<Tag, int>
+    incrementTagCount()
+    decrementTagCount()
+
+  User
+    reputationPoints()
+    badges: Badge {list}
+    createQuestion()
+    addAnswer()
+    createComment()
+    upvote()
+    downvote()
+    flagQuestion()
+    flagAnswer()
+    voteToCloseQuestion(question)
+    voteToDeleteQuestion(question)
+    acceptAnswer()
+
+  Admin extends
+    blockUser()
+    unblockUser()
+    assignBadge()
+
+  Moderator extends
+    closeQuestion()
+    reopenQuestion()
+    deleteQuestion()
+    restoreQuestion()
+    deleteAnswer()
+
+  Notification
+    notificationId
+    content
+    createdOn
+    sendNotification
+
+  Search - interface
+    searchByTags
+    searchByUsers
+    searchByWords
+
+  SearchCatalog
+    questionsUsingTags: Map<string, Tag {list}>
+    questionsUsingUsers: Map<string, User {list}>
+    questionsUsingWords: Map<string, string {list}>
+
+  Enums
+    ClosingDetails
+      Duplicate
+      Community-specific reason
+      Needs clarity
+      Needs more focus
+      Opinion-based
+
+    QuestionStatus
+      Active
+      Closed
+      Flagged
+      Bountied
+
+    AccountStatus
+      Active
+      Blocked
+      Disabled
+
+Relationships
+  Associations
+    User one-way with Question, comment, badge, notification, search
+    Guest one-way with search
+    Answer, comment, question, one-way with notification
+
+  Composition
+    Account composed of User
+    Question composed of Bounty, Comment, Answer
+    Taglist composed of Tag
+
+  Generalization
+    SearchCatalog implements Search
+
+  Inheritance
+    Admin and Moderator extend User
+
+Patterns
+  Observer
+    Subscribe when post question/answer
+    Users can also follow
+    Notify when new activity
+
+Addition reqs
+  Save questions or answers
+    User has Saves
+      savedQuestions: Question {list}
+      savedAnswers: Answer {list}
+
+Sequence: vote to close
+  Actors
+    User
+    Author
+  Object
+    Question
+
+  User votes to close with some remark
+  If user is moderator
+    Question is closed
+    Author is notified
+  If regular user
+    If high reputation
+      Close vote is added
+      If 3 close votes, question closes
+        Author is notified
+    If low reputation
+      Vote ignored
+
+Activity diagram: member posting question
+  Initial state: member clicks "ask question"
+  Final state: question is or is not posted
+
+  User clicks "ask question"
+  User fills title and body fields
+  Add tag:
+    No: jump to TOS check
+  Tag exists?
+    Yes: jump to TOS check
+  No:
+    Moderator?
+      Create tag
+      TOS check
+    User
+      High rep
+        Create tag
+        TOS check
+      Low rep
+        TOS check
+  TOS check
+    No
+      Question not posted
+  Question posted

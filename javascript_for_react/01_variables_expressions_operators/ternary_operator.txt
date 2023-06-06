@@ -1,0 +1,60 @@
+Ternary operator aka Conditional Operator
+  Takes 3 operands
+  Returns value based on condition
+  Alterative for if statement
+  Can be used for multiple purposes
+
+  const showUsers = true;
+  if (!showUsers) {
+    return null;
+  }
+
+  return (
+    <ul>
+      {users.map(user => <li>{user.name}</li>)}
+    </ul>
+  );
+
+  // Allow React to show or hide element based on condition
+    (Hence, React? - JM)
+
+  const showUsers = true;
+  return (
+    <div>
+      {
+        showUsers ? (
+          <ul>
+            {users.map(user => <li>{user.name}</li>)}
+          </ul>
+        ) : (
+          null
+        )
+      }
+    </div>
+  );
+
+  // can also use && operator
+
+  render() {
+    const users = [
+      { name: 'Robin' },
+      { name: 'Markus' },
+    ];
+    const showUsers = true;
+    return (
+      <div>
+        {
+          showUsers && (
+            <ul>
+              {users.map(user => <li>{user.name}</li>)}
+            </ul>
+          )
+        }
+      </div>
+    );
+  }
+
+
+
+
+

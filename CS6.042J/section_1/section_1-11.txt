@@ -1,0 +1,664 @@
+Infinite Sets
+Text
+  Why infinity?
+    Data sets in computers are limited by memory
+    Memory is bounded by the size of the universe max (lol)
+    Why not focus on large but bounded sets?
+      Dealing with infinite sets is inevitable
+    Already using: integers, rationals, irrationals
+    Also a good setting for proof practice
+      Harder to sneak in unjustified steps with "intuition"
+    Can also find fundamental limits on what computers can do
+  Infinite cardinality
+    Late 1800s Georg Cantor
+    Studying convergence of Fourier series
+    Found some series wanted to converge "most of the time"
+      Even though infinite number of points where didn't converge
+    Need to compare size of infinite sets
+    Extend Mapping Rule
+      "same size" if bijection
+      "as big as" when A surj B
+      "strictly smaller" when not "as big as"
+      A strict B iff NOT(A surj B)
+      For finite sets
+        A strict B iff |A| < |B|
+      Proof
+        A strict B iff NOT(A surj B)
+                   iff NOT (|A| >= |B|)
+                   iff |A| < |B|
+    We will not define the "size" of an infinite set
+      Requires definition of infinite sets "ordinals" with special well-ordering properties
+        Must go deeper into technical set theory than would be ideal
+      All we need are the "as big as" and "same size" surj/bij relations
+    BUT
+      Most surj and bij properties carry over... but some important ones do not
+    Stuff that does carry over
+      A surj B iff B inj A
+      If A surj B and B surj C, then A surj C
+      If A bij B and B bij C, then A bij C
+      A bij B iff B bij A
+      If A surj B and B surj A, then A big B
+        True but tough to prove - Schröder-Bernstein
+        If A is at least as big as B and B is at least as big as A, then same size
+        But do not take for granted!
+      For all sets
+        A surj B or B surj A
+      A strict B and B strict C IMPLIES A strict C
+        Proof
+          Assume NOT A strict C
+          So A surj C
+          Now since B strict C, C surj B
+          So A surj C and C surj B -> A surj B, contradicts A strict B
+    Infinity is different
+      Adding something new does NOT make a set bigger
+        If A is a finite set and b not in A
+          |A U {b}| = |A| + 1
+          A not same size as A U {b}
+        If A is infinite
+          A same size as A U {b}
+          A bij A U {b}
+    Countable sets
+      A set is "countable" if elements can be listed in order
+        c0, c1, ..., cn,
+      Same as saying
+        f: N -> C defined by rule f(i) ::= ci, a bijection
+      A set C is countably infinite iff N bij C
+      A set is countable if finite or countably infinite
+      Can make an infinite list using finite elements allowing repeats
+        {2, 4, 6} -> 2, 4, 6, 6, 6, 6...
+      A set C is countable iff there is a list
+        c0, c1,...,cn,...
+        possibly with repeats
+      The set N itself is countable
+        Set Z of all integers is also countably infinite
+          0, -1, 1, -2, 2, -3, 3,...
+        Simple formula for each element of list
+        bijection N -> Z
+          f(n) for nth element of list
+          f(n) ::= { n/2 if n is even
+                   { -(n + 1) / 2 if n is odd
+        Can list all pairs of non-negative integers
+          So N x N is also countable infinite
+          Small step from there:
+          Q^(>=0) - nonnegative rational numbers is countable
+        Following sets:
+          Z+, Z, N x N, Q+, Z x Z, Q
+        Countably infinite sets are the "smallest" infinite sets
+          If A is an infinite set and B is countable, then A surj B
+        Can add any finite number of elements without changing size
+        Can add a countably infinite number of new elements, still same size
+    Power sets are strictly bigger
+      A strict pow(A)
+      Show g a function from A to pow(A) is not a surjection
+      Find Ag =C A not in range of g
+      So for any element a in A, look at set g(a) =C A and ask whether a in g(a)
+      Ag ::= {a in A | a not in g(a)}
+      Ag is a well-defined subset of A, so must be in pow(A)
+      Ag can't be in range of g, otherwise Ag = g(a0)
+        for some a0 in A
+      So:
+        a in g(a0) iff a in Ag iff a not in g(a)
+        for all a in A
+        if you let a = a0
+          a0 in g(a0) iff a0 not in g(a0) - contradiction
+          So g is not a surjection
+          Because there is an element in power set of A, specifically set Ag, not in the range of g
+      pow(N) is uncountable
+      pow(N) bij {0,1}^w
+      {0,1}^w is uncountable
+    More countable/uncountable
+      If U is uncountable and A surj U, then A is uncountable
+      If C is countable and C surj A, then A is countable
+      Since {0,1}^w is uncountable, R (real numbers) is uncountable
+        Think about the infinite decimal expansion of a real number
+        Let's map any real number r to the infinite bit string b(r)
+          Equal to sequence of bits in the decimal expansion of r, starting at decimal point
+          If decimal expansion of r contains digit other than 0 or 1, leave undefined
+            So b(sqrt(2), b(1/3)) are undefined
+            b(5), b(1/10) are defined
+          Now b is a function from real numbers to infinite bit strings
+            Not a total function (because some undefined)
+            Is a surjection
+            R surj {0, 1}^w
+      (Z+)* is countable
+        Think about prime factorization of a nonnegative int
+        20 = 2^2 * 3^0 * 5^1 * 7^0...
+        Map any nonneg to finite sequence e(n) of nonzero exponents in prime factorization
+        e(20) = (2, 1)
+        e(6615) = (3, 1, 2)
+        e(1) = lambda
+        e(0) is undefined
+        e is a function from N to (Z+)*
+          It is defined on all positive integers, and is a surjection
+          N surj (Z+)*
+      Larger infinities
+        N strict pow(N) strict pow(pow(N))...
+        Union of all sets in this sequence is strictly bigger then preceding
+        And you can just keep going from there
+    Diagonal argument
+      Cantor's Thm and similar known as "diagonal arguments"
+      More intuitive version described in terms of an infinite square array
+      Suppose bijection between N and {0,1}^w
+        Any string in {0,1}^w would show up in a finite number of steps
+        Just like any integer will show up in finite number of steps from 0
+        List out {0,1}^w in grid
+        Can form a sequence D consisting of bits on diagonal
+        Can form a seq C by reversing 1/0 in D
+        Now if nth term of An is 1 then nth term of C is 0
+          Guarantees that C differs from An
+          So C is an element of {0, 1}^w that does not appear in list
+            List can never be complete
+          C corresponds to set {a in A | a not in g(a)}
+  The Halting Problem
+    While towers of larger and larger infinite sets a "romantic" CS concern at most
+    The reasoning that leads to them plays a key role in theory of computation
+      Diagonal arguments used to show lots of problems can't be solved by computation
+        No getting around it
+    Having procedures operate on programs basic part of CS
+      Compilation -> taking text written in "high level" language
+        Generating program of low-level instructions
+      Interpreters/VMs are procedures that simulate text written for one computer
+        On another kind of computer
+      Compilers "type-check" to prevent certain run-time errors
+        And "optimize" generated programs for speed or memory use
+    What cannot be done?
+      A perfect job of type-checking, optimizing, or any analysis of run-time behavior
+    The general halting problem
+      Determine whether program runs forever if not interrupted
+      Does or does not halt
+    A diagonal argument demonstrates that an analysis program tries to recognize non-halting
+      It will give wrong/no answers for infinite number of programs!
+    Let's call a string procedure
+      Applicable to strings in 256 char ASCII alphabet
+      Now write a procedure that halts when applied to a double letter ASCII string
+        Where every char occurs twice in a row
+        aaCC33 or zz++ccBB, but NOT aa;bb or b33, or AAAAA
+      Strings are "recognizable" if there is a string procedure
+        That halts when applied to any string in set
+        Does not halt when applied to any string not in set
+      Let ASCII* be the set of finite strings of ASCII chars
+      When string s in ASCII* is the ASCII description of some string procedure
+        Refer to string procedure as Ps
+        Think of Ps as result of compiling s
+        If s does not parse properly, Ps is a default that say never halts ever
+      Given strings s and t
+        Does Ps halt when applied to t?
+        Can't even solve does Ps halt when applied to s!
+      No-halt ::= {s in ASCII* | Ps applied to s does not halt}
+      Prove No-halt is not recognizable
+        For any string s in ASCII*, let f(s) be strings recognized by Ps
+        f(s) ::= {t in ASCII* | Ps halts when applied to t}
+        s in No-halt IFF s in f(s)
+        Suppose to contrary No-halt is recognizable
+          Some procedure Ps0 that recognizes it
+          No-halt = f(s0)
+          s in f(s0) iff s not in f(s)
+          but letting s = s0
+          s0 in f(s0) IFF s0 not in f(s0)
+          This contradiction implies No-halt cannot be recognized by any string procedure
+      From here easy to show impossible to have a procedure perfect for ANY run-time property
+      Most compilers do "static" type-checking at run time
+        But impossible to be perfect, sometimes type-checker will reject a program erroneously
+          No type-checker is perfect - can always do better
+      That said you can do a very good job analyzing interesting programs in practice
+        "Interesting" programs commonly intended to analyzable
+      So in the end theoretical limitation may not imply a huge hurdele in practice
+      But people who make general analysis method claims for programs
+        May be exaggerating
+        Or are not getting into technical limits they're aware of
+        Or are so excited about practical successes they don't think of the limits
+      Changing languages does nothing
+  Logic of Sets
+    Reasoning naively about sets is risky!
+      Russell's paradox
+        Let S be a variable ranging over all sets, and define
+        W ::= {S | S not in S}
+        So by definition
+        S in W in S not in S
+        In particular we can let S be W
+        W in W if W not in W
+      Way out: unjustified to assume W is a set
+        S ranges over sets
+        In fact W had better not be a set
+        But if W is not a set
+          Then reject axiom that every well-defined collection of sets is a set
+        Russell & Whitehead spent 12+ years
+        But now subsumed by Zermelo and Fraenkel
+    ZFC set axioms
+      A formula of set theory is a predicate formula that only uses predicates
+        x = y and x in y
+      Domain of discourse is collection of sets
+        x in y is interpreted to mean x and y are variables that range over sets
+          x is one of the elements in y
+      Basically all of math can be derived from formulas of set theory
+        Axioms of Zermelo-Frankel Set Theory with Choice (ZFC)
+      example x =C y ::= For all z.(z in x IMPLIES z in y)
+    Not going to study ZFC, but here are some basics
+      Extensionality/Equality - two sets equal if same members
+        (For all z.z in x IFF z in y) IMPLIES x = y
+      Pairing - for any two sets x and y, there is a set {x, y} with x and y as only elements
+        for all x, y there exists u.for all z[z in u IFF (z = x OR z = y)]
+      Union - union u of a collection z of sets is also a set
+        for all z there exists u.for all x.(there exists y.x in y and y in z) IFF x in u
+      Infinity - there is an infinite set - an non-empty set x such at that for any set
+        y in x the set {y} is also a member of x
+      Subset - Given any set x and any definable property of sets
+        There is a set containing precisely those elements y in x that have property
+        for all x.there exists z.for all y.y in z IFF [y in x AND O(y)]
+          Where O(y) is any assertion about y definable in set theory notatoion
+      Power set
+        All the subsets of a set form another set
+        for all x.there exists p.for all u.u =C x IFF u in p
+      Replacement
+        Suppose a formula O of set theory defines the graph of a function
+        Then the image of any set s, under that function, is also a set t
+      Foundation
+        There cannot be an infinite sequence of sets each of which is a member of previous
+        Every nonempty set has a member-minimal element
+        For all x.x != empty IMPLES there exists m.member-minimal(m, x)
+      Choice
+        Given a set s whose members are nonempty sets no two of which have any in common
+        There is a set c consisting of exactly on element from each set in s
+      ZFC works like original but Foundation is a new addition
+        Sets must be built up from simpler in certain standard ways
+        No set is ever a member of itself
+        So Russell's paradox?
+          in S not in S for all sets S, it follows that W, defined above contains every set
+          Therefore W can't be a set - or it would be a member of itself
+  Does all this really work?
+    This is where mainstream math is today
+    Set of ZFC axioms from which virtually everything else can be derived
+    But there are dark clouds... essence of truth in math not completely resolved
+      What if a contradiction found in ZFC axioms?
+      Have consequences that sound paradoxical
+        Banach-Tarski theorem - from choice
+          A solid ball can be divided in 6 and then rigidly rearranged
+            Results in 2 solid balls the same size as the original!
+      Unresolved questions
+        Cantor - is there a set whose size is strictly between N - smallest infinite
+          and strictly larger pow(N)?
+        Cantor continuum hypothesis
+          No set A such that N strict A strict pow(N)
+          Open problem a century later
+          ZFC axioms do not settle
+          Two collections of sets obeying ZFC
+            In one collection it's true
+            It the other it's false
+      Even with more/different set axioms
+        Assuming ZFC is consistent - can't prove both P and NOT P for any proposition P
+          The very proposition that ZFC is consistent cannot be proved
+           (Even though not too hard to express as a logical formula)
+          No consistent system is strong enough to verify itself
+  Large infinities in CS
+    If this stuff doesn't appeal, not knowing will not limit you in CS
+      Rarely come up in mainstream math
+      Don't come up at all in CS - focus on "countable" and often just finite, sets
+    Only logicians and set theorists have to worry about collections "too big" to be sets
+
+Lecture
+  Cardinality - comparing the size of the sets
+    Why does CS care?
+      Every data structure you'd examine is finite
+    But the infinite abstraction happens right at the beginning
+      Any integer is finite, but the set is infinite
+      Any matrix is finite, set you could represent is infinite
+      So we take infinite sets for granted a lot already
+    Also forces you to go beyond intuition and reason in a careful mathematical way
+      Some properties carry over from finite sets
+      But some do not!
+      And to distinguish, need to think carefully about rules and properties
+    Reasoning comparing sizes of infinite sets
+      Very important for limits of CS
+      Specific problems computers can't solve
+  Mathematician late 19th century - Cantor
+    Fourier series diverged in infinitely many places
+      But not in many infinite places
+    Cantor's idea - mapping lemma
+      A is at least size B if A surj B for finite sets
+      A surj B ::= there exists surj funct: A -> B
+      |A| >= |B| - size/cardinality
+      But talking about size/card of infinite set is a no-no
+        There's an abstract concept of cardinal numbers - technical, of little use
+      But what we WILL do is compare sets
+        Cardinality there
+        Based on surj
+      A bij B ::= there exists bijection A -> B
+        think: "A and B are the same size"
+          Same # of elements for finite sets
+          For infinite sets - I don't know size, but I know it's the same
+            Perfect 1 to 1 correspondence between A and B
+            |A| = |B|
+  pow(N) bij infinite bit-strings {0, 1}^omega (w) (vs {0, 1}* finite bit strings)
+    Infinite set N { 0, 1, 2,... }
+      Subset {0, , 2, 3, , , 6,...}
+      string 1  0  1  1 0 0  1
+  Familiar "size" properties
+    |A| = |B| = |C| IMPLIES |A| = |C|
+    A bij B bij C IMPLIES A bij C
+      Does it hold for infinite sets? Yes. proof?
+      g: A -> B, f: B -> C
+      h: A -> C
+      h ::= f dot g
+      |A| >= |B| >= |C|
+    A surj B surj C IMPLIES A surj C
+      Same argument
+    |A| >= |B| >= |A| IMPLIES |A| = |B|
+      True finite sets
+      Holds for infinite, not so obvious
+      A surj B surj A implies A bij B
+         Problem - surjs might not be bijs
+      NOT obvious
+        Schroder-Bernstein Thm
+        Combine in slightly ingenious way
+  Unfamiliar "size" property
+    size + 1 = size
+      could even say that's the definition of an infinite set
+    {1, 2, 3, 4, 5...}
+    {0, 1, 2, 3, 4...}
+    Can map one to the other
+      Adding one element to N does not get a larger set
+      So N same size as Z+
+    {0, 1, -1, 2, -2,...}
+    {0, 1, 2, 3, 4...}
+      So N same size as Z
+      You could write a pretty simple formula to relate numbers
+      But doesn't matter - one you line it up, you're set
+  Countable sets
+    Most familiar type of infinite sets
+    Can list the elements 
+    iff can be listed a0, a1, a2
+    Will eventually get up to every element of a
+    Same as N bij A
+      Or A finite - a special case
+    So Z+, Z are countable
+    {0, 1}* ::= finite binary words
+      Also countable
+      List empty, 2 length-1 bit strings, 2^2 length-2 bit strings (in binary notation order)...
+      lamb, 0, 1, 00, 01, 10, 11,
+      This listing is an implicit description of bijection N -> Nth element in listing
+    N x N is countable
+      Same idea as binary strings (lots of ways to prove tho)
+      Start with (0,0)
+      (0,1),(1,0)
+      (0,2),(2,0),(1,1)
+      (0,3),(3,0),(1,2),(2,1)
+      Then all pairs with sum n
+      Hinted a rule here for listing all the pairs
+      We have a bijection from N
+    Proving countability
+      Lemma: A is countable iff can list A allowing repeats:
+        N surj A
+        If A is finite, lots of extra N
+        If A is infinite, listing A with repeats
+          Filter out repeats
+        Lemma useful because surj often easier to describe than bij
+      Corollary:
+        A is countable iff C surj A for some countable C
+    Rationals are countable
+      A little more striking at first
+        Easy to see how to count integers, one after another
+        But here - another rational between any two rationals
+        There is no obvious first rational
+        But just think of them as pairs of integers
+      Map (m,n) to m/n
+        If n is 0 map to some rational number
+          Nice surjective mapping
+      N x N surj Q >=0
+    Reals are uncountable
+      As is {0,1}^omega
+      next lecture
+  Uncountable sets
+    Are all sets the same size? NO!
+    Cantor's Theorem shows how to keep finding bigger infinities
+    Again a set is countable iff can list it
+    a0, a1, a2,... example:
+    {0,1}* ::= {finite bit strings}
+    {0,1}^omega ::= {infinite-bit strings} is countable
+    Diagonal argument
+    Suppose s0, s1, s2,... in {0,1}^omega
+    S0 0 0 1 0 ...
+    S1 0 1 1 0 ...
+    S2 1 0 0 0 ...
+    S3 1 0 1 1
+               1
+                 1
+                   0
+    How do you find a sequence that is not here?
+      Reverse each digit in a diagonal line
+      1010001
+        Differs from every row
+        Differs from 15th row at 15th position
+        So {0, 1}^omega cannot be listed
+          This diagonal sequence will be missing
+      So NOT(N surj {0,1}^omega) AND
+      {0,1}^omega surj N obviously
+        Can just map to actual binary number
+        000000... doesn't go anywhere, but it doesn't have to be total
+          Or you just map it to zero!
+    {0,1}^omega is uncountable
+    N is "strictly smaller" than {0,1}^omega
+    A strict B ::= NOT(A surj B)
+      (will be B surj A, but it's non-obvious...)
+    So N strict {0,1}^w
+  Cantor's Theorem
+    Generalizes this
+    A strict pow(A)
+    For every set A, whether finite or infinite
+      Even for empty set
+    Diagonal argument again
+    Don't assume A is countable
+    Let's think as if we can
+    A = {a, b, s, t, ... d, e,...}
+    pow(A) = {f(a), f(b), f(s), ..., f(d),}
+         a  b  s  t  c
+    f(a) a     s  t
+    f(b) a  b        c
+    f(s)       s  t  c
+    f(t)
+
+    Define a new set not in f - no elements on diagonal
+      new set D, diagonal set
+    Proof: say have function f : A -> pow(A)
+    Define a subset of A that is not in the range of f:
+    D ::= {a in A | a not in f(a)}
+    Now D not in range(f) since differs from set f(a) at element a!
+    So no f-arrow into D, f is not a surjection
+      QED
+    NOT(A surj pow(A)), A strict pow(A)
+    Consequence:
+      N strict pow(N)
+      pow(N) is uncountable
+      Second example of uncountable set
+  Proving uncountability
+    If A is uncountable and C surj C then C is uncountable
+    {0,1}^omega again
+    {0,1}^omega bij pow(N)
+  Real numbers are uncountable
+    R surj {0,1}^omega
+    Proof "kinda stupid trick but it works"
+    map +-r to binary rep
+    3 1/3 = 111.01010101
+    Binary expansion of every R
+    map to 11101010101...
+    You will hit every possible binary sequence in this way
+    But
+      1/2 = .1000000000....
+          = .0111111111....
+      how to hit? with -1/2
+    Gives needed surjection from R to {0, 1}^omega
+  The Halting Problem
+    Diagonal arguments are elegant, infinite sets romantic
+    But what's doing in a CS course?
+    Diagonal arguments show non-computable sets
+    Let's look at infinite binary strings
+    "Computable" - procedure computs its digits
+      Procedure applied to argument n returns nth digit of s
+    An infinite string s in {0,1}^omega is computable
+    {ASCII}* is countable
+      Only countably many finite ASCII strings (list in order of length)
+      Procedures can be expressed in ASCII
+        So only countably many procedures
+    Only countably many computable infinite binary strings
+      But {0,1}^omega is uncountable
+      So there must be noncomputable strings in {0,1}^w
+      In fact uncountably many
+    Pretty abstract thing to know
+      But what do they look like?
+      The Halting Problem
+    There is no test procedure for halting of arbitrary procedures
+    The Halting Problem is not decidable by computational procedures
+      String procedure P takes a String argument
+      P("no") returns 2
+      P("albert") returns "meyer"
+      P("&&%99!!") causes an error
+      P("what now?") runs forever
+    Let s be the ASCII sting defining P
+      Have to type in s to tell computer what to do
+      s HALTS iff P(s) returns something
+    For contradiction, suppose a procedure Q decided HALTS
+      Q(s) returns yes if s HALTS
+      Q(s) returns no otherwise (runs forever, type error, etc.)
+      Modify Q to be Q':
+        Q'(s) returns "yes" if Q(s) returns "no"
+        Q'(s) returns nothing if Q(s) returns "yes"
+      So s HALTS iff
+      Q'(s) returns nothing
+      Let t be the text for Q'
+      By definition of HALTS
+        t HALTS iff Q'(t) returns
+      But by definition of Q':
+        Q'(t) returns iff NOT(t HALTS)
+      t HALTS iff NOT(t HALTS)
+      There can't be such a Q
+      Impossible to write such a procedure that decides whether strings HALT on an arbitrary string
+        Any program will give wrong answer, or no answer at all on some strings
+    Corollary of The Halting Problem
+      Let's look at type-checking
+      There is no string procedure that type-checks perfectly
+      Suppose C was a type-checking procedure: for program text s
+        C(s) returns "yes" if run-time type error
+        C(s) returns "no" otherwise
+      Use C to get a HALTS Tester H:
+        To compute H(s)
+          Construct a new program text s' that acts like a slightly modified interpreter for s
+          s' skips any command that would cause s to make a run-time type error
+            Consequences unknown, but will skip
+          s' purposely makes a type-error when it finds that s HALTS
+          Then compute C(s') and return the same value
+        so s HALTS iff s' makes run-time type error iff C(s') = "yes" iff H(s) = "yes"
+        s does not HALT iff s' makes no run-time error iff C(s') = "no" iff H(s) = "no"
+        H solves the Halting problem, a contradiction
+        so C can't perfectly do type-checking
+      So there is no perfect checker for essentially any property of procedure outcomes
+        Why theoretical computer scientists very interested in diagonal arguments
+  Set Theory just a little bit
+    If you're going to take a math class, useful to have a glimmering of foundations of math
+    We will see that the diagonal argument played a crucial role in understanding and development of set theory
+    Self application is notoriously doubtful
+      "This statement is false"
+      Would deny it's a proposition
+      But in CS we take it for granted
+      L = (0 1 2) // list in scheme/lisp notation
+      Rep in memory with cons cell
+      left hand element points to value
+      right hand element points to next element in list
+        (Looks like a linked list, not an array... huh - JM)
+      CS lets you manipulate these pointers
+      (setcar( second L) L)
+        set the second element of L to L
+        Now pointer points to beginning of list L
+        L = (0 L 2)
+        List has itself as a member
+        L = (0(0(0..2)2)2)
+        Infinite nested structure
+          Represented by finite circular list
+      compose procedures
+        ((define compose f g)
+        (define h x)
+        (f(gx)) h)
+        ((compose square add1) 3) -> 16
+        ( = (3 + 1)^2)
+        ((compose square square) 3) -> 81
+        ( = (3^2)^2)
+        (define comp2 f)
+        compose f f )
+        (((comp2 comp2) add1) 3)
+        -> 7 // add 1 to 3 4 times
+        (((comp2 comp2) square) 3)
+        -> 43046721 = 3^16
+        Works fine in recursive programming languages
+      Why are CS so daring with self-reference?
+      Mathematicians traumatized by Russell's Paradox
+    Let W ::= {s in Sets | s not in s}
+      Power set not a member of itself
+      But some sets may be members of themselves
+      Late 1800s - trying to establish foundations of math
+      Well agreed that sets were the basis - get this down, in business
+      Frege - careful development of set theory
+        Can build integers, rationals, then real numbers collections of rationals with upper bound, build functions
+        Can build up basic structures of mathematical analysis
+      But paradox found by Russell
+      Let W ::= {s in Sets | s not in s}
+      so [s in W IFF s not in s]
+      now let s be W and we reach a contradiction
+      [W in W IFF W not in W]
+      Disaster, math is broken
+        Can prove anything in Frege's system
+      Frege rewrote preface saying system is broken, but publish anyway
+        Life work down the drain
+    But paradox is buggy
+      Assumes W is a set!
+      Let W ::= {s in Sets | s not in s}
+      Can only substitute if formula
+      Looks like it should be if you assume W is a set
+      But avoid paradox if deny W is a set
+      Clearly defined mathematically, but not a set?
+      But when is a well-defined mathematical object a set?
+      Need some sophisticated set of rules - when set, and not a class
+        Class -> not a set - would contain itself and be circular and referential
+        No simple answer
+        By the 1930s people settled on set of axioms - Zermelo-Frankel Set Theory
+  ZFC - Zermelo-Frankel with Choice set axioms
+    Extensionality
+      Capturing the idea that a set is decided by its members
+      For all x [x in y IFF x in z]
+      iff x and y are members of the same sets
+      For all x[y in x IFF z in x]
+    Power set
+      Every set has a power set
+      For all x there is a p such that for every set s =C x IFF s in P
+    Comprehension
+      Dealing with Russell's paradox issue
+      A simple version of an axiom that allows you to do that
+      If S is a set, and P(x) is a predicate of set theory
+      then { x in s | P(x) }
+      is a set
+        Any definable collection of elements within a set also form a proper subset
+    Sets are well founded
+      Elements of a set have to be "simpler" than the set itself
+      In particular: no set is a member of itself
+        Or a member of a member, etc.
+      "All sets are well founded"
+        No infinite sequence of sets each one has previous as members
+      Def x in membership-minimal in y
+        x is in y but no element of x is in y
+        x in y AND [for all z.z in x IMPLiES z not in y]
+    Foundation
+      Every nonempty set has a membership-minimal element
+      Kind of a generalization of the Well Ordering Principle
+        Every nonempty set has a least element
+        Can't have an infinite decreasing sequence of non-negative integers
+      Can't have an infinite sequence of sets each of which is a member of the previous one
+      for all x.[x != 0 IMPLIES there exists y.y is set-minimal in x]
+      As a result
+        s not in s
+        R ::= {S}
+        If S in S, then R has no set-minimal element
+        If it exists, it must be S
+        But S can't be membership-minimal because S in R and S in S
+      S not in S
+        Implies that collection of all sets is not a set
+        Then would be a member of itself - forbidden
+        W = { s in Sets | s not in s }
+        W must be collection of all sets - and not a set
+        

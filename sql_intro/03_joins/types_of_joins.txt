@@ -1,0 +1,55 @@
+Joins
+  Relational dbs define relationships between tables
+  Often need to glean info from more than one table
+  Joins allow row combination from multiple tables
+    Use columns in common
+  Relations amongst tables = relational databases
+
+  Let's define 2 tables, both of which have a MovieID column
+
+5 kinds of joins
+  ANSI SQL standard
+
+Cross Join
+  aka Cartesian product
+  Pick the first row of table A
+  Match with every row of table B
+  Then pick the second row of A, match with every row of B
+  No condition specified to determine if join
+    Just make all possible joins
+
+Inner Join
+  1+ conditions tested to determine if join
+    "Join predicate"
+  In example, join rows with same MovieID
+
+Left Outer Join
+  Rows that match join predicate
+  PLUS rows from table on left that don't match join
+    Null is inserted for cols from table B and rows from table A that don't match
+
+    1 Star Wars       NULL  NULL  NULL
+    2 Sholay          2 Naz Cinema  101
+    3 The Italian Job NULL  NULL  NULL
+
+Right Outer Join
+  The referse of the left outer join
+
+  2 Sholay    2 Naz Cinema  101
+  NULL  NULL  5 Apollo Theater  45
+
+Full Outer Join
+  ** MySQL does not support! **
+  Fill in all rows that do not match predicate
+
+  1 Star Wars         NULL  NULL  NULL
+  2 Sholay            2 Naz Cinema  101
+  3 The Italian Job   NULL  NULL  NULL
+  NULL  NULL          5 Apollo Theater  45
+
+Self join
+  Table joined to itself
+
+  1 Star Wars       1 Star Wars
+  2 Sholay          2 Sholay
+  3 The Italian Job 3 The Italian Job

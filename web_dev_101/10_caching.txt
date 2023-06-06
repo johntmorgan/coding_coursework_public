@@ -1,0 +1,103 @@
+Caching
+  How long will you wait for a response when you visit a site?
+  People bounce off quick
+  Caching is key for performance
+  Low latency, high throughput
+  Intercepts most requests heading for database
+    Instant response
+  Copy frequently accessed data from database
+    Store in RAM for quick response
+  RAM provides faster access than disk-based hardware
+  Cache always stores in key-value pair
+  Frequently requested data with several table joins
+    Cache to avert same query every time requested
+    Increase throughput, improve performance, save resources
+  Caching dynamic data
+    Caching both static and dynamic data
+    Dynamic - changes more often, has expirty or TTL (time to live)
+    Purged from cache after TTL
+      "Cache invalidation"
+    Caching won't help much if changes too often
+      Stock price, sports score
+  Caching static data
+    Images, font files, CSS, similar
+    Customer data
+      Name, age, address, social idea, photos, etc.
+    Cache either client-side in browser, CDN, or on server
+      Depends on sensitivity
+
+  Do you need a cache?
+    Always a good idea, especially if have static data
+    Very few use cases where it doesn't help
+    Must be implemented wisely, otherwise data inconsistency
+    Can use at any layer of application, with any component
+      No ground rules
+    Database caching most common
+    Client browser - static data
+    Database - intercept all data requests
+    REST API implementation
+    Cross-module communication in microservices
+    Look for patterns
+      Always cache frequently accessed content on website from any component
+    Mostly implemented with key-value data stores
+
+  Real-world example
+    Stock marked based multiplayer game
+    Algo triggers stock price movement every second
+      Lots of database writes
+    Moved to memcache to persist stock prices
+    Batch operation to update every few hours
+      In cloud, writing to Memcache cheaper than writing to DB by a ton
+      Cache served stock price read-write requests
+      Database got updated values when batch ran
+    Not idea for a real-life fintech game
+      Saved money, ran game for much longer
+    Polyhaven
+      3D asset library
+      5m pageviews/month
+      80TB traffic/month
+      $400 with caching
+      Otherwise would cost $4k/month
+
+    Caching strategies
+      Cache aside
+      Read-through
+      Write-through
+      Write-back
+
+    Cache aside
+      Most commonly used strategy
+      Works along with database to reduce hits as mucha as possible
+      Data is lazy loaded in cache
+      When user requests data, system looks for it in cache
+      Returned if present
+        "Cache hit"
+        Return to user
+      If not
+        "Cache miss"
+        Fetch from database, update cache
+      Data is directly written to database
+        Can cause inconsistency between cache and database
+        Data on cache has a TTL, invalidated from cache after that
+      Works best with read-heavy workload
+      Data does not get updated too frequently (customer name)
+        Assign long TTL to data
+
+    Read-through
+      Similar but cache always consistent with database
+      Cache takes on onus of maintaining consistency with database
+        Do not have to write explicit logic to update
+
+    Write-through
+      Cache sits in line with the database
+      Every write goes through cache before updating database
+        High cache/database consistency
+        Slower during write operations - have to write to cache
+      Works well when need strict data consistency between cache and database
+
+    Write-back
+      Optimize application hosting costs
+      Write data directly to the cache
+      Cache writes to database later
+      Risk that data can get lost if fails before DB update
+        Use with other strategies to get best of all worlds

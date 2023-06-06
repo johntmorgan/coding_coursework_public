@@ -1,0 +1,394 @@
+Sets and sorting
+  Object called an interface
+    Program specification
+    Collection of operations e.g. sequence, set
+    Way to interact with (for example) a set stays consistent regardless of behind scenes
+  Data structure
+    Way to store data that affects operations - behind scenes
+  Key distinction next few weeks
+  Going to talk about many ways to implement a set
+    Lots of tradeoffs when choose algorithm
+      Make sure interface appropriate for problem
+      Data structure - efficiency, memory usage, etc. for application in mind
+    Main message to get out of this course in the first couple of weeks
+  Set - next 6 lectures
+    Interface
+    Main thing we're concerned with today
+    Big pile of things
+    Can keep adding
+      Query if it has things
+    Example: set of all students here today
+      Key student ID (number) associated to every student in the room
+      Ask set does number exist in collection 6.006 students?
+        If so, then pull other information back
+  Set is a container
+    build(A) given iterable A, build sequence from it
+    len() - return number of stored items (prof prefers size())
+  Static
+    find(k) - return the stored item with key k
+      Is the student with ID xx taking CS 006?
+  Dynamic - actually edit what's in set
+    insert(x) - add x to set (replace item with key x.key if one already exists)
+    delete(k) - remove and return the stored item with key k
+  Order - other ways of interacting with set
+    iter_ord() - return stored items one-by-one in key order
+    find_min() - return the stored item with the smallest key (here the longest?)
+    find_max() - return the stored item with the largest key
+    find_next(k) - return the stored item with smallest key larger than k
+    find_prev(k) - return the stored item with largest key smaller than k
+  This is the set interface - not the data structure
+    Didn't tell you how I implemented this, how I'll find min or max
+    Didn't tell you there's an array behind the scenes
+    Just tells you it implements these operations
+  (He's a Matlab coder, oh my - JM)
+  High level coding languages take care of the ugly details
+  Now we've set out our goal - code for set
+    Data structures - efficiency, data storage, correctness, etc.
+  Q: How does insert work?
+    Key k with lots of associated stuff - insert, searching by key
+  So let's talk implementation
+    One option: unordered array of objects
+      Easy to build - just make a big array and dump everything in
+      But is this a useful or efficient way to build a set?
+      Say you want to know if key is in the set - O(n) - might have to go to end
+        Could sort everyone and go look - nlogn time to sort, then binary search logn time
+          Makes sense if you're doing it a lot, but not for a single search
+        Or just go through every bin - if at end of list - order n time
+      Basically every operation takes linear time
+        build(A) - reserve n slots in memory
+        Insert or delete - grow dynamically also O(n) - amortized
+          Or to replace existing key - search takes order n time as well
+        Find min-max - also O(n) - go through if unsorted
+      Everyone can do that, but it's slow!
+    What if you keep items in set organized by key?
+      Smallest id at start, largest id at end
+      Let's say they're already sorted here
+        Don't want to do lots of math, but impose order to search later
+      Insert/delete still take O(n)
+      Find_min, find_max now O(1) - just go to location
+      Search for element - O(logn)
+        Already learned binary search in intro class
+        Much more efficient
+        Same find_prev(k), find_next(k) - logn to get there, then just move forward/back
+      But... how do you actually get a sorted array to begin with?
+        Actually requires work - O(nlogn) - more than if just have disorganized list
+        Tradeoff
+        But once you put the work in, a lot of things go much faster
+  Goal for today - fill in details of sorted array
+    How do I take a disorganized list of objects and put it in order to search later
+  Sorting vocabulary
+    In : array of numbers (or keys, doesn't matter much for today) A
+    Out: sorted array B
+    Destructive - overwrites the input array A with a sorted version of A
+      C++ interface does this
+      (Assumes Python does too)
+    In place - destructive AND only uses O(1) extra space
+      Could imagine a sort that copies out into another array - O(n) space
+  Simplest sorting algorithm - permutation sort (bogosort)
+    List every possible permutation, see what's in the right order
+    def permutation_sort(A):
+      for B in permutations(A):
+        if is_sorted(B):
+          return B
+    Would need to enumerate the permutations
+      There are n! permutations - so at least (omega) omega(n!) time - maybe worse if listing them takes order n time too
+      Check if sorted
+        For i = 1 to n - 1 - is B[i] <= B[i + 1] - theta(n)
+      So omega(n! * n) - somehow even worse than n! (which is worst ever in prof's head)
+        Omega not theta because we didn't get the details - just the lower bound is enough to show it's terrible
+  Selection sort
+    Exactly what it sounds like
+    Say you have a list of numbers - [8, 2, 4, 9, 3]
+    Find biggest number in list, stick at end, swapping
+    Going to write in a new way in 6.006
+      Could write with 2 for loops - could do this at home
+      Going to write recursively instead, for theoretical reasons
+      Do not do this at home
+      Divide into chunks
+        1. Find biggest with index <= i
+        2. Swap
+        3. Sort again from index 1 to i - 1
+      Biggest element 0... i is either at index i OR
+        it has index < i
+
+    def prefix_max(A, i):
+      if i > 0:
+        j = prefix_max(A, i - 1)
+        if A[i] < A[j]
+          return j
+      return i
+
+    Show function returns max
+    Let's do an inductive proof - careful here, then will be sloppier later
+      Base case: i = 0 - yep, already the max
+      Induction: either element is at end or its not
+        Have already argued code can find the biggest element in i - 1
+        Take max of stuff not at end and item at end
+        Very informal induction
+    Runtime is function S
+      S(1) = theta(1)
+      When call function, call it recursively on 1 smaller index
+      S(n) = S(n - 1) + theta(1) (because S(1))
+      So hypothesize order n time, runtime linear again
+      Technique: substitution
+      Hypothesize S(n) = cn
+      cn ?= c(n - 1) + theta(1)
+      Subtract cn from both sides
+      c = theta(1)
+      C is a constant, so we're in good shape
+    So in selection sort algorithm
+      Find element - O(n)
+      Swap = O(1)
+      Selection sort(A, i - 1)
+
+    def selection_sort(A, i = None):
+      '''Sort A[:i + 1]'''
+      if i is None: i = len(A) - 1
+      if i > 0:
+        j = prefix_max(A, i)
+        A[i], A[j] = A[j], A[i]
+        selection_sort[A, i = 1]
+
+    Justify the runtime - call it T for time
+      T(n) = T(n - 1) + theta(n) // (prefix_max) // ?= theta(n^2)
+      1 + 2 + ... + n = theta(n^2)
+      T(n) = T(n - 1) + theta(n) ?= theta(n^2)
+      Hypothesize T(n) = cn^2
+      cn^2 = c(n - 1)^2 + theta(n)
+      theta(n) = 2cn - c
+      Order n expression on both sides
+      Again this is the substitution method - more in recitation
+    So life is good...
+      Except this is an O(n^2) algorithm
+      And sorting actually takes O(nlogn) time
+    Insertion sort - sort everything on left one at a time
+      Basically the same thing
+      Also runs on n time
+  Let's jump to an algorithm that actually matters
+  Merge sort
+    Have numbers 71562493
+    Every number by itself in sorted order if array of length 1
+    Split down to pairs, sort pairs
+    Merge back up - know pairs sorted
+      Basic inductive step here
+    Merge lists but all in sorted order
+      Constructing merged array backwards "using two fingers"
+
+  # Compute index c in the middle of the array
+  def merge_sort(A, a = 0, b = None):
+    if b is None: b = len(A)
+    if 1 < b - a:
+      c = a + b + 1 // 2 # c is the center
+      merge_sort(A, a, c)
+      merge_sort(A, c, b)
+      L, R = A[a:c], A[c:b]
+      merge(L, R, A, len(L), len(R), a, b)
+
+  def merge(L, R, A, i, j, a, b):
+    '''Merge sorted L[:i] and R[:j] into A[a:b]'''
+    if a < b:
+      if (j <= 0) or (i > 0 and L[i - 1] > R[j - 1]):
+        A[b - 1] = L[i - 1]
+        i = i - 1
+      else:
+        A[b - 1] = R[j - 1]
+        j = j - 1
+      merge(L, R, A, i, j, a, b - 1)
+
+  What is merge going to do?
+    S(n) = S(n - 1) + theta(1)
+    S(n) = theta(n)
+    Takes linear time to merge
+    Makes intuitive sense - touch each point once with your finger as you go through it
+    Takes linear time to merge
+  What is overall runtime?
+    Let's assume list length is divisible by 2, otherwise it gets way more complicated
+    Call merge sort twice on list half the size
+    Sort array of length 1? theta(1)
+  What does our algorithm do?
+    Makes two recurisve calls of lists of half the length, then calls theta(n) merge function
+    Going off intuition from prior course, say it's theta(nlogn)
+    T(n) = 2T(n/2) + theta(n)... T(n) ?= theta(nlogn)
+    cnlogn = 2c(n/2)log(n/2) + theta(n) = cn(log n - log2) + theta n
+           = cn(logn - log2) + theta(n)
+    cnlogn = cnlogn - cnlog2 + theta(n)
+    cnlog2 = theta(n) c and log2 are both constants - so same order on left and right, it works
+
+Lecture notes
+  Approaches to solving recurrences
+    Substitution
+      Guess a solution, replace with representative function, see if recurrence holds true
+    Recurence tree
+      Draw a tree representing the recursive calls and sum computation at the nodes
+    Master Theorem
+      A formula to solve many recurrences (see recitation 3)
+
+  Insertion sort
+    Recursively sort prefix A[:i]
+    Sort prefix A[:i + 1] assuming that prefix A[:] is sorted by repeated swaps
+    [8, 2, 4, 9, 3] -> [2, 8, 4, 9, 3] -> [2, 4, 8, 9, 3] -> [2, 4, 8, 9, 3] -> [2, 3, 4, 8, 9]
+
+    def insertion_sort(A, i = None):
+      '''Sort A[:i + 1]'''
+      if i is None: i = len(A) - 1
+      if i > 0:
+        insertion_sort(A, i - 1)
+        insert_last(A, i)
+
+    def insert_last(A, i):
+      '''Sort A[:i + 1] assuming sorted A[:i]'''
+      if i > 0 and A[i] < A[i - 1]:
+        A[i], A[i - 1] = A[i - 1], A[i]
+        insert_last[A, i - 1]
+
+    insert_last analysis:
+      Base case: for i = 0, array has one element so sorted
+      Induction:
+        Assume correct for i, if A[i] >= A[i - 1], array is sorted
+        Otherwise. swapping last two elements allows us to sort A[:i] by induction
+      S(1) = theta(1)
+      S(n) = S(n - 1) + theta(1) -> S(n) = theta(n) (already proved for selection sort)
+
+    insertion_sort analysis:
+      Base case:
+        for i = 0, array has one element so is sorted
+      Induction:
+        Assume correct for i, algorithm sorts A[:i] by induction
+        And then insert last correctly sorts the rest as proved above
+        T(1) = theta(1)
+        T(n) = T(n - 1) + theta(n) -> T(n) = O(n^2) (already proved for selection sort)
+
+  Merge sort recurrence tree
+    Complete binary tree with depth log2(n) and n leaves, level i has 2^i nodes with O(n/2^i) work each
+    Total: sum i = 0 to log2(n) of 2^i(n / 2^i) = sum i = 0 to log2(n) of n = theta(nlogn)
+
+  Recitation
+    Last time - made a set from a sequence - provides from array
+    Want to do better, will spend next 5 recitations and lectures trying to do so
+    Simple way to get fast is to store in sorted array
+    Selection sort maintains and grows subset of the largest i items in sorted order
+      Can require omega(n^2) comparisons, perform at most O(n) swaps
+    Insertion sort maintains and grows a subset of the first i items in sorted order
+      Can require omega(n^2) comparisons and omega(n^2) swaps in worst case
+    Both insertion and selection sort are in-place algorithms
+      Use at most a constant amount of additional space
+    Insertion sort is stable
+      Items having the same value will appear in the sort in the same order they appeared in the input array
+      Selection sort is not stable in this implementation
+        (2, 1, 1') -> (1', 1, 2)
+    Merge sort
+      Asymptotically faster algorithm for sorting large numbers of items
+      Sorts left and right half, then merges the two halves in linear time
+      Recurrence relation is then T(n) = 2T(n/2) + theta(n)
+        Solves to T(n) = theta(nlogn)
+        Much closer to linear than quadratic
+          logn grows exponentially slower than n
+          log n grows slower than any polynomial n^eps for eps > 0
+      Merge sort uses a linear amount of temporary storage while joining halves
+        Merge sort is therefore not in-place
+          There exist algorithms that merge using no additional space, but are more complicated
+          Whether stable depends on how ties broken when merging
+          The code in class is not stable, but can be made stable with a small modification
+
+  def merge_sort(A, a = 0, b = None): # Sort sub-array A[a:b]
+    if b is None:
+      b = len(A) # O(1)
+    if 1 < b - a: # O(1)
+      c = (a + b + 1) // 2
+    merge_sort(A, a, c)
+    merge_sort(A, c, b)
+    L, R = A[a:c], A[c:b]
+    i, j = 0, 0
+    while a < b:
+      if (j >= len(R)) or (i < len(L) and L[i] < R[j]):
+        A[a] = L[i]
+        i = i + 1
+      else:
+        A[a] = R[j]
+        j = j + 1
+      a = a + 1
+
+  (Stable fix in exercise fun - JM - just change L[i] < R[j] -> L[i] <= R[j] to break ties in favor of left array i
+
+  Build a sorted array
+    Now complete table, sacrifice time in building structure - nlogn instead of n with an unsorted array
+      But it speeds up order queries - find_min, find_max, find_next, find_prev
+      "Preprocessing"
+  Recurrences
+    Three primary methods for solving
+      Substitution: guess a recurrence, substitute to show recurrence holds
+      Recursion tree: draw a tree representing recurrence and sum computation at nodes
+      Master theorem: a general formula to solve a large class of recurrences, useful but can also be hard to remember
+    Master Theorem
+      Solve recurrence relations in which recursive calls decrease problem size by a constant factor
+      T(n) = aT(n/b) + f(n)
+      T(1) = theta(1)
+      branching factor a >= 1
+      problem size reduction factor b > 1
+      asymptotically nonnegative function f(n)
+      Gives the solution to recurrence by comparing f(n) to a^logb(n) = n^logb(a)
+        This is the number of leaves at the bottom of the recursion tree
+      When f(n) grows asymptotically faster than n^logb(a) work done at each level decreases geometrically
+        Work done at root dominates
+      When f(n) grows slower, work done at each level increases geometrically
+        Work at leaves dominates
+      When growth rates are comparable, work is evenly spread over O(logn) levels
+    Master theorem - more
+      Top level: 1 * f(n) work
+      Next level: a * f(n/b) work
+      Next level: a^i * f(f / b^i) work
+      Bottom: a^logb(n) * f(1)
+    Master theorem cases
+      If f(n) = O(n^logb(a - eps)) for some constant eps > 0
+        T(n) = theta(n^logb(a)) (leaves dominate)
+      If f(n) = theta(n^logb(a) * log^k(n)) for some constant k >= 0
+        T(n) = theta(n^logb(a) * log^(k + 1)(n))
+      If f(n) = omega(n^logb(a + eps) for some constant eps > 0)
+        AND af(n/b) < cf(n) for some constant 0 < c < 1
+        T(n) = theta(f(n))
+    The master theorem takes a simpler form when f(n) is a polynomial
+      T(n) = aT(n / b) + theta(n^c) for some constant >= 0
+        (Here aT(n / b) -> theta(n^logb(a)) - JM)
+      c < logb(a) work done at leaves dominates
+        T(n) = theta(n^logb(a))
+      c = logb(a) work balanced across tree
+        T(n) = theta(n^c * logn)
+      c > logb(a) work done at roots dominates
+        T(n) = theta(n^c)
+    To apply master theorem, state which case applies
+      Show that recurrence relation satisfies all conditions required by relevant case
+      There are even stronger, more general formulas to solve recurrences, but will not use in this class
+
+  Exercises
+    1) Binary search
+      T(n) = T(n/2) + O(1)
+      a = 1 b = 2 c = 0
+      So 0 < log2(1), c = logb(a)
+      T(n) = theta(n^c * logn) theta(n^0 * logn) = theta(logn)
+    2. T(n) = T(n - 1) + O(1)
+      Length n chain, O(1) work per node
+      T(n) = O(n)
+    3. T(n) = T(n - 1) + O(n)
+      T(n) = O(n^2), length n chain, O(k) work per node at height k
+    4. T(n) = 2T(n - 1) + O(1)
+      T(n) = O(2^n), height n binary tree, O(1) work per node (2^n leaves at bottom - JM)
+    5. T(n) = T(2/3 * n) + O(1)
+      a = 1, b = 3/2, c = 0
+      Length log3/2(n) chain, O(1) work per node
+      T(n) = O(logn)
+    6. T(n) = 2T(n / 2) + O(1)
+      Binary tree with O(1) work per node, log2(n) height
+      T(n) = O(n)
+    7. T(n) = T(n / 2) + O(n)
+      Length log2(n) chain, O(2^k) work per node at height k
+      T(n) = O(n)
+    8. T(n) = 2T(n / 2) + O(nlogn)
+      Height log2n binary tree
+      k * 2^k work per node at height k
+      T(n) = O(nlog^2(n))
+    9. T(n) = 4T(n / 2) + O(n)
+      T(n) = O(n^2)
+      height log2(n) degree-4 tree, O(2^k) work per node at height k
+      C = 0, a = 4, b = 2, logb(a) = 2
+      So case 1 of master,
+      T(n) = O(n^2)

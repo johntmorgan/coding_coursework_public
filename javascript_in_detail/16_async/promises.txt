@@ -1,0 +1,214 @@
+Promises
+  Callback functions work - do stuff after async function
+    Become tedious when designing a bunch of sequential async functions
+      Code congestion
+      Nesting callbacks = "callback hell"
+        "Doom pyramid" with every successive function
+  Use promises to avoid callback hell
+
+Promise
+  A class meant to neatly execute async functions
+  Acts as a wrapper to execute async functions with a callback
+    Nicer syntax
+  Can create with or without async functions
+
+    var promise = new Promise(func);
+
+  The function func passed as argument takes two arguments
+    Resolve - first argument of function, invoked if works as intended
+      Argument of resolve given return value
+    Reject - second argument of function, invoked if fails
+      Error handling
+      Argument of reject given return value, usually error
+
+    var func = function (resolve, reject){
+      // add tasks synchronous or asynchronous
+      if(/*Everything works as expected */){
+        resolve(/* return value */);
+      } else {
+        reject(/* return value */);
+      }
+    }
+
+    Can provide any number of arguments to resolve and reject functions
+    Call then method to invoke function inside the promise
+
+then method
+
+  promise.then(callbackfn);
+
+  Invokes function inside the promise object
+  Passes anything provided by resolve function as arguments to callbackfn
+
+  Ex. with only one resolve argument
+
+    var func = function(resolve, reject){
+      setTimeout(function(){
+        // in callback call resolve function
+        console.log('in setTimeout callback');
+        resolve('Timed out for five seconds');
+        // not using reject as not catering error handling for now
+      }, 5000); // setTimeout for 5 seconds
+    }
+    var callbackfn = function(value){
+      console.log('In callbackfn and printing value:');
+      console.log(value); // print the value received
+    }
+    var promise = new Promise(func); // create Promise with func
+    promise.then(callbackfn); // run promise with callback in then method
+
+    > in setTimeout callback
+    > In callbackfn and printing value:
+    > Timed out for five seconds
+
+  Function func is what is creating promise object with line
+    var promise = new Promise(func);
+  func calls resolve from within callback function of setTimeout
+  func returns string using resolve function
+
+  After string returned, promise then method is invoked with callback function callbackfn
+    Invokes the function inside the promise
+    Passes the value supplied to resolve function to callbackfn
+
+  Note: tasks in then() method have higher priority than callback queue
+
+Chaining promises
+  No more pyramid of doom!
+  Sequential chain
+
+    var func = function(resolve,reject){ // function for promise creation
+      console.log('in func');
+      resolve(10);
+    }
+
+    var syncTask1 = function(val){ // first then method task
+      console.log('in task 1 with val:',val);
+      return val + 1;
+    }
+
+    var syncTask2 = function(val){ // second then method task
+      console.log('in task 2 with val:',val);
+      return val + 1;
+    }
+
+    var promise = new Promise(func); // create promise with func function
+    promise // call promise by adding .then method to it
+    .then(syncTask1) // invoke syncTask1 with value passed to resolve
+    .then(syncTask2) // invoke syncTask2 with value retured by syncTask1
+    .then(val => { // adding arrow function directly
+      console.log('End of the chain with val:', val);
+    })
+
+    > in func
+    > in task 1 with val: 10
+    > in task 2 with val: 11
+    > End of the chain with val: 12
+
+    Note that functions used by then method do NOT use resolve
+      Just pass value returned normally to successive then method
+
+Chaining async tasks
+  Above example was sync
+  Only difference, each function will return async task wrapped inside promise
+
+    const fs = require('fs'); // import fs module
+
+    // create function which returns a promise
+    // promise is for setTimeout for `time` milliseconds
+    var getPromise = function (time){
+      return new Promise(function (resolve, reject){
+        setTimeout(function(){
+          resolve(`timed out for ${time}ms`); // return string using resolve
+        }, time);
+      })
+    }
+
+    var promise = getPromise(5000); // get promise for 5000 seconds
+    console.log('Start promise'); // print before invoking .then method
+
+    promise
+    .then((val)=>{
+      console.log("in then block#1 and received:",val);
+      // return new Promise which readss file
+      return new Promise((resolve,reject)=>{
+        // read file and resolve in the callback of file read
+        fs.readFile('sample.txt','utf8',(err, data)=>{
+          if(err === null){
+            console.log('file read complete');
+            resolve(data); // return data read data in resolve
+          }
+        });
+      });
+    })
+    .then(val => {
+      console.log("in then block#2 and received:",val);
+      return getPromise(2000); // return the promise returned from getPromise
+    })
+    .then(val => {
+      console.log("in then block#3 and received:",val);
+      console.log('end of chain.');
+    })
+
+  Code breakdown
+    Create promise with help of function getPromise
+    getPromise takes single single argument, time
+    getPromise returns a promise object
+      Function passed to promise object is an arrow function with resolve, reject
+    arrow function invokes setTimeout async for time amount of milliseconds
+    promise chain begins
+    promise calls then
+      Pass an arrow function which takes as an argument val
+      Argument's received val from preceding promise
+        Prints this argument ("in block #1")
+      Returns new promise object with following props
+        Function passed to is arrow function with resolve, reject args
+        Arrow function invokes fs.readFile to async read sample.txt
+      Resolve function passes data with result of file read
+    Second then
+      Pass an arrow function
+      Takes as an argument val
+      Received from resolved function from previous promise
+      Returns new promise object created using getPromise(2000);
+    Third then
+      Pass an arrow function
+      Takes as arg val
+        Value received from resolve function from preceding promise
+        Async prints string
+        States end of chain for promise, concluding chain
+
+  Throughout chain
+    To async run task, create a function that returns a promise object in any then method
+    For sync task, need not return any promise
+    If a promise is returned by the preceding task, value provided to resolve is used
+
+Collection of promises
+  Do task after several async completed
+  Promise.all
+    Takes array of promises
+    Returns array of all values returned from each promise
+
+    const fs = require('fs');
+    var readFile_promise = function (filename){
+      return new Promise((resolve, reject)=>{
+        fs.readFile(filename, 'utf8',(err, data)=>{
+          if(err === null) resovle([filename, data]);
+        })
+      });
+    }
+    var promiseList= [
+      readFile_promise('file1.txt'),
+      readFile_promise('file2.txt'),
+      readFile_promise('file3.txt'),
+    ];
+    Promise.all(promiseList).then(arr => {
+      console.log('worked')
+      var max = arr.reduce((prev, curr) => {
+        return prev[1].length > curr[1].length ? prev : curr;
+      })
+      var min = arr.reduce((prev, curr) => {
+        return prev[1].length < curr[1].length ? prev : curr;
+      })
+      console.log('largest file:', max[0]);
+      console.log('smallest file:', min[0]);
+
+    })

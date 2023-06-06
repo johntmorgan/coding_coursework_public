@@ -1,0 +1,112 @@
+A little more Stimulus
+  Let's make 2 controllers, for calendar dates and a text filter
+  Both act on the entire page
+  So let's declare both in the section tag that encompasses the whole page
+
+  < section data-controller="calendar-toggle text-toggle"
+            data-calendar-toggle-hidden-
+            data-calendar-toggle-selected-class="has-text-danger"
+            data-text-toggle-hidden-class="is-hidden">
+
+  Will use DOM IDs to assoc date in header with date in body
+    So no targets needed
+    Easier to manage interaction this way because of layout
+
+    <div
+         data-action="click->calendar-toggle#toggle"
+         id="day-toggle-<%= schedule_day.day.by_example("2006-01-02") %>">
+      <%= schedule_day.day.by_example("Jan 2") %>
+    </div>
+
+    import { Controller } from "stimulus"
+
+    export default class extends Controller {
+      static classes = ["hidden", "selected"]
+
+      hiddenClass: string
+      selectedClass: string
+
+      toggle(event: CustomEvent) {
+        const eventTarget = event.currentTarget as HTMLElement
+        const buttonSelector = `#${eventTarget.id}`
+        const targetSelector = buttonSelector.replace("toggle", "body")
+        const target = document.querySelector(targetSelector)
+        target.classList.toggle(this.hiddenClass)
+        eventTarget.classList.toggle(this.selectedClass)
+      }
+    }
+
+    // Basically same logic as generic controller
+      Take ID of target of click
+      Manipulate string value to get assoc body DOM ID
+      Toggle class list of both the header (text color)
+        and the body (to show or hide)
+
+  Text filter needs a target for the actual input value, action for when changed
+    and targets for each of the potential concert blocks filtering on
+
+  <%= text_field_tag("query", "",
+    placeholder: "Search concerts", type: "search",
+    id: "search_query", class: "input",
+    "data-text-toggle-target": "filterInput",
+    "data-action": "input->text-toggle#filter") %>
+
+  // Using options part of Rails text_field_tag helper to add target and action to text field
+  Action itself is input
+
+  Article toggle is article tag
+    <article data-text-toggle-target="concert">
+
+  Use the Stimulus plural helper to go through all of them
+  This controller is also pretty short
+
+  import { Controller } from "stimulus"
+
+  export default class extends Controller {
+    static classes = ["hidden"]
+    static targets = ["filterInput", "concert"]
+
+    hiddenClass: string
+    concertTargets: HTMLElement[]
+    filterInputTarget: HTMLInputElement
+
+    get filterValue(): string {
+      return this.filterInputTarget.value
+    }
+
+    filter() {
+      this.concertTargets.forEach((concert) => {
+        const visible =
+          concert.innerText.toLowerCase.search(this.filterValue) >= 0
+        concert.classList.toggle(this.hiddenClass, !visible)
+      })
+    }
+  }
+
+  // Helper property extracts the current value of the text input from the target
+  // Then actual action method
+    Uses concertTargets plural helper to loop through each concert element
+  // Use substring search method (converting toLowerCase)
+  // Then toggle is-hidden depending on whether find filter value in concert
+
+Stimulus reference
+  Small, but conventions must be hit exactly to work
+  Item - attribute - naming convention
+  Controller - data-controller - controller-name
+  Action - data-action - event->controller-name#methodName
+  Target - data-controller-name-target
+  Value - data-controller-name-attribute-name-value
+  Class - data-controller-name-description-class
+
+Notes
+  Controller declared as controller-name assmumes file app/javascript/controller/controller_name_controller.ts (or js)
+  Action assumes existence of methodName on assoc controller
+  Target must be declared in static variable array of strings called targets
+    Creates targetNameTarget, targetNameTargets, hasTargetName
+  Value attributes usually declared with assoc controller
+    Need to be declared in static object of strings and data types in assoc controller
+    Creates valueNameValue, valueNameValue=, hasValueNameValue (plurals for arrays)
+  Class attributes usually declared with assoc controller
+    Need to be declare din static variable array of strings called classes
+    Creates classNameClass and hasClassNameClass props
+    

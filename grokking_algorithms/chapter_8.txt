@@ -1,0 +1,69 @@
+Greedy algorithms
+  Hold as many classes as possible in a classroom
+    But some of them overlap - how to max out?
+    Pick the class that ends the soonest
+    Then pick the next one you can
+    And so on. You're done!
+  Greedy algoritms seem too easy/obvious
+    But that's the beauty
+  Just pick the optimal move at each step
+    "Locally optimal solution"
+    Obviously this does not always work
+      But it does work often
+      And it's easy to write
+  Knapsack problem
+    Thief in a store, can only take 35 lbs of goods
+    Pick the most expensive thing
+    Then the next most expensive thing
+    In this case, it didn't optimize!
+      But it did pretty well
+      If you are a greedy thief you are happy anyway
+      Sometimes perfect is the enemy of the good
+  Set-covering problem
+    Greedy is completely necessary here
+    Cover every state in the US with your radio show
+      Stations play in ~3 states each, with overlap
+    List every possible subset of stations
+      Power set
+      2^n possible subsets
+      Possible with 5-10 stations
+      But what about 100 stations?
+        10 tries per second = 4x10^23 years
+    Greedy solution
+      Pick station that covers the most states not yet covered
+        Ok if some repetition
+      Repeat until all states covered
+      "Approximation algorithm"
+        Judged by how fast and how close to optimal
+        This one will run in O(n^2) time
+    Coding
+      Uses a set
+        Like a list except cannot have duplicates
+      Sets in python
+        | set union
+        & set intersection
+        - set difference
+  NP-complete problems
+    Solving the set-covering problem optimally means calculating every possible solution
+      Remember traveling salesperson?
+    Traveling salesperson
+      Can be any start point
+        Two cities = two routes, may not be exact same distance depending on e.g. one-way streets
+        Three cities = 6 routes
+        Winds up at factorial function
+        10 cities? 3,628,800 routes
+      Impossible to calculate if you have a large number of cities
+      How would author approximate?
+        Pick a starting city at random. Pick the next closest city. Then the closest to that etc.
+    Many smart people think it's not possible to write an algorithm that solves these problems fast
+    Good to realize if you're looking at an NP-complete problem
+      Often only a small difference between easy and NPC
+        Fastest way from point A to point B on graph? Pretty easy
+        Fastest way to connect all points? NP-complete
+      So may not be easy to tell. Good hints
+        Algorithm slows down really fast as you add more items
+        "All combinations of X" <- usually a strong hint
+        Need to calculate every possible version, can't break into subproblems
+        Sequences (like sequence of cities) and hard to solve
+        Sets (like set of radio stations) and hard to solve
+        

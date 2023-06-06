@@ -1,0 +1,21 @@
+EXISTS Operator
+  Boolean operator
+  Test if subquery returns any rows
+
+  // Nested query returns an empty set, so does outer query
+  // Subquery selects all columns, but that's irrelevant - EXISTS looking for rows
+  // Note: using BINARY operator to make comparison case-insensitive
+    // Not required if collation already set to case-insensitive for database
+  SELECT *
+  FROM Actors
+  WHERE EXISTS (SELECT *
+                FROM DigitalAssets
+                WHERE BINARY URL LIKE "%clooney%");
+
+  // Add the NOT operator
+  // Now the whole thing prints
+  SELECT *
+  FROM Actors
+  WHERE NOT EXISTS (SELECT *
+              FROM DigitalAssets
+              WHERE BINARY URL LIKE "%clooney%");

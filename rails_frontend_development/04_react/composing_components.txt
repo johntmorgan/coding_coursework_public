@@ -1,0 +1,123 @@
+Composing Components
+  Now have a component for each seat
+    Combine multiple seats into a row
+    Then combine multiple rows into a venue
+  Invoking a component from another component normally involves a JSX call
+    Looks as though component is an HTML tag
+    Name of component first, props following with HTML attribute syntax
+
+Invoking Seat
+  <Seat seatNumber={seatNumber} />
+  Component name, assign prop like HTML using curly bracket notation
+  Use string literal if value sent is string
+    <Seat description="front row center">
+
+  Add an entire row of seats, let's assume incremental integers
+  Row component
+
+  import * as React from "react"
+  import Seat from "../components/seat"
+
+  interface RowProps {
+    rowNumber: number
+    seatsInRow: number
+  }
+
+  const Row = (props: RowProps) => {
+    const seatItems = Array.from(Array(props.seatsInRow).keys()).map(
+      seatNumber => {
+        return <Seat key={seatNumber} seatNumber={seatNumber} />
+      }
+    )
+    return <tr>{seatItems}</tr>
+  }
+
+  export default Row
+
+// Basic structure similar to Seat
+  Have a props interface with two fields for the row number and number of seats
+  Function named Row that returns some JSX, contains HTML tr tag
+  Import Seat component from file
+  Unexpected: not including each Seat inside a loop as might expect in ERB
+    Create all Seat components as Array of components using JS map function
+
+  Array.from(Array(props.seatsInRow))
+    Obscure JS idiom to turn number 5 into [0, 1, 2, 3, 4]
+      Closest get to Ruby range object without helper functions
+    Use map to create a new array by sending each number into function
+      Takes that number and converts to React element by returning JSX
+      <Seat key={seatNumber} seatNumber={seatNumber} />
+      Create regular JS objects that can be returned and managed like any other object
+    From map call, seatItems set to array of JSX elements
+    Then including JSX elements in row return using more curly brackets
+      return <tr>{seatItems}</tr>
+  Why not just use a for loop inside tr tag?
+    Inside a JSX element, can only include JS expressions that return values
+      In ruby, every statement (including if and each) is also an expression
+        Every statement returns a value
+      In JS if and for are statements but not expressions
+        Since they don't return values, they can't be included directly in JSX expressions
+    So very common to use map to convert array into array of JSX expressions
+    For if statements, ternary operator
+
+    return (
+      <div>
+        (x === true) ? <span>True</span> : <span>False</span>
+      </div>
+    )
+
+    Or use an if statement to assign a value
+
+    let spanItem
+    if (x === true) {
+      spanItem = <span>True</span>
+    } else {
+      spanItem = <span>False</span>
+    }
+    return <div>{spanItem}</div>
+
+  If logic gets complicated, separate out to another function
+    You may nest functions in JS so
+
+    const Conditional = (props) => {
+      function spanItem {
+        return (props.x === true) ? <span>True</span> : <span>False</span>
+      }
+
+      return <div>{spanItem()}</div>
+    }
+
+  One more quirk
+    <Seat key={seatNumber} seatNumber={seatNumber} />
+    seatNumber goes into the props for the component
+    However key is new
+      Internal property used by React to enable React runtime
+        to differentiated between elements in a list and render the ones that have changed
+      Exact value doesn't matter now
+        Each element key must be unique
+        If list rendered without key, React places warning in browser console at runtime
+    So far JSX tags have been self-closing with />
+    You can have beginning and ending tags too, arbitrary expressions inside
+      String: <Tag>Fred</Tag>
+      JSX element: <Header><Nav/><Nav/></Header>
+      Arbitrary: <DisplayUser>{user}</DisplayUser>
+    In all cases, value inside tags is available as props.children
+      Parent receiving responsible for handling them
+
+  TypeScript and child props
+    If using props.children
+    Declare children as part of interface object of type props argument
+    If you know value will be a string can use children?: string
+      or children?: React.ReactNode if getting an internal element
+      or children?: any if type unsure
+
+  What about rendering a set of JSX elements without a parent element
+    Don't want to return as array
+    Little trick to return a set "Fragment" with empty tag and close tag
+
+    return (
+      <>
+        <div>One thing</div>
+        <div>Another thing</div>
+      </>
+    )

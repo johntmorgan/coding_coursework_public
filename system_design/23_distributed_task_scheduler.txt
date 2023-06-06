@@ -1,0 +1,327 @@
+Distributed Task Scheduler
+What is it?
+  Task is any work requiring resources
+    CPU time
+    Memory
+    Storage
+    Network bandwidth
+    etc
+  Ex. upload photo to FB
+    Encode photo/video multiple resolutions
+    Validate to check for copyright
+    Must execute before photo/video visible
+    However upload does not need tasks to complete
+  Ex. post comment
+    Don't hold comment poster until delivered to all followers
+    Delivery delegated to async task scheduler, do offline
+  Many tasks content for computational resources
+    System that mediates and allocates resource = task scheduler
+    Meet task-level, system-level goals
+
+When?
+  Critical for efficient work
+  Complete lots of tasks with limited resources
+  Fully utilize system resources
+  Give users uninterruped execution experience
+
+Use cases
+  Single OS-based node
+    Many processes or tasks contending
+    Use local OS taksk scheduler
+    Use multi-feedback queues to pick tasks
+  Cloud computing
+    Need a distributed solution
+  Large systems
+    Many tasks in background per user requests
+    Millions/billions on FB, WA, IG, etc
+    Task scheduler for billions of tasks
+      Facebook system: "Async"
+  Some tasks are more time sensitive
+    Notify of livestream start
+  Some can be delayed
+    Coming up with new friend suggestions for users
+  Schedule based on priorities
+
+Distributed task scheduling
+  Tasks from many different sources/tenants/sub-systems
+  Many resources dispersed in data center
+    Or many data centers
+  Challenging!
+  Scalable, reliable, fault-tolerant
+
+Requirements
+  Functional
+    Submit tasks
+    Allocate resources
+    Remove tasks - allow users to cancel
+      (Something I can't really do now - JM)
+    Monitor task execution
+      Reschedule if fail
+    Efficient resource utilization
+      Fast, cost-effective, fair
+      Do not waste resources
+        Do not allocate heavy resource to light tasks
+      What is fair?
+        All tenants equal probability of resource access within cost class
+    Release resources
+      After executing task
+    Show task status
+  Non-functional
+    Availability
+    Durability
+      Do not lose tasks
+    Scalability
+      More tasks every day
+    Fault tolerance
+      Provide uninterrupted service with faults in components
+    Bounded waiting time
+      Don't take too long for tasks
+      Notify if waiting time over threshold
+
+Building blocks
+  Rate limiter
+    Limit number of tasks
+  Sequencer
+    Uniquely identify tasks
+  Databases
+    Store task info
+  Distributed queue
+    Arrange tasks in order of execution
+  Monitoring
+    Check resource health
+    Detect failed tasks
+
+Design
+  Many different levels possible
+    Internally by org on cluster of machines
+      Find major resources
+      Decide what to do first
+    Cloud provider, tasks from multiple clients
+      Which tasks first
+      Which clients first
+      Isolation between tenants key
+  Major components
+    Clients
+      Initiate task execution
+    Resources
+      Execute tasks
+    Scheduler
+      Performs processes between clients and resources
+      Decides which task should get resources first
+  Put incoming tasks in queue
+    May not have resources to run all
+    Task dependency possible
+    Decouple clients from task execution, hand off to system
+  Design task system to schedule any tasks
+    Many tasks relatively short-lived
+      Seconds to minutes
+    For long-running
+      Periodic checksumming
+      Restoration at app level to recover from periodic failures
+    Assume
+      Single server can meet computational needs of all tasks
+      If not
+        Break into smaller tasks
+        Or long-term resource acquistion from cluster manager
+
+Design
+  Task info required
+    Resource requirements
+      CPU cores
+      RAM
+      Disk space
+      Disk access rate
+        I/O per second, IOPS
+      TCP ports
+      etc
+    But hard for clients to quantify!
+      Use different tiers instead
+        Basic
+        Regular
+        Premium
+        etc
+  Dependency
+    Dependent
+      Must execute 1+ other tasks first
+      Tasks must run in sequence
+      Client must provide dependency list
+    Independent
+      Don't depend on any client execution
+      Can run in parallel
+
+Elements
+  Clients
+    Anything from individuals to small to large businesses
+  Rate limiter
+    Important for reliability
+    X tasks per hour into system
+      Usually based on client subscription
+  Task submitter
+    Admits if passes through rate limiter
+    Cluster of nodes
+  Unique ID generator
+    Assigned to each admitted task
+      (Typically by submitter, it looks like? - JM)
+  Database
+    Stores tasks taken by submitter
+    Attributes stored in relational database
+      Task ID
+      User ID
+      Required resources
+      Execution caps
+      Status - Waiting, in progress, done, failed
+      Total attempts by client
+      Delay tolerance
+      Path to script to execute
+    Graph database
+      DAG of dependent tasks
+        Schedule tasks according to this
+  Batching & prioritization
+    Group tasks into batches
+    Prioritze on attributes
+      Delay tolerance
+      Short execution cap
+    Top K priority tasks into queue
+      K depends on resources, priority, subscription level etc
+  Why not push everything right into queue?
+    Queue does not hold data permanently
+      Costs money
+    Just push tasks ready for execution into queue
+    Different scheduling types
+      May run periodically
+      Doesn't really work with queue
+  Distributed queue
+    Queue and manager
+    Manager adds, updates, deletes tasks in queue
+      Tracks types of queues used
+      Keeps task in queue until executed
+      Made visible again if fail
+        Retries for allowed number of attempts
+      Knows which queues to run during different traffic times
+      Deletes tasks if executed successfully
+  Resource manager
+    Knows which resources are free
+    Pulls tasks from queue and assigns resources
+    Tracks execution of each task
+      Sends status back to queue manager
+    Terminates task if beyond intended resource level
+      Send status back to task submitter
+      Task submitter notifies client
+  Monitoring service
+    Check health of resource manager, resources
+    Alert admin if resource fails
+    Alert admin if new resources required
+    Alert admin if resources unused
+  Task submitter
+    Could be SPOF
+    Use cluster of nodes
+    Each node must admit tasks, send to unique ID generator
+      Store with task ID in database
+    Heart beat to cluster manager
+    Cluster manager maintains list of tasks and node that admitted
+      If node fails to execute, hand to another
+      Cluster manager also replicated
+
+Design considerations
+  Queueing
+    Distributed queue
+    Simple approach: first come, first served
+      What if want urgent execution of a task?
+        Notify user account accessed unauth device
+    Categorize tasks
+      Can't be delayed
+      Can be delayed
+      Execute periodically
+    Handling
+      If delay limit about to be reached, moved to urgent
+  Execution cap
+    Some tasks take a long time
+      Could even be bugged, will never finish
+    Let clients set execution cap
+      After that point, stop resource, allocate to next in queue
+      Notify client if stopped due to cap
+        Client must deal with it
+    If no execution cap set
+      Scheduler uses upper bound itself to kill tasks
+        May also pause and restart
+          Say training a ML model, slow!
+    If cloud provider
+      No unlimited time on basic/free account
+        Inform clients of max usage limits
+        Clients may design to checkpoint etc.
+  What if task fails?
+    Re-execute on another machine
+    Tasks must be idempotent OR able to restore state from checkpoint
+  Prioritization
+    Most urgent
+      e.g. Earthquake mark safe on FB
+        (or notify on Google - JM)
+        Account debited money
+    Schedule maintains delay tolerance param for each task
+      Execute task close to delay tolerance
+      Shortest delay tolerance executed first
+      Postpone longer delay tolerance at peak times
+    How to determine delay tolerance?
+      App owners or clients set
+      Task scheduling can set depending on task category
+      Charge more for high priority tasks
+  Resource capacity optimization
+    Peak time = resources close to overload, say >80%
+    Resources may be idle during off-peak
+      Do low priority then
+      May make separate queue for that
+    If more work than resources?
+      Commission more resources
+    Cloud provider must have target resource-to-demand ratio
+  Task idempotency
+    If task executed but machine does not ack, scheduler schedules again
+    If 2x execute -> wrong result, non-idempotent
+      Ex. Sending $10 to someone
+    May need to use idempotency key, store on server
+    Ex. Uploading video
+      Don't duplicate in database!
+      May overwrite the old one, that works
+  What if infinite loop in task?
+    Set time limit
+    Kill if over execution cap
+    Hard to tell if buggy or just long though
+    Clients can save state at different times
+      Resume from that state
+  Untrusted tasks
+    Chance of malicious instructions in script
+      May affect other tasks
+      May harm OS or resource
+    Also could just be buggy
+    Use appropriate authentication, resource authorization
+    Code sandbox using dockers, virtual machines
+    Use performance isolation
+      Monitor resource utilization
+      Cap or terminate badly behaving tasks
+  What happens when task fails repeatedly?
+    Dead-letter queue facility
+
+Evaluation
+  Availability
+    Rate limiter
+    Task submitter has backups
+    Queue is distributed
+    Monitor if resources needed
+  Durability
+    Store tasks in persistent distributed databse
+    Push tasks into queue near execution time
+    Task stays in database until execution
+  Scalability
+    Distributed task submitter
+      Can add more nodes to cluster
+    Distributed relational database
+      Also scalable
+    Distributed queue
+      Add more and different types if needed
+    Add more resources if needed
+      Track resource/demand ratio
+  Fault tolerance
+    Retry for maximum number of attempts
+    Kill after specified time and notify user
+  Bounded waiting time
+    Have a limit
+    If limit reached, notify users, ask to try again

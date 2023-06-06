@@ -1,0 +1,331 @@
+Rate Limiter
+
+What is it?
+  Limits number of requests service fulfills
+  Throttles requests over limit
+  ex. client using API can make 500 requests/minute
+
+Why?
+  Defensive layer
+  Avoid excess usage
+    Intended or unintended
+  Protect against DOS, brute-force password
+
+Where?
+  Prevent resource starvation
+    DOS due to software error, bad config
+      "Friendly-fire DOS"
+  Manage policies and quotas
+    Provide fair use among many users
+  Control data flow
+    Where processing lots of data
+      Distribute evenly
+      Don't overload any machines
+  Avoid costs
+    Prevent experiments from running out of control
+      Cloud providers limit freemium tiers
+
+Requirements
+  Functional
+    Limit requests client sends to API in time window
+    Configure limit
+    Send error/notification to client over threshold
+  Non-functional
+    Availability
+      Protects system, needs to be avail at all times
+    Low latency
+      All API requests pass through
+    Scalability
+      Handle increasing client requests
+
+Types of throttling
+  Hard throttling
+    Requests over limit discarded
+  Soft throttling
+    Requests can exceed limit by small percent
+  Elastic throttling
+    Requests can exceed limit if resources available
+      No specific percent upper limit
+
+Aside: OS level throttling
+  Linux
+  cgroups kernel feature
+  Account for & limit key resources
+    CPU time
+    System memory
+    Disk storage
+    I/O
+    Network bandwidth
+  Admin can monitor, deny, reconfigure
+  Benefits
+    Limit resources
+    Prioritize groups
+    Accounting - measure resource usage
+      Can be used for billing
+    Control
+      Control groups, checkpoints, restart
+  Use at single server level
+    For user
+    For groups of users/processes
+  Extend this idea onto local nodes of cluster
+
+Where to place rate limiter
+  On client side
+    Easy to place
+    But unsafe
+    Easy to tamper with maliciously
+    Hard to configure
+  On server side
+    On server itself
+  As middleware
+    In between client and server
+  Decision depends on
+    Tech stack
+    Eng resources
+    Priorities
+    Plan
+    Goals
+  API endpoints are a good location to rate limit
+    All client traffic passes through in many cases
+  Two models
+    One rate limiter might not be enough
+      Use multiple, cluster of nodes
+      Need way to store, retrieve, update counters
+    1. Rate limiter with centralized DB
+      Redis or Cassandra
+      Client can't exceed predefined limit
+      But big latency spike if lots of requests hit database
+      Potential for race conditions in highly concurrent requests
+        Or lock contention
+    2. With distributed database
+      Each node must track the rate limit
+      However client may be able to go over by hitting different nodes
+        In the short run, while state being collected
+      Need sticky sessions to send client to single node
+        But now lack fault tolerance
+        Scaling problems when node overloaded
+  Another problem
+    Global counter by all requests?
+    OR individual counter per user
+    Token bucket algorithm (details upcoming)
+      All can share single bucket
+      Each user gets a bucket
+    Depends on use case really
+  Can rate limiter be used as load balancer?
+    Load balancers are unbiased towards incoming requests
+      Do not know cost of specific operatoins
+    To limit requests for particular operation, do on app server
+  What if client in two different regions, hitting diff data centers?
+    Rate limiter per data center
+      Set a lower rate
+      Low latency within data center, < 1 ms
+      Multiple redundant paths in case of link failure
+    Sharded rate limiter across data centers
+      Both requests throttled by single rate limiter
+      Rate set higher
+      Slower, everything must pass through sharded rate limiter
+      Not a lot of redundant paths available
+
+Building blocks
+  Databases
+    Store rules
+    Store user metadata
+  Caches
+    Cache rules for frequent access
+    Cache user data
+  Queues
+    Hold incoming requests for rate limiter
+
+Design
+  Deploy as separate service interacting with web server
+  Rate limit by unit time, request_per_unit
+
+Details
+  Rule database
+    Specified by service owner
+  Rule retriever
+    Background process, checks for modifications to database rules
+    Update rule cache if changes in rules
+  Throttle rules cache
+    Rules retrieved from database
+      Serves faster than persistent storage
+  Decision-maker
+    Makes decisions against rules in cache
+    Uses algorithm (discussed next)
+  Client identifier builder
+    Generates unique ID for request from client
+      Remote IP address
+      Login ID
+      Combination of attributes
+    Key to store user data in key-value database
+    Key passed to decision-maker
+  When limit crossed?
+    Return 429 error code Too Many Requests
+    Drop request (usually)
+    If rate limit due to system overload, keep in queue for later
+
+Processing
+  Request received
+  Client ID builder identifies request, forwards to decision-maker
+  Decision maker determines services requested
+  Decision maker checks cache against # rules allowed
+  If request not over limit, forwards to request processor
+  Decision maker decisions based on algorithm, type of throttling
+
+What if rate limiter fails?
+  Default decision is to turn off throttling
+  Keep the system available
+  Load balancer will limit traffic to servers
+  (Really depends on why you are rate limiting though, no? - JM)
+
+Race conditions
+  Possible in high concurrency request patterns
+  "Get-then-set" approach
+    Retrieve counter
+    Increment counter
+    Return to database
+  More requests can come through, incremented counter invalid
+  Allow client to send high rate of requests
+  Use locking mechanism to avoid?
+    Only one process can update counter at a time
+    Potential bottleneck
+    Performance down, scales poorly
+  "Set-then-get"
+    Increment counter in very performant fashion
+    Works if minimal contention
+  Other approaches
+    Divide quota into multiple places and divide load
+    Use sharded counters to scale
+      Reduce write contention
+      But must collect from spots, reading slows down
+
+Should not be on critical path
+  Just check when request received
+    Allow if less than max limit
+    Update respective count, cache offline
+    Not a huge detail for a few requests
+    Big improvement with millions of requests
+
+Rate limiting in TCP
+  Recipient throttle sender by advertising size of window
+    How much data it will receive
+  Sender sends minimum of congestion window or advertised window
+  Many network traffic shapers provide preferential treatment to flows
+
+Conclusion
+  Availablity: Multiple rate limiters available, no SPOF
+  Low latency: Data retrieved from cache not database
+    Forward requests first, then update cache and database
+  Scalability: Change number of rate limiters depending on incoming requests
+
+Rate Limiter Algorithms
+  Token bucket
+  Leaking bucket
+  Fixed window counter
+  Sliding window log
+  Sliding window counter
+
+Token bucket
+  Has a "bucket" with capacity of tokens
+  Bucket periodically filled at constant rate
+  Token is a packet of some specific size
+  Algo checks for token in bucket
+  Need one token to process
+  Rate limit R
+  Bucket capcity C
+  Add new token every 1/R seconds
+  Algo discards tokens when number of tokens = C
+  If N incoming requests and bucket has N, consume tokens & forward
+  If N incoming requests and bucket has <N, consume all, forward bucket #
+  Advantages
+    Can allow burst of traffic as long as enough tokens
+    Space efficient, limited memory neede
+  Disadvantages
+    Lock taking token from bucket = processing delay if contention
+    Choosing optimal param values difficult
+
+Leaking bucket
+  Variant of token bucket
+  Uses bucket to contain incoming requests
+  Processes at constant outgoing rate
+    In FIFO order
+    Like water leaking at a constant rate
+  If bucket full
+    Discard requests
+  Params
+    Bucket capacity C
+    Inflow rate Rin
+    Outflow rate Rout
+  Advantages
+    Constant outflow rate avoids burst of requests
+    Space efficient, just three states
+  Disadvantages
+    If burst fills bucket, lots of requests after take hit
+    Detemining bucket size, outflow rate is hard
+
+Fixed window counter
+  Divides time into fixed intervals "windows"
+  Each window gets a counter
+  When counter at limit, requests discarded in window
+  Problem
+    Burst of traffic at edges of window
+    Ex. only allow 10 reqs/minute
+    But can get 20 requests in 1:30-2:30
+  Params
+    Window size W
+    Rate limit R
+    Request count N (numbero f incoming requests, must be less than R)
+  Advantages
+    Space efficient due to request constraints
+    Services new requests vs. e.g. leaking bucket
+  Disadvantages
+    Burst of traffic at window edges not handled
+      Potential performance decrease
+
+Sliding window log
+  Track each incoming request
+  Arrival time stored in hash map "log"
+  Logs sorted based on timestamps of incoming requests
+  Requests allowed depending on size of log and arrival time
+  Avoids edge conditions of fixed window counter
+  Params
+    Log size L - basically rate limit R
+    Arrival time T
+    Time range Tr
+      Delete time stamps of old requests
+  Advantages
+    No boundary conditions like fixed windows
+  Disadvantages
+    Consumes memory storing time stamps
+    Must keep time stamps even if request rejected
+
+Sliding window counter
+  Iteration on fixed window
+  Doesn't limit based on fixed time units
+  Combines sliding log and fixed window for smoothness
+  Ex. 88 requests in previous window
+    12 in current window
+    100 requests per window (minute)
+    Rolling window 15s current, 45s previous
+    Current = 88 * 45/60 + 12
+    Rate = 78 < 100, OK
+  More complex algorithm
+    Rate limit R
+      Number of requests per window
+    Size of the window W
+    Number of requests in previous window Rp
+    Number of requests in current window Rc
+    Overlap time Ot
+      Overlap of rolling window with current
+  Advantages
+    Space efficient due to limited states
+      But still more memory than all but sliding window log
+    Smooths out bursts of requests
+  Disadvantages
+    Assumes evenly distributed requests in previous window
+      (So helps with edge problem but may not fix? - JM)
+
+Comparing algoirthms
+  Memory - how many states must be maintained
+  Burst - how does it handle
+  Pick based on use case

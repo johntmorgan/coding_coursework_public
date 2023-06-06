@@ -1,0 +1,19 @@
+Theory to practice
+Now to examine specific examples of distributed systems
+Some commercially available, widely used
+Some used internally, design shared in academic papers
+Goals
+  Overview of basic categories of distributed systems
+  Explain how systems use principles taught in course
+Some systems may have evolved since writing
+Discussed versions for reference
+  HDFS 3.1.2
+  Zookeeper 3.5.5
+  HBase 2.0
+  Cassandra 3.11.4
+  FaunaDB 2.7
+  Kafka 2.3.1
+  Kubernetes 1.13.12
+  Corda 4.1
+  Spark 2.4.4
+  Flink 1.8

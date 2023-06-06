@@ -1,0 +1,10 @@
+Introduction at CSS
+  CSS has gotten stronger over the years
+  Do more with CSS, less with JS
+  Going to skip the basics here
+  Focus on
+    How to integrate CSS with Webpacker build and PostCSS tool
+    Using CSS animations to augment JS interactivity
+    Declaring CSS inside JS, especially React
+      Scope CSS to React components
+    

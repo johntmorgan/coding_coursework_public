@@ -1,0 +1,136 @@
+Distributed Messaging System
+Kafka
+  Apache
+  Open-source
+  Originally developed at LinkedIn
+  Goals
+    Performance
+    Scalability
+    Durability
+    Availability
+  Performance
+    Exchange messages between systems with high throughput, low latency
+  Scalability
+    Incrementally scale to bigger volumes of data by adding more nodes
+  Durability & availability
+    Even in the presence of node failures
+  Topic
+    Central concept of Kafka
+    Ordered collection of messages
+    Can be multiple "producers" that write to it
+    Multiple "consumers" that read from it
+  Each topic is maintained as a partitioned log
+    Stored across multiple nodes called brokers
+    Each partition is ordered, immutable sequence of messages
+    Each message assigned a sequential id number called offset
+      Uniquely identifies each message in partition
+    Messages by producers appended to end of log
+    Consumers can consume in any order, but usually advance offset linearly
+      Can also replay from older offset, or skip to latest offset
+  Messages retained for configurable period of time
+    "Retention period"
+  Messages can be distributed in round-robin fashion to balance load
+  Producer can select partition - store related messages in same partition
+  Each consumer of topic can have multiple consumer instances for increased performance
+    All identified by consumer group name
+  Partitions in log divided over consumer instances
+    Each instance is exclusive consumer of equal share of partitions
+    Each message delivered to one instance within subscribing group
+  Each partition replicated across configurable nodes for fault tolerance
+    Each partition has one node which acts as leader
+    Each partition has zero or more followers
+    Leader handles all read and write for partition
+    Followers passively replicate the leader
+  Zookeeper used for leader election between replica brokers
+  Zookeeper used for group membership of brokers, consumers
+  Log replication separated from consensus protocol
+    Single-master replication approach
+    Leader waits for followers to persist before ack to client
+    In-sync replicas
+  In-sync replicas
+    Have replicated committed records, in-sync with leader
+    If leader fails, only ISR elected as leader
+    If follower in ISR set lags, leader can evict
+  Offsets - 2 maintained
+    Log end offset
+      Last record stored locally but not replicated or acknowledged
+    High watermark
+      Last record successfully replicated and can be ack back to client
+
+Kafka Levers
+  Many ways to adjust how it operations depending on app
+    Replication factor of topic
+    Minimum size of ISR set (min.insync.replicas)
+    Number of replicas that must acknowledge before committed
+  Tradeoffs
+    Set min.insync.replicas to majority quorum and acks to all
+      Stricter durability guarantee
+      Good availability
+      Replication factor = 5
+      min.insync.replicas = 3
+      Tolerate 2 node failures with zero data loss, cluster still available for reads/writes
+    Set min.insync.replicas to replication factor and acks to all
+      Even stronger durability
+      Loss of availability
+      Up to 4 node failures with zero data loss
+      Single node failure = cluster unavailable for reads/writes
+    Setting acks to 1 better perforamnce at expense of durability, consistency
+      Records committed as soon as leader stores locally
+      But if leader fails, records that did not make it to new leader lost
+
+Kafka Guaratees
+  Can provide:
+    At-least-once
+    At-most-once
+    Exactly-once
+  At-most-once
+    Disable any retries
+    If write fails, producer does not retry
+    Message may or may not be delivered
+    Guarantees cannot be delivered more than once
+    Consumers commit message offsets before processing
+      Message processed once when happy
+      Fail after committing offset, message never processed
+  At-least-once
+    Enable retries for producers
+    Message might be delivered more than once
+      Retries can be infinite, or a limit set
+    Consumer processes message first, then commits offset
+  Exactly-once
+    Idempotent producer provided by Kafka
+    Assigned unique PID
+    Tag every message with seq number
+    Broker can track largest number per PID, reject duplicates
+    Consumers can store committed offsets in Kafka or external store
+      Store offsets along with side-effects of message processing
+
+Transactions, storage layout, other guarantees
+  Transactional client, allows producers to produce messages to multiple partitions atomically
+  Commit consumer offsets from a source topic in Kafk and produce messages to destination atomically
+  Provide exactly-once guarantees for end-to-end pipeline
+    Two-phase commit protocol
+    Brokers of cluster play role of transaction coord
+    Same underlying mechanisms for partitioning, leader election, fault-tolerant replication
+    Coord stores transaction status in separate log
+    When transaction commited, coord writes commit market to partitions
+      Contains trans messages, partitions storing consumer offsets
+    Consumers specify isolation level read under
+      Read_committed
+        Messages readable only after commit marker produced
+      read_uncommitted
+  Physical storage
+    Every log partition = set of segment files approx same size (1 GB)
+    Every time producer publishes message to partition
+      broker appends message to last segment file
+    For better performance, segment files flushed to disk only after
+      config number of messages published or config amt of time elapsed
+    Each broker keeps in memory a stored list of offsets
+      Including offset of first message in every segment file
+    Other performance ops, use sendfile API for sending data to consumers
+  Guarantees by Kafka
+    Appends messages in order sent by producer to topic's partition
+      If M1 sent by same producer as M2, and M1 sent first, M1 lower offset, earlier in log
+    Ordering guarantees only per partition
+      User can control partitions to leverage guarantees
+    At-least-once, at-most-once, exactly-once depending on config
+    Durability, availability, consistency depend on config of cluster (see above)

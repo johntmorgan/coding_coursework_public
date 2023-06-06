@@ -1,0 +1,27 @@
+Sliding Window
+  Reduce use of nested loops in algo
+  Two pointers variation
+    Pointers set window bounds
+  Window = sublist
+    Slide over data in chunks
+    Process data in segments
+  Not more efficient if iterate over all elements of each window
+    Focus on element leaving, element entering
+  Examples
+    Sliding window median
+    Max subarray sum
+
+Pattern match
+  Yes
+    Repeated computation contiguous set of data elements
+    Computations when moving are O(1), O(logn), etc.
+  No
+    Random access not supported
+    Process entire structure, no segmentation
+
+Real world
+  Max users connected to base station in k-ms sliding window
+  How many times products viewed by user appear in data
+  Calculate buffering events in 1-min interval
+  Find short sequence of posts by users including topics another posted about
+
